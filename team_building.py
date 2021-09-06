@@ -95,16 +95,10 @@ class MetaTeamDestroyer:
         :type num_reports: int
         """
         # Initialize all of the data
-        #self.all_pokemon = requests.get("https://vps.gobattlelog.com/data/overall/rankings-2500-premier.json?v=1.23.20").json()
         rankings_url = LEAGUE_RANKINGS.get(league)
         latest_url = LEAGUE_DATA.get(league)
-        #self.all_pokemon = requests.get("https://vps.gobattlelog.com/data/overall/rankings-2500-premier.json?v=1.25.10").json()
         self.all_pokemon = requests.get(rankings_url).json()
         self.game_master = requests.get("https://vps.gobattlelog.com/data/gamemaster.json?v=1.25.10").json()
-        #latest_url = "https://vps.gobattlelog.com/records/ultra-premier/latest.json?ts=449983.3"
-        #latest_url = "https://vps.gobattlelog.com/records/great-retro/latest.json?ts=450211.1"
-        #latest_url= "https://vps.gobattlelog.com/records/great/latest.json?ts=450364.2"
-        #latest_url= "https://vps.gobattlelog.com/records/great-kanto/latest.json?ts=450364.2"
         self.latest_info = requests.get(latest_url).json().get("records")
 
         # Sort reports by time and get last X teams
