@@ -25,9 +25,6 @@ import requests
 from datetime import datetime, timedelta
 from collections import defaultdict
 
-from flask import Flask, request
-
-app = Flask(__name__)
 
 # The number of pokemon to consider
 TOP_TEAM_NUM = None
@@ -362,46 +359,5 @@ def get_counters_for_rating(rating, league="ULP", days_back=None):
     return f"Leads\n{lead_counter_text}\nMeta leads\n{lead_text}\n\nSafe swaps\n{ss_counter_text}\nMeta Safe swaps\n{ss_text}\n\nBack\n{back_counter_text}\nMeta back\n{back_text}"
 
 
-def create_table_from_results(results):
-    """
-    Creates an html table from the results
-
-    :param results: The results
-    :type results: str
-
-    :return: the table for the results
-    :rtype: str
-    """
-    table = ["<html><body style='background-color:lightgreen;'><table border='1' align='center'>"]
-
-    for line in results.split("\n"):
-        table.append("<tr>")
-
-        # If a single value in a line then create a new table
-        values = line.split("\t")
-        if len(values) == 1:
-            table.append("</tr></table><br><br><table border='1' align='center' style='background-color:#FFFFE0;'><tr>")
-            table.append(f"<td colspan=4 align='center'>{values[0]}</td>")
-        else:
-            for value in values:
-                if value:
-                    table.extend(["<td>", value, "</td>"])
-
-        table.append("</tr>")
-
-    table.append("</table></html>")
-    return "".join(table)
-    
-
-@app.route("/run")
-def run():
-    league = request.args.get("league", "GL")
-    results = get_counters_for_rating(None, league)
-    return create_table_from_results(results)
-    #return get_counters_for_rating(None, "GL").replace("\t", "&emsp;").replace("\n", "<br>")
-    #return "Done!"
-
 if __name__ == "__main__":
     print(get_counters_for_rating(rating=None, league="Remix", days_back=1))
-    #app.run(debug=True)
-    #print(team_maker.get_moveset_string('bulbasaur', ["TACKLE", "POWER_WHIP", "SLUDGE_BOMB"]))
