@@ -100,6 +100,7 @@ def create_table_from_results(results):
 @app.route("/run")
 def run():
     chosen_league = request.args.get("league", "GL")
+    chosen_pokemon = request.args.get('pokemon', '')
     html = ["<html><body style='background-color:lightblue;'>"]
 
     # Header
@@ -114,13 +115,22 @@ def run():
         if league == chosen_league:
             leagues_table.add_cell(league)
         else:
-            leagues_table.add_cell(f'<a href="/run?league={league}">{league}</a>')
+            leagues_table.add_cell(f'<a href="/run?league={league}&pokemon={chosen_pokemon}">{league}</a>')
     leagues_table.end_row()
     leagues_table.end_table()
     html.append(leagues_table.render())
 
+    # Input pokemon for team
+    html.append("<br><br>")
+    html.append(f"<form action='/run'><input type='hidden' value='{chosen_league}' name='league' />")
+    html.append(f"<p style='text-align:center;'>Pokemon: <input type='text' name='pokemon' value='{chosen_pokemon}'/>")
+    html.append("<input type='submit' value='submit' /></p></form>")
+    
     # Data tables
-    results = get_counters_for_rating(None, chosen_league)
+    results, team_maker = get_counters_for_rating(None, chosen_league)
+    if chosen_pokemon:
+        team_results = team_maker.build_team_from_pokemon(chosen_pokemon)
+        html.append(create_table_from_results(team_results))
     html.append(create_table_from_results(results))
     html.append("</body></html>")
     return "".join(html)

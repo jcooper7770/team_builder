@@ -266,7 +266,7 @@ class MetaTeamDestroyer:
         
     def build_team_from_pokemon(self, pokemon):
         """
-        Builds a team with the given pokemon by choosing counbters to it's weaknesses
+        Builds a team with the given pokemon by choosing counters to it's weaknesses
         """
         print(f"Building a team around {pokemon}")
         lead_weaknesses = self.species_counters_dict[pokemon]
@@ -284,11 +284,13 @@ class MetaTeamDestroyer:
         back_pokemon2 = self.choose_weighted_pokemon(counter_counters)[0]
 
         pokemon_team = [pokemon, back_pokemon1, back_pokemon2]
-        
+
+        results = f"Team for {pokemon}"
         print(f"Full team:")
         for p in pokemon_team:
             print(f"    {p}: {self.species_moveset_dict[p]}")
-        
+            results = f"{results}\n{p}\t{self.species_moveset_dict[p]}"
+        return results
 
 
 def pretty_print_counters(counter_list, min_counters=None, use_percent=True):
@@ -345,13 +347,13 @@ def get_counters_for_rating(rating, league="ULP", days_back=None):
 
     team_maker.recommend_team()
 
-    #team_maker.uild_team_from_pokemon("hippowdon")
+    #team_maker.build_team_from_pokemon("hippowdon")
     #for _ in range(10):
         #team_maker.build_team_from_pokemon("seviper")
         #team_maker.build_team_from_pokemon("machamp_shadow")
 
-    return f"Leads\n{lead_counter_text}\nMeta leads\n{lead_text}\n\nSafe swaps\n{ss_counter_text}\nMeta Safe swaps\n{ss_text}\n\nBack\n{back_counter_text}\nMeta back\n{back_text}"
+    return f"Leads\n{lead_counter_text}\nMeta leads\n{lead_text}\n\nSafe swaps\n{ss_counter_text}\nMeta Safe swaps\n{ss_text}\n\nBack\n{back_counter_text}\nMeta back\n{back_text}", team_maker
 
 
 if __name__ == "__main__":
-    print(get_counters_for_rating(rating=None, league="Remix", days_back=1))
+    print(get_counters_for_rating(rating=None, league="Remix", days_back=1)[0])
