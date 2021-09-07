@@ -58,26 +58,30 @@ class TeamCreater:
         self.types = requests.get("https://pogoapi.net//api/v1/type_effectiveness.json").json()
         self.team_maker = team_maker
 
-    def create(self, lists_of_pokemon):
-        """ Creates a team with lists of pokemon """
-        leads = lists_of_pokemon[0]
-        for pokemon in leads:
-            for p in self.team_maker.game_master.get('pokemon'):
-                if p.get('speciesId') != pokemon[0]:
+    def get_weaknesses(self, pokemon):
+        """ Returns the type weaknesses of a given pokemon """
+        weaks = {}
+        for p in self.team_maker.game_master.get('pokemon'):
+            if p.get('speciesId') != pokemon:
+                continue
+            pokemon_types = p.get('types')
+
+            weaknesses = set()
+            weaknesses_dict = defaultdict(lambda: 1)
+            for t in pokemon_types:
+                if t == 'none':
                     continue
-                pokemon_types = p.get('types')
+                for chart_type, chart_effectiveness in self.types.items():
+                    type_effectiveness = chart_effectiveness[t.capitalize()]
+                    # Type effectiveness is a multiplier value
+                    weaknesses_dict[chart_type] *= type_effectiveness
 
-                weaknesses = set()
-                weaknesses_dict = defaultdict(int)
-                for t in pokemon_types:
-                    for chart_type, chart_effectiveness in self.types.items():
-                        weaknesses_dict[chart_type] += chart_effectiveness[t.capitalize()]
-                        if chart_effectiveness[t.capitalize()] > 1:
-                            weaknesses.add(chart_type.lower())
-                weaks = {x:y for x,y in weaknesses_dict.items() if y>2.3}
-                print(f"{pokemon[0]} is weak to {weaknesses}")
-                print(f"{pokemon[0]} weaknesses: {weaks}")
-
+                    if chart_effectiveness[t.capitalize()] > 1:
+                        weaknesses.add(chart_type.lower())
+            weaks = {x:y for x,y in weaknesses_dict.items() if y>1.0}
+            #print(f"{pokemon} is weak to {weaknesses}")
+            #print(f"{pokemon} weaknesses: {weaks}")
+        return weaks
 
 class MetaTeamDestroyer:
     """
@@ -270,14 +274,29 @@ class MetaTeamDestroyer:
         """
         print(f"Building a team around {pokemon}")
         lead_weaknesses = self.species_counters_dict[pokemon]
+
+        # Determine pokemon weakness typings
+        tc = TeamCreater(self)
+        lead_type_weaknesses = tc.get_weaknesses(pokemon)
+        print(f"Lead weaknesses: {lead_type_weaknesses}")
         #print(f"Weaknesses of {pokemon}: {lead_weaknesses}")
 
         print("Making counters to the lead weaknesses")
         lead_counters_list = [(c, 1) for c in lead_weaknesses]
         counter_counters = self.get_reccommended_counters(lead_counters_list)
+
+        # Remove pokemon with similar weaknesses
+        removed_counters = []
+        for counter in counter_counters:
+            pokemon_weaknesses = tc.get_weaknesses(counter[0])
+            if len(set(pokemon_weaknesses.keys()) - set(lead_type_weaknesses.keys())) != len(pokemon_weaknesses):
+                #print(f"Should skip {counter} with weaknesses: {pokemon_weaknesses}")
+                removed_counters.append(counter[0])
+        counter_counters = [counter for counter in counter_counters if counter[0] not in removed_counters]
+        
         #print(f"counter counters: {counter_counters}")
         #back_pokemons = self.choose_weighted_pokemon(counter_counters, n=2)
-        # need to pick one at a time so there are no repeats
+        # need to pick one at a time so there are no repeats      
         back_pokemon1 = self.choose_weighted_pokemon(counter_counters)[0]
         index = [p[0] for p in counter_counters].index(back_pokemon1)
         counter_counters.pop(index)
@@ -319,8 +338,8 @@ def get_counters_for_rating(rating, league="ULP", days_back=None):
 
     team_maker = MetaTeamDestroyer(rating=rating, league=league, days_back=days_back)
     #creator = TeamCreater(team_maker)
-    #creator.create([[('bulbasaur', 1)]])
-    #creator.create([[('swampert', 1)]])
+    #creator.get_weaknesses('bulbasaur')
+    #creator.get_weaknesses('swampert')
 
     print(f"---------- Counters at {rating or 'all'} rating---------")
     print("Leads:")
@@ -347,7 +366,7 @@ def get_counters_for_rating(rating, league="ULP", days_back=None):
 
     team_maker.recommend_team()
 
-    #team_maker.build_team_from_pokemon("hippowdon")
+    team_maker.build_team_from_pokemon("hippowdon")
     #for _ in range(10):
         #team_maker.build_team_from_pokemon("seviper")
         #team_maker.build_team_from_pokemon("machamp_shadow")

@@ -2,7 +2,7 @@
 Flask application
 
 Endpoints:
-  - /run[?league='GL|Remix|UL|ULP|ULRemix|ML|MLC']
+  - /run[?league=GL|Remix|UL|ULP|ULRemix|ML|MLC&pokemon=pokemon]
 """
 
 from flask import Flask, request, render_template
@@ -10,6 +10,8 @@ from flask import Flask, request, render_template
 from team_building import get_counters_for_rating, LEAGUE_RANKINGS
 
 app = Flask(__name__, static_url_path="/static")
+
+CACHE = {'results': {}, 'team_maker': None}
 
 
 class TableMaker:
@@ -99,9 +101,18 @@ def create_table_from_results(results):
 
 @app.route("/run")
 def run():
+    global CACHE
     chosen_league = request.args.get("league", "GL")
     chosen_pokemon = request.args.get('pokemon', '')
-    #html = ["<html><body style='background-color:lightblue;'>"]
+        
+    # Data tables from cache
+    if not CACHE.get('results', {}).get(chosen_league):
+        results, team_maker = get_counters_for_rating(None, chosen_league)
+    else:
+        results, team_maker = CACHE.get('results').get(chosen_league), CACHE.get('team_maker')
+    CACHE['results'][chosen_league] = results
+    CACHE["team_maker"] = team_maker
+
     html = []
 
     # Navigation table
@@ -120,15 +131,26 @@ def run():
     # Input pokemon for team
     html.append("<br><br>")
     html.append(f"<form action='/run'><input type='hidden' value='{chosen_league}' name='league' />")
-    html.append(f"<p style='text-align:center;'>Pokemon: <input type='text' name='pokemon' value='{chosen_pokemon}'/>")
+    #html.append(f"<p style='text-align:center;'>Pokemon: <input type='text' name='pokemon' value='{chosen_pokemon}'/>")
+    html.append(f"<p style='text-align:center;'>Create team from Pokemon: <select id='mySelect' name='pokemon'>")
+    for species in sorted(team_maker.all_pokemon, key=lambda x: x.get('speciesId')):
+        species_name = species.get('speciesId')
+        if species_name == chosen_pokemon:
+            html.append(f"<option value='{species_name}' selected>{species_name}</option>")
+        else:
+            html.append(f"<option value='{species_name}'>{species_name}</option>")
+    html.append("</select>")
     html.append("<input type='submit' value='submit' /></p></form>")
-    
-    # Data tables
-    results, team_maker = get_counters_for_rating(None, chosen_league)
+
     if chosen_pokemon:
-        team_results = team_maker.build_team_from_pokemon(chosen_pokemon)
+        try:
+            team_results = team_maker.build_team_from_pokemon(chosen_pokemon)
+        except:
+            team_results = f"Could not create team for {chosen_pokemon} in {chosen_league}"
         html.append(create_table_from_results(team_results))
+
     html.append(create_table_from_results(results))
+
     #html.append("</body></html>")
     #return "".join(html)
     return render_template("index.html", body="".join(html))
