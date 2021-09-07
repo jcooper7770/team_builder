@@ -177,7 +177,7 @@ def run():
     options_table.add_cell("<input type='submit' value='submit' /></p></form>", colspan=2, align="right")
     options_table.end_row()
     options_table.end_table()
-    html.extend(["<form action='/'>", options_table.render(), "</form>"])
+    html.extend(["<form action='/run/'>", options_table.render(), "</form>"])
 
     if chosen_pokemon:
         try:
