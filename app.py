@@ -11,7 +11,7 @@ from team_building import get_counters_for_rating, LEAGUE_RANKINGS, NoPokemonFou
 
 app = Flask(__name__, static_url_path="/static")
 
-CACHE = {'results': {}, 'team_maker': None, 'num_days': 1}
+CACHE = {'results': {}, 'team_maker': None, 'num_days': 1, 'rating': None}
 
 
 class TableMaker:
@@ -99,27 +99,36 @@ def create_table_from_results(results):
     return table.render()
 
 
+def get_new_data(league, num_days, rating):
+    diff_league = CACHE.get("results", {}).get(league) is None
+    diff_days = CACHE.get("num_days") != num_days
+    diff_rating = CACHE.get("rating") != rating
+    return diff_league or diff_days or diff_rating
+
+
 @app.route("/run")
 def run():
     global CACHE
     chosen_league = request.args.get("league", "GL")
     chosen_pokemon = request.args.get('pokemon', '')
     num_days = int(request.args.get('num_days', '1'))
+    rating = eval(request.args.get('rating', "None"))
     html = []
 
     # Data tables from cache
-    if not CACHE.get('results', {}).get(chosen_league) or CACHE.get('num_days') != num_days:
+    if get_new_data(chosen_league, num_days, rating):
         try:
-            results, team_maker = get_counters_for_rating(None, chosen_league, days_back=num_days)
+            results, team_maker = get_counters_for_rating(rating, chosen_league, days_back=num_days)
         except NoPokemonFound as exc:
             error = f"ERROR: Could not get data because: {str(exc)}. Using all data instead"
             html.append(f"<p  style='background-color:yellow;text-align:center'><b>{error}</b></p>")
             results, team_maker = get_counters_for_rating(None, chosen_league, days_back=None)
     else:
-        results, team_maker = CACHE.get('results').get(chosen_league), CACHE.get('team_maker')
+        results, team_maker, num_days, rating = CACHE.get('results').get(chosen_league), CACHE.get('team_maker'), CACHE.get("num_days"), CACHE.get("rating")
     CACHE['results'][chosen_league] = results
     CACHE['team_maker'] = team_maker
     CACHE['num_days'] = num_days
+    CACHE['rating'] = rating
 
     # Navigation table
     leagues_table = TableMaker(border=1, align="center", bgcolor="#FFFFFF")
@@ -135,18 +144,35 @@ def run():
     html.append(leagues_table.render())
 
     # Options: pokemon team, # days of data
-    html.append("<br><br><h2  style='text-align:center;'>Options</h2>")
-    html.append(f"<form action='/run'><input type='hidden' value='{chosen_league}' name='league' />")
-    html.append(f"<p style='text-align:center;'>Create team from Pokemon: <select id='mySelect' name='pokemon'>")
+    options_table = TableMaker(border=1, align="center")
+    options_table.new_header("Options", colspan=2)
+    options_table.new_row()
+    options_table.add_cell("Create team from pokemon:")
+    pokemon_form = []
+    pokemon_form.append(f"<input type='hidden' value='{chosen_league}' name='league' />")
+    pokemon_form.append(f"<select id='mySelect' name='pokemon'>")
     for species in sorted(team_maker.all_pokemon, key=lambda x: x.get('speciesId')):
         species_name = species.get('speciesId')
         if species_name == chosen_pokemon:
-            html.append(f"<option value='{species_name}' selected>{species_name}</option>")
+            pokemon_form.append(f"<option value='{species_name}' selected>{species_name}</option>")
         else:
-            html.append(f"<option value='{species_name}'>{species_name}</option>")
-    html.append("</select>")
-    html.append(f"<br>Number of days of data: <input type='text' value={num_days} name=num_days />")
-    html.append("<br><input type='submit' value='submit' /></p></form>")
+            pokemon_form.append(f"<option value='{species_name}'>{species_name}</option>")
+    pokemon_form.append("</select>")
+    options_table.add_cell("".join(pokemon_form))
+    options_table.end_row()
+    options_table.new_row()
+    options_table.add_cell("Number of days of data:")
+    options_table.add_cell(f"<input type='text' value={num_days} name=num_days />")
+    options_table.end_row()
+    options_table.new_row()
+    options_table.add_cell("Rating:")
+    options_table.add_cell(f"<input type='text' value={rating} name=rating />")
+    options_table.end_row()
+    options_table.new_row()
+    options_table.add_cell("<input type='submit' value='submit' /></p></form>", colspan=2, align="right")
+    options_table.end_row()
+    options_table.end_table()
+    html.extend(["<form action='/run'>", options_table.render(), "</form>"])
 
     if chosen_pokemon:
         try:

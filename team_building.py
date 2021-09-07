@@ -18,6 +18,11 @@
   - [DONE] weighted output based on date reported
       - choose # days of reportings
       - choose last X reportings
+  - Pick SS or closer instead of lead
+  - Google app engine / google cloud run for free hosting
+  - Add to html: please input more data to gobattlelog
+      - all this possible to people entering data./ Aaron is grateful to them
+  - check out amgesus.tar.gz in our #computer-science channel. It shows how to run all of pvpoke'sscripts from the comand line.
 """
 
 import random
@@ -104,6 +109,9 @@ class MetaTeamDestroyer:
         # Initialize all of the data
         rankings_url = LEAGUE_RANKINGS.get(league)
         latest_url = LEAGUE_DATA.get(league)
+        # Get the latest-large data
+        latest_url = latest_url.replace('latest', 'latest-large')
+
         self.all_pokemon = requests.get(rankings_url).json()
         self.game_master = requests.get("https://vps.gobattlelog.com/data/gamemaster.json?v=1.25.10").json()
         self.latest_info = requests.get(latest_url).json().get("records")
@@ -116,20 +124,28 @@ class MetaTeamDestroyer:
             else:
                 self.latest_info = sorted_latest_info
 
-        # Remove latest by date
-        if days_back:
-            print(f"Getting last {days_back} days of data")
-            self.latest_info = list(filter(
-                lambda record: datetime.fromtimestamp(record.get('time')) > datetime.now() - timedelta(days=days_back),
-                self.latest_info
-            ))
-        if len(self.latest_info) == 0:
-            raise NoPokemonFound(f"Did not find {league} data last {days_back} days")
-                    
-
         # Round the rating if one is provided
         if rating:
             rating = int(round(rating/1000., 1)*1000)
+
+
+        # Filter out values based on date and rating
+        temp_latest_info = []
+        if days_back or rating:
+            for record in self.latest_info:
+                if days_back:
+                    if datetime.fromtimestamp(record.get('time')) < datetime.now() - timedelta(days=days_back):
+                        continue
+                if rating:
+                    if record.get('rating') != rating:
+                        continue
+                temp_latest_info.append(record)
+            self.latest_info = temp_latest_info
+
+        if len(self.latest_info) == 0:
+            raise NoPokemonFound(f"Did not find {league} data last {days_back} days at {rating or 'all'} rating")
+                    
+
 
         # Create common leads and backlines lists
         leads = defaultdict(int)
