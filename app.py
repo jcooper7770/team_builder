@@ -5,7 +5,7 @@ Endpoints:
   - /run[?league='GL|Remix|UL|ULP|ULRemix|ML|MLC']
 """
 
-from flask import Flask, request, url_for
+from flask import Flask, request, render_template
 
 from team_building import get_counters_for_rating, LEAGUE_RANKINGS
 
@@ -101,11 +101,8 @@ def create_table_from_results(results):
 def run():
     chosen_league = request.args.get("league", "GL")
     chosen_pokemon = request.args.get('pokemon', '')
-    html = ["<html><body style='background-color:lightblue;'>"]
-
-    # Header
-    html.append('<h1 style="text-align:center;">Anti-Meta Team Generator</h1>')
-    html.append('<p style="text-align:center;"><img src="/static/flippinCoopLogo.png" width=500 height=500></p>')
+    #html = ["<html><body style='background-color:lightblue;'>"]
+    html = []
 
     # Navigation table
     leagues_table = TableMaker(border=1, align="center", bgcolor="#FFFFFF")
@@ -132,8 +129,9 @@ def run():
         team_results = team_maker.build_team_from_pokemon(chosen_pokemon)
         html.append(create_table_from_results(team_results))
     html.append(create_table_from_results(results))
-    html.append("</body></html>")
-    return "".join(html)
+    #html.append("</body></html>")
+    #return "".join(html)
+    return render_template("index.html", body="".join(html))
 
     
 if __name__ == "__main__":
