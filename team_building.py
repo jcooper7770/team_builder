@@ -53,6 +53,9 @@ LEAGUE_DATA = {
     "ULRemix": "https://vps.gobattlelog.com/records/ultra-remix/latest.json?ts=451709.1",
 }
 
+class NoPokemonFound(Exception):
+    pass
+
 class TeamCreater:
     def __init__(self, team_maker):
         self.types = requests.get("https://pogoapi.net//api/v1/type_effectiveness.json").json()
@@ -116,10 +119,12 @@ class MetaTeamDestroyer:
         # Remove latest by date
         if days_back:
             print(f"Getting last {days_back} days of data")
-            self.latest_info = filter(
+            self.latest_info = list(filter(
                 lambda record: datetime.fromtimestamp(record.get('time')) > datetime.now() - timedelta(days=days_back),
                 self.latest_info
-            )
+            ))
+        if len(self.latest_info) == 0:
+            raise NoPokemonFound(f"Did not find {league} data last {days_back} days")
                     
 
         # Round the rating if one is provided
@@ -366,7 +371,7 @@ def get_counters_for_rating(rating, league="ULP", days_back=None):
 
     team_maker.recommend_team()
 
-    team_maker.build_team_from_pokemon("hippowdon")
+    team_maker.build_team_from_pokemon("zapdos_shadow")
     #for _ in range(10):
         #team_maker.build_team_from_pokemon("seviper")
         #team_maker.build_team_from_pokemon("machamp_shadow")
@@ -375,4 +380,4 @@ def get_counters_for_rating(rating, league="ULP", days_back=None):
 
 
 if __name__ == "__main__":
-    print(get_counters_for_rating(rating=None, league="Remix", days_back=1)[0])
+    print(get_counters_for_rating(rating=None, league="GL", days_back=1)[0])

@@ -7,18 +7,18 @@ Endpoints:
 
 from flask import Flask, request, render_template
 
-from team_building import get_counters_for_rating, LEAGUE_RANKINGS
+from team_building import get_counters_for_rating, LEAGUE_RANKINGS, NoPokemonFound
 
 app = Flask(__name__, static_url_path="/static")
 
-CACHE = {'results': {}, 'team_maker': None}
+CACHE = {'results': {}, 'team_maker': None, 'num_days': 1}
 
 
 class TableMaker:
     """
     Makes a table from results
     """
-    def __init__(self, border, align="center", bgcolor="#FFFFE0"):
+    def __init__(self, border, align="center", bgcolor="#FFFFFF"):
         self.border = border
         self.align = align
         self.bgcolor = bgcolor
@@ -73,7 +73,7 @@ def create_table_from_results(results):
     :return: the table for the results
     :rtype: str
     """
-    table = TableMaker(border=1, align="center", bgcolor="#FFFFE0")
+    table = TableMaker(border=1, align="center", bgcolor="#FFFFFF")
 
     for line in results.split("\n"):
         if not line:
@@ -104,16 +104,22 @@ def run():
     global CACHE
     chosen_league = request.args.get("league", "GL")
     chosen_pokemon = request.args.get('pokemon', '')
-        
+    num_days = int(request.args.get('num_days', '1'))
+    html = []
+
     # Data tables from cache
-    if not CACHE.get('results', {}).get(chosen_league):
-        results, team_maker = get_counters_for_rating(None, chosen_league)
+    if not CACHE.get('results', {}).get(chosen_league) or CACHE.get('num_days') != num_days:
+        try:
+            results, team_maker = get_counters_for_rating(None, chosen_league, days_back=num_days)
+        except NoPokemonFound as exc:
+            error = f"ERROR: Could not get data because: {str(exc)}. Using all data instead"
+            html.append(f"<p  style='background-color:yellow;text-align:center'><b>{error}</b></p>")
+            results, team_maker = get_counters_for_rating(None, chosen_league, days_back=None)
     else:
         results, team_maker = CACHE.get('results').get(chosen_league), CACHE.get('team_maker')
     CACHE['results'][chosen_league] = results
-    CACHE["team_maker"] = team_maker
-
-    html = []
+    CACHE['team_maker'] = team_maker
+    CACHE['num_days'] = num_days
 
     # Navigation table
     leagues_table = TableMaker(border=1, align="center", bgcolor="#FFFFFF")
@@ -123,15 +129,14 @@ def run():
         if league == chosen_league:
             leagues_table.add_cell(league)
         else:
-            leagues_table.add_cell(f'<a href="/run?league={league}&pokemon={chosen_pokemon}">{league}</a>')
+            leagues_table.add_cell(f'<a href="/run?league={league}&pokemon={chosen_pokemon}&num_days={num_days}">{league}</a>')
     leagues_table.end_row()
     leagues_table.end_table()
     html.append(leagues_table.render())
 
-    # Input pokemon for team
-    html.append("<br><br>")
+    # Options: pokemon team, # days of data
+    html.append("<br><br><h2  style='text-align:center;'>Options</h2>")
     html.append(f"<form action='/run'><input type='hidden' value='{chosen_league}' name='league' />")
-    #html.append(f"<p style='text-align:center;'>Pokemon: <input type='text' name='pokemon' value='{chosen_pokemon}'/>")
     html.append(f"<p style='text-align:center;'>Create team from Pokemon: <select id='mySelect' name='pokemon'>")
     for species in sorted(team_maker.all_pokemon, key=lambda x: x.get('speciesId')):
         species_name = species.get('speciesId')
@@ -140,7 +145,8 @@ def run():
         else:
             html.append(f"<option value='{species_name}'>{species_name}</option>")
     html.append("</select>")
-    html.append("<input type='submit' value='submit' /></p></form>")
+    html.append(f"<br>Number of days of data: <input type='text' value={num_days} name=num_days />")
+    html.append("<br><input type='submit' value='submit' /></p></form>")
 
     if chosen_pokemon:
         try:
