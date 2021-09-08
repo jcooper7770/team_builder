@@ -35,6 +35,7 @@ from collections import defaultdict
 # The number of pokemon to consider
 TOP_TEAM_NUM = None
 MIN_COUNTERS = 25
+REQUEST_TIMEOUT = 60
 
 LEAGUE_RANKINGS = {
     "ULP": "https://vps.gobattlelog.com/data/overall/rankings-2500-premier.json?v=1.25.10",
@@ -113,14 +114,14 @@ class MetaTeamDestroyer:
         # Get the latest-large data
         latest_url = latest_url.replace('latest', 'latest-large')
 
-        self.all_pokemon = requests.get(rankings_url).json()
+        self.all_pokemon = requests.get(rankings_url, timeout=REQUEST_TIMEOUT).json()
         try:
-            self.game_master = requests.get("https://vps.gobattlelog.com/data/gamemaster.json?v=1.25.10").json()
+            self.game_master = requests.get("https://vps.gobattlelog.com/data/gamemaster.json?v=1.25.10", timeout=REQUEST_TIMEOUT).json()
             json.dump(self.game_master, open("game_master.json"))
         except Exception as exc:
             print(f"Failed to load game master data because: {exc}")
             self.game_master = json.load(open("game_master.json"))
-        self.latest_info = requests.get(latest_url).json().get("records")
+        self.latest_info = requests.get(latest_url, timeout=REQUEST_TIMEOUT).json().get("records")
 
         # Sort reports by time and get last X teams
         sorted_latest_info = sorted(self.latest_info, key=lambda x: x.get('time'), reverse=True)
