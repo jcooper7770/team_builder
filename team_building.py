@@ -114,14 +114,26 @@ class MetaTeamDestroyer:
         # Get the latest-large data
         latest_url = latest_url.replace('latest', 'latest-large')
 
-        self.all_pokemon = requests.get(rankings_url, timeout=REQUEST_TIMEOUT).json()
+        try:
+            self.all_pokemon = requests.get(rankings_url, timeout=REQUEST_TIMEOUT).json()
+            json.dump(self.all_pokemon, open("data/pokemon_rankings.json", 'w'))
+        except Exception as exc:
+            print(f"Failed to load ranking data because: {exc}")
+            self.all_pokemon = json.load(open("data/pokemon_rankings.json"))
+
         try:
             self.game_master = requests.get("https://vps.gobattlelog.com/data/gamemaster.json?v=1.25.10", timeout=REQUEST_TIMEOUT).json()
             json.dump(self.game_master, open("game_master.json"))
         except Exception as exc:
             print(f"Failed to load game master data because: {exc}")
             self.game_master = json.load(open("game_master.json"))
-        self.latest_info = requests.get(latest_url, timeout=REQUEST_TIMEOUT).json().get("records")
+
+        try:
+            self.latest_info = requests.get(latest_url, timeout=REQUEST_TIMEOUT).json().get("records")
+            json.dump(self.latest_info, open(f"data/latest_{league}.json", 'w'))
+        except Exception as exc:
+            print(f"Failed to load latest data because: {exc}")
+            self.all_pokemon = json.load(open(f"data/latest_{league}.json"))
 
         # Sort reports by time and get last X teams
         sorted_latest_info = sorted(self.latest_info, key=lambda x: x.get('time'), reverse=True)
