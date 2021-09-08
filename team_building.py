@@ -121,7 +121,7 @@ class MetaTeamDestroyer:
             print(f"Failed to load game master data because: {exc}")
             self.game_master = json.load(open("game_master.json"))
         self.latest_info = requests.get(latest_url).json().get("records")
-z
+
         # Sort reports by time and get last X teams
         sorted_latest_info = sorted(self.latest_info, key=lambda x: x.get('time'), reverse=True)
         if num_reports:
