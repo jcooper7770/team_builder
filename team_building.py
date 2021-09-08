@@ -35,7 +35,7 @@ from collections import defaultdict
 # The number of pokemon to consider
 TOP_TEAM_NUM = None
 MIN_COUNTERS = 25
-REQUEST_TIMEOUT = 60
+REQUEST_TIMEOUT = 180
 
 LEAGUE_RANKINGS = {
     "ULP": "https://vps.gobattlelog.com/data/overall/rankings-2500-premier.json?v=1.25.10",
