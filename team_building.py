@@ -25,6 +25,7 @@
   - check out amgesus.tar.gz in our #computer-science channel. It shows how to run all of pvpoke'sscripts from the comand line.
 """
 
+import json
 import random
 import requests
 from datetime import datetime, timedelta
@@ -113,9 +114,14 @@ class MetaTeamDestroyer:
         latest_url = latest_url.replace('latest', 'latest-large')
 
         self.all_pokemon = requests.get(rankings_url).json()
-        self.game_master = requests.get("https://vps.gobattlelog.com/data/gamemaster.json?v=1.25.10").json()
+        try:
+            self.game_master = requests.get("https://vps.gobattlelog.com/data/gamemaster.json?v=1.25.10").json()
+            json.dump(self.game_master, open("game_master.json"))
+        except Exception as exc:
+            print(f"Failed to load game master data because: {exc}")
+            self.game_master = json.load(open("game_master.json"))
         self.latest_info = requests.get(latest_url).json().get("records")
-
+z
         # Sort reports by time and get last X teams
         sorted_latest_info = sorted(self.latest_info, key=lambda x: x.get('time'), reverse=True)
         if num_reports:
