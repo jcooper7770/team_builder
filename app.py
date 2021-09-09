@@ -106,6 +106,11 @@ def get_new_data(league, num_days, rating):
     return diff_league or diff_days or diff_rating
 
 
+@app.route("/about")
+def about():
+    return render_template("about.html")
+
+
 @app.route("/")
 def run():
     global CACHE
@@ -172,7 +177,7 @@ def run():
     options_table.add_cell("<input type='submit' value='submit' /></p></form>", colspan=2, align="right")
     options_table.end_row()
     options_table.end_table()
-    html.extend(["<form action='/run/'>", options_table.render(), "</form>"])
+    html.extend(["<form action='/'>", options_table.render(), "</form>"])
 
     if chosen_pokemon:
         try:

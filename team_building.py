@@ -14,7 +14,7 @@
  TODO:
   - create my own counters lists instead of the 5 from pvpoke
   - [DONE] create smart team comp (with ABB option)
-  - host online somewhere
+  - [DONE?] host online somewhere
   - [DONE] weighted output based on date reported
       - choose # days of reportings
       - choose last X reportings
