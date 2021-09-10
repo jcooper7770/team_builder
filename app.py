@@ -2,14 +2,14 @@
 Flask application
 
 Endpoints:
-  - /run[?league=GL|Remix|UL|ULP|ULRemix|ML|MLC&pokemon=pokemon]
+  - /run/[?league=GL|Remix|UL|ULP|ULRemix|ML|MLC&pokemon=pokemon]
 """
 
 from flask import Flask, request, render_template
 
 from team_building import get_counters_for_rating, LEAGUE_RANKINGS, NoPokemonFound
 
-app = Flask(__name__, static_url_path="/static")
+app = Flask(__name__, static_url_path="", static_folder="static")
 
 CACHE = {'results': {}, 'team_maker': None, 'num_days': 1, 'rating': None}
 
@@ -106,7 +106,12 @@ def get_new_data(league, num_days, rating):
     return diff_league or diff_days or diff_rating
 
 
-@app.route("/run")
+@app.route("/about")
+def about():
+    return render_template("about.html")
+
+
+@app.route("/")
 def run():
     global CACHE
     chosen_league = request.args.get("league", "GL")
@@ -138,7 +143,7 @@ def run():
         if league == chosen_league:
             leagues_table.add_cell(league)
         else:
-            leagues_table.add_cell(f'<a href="/run?league={league}&pokemon={chosen_pokemon}&num_days={num_days}">{league}</a>')
+            leagues_table.add_cell(f'<a href="?league={league}&pokemon={chosen_pokemon}&num_days={num_days}">{league}</a>')
     leagues_table.end_row()
     leagues_table.end_table()
     html.append(leagues_table.render())
@@ -172,7 +177,7 @@ def run():
     options_table.add_cell("<input type='submit' value='submit' /></p></form>", colspan=2, align="right")
     options_table.end_row()
     options_table.end_table()
-    html.extend(["<form action='/run'>", options_table.render(), "</form>"])
+    html.extend(["<form action='/'>", options_table.render(), "</form>"])
 
     if chosen_pokemon:
         try:
