@@ -23,6 +23,8 @@
   - Add to html: please input more data to gobattlelog
       - all this possible to people entering data./ Aaron is grateful to them
   - check out amgesus.tar.gz in our #computer-science channel. It shows how to run all of pvpoke'sscripts from the comand line.
+  - [DONE] Click on a pokmeon and simulate a battle in pvpoke
+     - https://pvpoke.com/battle/1500/{pokemon1}/{pokemon2}/{#shields1}{#shields2}
 """
 
 import json
