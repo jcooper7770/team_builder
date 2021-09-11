@@ -130,7 +130,6 @@ class MetaTeamDestroyer:
             print(f"Failed to load game master data because: {exc}")
             self.game_master = json.load(open("game_master.json"))
 
-
         try:
             self.latest_info = requests.get(latest_url, timeout=REQUEST_TIMEOUT).json().get("records")
             json.dump(self.latest_info, open(f"data/latest_{league}.json", 'w'))
