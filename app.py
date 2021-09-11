@@ -12,7 +12,16 @@ from team_building import get_counters_for_rating, LEAGUE_RANKINGS, NoPokemonFou
 app = Flask(__name__, static_url_path="", static_folder="static")
 
 CACHE = {'results': {}, 'team_maker': None, 'num_days': 1, 'rating': None}
-
+LEAGUE_VALUE = {
+    'GL': '1500',
+    'Remix': '1500',
+    'UL': '2500',
+    'ULRemix': '2500',
+    'ULP': '2500',
+    'MLC': '10000-40',
+    'ML': '10000',
+    'Element': '500'
+}
 
 class TableMaker:
     """
@@ -58,7 +67,7 @@ class TableMaker:
     def render(self):
         return "".join(self.table)
 
-def create_table_from_results(results):
+def create_table_from_results(results, pokemon=None):
     """
     Creates an html table from the results.
     Results are in the form:
@@ -69,6 +78,8 @@ def create_table_from_results(results):
 
     :param results: The results
     :type results: str
+    :param pokemon: The pokemon to simulatem battles for (Default: None)
+    :type pokemon: str
 
     :return: the table for the results
     :rtype: str
@@ -91,6 +102,11 @@ def create_table_from_results(results):
         else:
             for value in values:
                 if value:
+                    # Provide links to battles
+                    if pokemon and ':' in value:
+                        league_val = LEAGUE_VALUE.get(CACHE.get('league', ''), '1500')
+                        pvpoke_link = f"https://pvpoke.com/battle/{league_val}/{value.split(':')[0].strip()}/{pokemon}/11"
+                        value = f"<a href='{pvpoke_link}' style='color: #000000; text-decoration: none;'>{value}</a>"
                     table.add_cell(value)
 
         table.end_row()
@@ -134,6 +150,7 @@ def run():
     CACHE['team_maker'] = team_maker
     CACHE['num_days'] = num_days
     CACHE['rating'] = rating
+    CACHE['league'] = chosen_league
 
     # Navigation table
     leagues_table = TableMaker(border=1, align="center", bgcolor="#FFFFFF")
@@ -186,7 +203,7 @@ def run():
             team_results = f"Could not create team for {chosen_pokemon} in {chosen_league}"
         html.append(create_table_from_results(team_results))
 
-    html.append(create_table_from_results(results))
+    html.append(create_table_from_results(results, pokemon=chosen_pokemon))
 
     #html.append("</body></html>")
     #return "".join(html)
