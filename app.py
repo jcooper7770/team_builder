@@ -160,7 +160,7 @@ def run():
     CACHE['league'] = chosen_league
 
     # Navigation table
-    leagues_table = TableMaker(border=1, align="center", bgcolor="#FFFFFF")
+    leagues_table = TableMaker(border=1, align="center", bgcolor="#FFFFFF", width="30%")
     leagues_table.new_header(value="Different Leagues", colspan=len(LEAGUE_RANKINGS))
     leagues_table.new_row()
     for league in sorted(list(LEAGUE_RANKINGS.keys())):
@@ -173,7 +173,7 @@ def run():
     html.append(leagues_table.render())
 
     # Options: pokemon team, # days of data
-    options_table = TableMaker(border=1, align="center")
+    options_table = TableMaker(border=1, align="center", width="30%")
     options_table.new_header("Options", colspan=2)
     options_table.new_row()
     options_table.add_cell("Create team from pokemon:")
