@@ -2,40 +2,42 @@
 Flask application
 
 Endpoints:
-  - /run/[?league=GL|Remix|UL|ULP|ULRemix|ML|MLC&pokemon=pokemon]
+  - /[?league=GL|Remix|UL|ULP|ULRemix|ML|MLC&pokemon=pokemon]
 """
 
 from flask import Flask, request, render_template
 
-from team_building import get_counters_for_rating, LEAGUE_RANKINGS, NoPokemonFound
+from team_building import get_counters_for_rating, LEAGUE_RANKINGS, NoPokemonFound, LEAGUE_VALUE
 
 app = Flask(__name__, static_url_path="", static_folder="static")
 
-CACHE = {'results': {}, 'team_maker': None, 'num_days': 1, 'rating': None}
-LEAGUE_VALUE = {
-    'GL': '1500',
-    'Remix': '1500',
-    'UL': '2500',
-    'ULRemix': '2500',
-    'ULP': '2500',
-    'MLC': '10000-40',
-    'ML': '10000',
-    'Element': '500'
-}
+CACHE = {'results': {}, 'team_maker': {}, 'num_days': 1, 'rating': None}
+N_TEAMS = 3
+
 
 class TableMaker:
     """
     Makes a table from results
     """
-    def __init__(self, border, align="center", bgcolor="#FFFFFF"):
+    def __init__(self, border, align="center", bgcolor="#FFFFFF", width=None):
         self.border = border
         self.align = align
         self.bgcolor = bgcolor
         self.table = []
+        self.width = width
+        self.first_table = True
         self.new_table()
 
     def new_table(self):
-        self.table.append(f"<table border='{self.border}' align='{self.align}' style='background-color:{self.bgcolor};'>")
+        options = [
+            f"border='{self.border}'",
+            f"align='{self.align}'",
+            f"style='background-color:{self.bgcolor};'"
+        ]
+        if self.width:
+            options.append(f"width='{self.width}'")
+        options_str = " ".join(options)
+        self.table.append(f"<table {options_str}>")
 
     def end_table(self):
         self.table.append("</table>")
@@ -53,11 +55,13 @@ class TableMaker:
         self.table.append(f"<th colspan={colspan}>{value}</th>")
 
     def reset_table(self):
-        self.end_row()
-        self.end_table()
-        self.new_line()
-        self.new_table()
-        self.new_row()
+        if not self.first_table:
+            self.end_row()
+            self.end_table()
+            self.new_line()
+            self.new_table()
+            self.new_row()
+        self.first_table = False
 
     def add_cell(self, value, colspan=None, align=None):
         colspan_text = f" colspan={colspan}" if colspan else ""
@@ -67,7 +71,7 @@ class TableMaker:
     def render(self):
         return "".join(self.table)
 
-def create_table_from_results(results, pokemon=None):
+def create_table_from_results(results, pokemon=None, width=None):
     """
     Creates an html table from the results.
     Results are in the form:
@@ -84,7 +88,7 @@ def create_table_from_results(results, pokemon=None):
     :return: the table for the results
     :rtype: str
     """
-    table = TableMaker(border=1, align="center", bgcolor="#FFFFFF")
+    table = TableMaker(border=1, align="center", bgcolor="#FFFFFF", width=width)
 
     for line in results.split("\n"):
         if not line:
@@ -106,7 +110,7 @@ def create_table_from_results(results, pokemon=None):
                     if pokemon and ':' in value:
                         league_val = LEAGUE_VALUE.get(CACHE.get('league', ''), '1500')
                         pvpoke_link = f"https://pvpoke.com/battle/{league_val}/{value.split(':')[0].strip()}/{pokemon}/11"
-                        value = f"<a href='{pvpoke_link}' style='color: #000000; text-decoration: none;'>{value}</a>"
+                        value = f"<a href='{pvpoke_link}' style='color: #000000; text-decoration: none;' target='_blank'>{value}</a>"
                     table.add_cell(value)
 
         table.end_row()
@@ -130,12 +134,15 @@ def about():
 @app.route("/")
 def run():
     global CACHE
+    global N_TEAMS
     chosen_league = request.args.get("league", "GL")
     chosen_pokemon = request.args.get('pokemon', '')
     num_days = int(request.args.get('num_days', '1'))
     rating = eval(request.args.get('rating', "None"))
+    N_TEAMS = int(request.args.get('num_teams', N_TEAMS))
     html = []
 
+    html.append("<h1 align='center'><u>Options</u></h1>")
     # Data tables from cache
     if get_new_data(chosen_league, num_days, rating):
         try:
@@ -145,9 +152,9 @@ def run():
             html.append(f"<p  style='background-color:yellow;text-align:center'><b>{error}</b></p>")
             results, team_maker = get_counters_for_rating(None, chosen_league, days_back=None)
     else:
-        results, team_maker, num_days, rating = CACHE.get('results').get(chosen_league), CACHE.get('team_maker'), CACHE.get("num_days"), CACHE.get("rating")
+        results, team_maker, num_days, rating = CACHE.get('results').get(chosen_league), CACHE.get('team_maker').get(chosen_league), CACHE.get("num_days"), CACHE.get("rating")
     CACHE['results'][chosen_league] = results
-    CACHE['team_maker'] = team_maker
+    CACHE['team_maker'][chosen_league] = team_maker
     CACHE['num_days'] = num_days
     CACHE['rating'] = rating
     CACHE['league'] = chosen_league
@@ -173,6 +180,7 @@ def run():
     pokemon_form = []
     pokemon_form.append(f"<input type='hidden' value='{chosen_league}' name='league' />")
     pokemon_form.append(f"<select id='mySelect' name='pokemon'>")
+    pokemon_form.append("<option value=''>None</option>")
     for species in sorted(team_maker.all_pokemon, key=lambda x: x.get('speciesId')):
         species_name = species.get('speciesId')
         if species_name == chosen_pokemon:
@@ -191,6 +199,10 @@ def run():
     options_table.add_cell(f"<input type='text' value={rating} name=rating />")
     options_table.end_row()
     options_table.new_row()
+    options_table.add_cell("Number of recommended teams:")
+    options_table.add_cell(f"<input type='text' value={N_TEAMS} name=num_teams />")
+    options_table.end_row()
+    options_table.new_row()
     options_table.add_cell("<input type='submit' value='submit' /></p></form>", colspan=2, align="right")
     options_table.end_row()
     options_table.end_table()
@@ -198,12 +210,25 @@ def run():
 
     if chosen_pokemon:
         try:
-            team_results = team_maker.build_team_from_pokemon(chosen_pokemon)
+            all_team_results = []
+            for _ in range(N_TEAMS):
+                team_results = team_maker.build_team_from_pokemon(chosen_pokemon)
+                all_team_results.append(team_results)
+            team_results = "\n".join(all_team_results)
         except:
             team_results = f"Could not create team for {chosen_pokemon} in {chosen_league}"
-        html.append(create_table_from_results(team_results))
+    else:
+        html.append("<h1 align='center'><u>Recommended Teams</u></h1>")
+        team_results = ""
+        for _ in range(N_TEAMS):
+            team_results=f"{team_results}\n{team_maker.recommend_team()}"
+    html.append(create_table_from_results(team_results, width='50%'))
 
-    html.append(create_table_from_results(results, pokemon=chosen_pokemon))
+    html.append("<h1 align='center'><u>Meta Data</u></h1>")
+    html.append("<div align='center'><button onclick='hideData()'>Toggle data</button></div>")
+    html.append("<div id='data'>")
+    html.append(create_table_from_results(results, pokemon=chosen_pokemon, width='75%'))
+    html.append("</div>")
 
     #html.append("</body></html>")
     #return "".join(html)

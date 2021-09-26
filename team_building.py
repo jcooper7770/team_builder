@@ -37,6 +37,7 @@ from collections import defaultdict
 # The number of pokemon to consider
 TOP_TEAM_NUM = None
 MIN_COUNTERS = 25
+TOP_PERCENT = 1
 REQUEST_TIMEOUT = 180
 
 LEAGUE_RANKINGS = {
@@ -60,6 +61,16 @@ LEAGUE_DATA = {
     "Element": "https://vps.gobattlelog.com/records/element/latest.json?ts=451466.3",
     "Remix": "https://vps.gobattlelog.com/records/great-remix/latest.json?ts=451709.1",
     "ULRemix": "https://vps.gobattlelog.com/records/ultra-remix/latest.json?ts=451709.1",
+}
+LEAGUE_VALUE = {
+    'GL': '1500',
+    'Remix': '1500',
+    'UL': '2500',
+    'ULRemix': '2500',
+    'ULP': '2500',
+    'MLC': '10000-40',
+    'ML': '10000',
+    'Element': '500'
 }
 
 class NoPokemonFound(Exception):
@@ -115,6 +126,7 @@ class MetaTeamDestroyer:
         latest_url = LEAGUE_DATA.get(league)
         # Get the latest-large data
         latest_url = latest_url.replace('latest', 'latest-large')
+        self.league = league
 
         try:
             self.all_pokemon = requests.get(rankings_url, timeout=REQUEST_TIMEOUT).json()
@@ -185,6 +197,13 @@ class MetaTeamDestroyer:
         self.safeswaps_list = sorted(list(safeswaps.items()), key=lambda x: x[1], reverse=True)
         self.backs_list = sorted(list(backs.items()), key=lambda x: x[1], reverse=True)
 
+        # Remove pokemon not in the top TOP_PERCENT from the leads
+        if TOP_PERCENT:
+            self.leads_list = self.filter_top_pokemon(self.leads_list)
+            self.safeswaps_list = self.filter_top_pokemon(self.safeswaps_list)
+            self.backs_list = self.filter_top_pokemon(self.backs_list)
+        
+
         # Create a mapping of the counters
         self.species_counters_dict = defaultdict(set)
         self.species_moveset_dict = defaultdict(list)
@@ -200,6 +219,29 @@ class MetaTeamDestroyer:
         
             # Add the movesets
             self.species_moveset_dict[species.get('speciesId')] = species.get('moveset')
+
+    @staticmethod
+    def filter_top_pokemon(pokemon_list):
+        """
+        Filter out the top TOP_PERCENT of pokemon from the list
+        """
+        total_num = sum([pokemon[1] for pokemon in pokemon_list])
+        min_allowed = TOP_PERCENT/100.0 * total_num
+        return [pokemon for pokemon in pokemon_list if pokemon[1] > min_allowed]
+        
+    def get_default_ivs(self, pokemon, league):
+        """
+        Get default ivs from the game master for the given pokmeon
+        """
+        league_cp = LEAGUE_VALUE.get(league, '1500').split('-')[0]
+        if league_cp == '10000':
+            return '15-15-15'
+        for pokemon_info in self.game_master.get('pokemon'):
+            if pokemon_info.get('speciesId') == pokemon:
+                print(pokemon_info.get('defaultIVs'))
+                print(league_cp)
+                print(pokemon_info.get('defaultIVs').get(f'cp{league_cp}', 'cp1500'))
+                return '-'.join([str(n) for n in pokemon_info.get('defaultIVs').get(f'cp{league_cp}', 'cp1500')[1:]])
 
     def get_counters(self, pokemon_name):
         """
@@ -308,7 +350,7 @@ class MetaTeamDestroyer:
         print("Choosing a random lead from the leads list")
         lead_counters = self.get_reccommended_counters(self.leads_list)
         random_counter = self.choose_weighted_pokemon(lead_counters)[0]
-        self.build_team_from_pokemon(random_counter)
+        return self.build_team_from_pokemon(random_counter)
         
     def build_team_from_pokemon(self, pokemon):
         """
@@ -347,10 +389,17 @@ class MetaTeamDestroyer:
         pokemon_team = [pokemon, back_pokemon1, back_pokemon2]
 
         results = f"Team for {pokemon}"
+        #pvpoke_link = f"https://pvpoke.com/team-builder/all/{LEAGUE_VALUE[self.league]}/{pokemon_team[0]}-m-{team_ivs[0]}%2C{pokemon_team[1]}-m-{team_ivs[1]}%2C{pokemon_team[2]}-m-{team_ivs[2]}"
+        pvpoke_link = f"https://pvpoke.com/team-builder/all/{LEAGUE_VALUE[self.league]}/{pokemon_team[0]}-m-0-1-2%2C{pokemon_team[1]}-m-0-1-2%2C{pokemon_team[2]}-m-0-1-2"
+        results = f"{results} (<a href='{pvpoke_link}' target='_blank'>See team in pvpoke</a>)"
+        team_ivs = []
         print(f"Full team:")
         for p in pokemon_team:
             print(f"    {p}: {self.species_moveset_dict[p]}")
             results = f"{results}\n{p}\t{self.species_moveset_dict[p]}"
+            team_ivs.append(self.get_default_ivs(p, self.league))
+
+        
         return results
 
 
@@ -408,7 +457,7 @@ def get_counters_for_rating(rating, league="ULP", days_back=None):
 
     team_maker.recommend_team()
 
-    team_maker.build_team_from_pokemon("zapdos_shadow")
+    print(team_maker.build_team_from_pokemon("zapdos_shadow"))
     #for _ in range(10):
         #team_maker.build_team_from_pokemon("seviper")
         #team_maker.build_team_from_pokemon("machamp_shadow")
@@ -417,4 +466,4 @@ def get_counters_for_rating(rating, league="ULP", days_back=None):
 
 
 if __name__ == "__main__":
-    print(get_counters_for_rating(rating=None, league="GL", days_back=1)[0])
+    print(get_counters_for_rating(rating=None, league="UL", days_back=1)[0])
