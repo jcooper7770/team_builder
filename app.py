@@ -218,10 +218,10 @@ def run():
         except:
             team_results = f"Could not create team for {chosen_pokemon} in {chosen_league}"
     else:
-        html.append("<h1 align='center'><u>Recommended Teams</u></h1>")
         team_results = ""
         for _ in range(N_TEAMS):
             team_results=f"{team_results}\n{team_maker.recommend_team()}"
+    html.append("<h1 align='center'><u>Recommended Teams</u></h1>")
     html.append(create_table_from_results(team_results, width='50%'))
 
     html.append("<h1 align='center'><u>Meta Data</u></h1>")
