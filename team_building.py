@@ -48,7 +48,8 @@ LEAGUE_RANKINGS = {
     "Element": "https://vps.gobattlelog.com/data/overall/rankings-500-element.json?v=1.25.31",
     "Remix": "https://vps.gobattlelog.com/data/overall/rankings-1500-remix.json?v=1.25.35",
     "ULRemix": "https://vps.gobattlelog.com/data/overall/rankings-2500-remix.json?v=1.25.35",
-    "GL": "https://vps.gobattlelog.com/data/overall/rankings-1500.json?v=1.25.35"
+    "GL": "https://vps.gobattlelog.com/data/overall/rankings-1500.json?v=1.25.35",
+    "Jungle": "https://vps.gobattlelog.com/data/overall/rankings-500-littlejungle.json?v=1.28.0"
 }
 LEAGUE_DATA = {
     "ULP": "https://vps.gobattlelog.com/records/ultra-premier/latest.json?ts=449983.3",
@@ -61,6 +62,7 @@ LEAGUE_DATA = {
     "Element": "https://vps.gobattlelog.com/records/element/latest.json?ts=451466.3",
     "Remix": "https://vps.gobattlelog.com/records/great-remix/latest.json?ts=451709.1",
     "ULRemix": "https://vps.gobattlelog.com/records/ultra-remix/latest.json?ts=451709.1",
+    "Jungle": "https://vps.gobattlelog.com/records/littlejungle/latest.json?ts=451709.1"
 }
 LEAGUE_VALUE = {
     'GL': '1500',
@@ -70,7 +72,8 @@ LEAGUE_VALUE = {
     'ULP': '2500',
     'MLC': '10000-40',
     'ML': '10000',
-    'Element': '500'
+    'Element': '500',
+    'Jungle': '500'
 }
 
 class NoPokemonFound(Exception):
@@ -457,7 +460,7 @@ def get_counters_for_rating(rating, league="ULP", days_back=None):
 
     team_maker.recommend_team()
 
-    print(team_maker.build_team_from_pokemon("zapdos_shadow"))
+    #print(team_maker.build_team_from_pokemon("zapdos_shadow"))
     #for _ in range(10):
         #team_maker.build_team_from_pokemon("seviper")
         #team_maker.build_team_from_pokemon("machamp_shadow")
@@ -466,4 +469,4 @@ def get_counters_for_rating(rating, league="ULP", days_back=None):
 
 
 if __name__ == "__main__":
-    print(get_counters_for_rating(rating=None, league="UL", days_back=1)[0])
+    print(get_counters_for_rating(rating=None, league="Jungle", days_back=1)[0])
