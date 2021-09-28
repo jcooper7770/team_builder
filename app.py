@@ -5,6 +5,8 @@ Endpoints:
   - /[?league=GL|Remix|UL|ULP|ULRemix|ML|MLC&pokemon=pokemon]
 """
 
+import traceback
+
 from flask import Flask, request, render_template
 
 from team_building import get_counters_for_rating, LEAGUE_RANKINGS, NoPokemonFound, LEAGUE_VALUE
@@ -119,6 +121,28 @@ def create_table_from_results(results, pokemon=None, width=None):
     return table.render()
 
 
+def make_recommended_teams(team_maker, chosen_pokemon, chosen_league):
+    """
+    Makes N_TEAMS unique teams
+    """
+    try:
+        all_team_results = []
+        chosen_teams = []
+        tries = 0
+        while len(chosen_teams) < N_TEAMS and tries < 2*N_TEAMS:
+            tries += 1
+            team_results, pokemon_team = team_maker.recommend_team(chosen_pokemon)
+            if pokemon_team in chosen_teams:
+                continue
+            chosen_teams.append(pokemon_team)
+            all_team_results.append(team_results)
+        team_results = "\n".join(all_team_results)
+    except Exception as exc:
+        tb = traceback.format_exc()
+        team_results = f"Could not create team for {chosen_pokemon} in {chosen_league} because: {exc}.\n{tb}"
+    return team_results
+
+
 def get_new_data(league, num_days, rating):
     diff_league = CACHE.get("results", {}).get(league) is None
     diff_days = CACHE.get("num_days") != num_days
@@ -143,6 +167,7 @@ def run():
     html = []
 
     html.append("<h1 align='center'><u>Options</u></h1>")
+
     # Data tables from cache
     if get_new_data(chosen_league, num_days, rating):
         try:
@@ -208,30 +233,20 @@ def run():
     options_table.end_table()
     html.extend(["<form action='/'>", options_table.render(), "</form>"])
 
-    if chosen_pokemon:
-        try:
-            all_team_results = []
-            for _ in range(N_TEAMS):
-                team_results = team_maker.build_team_from_pokemon(chosen_pokemon)
-                all_team_results.append(team_results)
-            team_results = "\n".join(all_team_results)
-        except:
-            team_results = f"Could not create team for {chosen_pokemon} in {chosen_league}"
-    else:
-        team_results = ""
-        for _ in range(N_TEAMS):
-            team_results=f"{team_results}\n{team_maker.recommend_team()}"
+    # Recommended teams
+    #  make N_TEAMS unique teams. But try 2*N_TEAMS times to make unique teams
+    team_results = make_recommended_teams(team_maker, chosen_pokemon, chosen_league)
+
     html.append("<h1 align='center'><u>Recommended Teams</u></h1>")
     html.append(create_table_from_results(team_results, width='50%'))
 
+    # Data
     html.append("<h1 align='center'><u>Meta Data</u></h1>")
     html.append("<div align='center'><button onclick='hideData()'>Toggle data</button></div>")
     html.append("<div id='data'>")
     html.append(create_table_from_results(results, pokemon=chosen_pokemon, width='75%'))
     html.append("</div>")
 
-    #html.append("</body></html>")
-    #return "".join(html)
     return render_template("index.html", body="".join(html))
 
     
