@@ -70,10 +70,19 @@ LEAGUE_VALUE = {
     'UL': '2500',
     'ULRemix': '2500',
     'ULP': '2500',
+    'ULPC': '2500-40',
     'MLC': '10000-40',
     'ML': '10000',
     'Element': '500',
-    'Jungle': '500'
+    'Jungle': '500',
+    'Halloween': '1500'
+}
+CUP_VALUE = {
+    'MLC': 'classic',
+    'ULRemix': 'remix',
+    'Jungle': 'littlejungle',
+    'ULPC': 'premierclassic',
+    'Halloween': 'halloween'
 }
 
 class NoPokemonFound(Exception):
@@ -342,14 +351,24 @@ class MetaTeamDestroyer:
 
             pokemons.append(pokemon[0])
             weights.append(pokemon[1])
-        random_pokemons = random.choices(pokemons, weights=weights, k=n)
+
+        # Return all pokemon if none counter enough pokemon
+        if not pokemons:
+            pokemons = [pokemon[0] for pokemon in pokemon_list]
+            weights = [pokemon[1] for pokemon in pokemon_list]
+        try:
+            random_pokemons = random.choices(pokemons, weights=weights, k=n)
+        except Exception as exc:
+            raise Exception(f"{n} - {pokemon_list} - {exc}")
         return random_pokemons
 
-    def recommend_team(self):
+    def recommend_team(self, chosen_pokemon=None):
         """
         Returns a team around a random lead mon picked from the anti-meta list.
         After picking a lead, the two back pokemon are chosen as counters to the lead's weaknesses
         """
+        if chosen_pokemon:
+            return self.build_team_from_pokemon(chosen_pokemon)
         print("Choosing a random lead from the leads list")
         lead_counters = self.get_reccommended_counters(self.leads_list)
         random_counter = self.choose_weighted_pokemon(lead_counters)[0]
@@ -381,19 +400,20 @@ class MetaTeamDestroyer:
                 removed_counters.append(counter[0])
         counter_counters = [counter for counter in counter_counters if counter[0] not in removed_counters]
         
-        #print(f"counter counters: {counter_counters}")
-        #back_pokemons = self.choose_weighted_pokemon(counter_counters, n=2)
         # need to pick one at a time so there are no repeats      
         back_pokemon1 = self.choose_weighted_pokemon(counter_counters)[0]
         index = [p[0] for p in counter_counters].index(back_pokemon1)
         counter_counters.pop(index)
         back_pokemon2 = self.choose_weighted_pokemon(counter_counters)[0]
 
-        pokemon_team = [pokemon, back_pokemon1, back_pokemon2]
+        back_pokemon = sorted([back_pokemon1, back_pokemon2])
+        pokemon_team = [pokemon]
+        pokemon_team.extend(back_pokemon)
 
         results = f"Team for {pokemon}"
         #pvpoke_link = f"https://pvpoke.com/team-builder/all/{LEAGUE_VALUE[self.league]}/{pokemon_team[0]}-m-{team_ivs[0]}%2C{pokemon_team[1]}-m-{team_ivs[1]}%2C{pokemon_team[2]}-m-{team_ivs[2]}"
-        pvpoke_link = f"https://pvpoke.com/team-builder/all/{LEAGUE_VALUE[self.league]}/{pokemon_team[0]}-m-0-1-2%2C{pokemon_team[1]}-m-0-1-2%2C{pokemon_team[2]}-m-0-1-2"
+        cup = CUP_VALUE.get(self.league, 'all')
+        pvpoke_link = f"https://pvpoke.com/team-builder/{cup}/{LEAGUE_VALUE[self.league]}/{pokemon_team[0]}-m-0-1-2%2C{pokemon_team[1]}-m-0-1-2%2C{pokemon_team[2]}-m-0-1-2"
         results = f"{results} (<a href='{pvpoke_link}' target='_blank'>See team in pvpoke</a>)"
         team_ivs = []
         print(f"Full team:")
@@ -402,8 +422,7 @@ class MetaTeamDestroyer:
             results = f"{results}\n{p}\t{self.species_moveset_dict[p]}"
             team_ivs.append(self.get_default_ivs(p, self.league))
 
-        
-        return results
+        return results, pokemon_team
 
 
 def pretty_print_counters(counter_list, min_counters=None, use_percent=True):
