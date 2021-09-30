@@ -5,17 +5,25 @@ Endpoints:
   - /[?league=GL|Remix|UL|ULP|ULRemix|ML|MLC&pokemon=pokemon]
 """
 
+import sys
 import traceback
 
 from flask import Flask, request, render_template
 
-from team_building import get_counters_for_rating, LEAGUE_RANKINGS, NoPokemonFound, LEAGUE_VALUE
+from team_building import get_counters_for_rating, LEAGUE_RANKINGS, NoPokemonFound, LEAGUE_VALUE, TeamCreater
+from battle_sim import sim_battle
 
 app = Flask(__name__, static_url_path="", static_folder="static")
 
 CACHE = {'results': {}, 'team_maker': {}, 'num_days': 1, 'rating': None}
 N_TEAMS = 3
 
+import logging
+logging.basicConfig(level=logging.DEBUG)
+
+logger = logging.getLogger('werkzeug') # grabs underlying WSGI logger
+handler = logging.FileHandler('test.log') # creates handler for the log file
+logger.addHandler(handler) # adds handler to the werkzeug WSGI logger
 
 class TableMaker:
     """
@@ -73,7 +81,7 @@ class TableMaker:
     def render(self):
         return "".join(self.table)
 
-def create_table_from_results(results, pokemon=None, width=None):
+def create_table_from_results(results, pokemon=None, width=None, tc=None):
     """
     Creates an html table from the results.
     Results are in the form:
@@ -111,8 +119,31 @@ def create_table_from_results(results, pokemon=None, width=None):
                     # Provide links to battles
                     if pokemon and ':' in value:
                         league_val = LEAGUE_VALUE.get(CACHE.get('league', ''), '1500')
-                        pvpoke_link = f"https://pvpoke.com/battle/{league_val}/{value.split(':')[0].strip()}/{pokemon}/11"
-                        value = f"<a href='{pvpoke_link}' style='color: #000000; text-decoration: none;' target='_blank'>{value}</a>"
+                        cell_pokemon = value.split(':')[0].strip()
+
+                        # make pvpoke link
+                        pvpoke_link = f"https://pvpoke.com/battle/{league_val}/{cell_pokemon}/{pokemon}/11"
+
+                        # simulate battle for text color
+                        try:
+                            winner, leftover_health = sim_battle(cell_pokemon, pokemon, tc)
+                            #logger.info(f"winner: {winner} - leftover_health: {leftover_health}")
+                        except Exception as exc:
+                            winner = None
+                            logger.error(f"{cell_pokemon}")
+                            logger.error(traceback.format_exc())
+                            leftover_health = 0
+    
+                        if winner == pokemon:
+                            text_color = "#00FF00"
+                            text_color = "#%02x%02x%02x" % (0, 100 + int(155 * leftover_health), 0)
+                        elif winner == cell_pokemon:
+                            text_color = "#FF0000"
+                            text_color = "#%02x%02x%02x" % (100 + int(155 * leftover_health), 0, 0)
+                        else:
+                            text_color = "#000000"
+                        #logger.info(f"{cell_pokemon}: {text_color}")
+                        value = f"<a href='{pvpoke_link}' style='color: {text_color}; text-decoration: none;' target='_blank'>{value}</a>"
                     table.add_cell(value)
 
         table.end_row()
@@ -159,7 +190,7 @@ def about():
 def run():
     global CACHE
     global N_TEAMS
-    chosen_league = request.args.get("league", "GL")
+    chosen_league = request.args.get("league", "Jungle")
     chosen_pokemon = request.args.get('pokemon', '')
     num_days = int(request.args.get('num_days', '1'))
     rating = eval(request.args.get('rating', "None"))
@@ -243,8 +274,9 @@ def run():
     # Data
     html.append("<h1 align='center'><u>Meta Data</u></h1>")
     html.append("<div align='center'><button onclick='hideData()'>Toggle data</button></div>")
-    html.append("<div id='data'>")
-    html.append(create_table_from_results(results, pokemon=chosen_pokemon, width='75%'))
+    html.append("<div id='data' class='data'>")
+    tc = TeamCreater(team_maker)
+    html.append(create_table_from_results(results, pokemon=chosen_pokemon, width='75%', tc=tc))
     html.append("</div>")
 
     return render_template("index.html", body="".join(html))

@@ -85,13 +85,40 @@ CUP_VALUE = {
     'Halloween': 'halloween'
 }
 
+# https://gamepress.gg/pokemongo/cp-multiplier
+HIGH_MULTIPLIERS = {
+    45.5: 0.81779999,
+    46: 0.82029999,
+    46.5: 0.82279999,
+    47: 0.82529999,
+    47.5: 0.82779999,
+    48: 0.83029999,
+    48.5: 0.83279999,
+    49: 0.83529999,
+    49.5: 0.83779999,
+    50: 0.84029999,
+    50.5: 0.84279999,
+    51: 0.84529999
+}
+
 class NoPokemonFound(Exception):
     pass
 
 class TeamCreater:
     def __init__(self, team_maker):
         self.types = requests.get("https://pogoapi.net//api/v1/type_effectiveness.json").json()
+        cp_multipliers = requests.get("https://pogoapi.net//api/v1/cp_multiplier.json").json()
+        self.cp_multipliers = {cpm['level']:cpm['multiplier'] for cpm in cp_multipliers}
+        self.cp_multipliers.update(HIGH_MULTIPLIERS)
         self.team_maker = team_maker
+
+    def get_effectiveness(self, attacker_type, defender_types):
+        """ Returns the effectiveness of attack type on defender types """
+        effectiveness = 1
+        for defender_type in defender_types:
+            if defender_type != 'none':
+                effectiveness *= self.types[attacker_type.capitalize()][defender_type.capitalize()]
+        return effectiveness
 
     def get_weaknesses(self, pokemon):
         """ Returns the type weaknesses of a given pokemon """
@@ -122,7 +149,7 @@ class MetaTeamDestroyer:
     """
     Creator of teams to destroy the meta
     """
-    def __init__(self, rating=None, league="ULP", days_back=None, num_reports=None):
+    def __init__(self, rating=None, league="GL", days_back=None, num_reports=None):
         """
         :param rating: The rating to get the data from (Default: None)
         :type rating: int
@@ -136,9 +163,12 @@ class MetaTeamDestroyer:
         # Initialize all of the data
         rankings_url = LEAGUE_RANKINGS.get(league)
         latest_url = LEAGUE_DATA.get(league)
+        self.result_data = {}
+
         # Get the latest-large data
         latest_url = latest_url.replace('latest', 'latest-large')
         self.league = league
+        self.league_cp = LEAGUE_VALUE[league]
 
         try:
             self.all_pokemon = requests.get(rankings_url, timeout=REQUEST_TIMEOUT).json()
@@ -484,6 +514,14 @@ def get_counters_for_rating(rating, league="ULP", days_back=None):
         #team_maker.build_team_from_pokemon("seviper")
         #team_maker.build_team_from_pokemon("machamp_shadow")
 
+    team_maker.result_data = {
+        "good_leads": lead_counters,
+        "meta_leads": team_maker.leads_list,
+        "good_ss": ss_counters,
+        "meta_ss": team_maker.safeswaps_list,
+        "good_backs": back_counters,
+        "meta_backs": team_maker.backs_list
+    }
     return f"Leads\n{lead_counter_text}\nMeta leads\n{lead_text}\n\nSafe swaps\n{ss_counter_text}\nMeta Safe swaps\n{ss_text}\n\nBack\n{back_counter_text}\nMeta back\n{back_text}", team_maker
 
 
