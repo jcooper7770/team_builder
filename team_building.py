@@ -83,6 +83,7 @@ CUP_VALUE = {
     'Jungle': 'littlejungle',
     'ULPC': 'premierclassic',
     'Halloween': 'halloween'
+}
 
 # https://gamepress.gg/pokemongo/cp-multiplier
 HIGH_MULTIPLIERS = {
