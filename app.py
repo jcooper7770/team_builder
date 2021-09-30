@@ -5,6 +5,7 @@ Endpoints:
   - /[?league=GL|Remix|UL|ULP|ULRemix|ML|MLC&pokemon=pokemon]
 """
 
+
 import sys
 import traceback
 
