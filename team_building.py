@@ -247,17 +247,22 @@ class MetaTeamDestroyer:
         
 
         # Create a mapping of the counters
-        self.species_counters_dict = defaultdict(set)
+        self.species_counters_dict = defaultdict(set)# pokemon that each pokemon counters well
+        self.species_weaknesses_dict = defaultdict(set)# pokemon that each pokemon is weak to
         self.species_moveset_dict = defaultdict(list)
         for species in self.all_pokemon:
             counters = species.get('counters')
             matchups = species.get('matchups')
             species_id = species.get('speciesId')
             self.species_counters_dict[species_id].update([c.get('opponent') for c in counters])
+            self.species_weaknesses_dict[species_id].update([m.get('opponent') for m in matchups])
 
             # Add the species as counters to the matchups
             for matchup in matchups:
                 self.species_counters_dict[matchup.get('opponent')].add(species_id)
+
+            for counter in counters:
+                self.species_weaknesses_dict[counter.get('opponent')].add(species_id)
         
             # Add the movesets
             self.species_moveset_dict[species.get('speciesId')] = species.get('moveset')
@@ -392,21 +397,94 @@ class MetaTeamDestroyer:
             raise Exception(f"{n} - {pokemon_list} - {exc}")
         return random_pokemons
 
-    def recommend_team(self, chosen_pokemon=None):
+    def recommend_team(self, chosen_pokemon=None, position="lead"):
         """
         Returns a team around a random lead mon picked from the anti-meta list.
         After picking a lead, the two back pokemon are chosen as counters to the lead's weaknesses
         """
         if chosen_pokemon:
-            return self.build_team_from_pokemon(chosen_pokemon)
+            if position == 'lead':
+                return self.build_team_from_pokemon(chosen_pokemon)
+            elif position == 'back':
+                return self.build_safeswap_team(chosen_pokemon)
         print("Choosing a random lead from the leads list")
         lead_counters = self.get_reccommended_counters(self.leads_list)
         random_counter = self.choose_weighted_pokemon(lead_counters)[0]
         return self.build_team_from_pokemon(random_counter)
+
+    def build_safeswap_team(self, pokemon):
+        """
+        Builds a team with the given pokemon in the back
+        Note: squares the weights for more weight on common pokemon
+        """
+        # Determine pokemon weakness typings
+        tc = TeamCreater(self)
+        ss_type_weaknesses = tc.get_weaknesses(pokemon)
+
+        # Find pokemon that the given pokemon counters
+        counters = [p for p, counters in self.species_counters_dict.items() if pokemon in counters]
+        print(f"Pokemon that {pokemon} counters: {counters}")
+
+        # Find a pokemon weak to the countered pokemon
+        all_weak_pokemon = [weak_pokemon for counter in counters for weak_pokemon in self.species_counters_dict[counter]]
+
+        # Only keep pokemon with different weaknesses
+        weak_kept_pokemon = []
+        for p in set(all_weak_pokemon):
+            pokemon_weaknesses = tc.get_weaknesses(p)
+            if len(set(pokemon_weaknesses.keys()) - set(ss_type_weaknesses.keys())) == len(pokemon_weaknesses):
+                weak_kept_pokemon.append(p)
         
+        weaknesses_count = {p:weak_kept_pokemon.count(p)**2 for p in weak_kept_pokemon if p != pokemon}# {'p1': 1, 'p2':2, ...}
+        weaknesses_count_list = sorted(weaknesses_count.items(), key=lambda x: x[1], reverse=True)# [(p1, 5), (p2, 4),...]
+        print(f"Pokemon weak to the counters: {weaknesses_count_list}")
+        random_weak_pokemon = random.choices([w[0] for w in weaknesses_count_list], weights=[w[1] for w in weaknesses_count_list], k=1)[0]
+        print(f"Random chosen weak pokemon: {random_weak_pokemon}")
+
+        # Find another pokemon strong against counters
+        all_strong_pokemon = [strong_pokemon for counter in counters for strong_pokemon in self.species_weaknesses_dict[counter]]
+        print(all_strong_pokemon)
+
+        # Only keep pokmeon with similar weaknesses
+        strong_kept_pokemon = []
+        for p in set(all_strong_pokemon):
+            pokemon_weaknesses = tc.get_weaknesses(p)
+            if len(set(pokemon_weaknesses.keys()) - set(ss_type_weaknesses.keys())) != len(pokemon_weaknesses):
+                strong_kept_pokemon.append(p)
+
+        strong_count = {p:strong_kept_pokemon.count(p)**2 for p in strong_kept_pokemon if p != pokemon}
+        strong_count_list = sorted(strong_count.items(), key=lambda x:x[1], reverse=True)
+        print(f"Pokemon strong against countered pokemon: {strong_count_list}")
+
+        # Only use top 25% of strong list
+        #strong_count_list = strong_count_list[:len(strong_count_list)//4]
+        
+        random_strong_pokemon = random.choices([w[0] for w in strong_count_list], weights=[w[1] for w in strong_count_list], k=1)[0]
+        print(f"Random chosen strong pokemon: {random_strong_pokemon}")
+
+        return self.team_results([random_weak_pokemon, pokemon, random_strong_pokemon], pokemon)
+        
+    def team_results(self, pokemon_team, chosen_pokemon):
+        """
+        Returns the results of the pokemon team created
+        """
+        results = f"Team for {chosen_pokemon}"
+        #pvpoke_link = f"https://pvpoke.com/team-builder/all/{LEAGUE_VALUE[self.league]}/{pokemon_team[0]}-m-{team_ivs[0]}%2C{pokemon_team[1]}-m-{team_ivs[1]}%2C{pokemon_team[2]}-m-{team_ivs[2]}"
+        cup = CUP_VALUE.get(self.league, 'all')
+        pvpoke_link = f"https://pvpoke.com/team-builder/{cup}/{LEAGUE_VALUE[self.league]}/{pokemon_team[0]}-m-0-1-2%2C{pokemon_team[1]}-m-0-1-2%2C{pokemon_team[2]}-m-0-1-2"
+        results = f"{results} (<a href='{pvpoke_link}' target='_blank'>See team in pvpoke</a>)"
+        team_ivs = []
+        print(f"Full team:")
+        for p in pokemon_team:
+            print(f"    {p}: {self.species_moveset_dict[p]}")
+            results = f"{results}\n{p}\t{self.species_moveset_dict[p]}"
+            team_ivs.append(self.get_default_ivs(p, self.league))
+
+        return results, pokemon_team
+
     def build_team_from_pokemon(self, pokemon):
         """
-        Builds a team with the given pokemon by choosing counters to it's weaknesses
+        Builds a team with the given pokemon by choosing counters to it's weaknesses       
         """
         print(f"Building a team around {pokemon}")
         lead_weaknesses = self.species_counters_dict[pokemon]
@@ -439,20 +517,7 @@ class MetaTeamDestroyer:
         back_pokemon = sorted([back_pokemon1, back_pokemon2])
         pokemon_team = [pokemon]
         pokemon_team.extend(back_pokemon)
-
-        results = f"Team for {pokemon}"
-        #pvpoke_link = f"https://pvpoke.com/team-builder/all/{LEAGUE_VALUE[self.league]}/{pokemon_team[0]}-m-{team_ivs[0]}%2C{pokemon_team[1]}-m-{team_ivs[1]}%2C{pokemon_team[2]}-m-{team_ivs[2]}"
-        cup = CUP_VALUE.get(self.league, 'all')
-        pvpoke_link = f"https://pvpoke.com/team-builder/{cup}/{LEAGUE_VALUE[self.league]}/{pokemon_team[0]}-m-0-1-2%2C{pokemon_team[1]}-m-0-1-2%2C{pokemon_team[2]}-m-0-1-2"
-        results = f"{results} (<a href='{pvpoke_link}' target='_blank'>See team in pvpoke</a>)"
-        team_ivs = []
-        print(f"Full team:")
-        for p in pokemon_team:
-            print(f"    {p}: {self.species_moveset_dict[p]}")
-            results = f"{results}\n{p}\t{self.species_moveset_dict[p]}"
-            team_ivs.append(self.get_default_ivs(p, self.league))
-
-        return results, pokemon_team
+        return self.team_results(pokemon_team, pokemon)
 
 
 def pretty_print_counters(counter_list, min_counters=None, use_percent=True):
@@ -509,11 +574,6 @@ def get_counters_for_rating(rating, league="ULP", days_back=None):
 
     team_maker.recommend_team()
 
-    #print(team_maker.build_team_from_pokemon("zapdos_shadow"))
-    #for _ in range(10):
-        #team_maker.build_team_from_pokemon("seviper")
-        #team_maker.build_team_from_pokemon("machamp_shadow")
-
     team_maker.result_data = {
         "good_leads": lead_counters,
         "meta_leads": team_maker.leads_list,
@@ -526,4 +586,13 @@ def get_counters_for_rating(rating, league="ULP", days_back=None):
 
 
 if __name__ == "__main__":
-    print(get_counters_for_rating(rating=None, league="Jungle", days_back=1)[0])
+    results, team_maker = get_counters_for_rating(rating=None, league="MLC", days_back=1)
+    print(results)
+
+    #print(team_maker.build_team_from_pokemon("zapdos_shadow"))
+    #for _ in range(10):
+        #team_maker.build_team_from_pokemon("seviper")
+        #team_maker.build_team_from_pokemon("machamp_shadow")
+
+    safeswap_team = team_maker.build_safeswap_team("groudon")
+    print(safeswap_team)
