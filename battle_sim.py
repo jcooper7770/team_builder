@@ -21,16 +21,19 @@ class Moves:
         self.charge2 = charge2
 
 class Pokemon:
-    def __init__(self, pid, health, fast_move, charge_move, shields):
+    def __init__(self, pid, health, fast_move, charge_move, shields, data):
         self.id = pid
         self.energy = 0
         self.health = health
         self.fast_move = fast_move
         self.charge_move = charge_move
         self.shields = shields
+        self.data = data
 
     def damage(self, amount):
         self.health -= amount
+        if self.health < 0:
+            self.health = 0
 
     def attack(self):
         """ fast move """
@@ -46,10 +49,12 @@ class Pokemon:
         """ Take charge move from other pokemon """
         if self.shields == 0:
             self.damage(damage)
-        else:
-            print(f"{self} used a shield")
-            self.shields -= 1
-            self.damage(1)
+            return True
+
+        # Used a shield so takes shield damage
+        self.shields -= 1
+        self.damage(1)
+        return False
 
     def __str__(self):
         return f"{self.id} ({self.health}, {self.energy})"
@@ -107,17 +112,35 @@ def get_moves_from_master(master, moves):
     return return_moves
 
 
+def get_pokemon_stat(pokemon, team_creator, stat):
+    """
+    Returns the attack stat
+    """
+    
+    pokemon_level = pokemon['level']
+    pokemon_cpm = team_creator.cp_multipliers[pokemon_level]
+    stat_value = float(pokemon.get('baseStats').get(stat) + pokemon['ivs'][0 if stat == 'atk' else 1]) * pokemon_cpm
+    return stat_value
+
+
 def calculate_move_damage(move, attacker, defender, team_creator):
     """
-    Returns the amount of damage a move does from the attacker to the defender
+    Returns the amount of damage a move does from the attacker to the defender.
+    The pokemon level and ivs are determined by the default ivs for the chosen league
     """
+    attack = get_pokemon_stat(attacker, team_creator, 'atk')
+    defense = get_pokemon_stat(defender, team_creator, 'def')
+
+    '''
     attacker_level = attacker['level']
     defender_level = defender['level']
     attacker_cpm = team_creator.cp_multipliers[attacker_level]
     defender_cpm = team_creator.cp_multipliers[defender_level]
-    power = float(move.get('power'))
     attack = float(attacker.get('baseStats').get('atk') + attacker['ivs'][0]) * attacker_cpm
     defense = float(defender.get('baseStats').get('def') + defender['ivs'][1]) * defender_cpm
+    '''
+    power = float(move.get('power'))
+
     stab = 1.2 if move.get('type') in attacker.get('types') else 1.0
     effectiveness = float(team_creator.get_effectiveness(move.get('type'), defender.get('types')))
 
@@ -204,19 +227,29 @@ def sim_battle(pokemon1, pokemon2, team_creator):
     healths = {pokemon1: p1_health, pokemon2: p2_health}
 
     # THE BATTLE
-    p1_energy, p2_energy = (0, 0)
-    move_seconds = (p1_fastmove['cooldown'], p2_fastmove['cooldown'])
+    #p1_energy, p2_energy = (0, 0)
+    #move_seconds = (p1_fastmove['cooldown'], p2_fastmove['cooldown'])
     shields = [1, 1]
     turns = 0
     pokemons = [
-        Pokemon(pokemon1, p1_health, p1_fastmove, p1_chargemove1, shields[0]),
-        Pokemon(pokemon2, p2_health, p2_fastmove, p2_chargemove1, shields[1])
+        Pokemon(pokemon1, p1_health, p1_fastmove, p1_chargemove1, shields[0], pokemon1_data),
+        Pokemon(pokemon2, p2_health, p2_fastmove, p2_chargemove1, shields[1], pokemon2_data)
     ]
 
+    # sort pokemon by higher attack to lower
+    pokemons.sort(key=lambda x: get_pokemon_stat(x.data, team_creator, 'atk'), reverse=True)
+
+    battle_text = []
     while pokemons[0].health > 0 and pokemons[1].health > 0:
         turns += 1
-        print(f"{pokemons[0]}\t{pokemons[1]}")
+        health_text = f"{turns}: {pokemons[0]}\t{pokemons[1]}"
+        print(health_text)
+        battle_text.append(health_text)
         for num, pokemon in enumerate(pokemons):
+            # skip if the pokemon fainted
+            if pokemon.health <= 0:
+                continue
+
             # determine if fast move is done
             if turns * 500 % pokemon.fast_move['cooldown'] == 0:
                 # keep track of other pokemon health
@@ -227,21 +260,32 @@ def sim_battle(pokemon1, pokemon2, team_creator):
 
                 # throw charge move
                 if pokemon.check_charge():
-                    print(f"{pokemon} threw {pokemon.charge_move['moveId']}")
+                    charge_text = f"{pokemon} threw {pokemon.charge_move['moveId']}"
+                    print(charge_text)
+                    battle_text.append(charge_text)
                     pokemon.energy -= pokemon.charge_move['energy']
-                    pokemons[1-num%2].take_charge(pokemon.charge_move['damage'])
+                    if not pokemons[1-num%2].take_charge(pokemon.charge_move['damage']):
+                        shield_text = f"{pokemons[1-num%2].id} used a shield"
+                        print(shield_text)
+                        battle_text.append(shield_text)
 
-    print(f"{pokemons[0]}\t{pokemons[1]}")
+    finishing_text = f"{pokemons[0]}\t{pokemons[1]}"
+    print(finishing_text)
+    battle_text.append(finishing_text)
 
     winner = pokemon1
     if pokemons[0].health <= 0:
-        winner = pokemon2
-        leftover_health =  float(pokemons[1].health)/ healths[pokemon2]
+        #winner = pokemon2
+        winner = pokemons[1].id
+        leftover_health =  float(pokemons[1].health)/ healths[winner]
     else:
-        leftover_health =  float(pokemons[0].health) / healths[pokemon1]
-    print(f"{winner} won with {leftover_health*100:.2f}% health remaining!")
+        winner = pokemons[0].id
+        leftover_health =  float(pokemons[0].health) / healths[winner]
+    finishing_text = f"{winner} won with {leftover_health*100:.2f}% health remaining!"
+    print(finishing_text)
+    battle_text.append(finishing_text)
     
-    return winner, leftover_health
+    return winner, leftover_health, battle_text
     
 
 if __name__ == '__main__':
@@ -253,7 +297,8 @@ if __name__ == '__main__':
     print("Simulating battle")
     #sim_battle('stunfisk_galarian', 'venusaur', tc)
     #results = sim_battle('stunfisk_galarian', 'scrafty', tc)
-    results = sim_battle('scrafty', 'stunfisk_galarian', tc)
-    print(results)
+    #results = sim_battle('scrafty', 'stunfisk_galarian', tc)
+    results = sim_battle('stunfisk_galarian', 'scrafty', tc)
+    print(results[0], results[1])
     #sim_battle('stunfisk_galarian', 'dialga', tc)
     #sim_battle('talonflame', 'dialga', tc)

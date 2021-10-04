@@ -3,8 +3,12 @@ Flask application
 
 Endpoints:
   - /[?league=GL|Remix|UL|ULP|ULRemix|ML|MLC&pokemon=pokemon]
-"""
 
+TODO:
+  - Login with username and keep track of list of pokemon the user doesn't have
+  - add youtube link to tutorial on about page
+  - store team data in a database and refresh once a day
+"""
 
 import sys
 import traceback
@@ -82,7 +86,7 @@ class TableMaker:
     def render(self):
         return "".join(self.table)
 
-def create_table_from_results(results, pokemon=None, width=None, tc=None):
+def create_table_from_results(results, pokemon=None, width=None, tc=None, tooltip=True):
     """
     Creates an html table from the results.
     Results are in the form:
@@ -127,13 +131,15 @@ def create_table_from_results(results, pokemon=None, width=None, tc=None):
 
                         # simulate battle for text color
                         try:
-                            winner, leftover_health = sim_battle(cell_pokemon, pokemon, tc)
+                            winner, leftover_health, battle_text = sim_battle(cell_pokemon, pokemon, tc)
+                            tool_tip_text = "&#013;&#010;</br>".join(battle_text)
                             #logger.info(f"winner: {winner} - leftover_health: {leftover_health}")
                         except Exception as exc:
                             winner = None
                             logger.error(f"{cell_pokemon}")
                             logger.error(traceback.format_exc())
                             leftover_health = 0
+                            tool_tip_text=  ""
     
                         if winner == pokemon:
                             text_color = "#00FF00"
@@ -144,7 +150,8 @@ def create_table_from_results(results, pokemon=None, width=None, tc=None):
                         else:
                             text_color = "#000000"
                         #logger.info(f"{cell_pokemon}: {text_color}")
-                        value = f"<a href='{pvpoke_link}' style='color: {text_color}; text-decoration: none;' target='_blank'>{value}</a>"
+                        tooltip_addition = f"<span class='tooltiptext'>{tool_tip_text}</span>" if tooltip else ""
+                        value = f"<a class='tooltip' href='{pvpoke_link}' style='color: {text_color}; text-decoration: none;' target='_blank'>{value}{tooltip_addition}</a>"
                     table.add_cell(value)
 
         table.end_row()
@@ -153,7 +160,7 @@ def create_table_from_results(results, pokemon=None, width=None, tc=None):
     return table.render()
 
 
-def make_recommended_teams(team_maker, chosen_pokemon, chosen_league):
+def make_recommended_teams(team_maker, chosen_pokemon, chosen_league, chosen_position):
     """
     Makes N_TEAMS unique teams
     """
@@ -163,7 +170,7 @@ def make_recommended_teams(team_maker, chosen_pokemon, chosen_league):
         tries = 0
         while len(chosen_teams) < N_TEAMS and tries < 2*N_TEAMS:
             tries += 1
-            team_results, pokemon_team = team_maker.recommend_team(chosen_pokemon)
+            team_results, pokemon_team = team_maker.recommend_team(chosen_pokemon, position=chosen_position)
             if pokemon_team in chosen_teams:
                 continue
             chosen_teams.append(pokemon_team)
@@ -193,8 +200,10 @@ def run():
     global N_TEAMS
     chosen_league = request.args.get("league", "Jungle")
     chosen_pokemon = request.args.get('pokemon', '')
+    chosen_position = request.args.get('position', 'lead')
     num_days = int(request.args.get('num_days', '1'))
     rating = eval(request.args.get('rating', "None"))
+    use_tooltip = bool(request.args.get('tooltips', False))
     N_TEAMS = int(request.args.get('num_teams', N_TEAMS))
     html = []
 
@@ -245,6 +254,8 @@ def run():
         else:
             pokemon_form.append(f"<option value='{species_name}'>{species_name}</option>")
     pokemon_form.append("</select>")
+    pokemon_form.append(f"<br><input type='radio' id='lead' value='lead' name='position'{' checked' if chosen_position=='lead' else ''}><label for='lead'>In the lead</label>")
+    pokemon_form.append(f"<br><input type='radio' id='back' value='back' name='position'{' checked' if chosen_position=='back' else ''} ><label for='back'>In the back</label>")
     options_table.add_cell("".join(pokemon_form))
     options_table.end_row()
     options_table.new_row()
@@ -267,7 +278,7 @@ def run():
 
     # Recommended teams
     #  make N_TEAMS unique teams. But try 2*N_TEAMS times to make unique teams
-    team_results = make_recommended_teams(team_maker, chosen_pokemon, chosen_league)
+    team_results = make_recommended_teams(team_maker, chosen_pokemon, chosen_league, chosen_position)
 
     html.append("<h1 align='center'><u>Recommended Teams</u></h1>")
     html.append(create_table_from_results(team_results, width='50%'))
@@ -277,7 +288,7 @@ def run():
     html.append("<div align='center'><button onclick='hideData()'>Toggle data</button></div>")
     html.append("<div id='data' class='data'>")
     tc = TeamCreater(team_maker)
-    html.append(create_table_from_results(results, pokemon=chosen_pokemon, width='75%', tc=tc))
+    html.append(create_table_from_results(results, pokemon=chosen_pokemon, width='75%', tc=tc, tooltip=use_tooltip))
     html.append("</div>")
 
     return render_template("index.html", body="".join(html))
