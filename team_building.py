@@ -18,7 +18,7 @@
   - [DONE] weighted output based on date reported
       - choose # days of reportings
       - choose last X reportings
-  - Pick SS or closer instead of lead
+  - [DONE] Pick SS or closer instead of lead
   - Google app engine / google cloud run for free hosting
   - Add to html: please input more data to gobattlelog
       - all this possible to people entering data./ Aaron is grateful to them
