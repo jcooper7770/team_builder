@@ -1,8 +1,12 @@
 '''
+Simulate battles between two pokemon
 
   TODO:
     - [DONE] Determine pokemon level and ideal IVs from league
+    - Figure out proper charge move to throw instead of the first one
+    - Add buff/debuff
 '''
+
 import math
 
 
@@ -13,22 +17,37 @@ class Move:
         self.energy = energy # energyGain|energyCost
         self.turns = turns
 
-class Moves:
-    """ Pokmeon moves """
+class Moveset:
+    """ Pokmeon moveset """
     def __init__(self, fast, charge1, charge2):
         self.fast = fast
         self.charge1 = charge1
         self.charge2 = charge2
 
+    def energy_efficient(self):
+        """ Returns the more energy efficient charge move """
+        return sorted([self.charge1, self.charge2], key=lambda x: x['damage']/x['energy'], reverse=True)[0]
+
+    def higher_damage(self):
+        """ Returns the charge move with the higher damage """
+        if self.charge1['damage'] == self.charge2['damage']:
+            return self.energy_efficient()
+        return self.charge1 if self.charge1['damage'] > self.charge2['damage'] else self.charge2
+
+    def bait_move(self):
+        """ Returns the bait move (as the less energy move) """
+        return sorted([self.charge1, self.charge2], key=lambda x: x['energy'])[0]
+
+
 class Pokemon:
-    def __init__(self, pid, health, fast_move, charge_move, shields, data):
+    def __init__(self, pid, health, shields, data, moveset):
         self.id = pid
         self.energy = 0
         self.health = health
-        self.fast_move = fast_move
-        self.charge_move = charge_move
         self.shields = shields
         self.data = data
+        self.charge_moves_thrown = 0
+        self.moveset = moveset
 
     def damage(self, amount):
         self.health -= amount
@@ -37,13 +56,20 @@ class Pokemon:
 
     def attack(self):
         """ fast move """
-        self.energy += self.fast_move['energyGain']
+        self.energy += self.moveset.fast['energyGain']
         if self.energy > 100:
             self.energy = 100
 
     def check_charge(self):
-        """ Throws the charge move if enough energy """        
-        return self.energy >= self.charge_move['energy']
+        """ Throws the charge move if enough energy """
+        higher_damage_move = self.moveset.higher_damage()
+        if self.energy >= higher_damage_move['energy']:
+            # Bait the less energy move on first charge move
+            if self.charge_moves_thrown == 0:
+                return self.moveset.bait_move()
+            return higher_damage_move
+        return None
+        #return self.energy >= self.charge_move['energy']
 
     def take_charge(self, damage):
         """ Take charge move from other pokemon """
@@ -207,9 +233,11 @@ def sim_battle(pokemon1, pokemon2, team_creator):
     p1_chargemove1 = pokemon1_moves[movesets[pokemon1][1]]
     p1_chargemove1['damage'] = move1_damage[p1_chargemove1['moveId']]
     p1_chargemove2 = pokemon1_moves[movesets[pokemon1][2]]
+    p1_chargemove2['damage'] = move1_damage[p1_chargemove2['moveId']]
     p1_count1 = p1_chargemove1['energy'] / p1_fastmove['energyGain']
     p1_count2 = p1_chargemove2['energy'] / p1_fastmove['energyGain']
     print(f"pokemon1 counts: {p1_count1} {p1_count2}")
+    p1_moveset = Moveset(p1_fastmove, p1_chargemove1, p1_chargemove2)
 
     # calculate number of pokemon2 fast moves to charge moves
     p2_fastmove = pokemon2_moves[movesets[pokemon2][0]]
@@ -217,9 +245,11 @@ def sim_battle(pokemon1, pokemon2, team_creator):
     p2_chargemove1 = pokemon2_moves[movesets[pokemon2][1]]
     p2_chargemove1['damage'] = move2_damage[p2_chargemove1['moveId']]
     p2_chargemove2 = pokemon2_moves[movesets[pokemon2][2]]
+    p2_chargemove2['damage'] = move2_damage[p2_chargemove2['moveId']]
     p2_count1 = p2_chargemove1['energy'] / p2_fastmove['energyGain']
     p2_count2 = p2_chargemove2['energy'] / p2_fastmove['energyGain']
     print(f"pokemon2 counts: {p2_count1} {p2_count2}")
+    p2_moveset = Moveset(p2_fastmove, p2_chargemove1, p2_chargemove2)
 
     p1_health = math.floor((pokemon1_data['baseStats']['hp']+pokemon1_data['ivs'][2])*team_creator.cp_multipliers[pokemon1_data['level']])
     p2_health = math.floor((pokemon2_data['baseStats']['hp']+pokemon2_data['ivs'][2])*team_creator.cp_multipliers[pokemon2_data['level']])
@@ -227,13 +257,13 @@ def sim_battle(pokemon1, pokemon2, team_creator):
     healths = {pokemon1: p1_health, pokemon2: p2_health}
 
     # THE BATTLE
-    #p1_energy, p2_energy = (0, 0)
-    #move_seconds = (p1_fastmove['cooldown'], p2_fastmove['cooldown'])
     shields = [1, 1]
     turns = 0
     pokemons = [
-        Pokemon(pokemon1, p1_health, p1_fastmove, p1_chargemove1, shields[0], pokemon1_data),
-        Pokemon(pokemon2, p2_health, p2_fastmove, p2_chargemove1, shields[1], pokemon2_data)
+        #Pokemon(pokemon1, p1_health, p1_fastmove, p1_chargemove1, shields[0], pokemon1_data),
+        #Pokemon(pokemon2, p2_health, p2_fastmove, p2_chargemove1, shields[1], pokemon2_data)
+        Pokemon(pokemon1, p1_health, shields[0], pokemon1_data, p1_moveset),
+        Pokemon(pokemon2, p2_health, shields[1], pokemon2_data, p2_moveset)
     ]
 
     # sort pokemon by higher attack to lower
@@ -251,20 +281,23 @@ def sim_battle(pokemon1, pokemon2, team_creator):
                 continue
 
             # determine if fast move is done
-            if turns * 500 % pokemon.fast_move['cooldown'] == 0:
+            if turns * 500 % pokemon.moveset.fast['cooldown'] == 0:
                 # keep track of other pokemon health
-                pokemons[1-num%2].damage(pokemon.fast_move['damage'])
+                pokemons[1-num%2].damage(pokemon.moveset.fast['damage'])
 
                 # Keep track of energy
                 pokemon.attack()
 
                 # throw charge move
-                if pokemon.check_charge():
-                    charge_text = f"{pokemon} threw {pokemon.charge_move['moveId']}"
+                thrown_charge = pokemon.check_charge()
+                #if pokemon.check_charge():
+                if thrown_charge:
+                    charge_text = f"{pokemon} threw {thrown_charge['moveId']}"
                     print(charge_text)
                     battle_text.append(charge_text)
-                    pokemon.energy -= pokemon.charge_move['energy']
-                    if not pokemons[1-num%2].take_charge(pokemon.charge_move['damage']):
+                    pokemon.energy -= thrown_charge['energy']
+                    pokemon.charge_moves_thrown += 1
+                    if not pokemons[1-num%2].take_charge(thrown_charge['damage']):
                         shield_text = f"{pokemons[1-num%2].id} used a shield"
                         print(shield_text)
                         battle_text.append(shield_text)
@@ -295,10 +328,11 @@ if __name__ == '__main__':
     tc = TeamCreater(team_creator)
 
     print("Simulating battle")
-    #sim_battle('stunfisk_galarian', 'venusaur', tc)
+    results = sim_battle('stunfisk_galarian', 'venusaur', tc)
     #results = sim_battle('stunfisk_galarian', 'scrafty', tc)
     #results = sim_battle('scrafty', 'stunfisk_galarian', tc)
-    results = sim_battle('stunfisk_galarian', 'scrafty', tc)
+    #results = sim_battle('stunfisk_galarian', 'scrafty', tc)
+    results = sim_battle('venusaur', 'ferrothorn', tc)
     print(results[0], results[1])
     #sim_battle('stunfisk_galarian', 'dialga', tc)
     #sim_battle('talonflame', 'dialga', tc)
