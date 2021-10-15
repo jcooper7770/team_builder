@@ -582,7 +582,7 @@ def get_counters_for_rating(rating, league="ULP", days_back=None):
         "good_backs": back_counters,
         "meta_backs": team_maker.backs_list
     }
-    return f"Leads\n{lead_counter_text}\nMeta leads\n{lead_text}\n\nSafe swaps\n{ss_counter_text}\nMeta Safe swaps\n{ss_text}\n\nBack\n{back_counter_text}\nMeta back\n{back_text}", team_maker
+    return f"Recommended Leads\n{lead_counter_text}\nMeta leads\n{lead_text}\n\nRecommended Safe swaps\n{ss_counter_text}\nMeta Safe swaps\n{ss_text}\n\nRecommended Back\n{back_counter_text}\nMeta back\n{back_text}", team_maker
 
 
 if __name__ == "__main__":
