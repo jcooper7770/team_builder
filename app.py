@@ -10,13 +10,17 @@ TODO:
   - store team data in a database and refresh once a day
 """
 
+import datetime
+import json
+import os
 import sys
 import traceback
 
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, jsonify
 
 from team_building import get_counters_for_rating, LEAGUE_RANKINGS, NoPokemonFound, LEAGUE_VALUE, TeamCreater
 from battle_sim import sim_battle
+from trampoline import convert_form_data, pretty_print, Practice
 
 app = Flask(__name__, static_url_path="", static_folder="static")
 
@@ -187,6 +191,140 @@ def get_new_data(league, num_days, rating):
     diff_days = CACHE.get("num_days") != num_days
     diff_rating = CACHE.get("rating") != rating
     return diff_league or diff_days or diff_rating
+
+
+def skills_table(skills, title="Routines"):
+    """
+    Writes all trampoline skills to a table
+    """
+    if skills:
+        most_cols = max([len(turn.skills) for turn in skills])
+    else:
+        most_cols = 0
+    total_flips = 0
+    total_difficulty = 0
+    total_skills = 0
+    skills_table = TableMaker(border=1, align="center", width="30%")
+    skills_table.new_header(title, colspan=most_cols+8)
+    for turn_num, turn in enumerate(skills):
+        skills_table.new_row()
+        # Turn number
+        skills_table.add_cell(f"<b>{turn_num+1}</b>")
+
+        # Skills
+        for skill in turn.skills:
+            skills_table.add_cell(skill.shorthand)
+        # metrics
+        skills_table.add_cell("")
+        for _ in range(most_cols - len(turn.skills)):
+            skills_table.add_cell("")
+
+        # total skills
+        skills_table.add_cell(len(turn.skills))
+        total_skills += len(turn.skills)
+        skills_table.add_cell(total_skills)
+
+        # total flips
+        skills_table.add_cell(turn.total_flips)
+        total_flips += turn.total_flips
+        skills_table.add_cell(total_flips)
+
+        # total difficulty
+        skills_table.add_cell(f"{turn.difficulty:0.1f}")
+        total_difficulty += turn.difficulty
+        skills_table.add_cell(f"{total_difficulty:0.1f}")
+
+        skills_table.end_row()
+    skills_table.end_table()
+    return skills_table.render()
+
+@app.route("/logger/_clear")
+def clear_history():
+    """
+    Clears historical data
+    """
+    if os.path.exists("routines.txt"):
+        os.remove("routines.txt")
+        logger.info("deleted file!")
+        return jsonify(status="success")
+    else:
+        logger.info("did not delete")
+        return jsonify(status="fail")
+        
+
+
+@app.route("/logger", methods=['GET', 'POST'])
+def trampoline_log():
+    # Convert form data to trampoline skills
+    form_data = request.form.get('log', '')
+    routines = convert_form_data(form_data)
+    logger.info(request.form.get('log', 'None').split('\r\n'))
+
+    # Save the current practice
+    practice = Practice(datetime.date.today(), routines)
+    saved_practice = practice.save()
+
+    for turn_num, turn in enumerate(routines):
+        logger.info(f"{turn_num+1}: {turn.skills}")
+    pretty_print(routines, logger.info)
+
+    # Store trampoline skills to a file?
+    if not os.path.exists('routines.txt'):
+        with open('routines.txt','w') as routine_file:
+            pass
+
+    historical_routines = []
+    with open('routines.txt') as routine_file:
+        old_routines = routine_file.read()
+    logger.info("-----")
+    logger.info(f"old routines: {old_routines}")
+    logger.info("-----")
+
+    # Collect all routines up to now
+    historical_routines.extend(convert_form_data(old_routines, logger=logger.info))
+    historical_routines.extend(routines)
+
+    # Save historical and current routines to routines file
+    if form_data:
+        with open('routines.txt', 'w') as routine_file:
+            new_routines = form_data.replace('\n', '')
+            if old_routines:
+                routine_file.write('\n'.join([old_routines, new_routines]))
+            else:
+                routine_file.write(new_routines)
+
+    # Write all trampoline skills to a table
+    table = skills_table(routines)
+    historical_table = skills_table(historical_routines, title="Historical Routines")
+
+    # add a button to clear the historical data
+
+    # Print out a table per date
+    practice_tables = []
+    for _, _, practice_files in os.walk("practices"):
+        for practice_file in sorted(practice_files, reverse=True):
+            full_path = os.path.join("practices", practice_file)
+            with open(full_path) as practice_file:
+                practice_data = json.load(practice_file)
+                practice = Practice.load(practice_data)
+            title = practice.date.strftime("%A %m/%d/%Y")
+            practice_table = skills_table(practice.turns, title=title)
+            practice_tables.append(practice_table)
+
+    all_practice_tables = "<br><br>".join(practice_tables)
+            
+    html = [
+        table,
+        "<br><br>",
+        historical_table,
+        "<h1 style='text-align:center;'>Previous Practices</h1>",
+        "<div id='practices' class='practices'><br><br>",
+        all_practice_tables,
+        "</div>"
+    ]
+    body = "".join(html)
+    #body = request.form.get('log', 'Nothing yet')
+    return render_template("trampoline.html", body=body)
 
 
 @app.route("/about")
