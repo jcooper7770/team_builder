@@ -49,7 +49,8 @@ LEAGUE_RANKINGS = {
     "Remix": "https://vps.gobattlelog.com/data/overall/rankings-1500-remix.json?v=1.25.35",
     "ULRemix": "https://vps.gobattlelog.com/data/overall/rankings-2500-remix.json?v=1.25.35",
     "GL": "https://vps.gobattlelog.com/data/overall/rankings-1500.json?v=1.25.35",
-    "Jungle": "https://vps.gobattlelog.com/data/overall/rankings-500-littlejungle.json?v=1.28.0"
+    "Jungle": "https://vps.gobattlelog.com/data/overall/rankings-500-littlejungle.json?v=1.28.0",
+    "Halloween": "https://vps.gobattlelog.com/data/overall/rankings-1500-halloween.json?v=1.25.35"
 }
 LEAGUE_DATA = {
     "ULP": "https://vps.gobattlelog.com/records/ultra-premier/latest.json?ts=449983.3",
@@ -63,6 +64,7 @@ LEAGUE_DATA = {
     "Remix": "https://vps.gobattlelog.com/records/great-remix/latest.json?ts=451709.1",
     "ULRemix": "https://vps.gobattlelog.com/records/ultra-remix/latest.json?ts=451709.1",
     "Jungle": "https://vps.gobattlelog.com/records/littlejungle/latest.json?ts=451709.1"
+    "Halloween": "https://vps.gobattlelog.com/records/great-halloween/latest.json?ts=451466.3"
 }
 LEAGUE_VALUE = {
     'GL': '1500',
