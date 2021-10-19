@@ -63,7 +63,7 @@ LEAGUE_DATA = {
     "Element": "https://vps.gobattlelog.com/records/element/latest.json?ts=451466.3",
     "Remix": "https://vps.gobattlelog.com/records/great-remix/latest.json?ts=451709.1",
     "ULRemix": "https://vps.gobattlelog.com/records/ultra-remix/latest.json?ts=451709.1",
-    "Jungle": "https://vps.gobattlelog.com/records/littlejungle/latest.json?ts=451709.1"
+    "Jungle": "https://vps.gobattlelog.com/records/littlejungle/latest.json?ts=451709.1",
     "Halloween": "https://vps.gobattlelog.com/records/great-halloween/latest.json?ts=451466.3"
 }
 LEAGUE_VALUE = {
