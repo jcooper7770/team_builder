@@ -15,12 +15,23 @@ import os
 
 
 NUM_FLIPS = {
+    1: 0,
     2: 1,
     3: 2,
     5: 3,
     6: 4
 }
 
+CURRENT_USER = "bob"
+EVENT = "trampoline"
+
+
+class Athlete:
+    """
+    Information about athlete
+    """
+    def __init__(self, name):
+        self.name = name
 
 class Practice:
     """
@@ -34,14 +45,16 @@ class Practice:
         """
         Save the current practice
         """
-        file_name = os.path.join("practices", f"{self.date.strftime('%Y%m%d')}.txt")
+        user_dir = os.path.join("practices", CURRENT_USER)
+        file_name = os.path.join(user_dir, f"{self.date.strftime('%Y%m%d')}.txt")
+        #file_name = os.path.join("practices", f"{self.date.strftime('%Y%m%d')}.txt")
         current_day = {
             str(self.date): {
                 'turns': []
             }
         }
-        if not os.path.isdir("practices"):
-            os.mkdir("practices")
+        if not os.path.isdir(user_dir):
+            os.mkdir(user_dir)
     
         if os.path.exists(file_name):
             with open(file_name) as practice_file:
@@ -104,6 +117,35 @@ class Routine():
 
     def toJSON(self):
         return [skill.shorthand for skill in self.skills]
+
+
+def current_user():
+    """
+    Returns the current user
+    """
+    return CURRENT_USER
+
+
+def set_current_user(user):
+    """
+    Sets the current user
+    """
+    global CURRENT_USER
+    CURRENT_USER = user
+
+def current_event():
+    """
+    Returns the current event
+    """
+    return EVENT
+
+
+def set_current_event(event):
+    """
+    Sets the current event
+    """
+    global EVENT
+    EVENT = event
 
 
 def get_skill_difficulty(skill):
