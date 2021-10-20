@@ -20,7 +20,8 @@ from flask import Flask, request, render_template, jsonify
 
 from team_building import get_counters_for_rating, LEAGUE_RANKINGS, NoPokemonFound, LEAGUE_VALUE, TeamCreater
 from battle_sim import sim_battle
-from trampoline import convert_form_data, pretty_print, Practice
+from trampoline import convert_form_data, pretty_print, Practice, current_user, set_current_user,\
+     current_event, set_current_event
 
 app = Flask(__name__, static_url_path="", static_folder="static")
 
@@ -257,6 +258,11 @@ def clear_history():
 def trampoline_log():
     # Convert form data to trampoline skills
     form_data = request.form.get('log', '')
+    username = request.form.get('name', None) or current_user()
+    event = request.form.get('event', None) or current_event()
+    set_current_event(event)
+    set_current_user(username)
+    logger.info(f"Username: {username}")
     routines = convert_form_data(form_data)
     logger.info(request.form.get('log', 'None').split('\r\n'))
 
@@ -301,9 +307,9 @@ def trampoline_log():
 
     # Print out a table per date
     practice_tables = []
-    for _, _, practice_files in os.walk("practices"):
+    for _, _, practice_files in os.walk(os.path.join("practices", username)):
         for practice_file in sorted(practice_files, reverse=True):
-            full_path = os.path.join("practices", practice_file)
+            full_path = os.path.join("practices", username, practice_file)
             with open(full_path) as practice_file:
                 practice_data = json.load(practice_file)
                 practice = Practice.load(practice_data)
@@ -324,7 +330,7 @@ def trampoline_log():
     ]
     body = "".join(html)
     #body = request.form.get('log', 'Nothing yet')
-    return render_template("trampoline.html", body=body)
+    return render_template("trampoline.html", body=body, username=username, event=event)
 
 
 @app.route("/about")

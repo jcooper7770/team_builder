@@ -20,6 +20,8 @@
 <br><br>
 
 <form action="{{ url_for('trampoline_log') }}" method="post" id="logger" style="text-align:center;">
+Username: <input type="text" id="name" name="name" placeholder="new username" value="{{username}}"><br>
+Event: <input type="text" id="event" name="event" placeholder="event" value="{{event}}"><br>
 <textarea id="log" name="log" rows="10" cols="50" form="logger" placeholder="Input your routines here"></textarea>
 <br>
 <input type="submit">
