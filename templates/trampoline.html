@@ -30,6 +30,7 @@ Event: <input type="text" id="event" name="event" placeholder="event" value="{{e
 <!--- Deleting past data --->
 <form method="post" id="clear-form" style='text-align:center;'>
 <button type="submit" id="delete-button">Delete Historical Data</button>
+<button id="delete-day-button">Delete Today's Data</button>
 </form>
 
 <script src="https://code.jquery.com/jquery-3.5.1.js"
@@ -38,15 +39,26 @@ Event: <input type="text" id="event" name="event" placeholder="event" value="{{e
  
   <script type="text/javascript">
     $("#delete-button").click(function(e){
+    	e.preventDefault();
+    	$.ajax({
+      		type: 'GET',
+      		url: "/logger/_clear",
+      		success: function(data){
+                 alert("Deleted data");
+         	}
+    	});
+    });
+
+    $("#delete-day-button").click(function(e){
     e.preventDefault();
     $.ajax({
       type: 'GET',
-      url: "/logger/_clear",
+      url: "/logger/_clearDay",
       success: function(data){
                  alert("Deleted data");
                }
     });
-});
+    });
 </script>
 
 

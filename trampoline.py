@@ -2,16 +2,18 @@
 Utilities for trampoline app
 
 TODO:
-  - incorporate '...' (stop in middle of turn)
-  - add in 'X' for bail during turn
+  - [DONE] incorporate '...' (stop in middle of turn)
+  - [DONE] add in 'X' for bail during turn
   - Log in with different users so multiple people can use the logger
   - Add in notes for a practice or a turn
-  - Add in double mini
+  - [Done] Add in double mini
+  - Update difficulty for double mini
 """
 
 import datetime
 import json
 import os
+import re
 
 
 NUM_FLIPS = {
@@ -24,6 +26,9 @@ NUM_FLIPS = {
 
 CURRENT_USER = "bob"
 EVENT = "trampoline"
+NON_SKILLS = [
+    "X", "..."
+]
 
 
 class Athlete:
@@ -37,16 +42,17 @@ class Practice:
     """
     All turns/skills done in a practice
     """
-    def __init__(self, practice_date, turns):
+    def __init__(self, practice_date, turns, event):
         self.date = practice_date
         self.turns = turns
+        self.event = event
 
     def save(self):
         """
         Save the current practice
         """
         user_dir = os.path.join("practices", CURRENT_USER)
-        file_name = os.path.join(user_dir, f"{self.date.strftime('%Y%m%d')}.txt")
+        file_name = os.path.join(user_dir, f"{self.date.strftime('%Y%m%d')}_{self.event}.txt")
         #file_name = os.path.join("practices", f"{self.date.strftime('%Y%m%d')}.txt")
         current_day = {
             str(self.date): {
@@ -67,16 +73,29 @@ class Practice:
         return current_day
 
     @classmethod
-    def load(self, practice_data):
+    def load(self, practice_data, event):
         """
         Loads in a practice
         """
         date = list(practice_data.keys())[0]
         return Practice(
             datetime.datetime.strptime(date, '%Y-%m-%d').date(),
-            [Routine([Skill(skill) for skill in routine]) for routine in practice_data[date]['turns']]
+            [Routine([Skill(skill) for skill in routine]) for routine in practice_data[date]['turns']],
+            event
         )
 
+    @classmethod
+    def delete(self, practice_date):
+        """
+        Deletes the practice from the given day
+        """
+        user_dir = os.path.join("practices", CURRENT_USER)
+        file_name = os.path.join(user_dir, f"{practice_date.strftime('%Y%m%d')}.txt")
+        if os.path.exists(file_name):
+            os.remove(file_name)
+            return True
+        return False
+        
 
 class Skill:
     """
@@ -88,9 +107,12 @@ class Skill:
         self.pos = string[-1]
         self.shorthand = string
 
-        self.flips = float(string[:-(NUM_FLIPS[len(string[:-1])]+1)])/4.0
-        self.twists = [int(n)/2.0 for n in string[len(str(int(self.flips*4))):-1]]
-        self.difficulty = get_skill_difficulty(self)
+        if string not in NON_SKILLS:
+            self.flips = float(string[:-(NUM_FLIPS[len(string[:-1])]+1)])/4.0
+            self.twists = [int(n)/2.0 for n in string[len(str(int(self.flips*4))):-1]]
+            self.difficulty = get_skill_difficulty(self)
+        else:
+            self.flips, self.twists, self.difficulty = (0, [0], 0)
 
     def __str__(self):
         return f"{self.flips} flips - {self.twists} twists - {self.pos} position ({self.difficulty:0.1f})"
@@ -103,8 +125,9 @@ class Routine():
     """
     Routine
     """
-    def __init__(self, skills):
+    def __init__(self, skills, event=EVENT):
         self.skills = skills
+        self.event = event
         self.total_flips = sum([skill.flips for skill in self.skills])
         self.total_twists = sum([sum(skill.twists) for skill in self.skills])
         self.difficulty = sum([skill.difficulty for skill in self.skills])
@@ -161,7 +184,7 @@ def get_skill_difficulty(skill):
            + (0.1 if skill.flips == 3 else 0) # extra 0.1 for a triple flip
 
 
-def convert_form_data(form_data, logger=print):
+def convert_form_data(form_data, logger=print, event=EVENT):
     """
     Converts the data from the form into trampoline routines
     and returns a list of Routine objs
@@ -183,8 +206,14 @@ def convert_form_data(form_data, logger=print):
             try:
                 skills.append(Skill(skill))
             except:
+                repeats = re.findall("x([0-9]*)", skill)
+                if repeats:
+                    for _ in range(int(repeats[0]) - 1):
+                        skills.append(skills[-1])
+                else:
+                    logger(f"Cannot convert '{skill}' into a skill")
                 continue
-        routine = Routine(skills)
+        routine = Routine(skills, event=event)
         skill_turns.append(routine)
         #skill_turns.append(skills)
     return skill_turns
