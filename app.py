@@ -13,6 +13,7 @@ TODO:
 import datetime
 import json
 import os
+import re
 import sys
 import traceback
 
@@ -21,7 +22,7 @@ from flask import Flask, request, render_template, jsonify
 from team_building import get_counters_for_rating, LEAGUE_RANKINGS, NoPokemonFound, LEAGUE_VALUE, TeamCreater
 from battle_sim import sim_battle
 from trampoline import convert_form_data, pretty_print, Practice, current_user, set_current_user,\
-     current_event, set_current_event
+     current_event, set_current_event, NON_SKILLS
 
 app = Flask(__name__, static_url_path="", static_folder="static")
 
@@ -221,8 +222,9 @@ def skills_table(skills, title="Routines"):
             skills_table.add_cell("")
 
         # total skills
-        skills_table.add_cell(len(turn.skills))
-        total_skills += len(turn.skills)
+        num_skills = len([skill for skill in turn.skills if skill.shorthand not in NON_SKILLS])
+        skills_table.add_cell(num_skills)
+        total_skills += num_skills
         skills_table.add_cell(total_skills)
 
         # total flips
@@ -253,6 +255,17 @@ def clear_history():
         return jsonify(status="fail")
         
 
+@app.route("/logger/_clearDay")
+def clear_day():
+    """
+    Clears current day's data for the current user
+    """
+    if Practice.delete(datetime.date.today()):
+        logger.info("deleted today's data")
+        return jsonify(status="success")
+    logger.error("Failed to delete data for today")
+    return jsonify(status="fail")
+
 
 @app.route("/logger", methods=['GET', 'POST'])
 def trampoline_log():
@@ -263,11 +276,11 @@ def trampoline_log():
     set_current_event(event)
     set_current_user(username)
     logger.info(f"Username: {username}")
-    routines = convert_form_data(form_data)
+    routines = convert_form_data(form_data, event=event)
     logger.info(request.form.get('log', 'None').split('\r\n'))
 
     # Save the current practice
-    practice = Practice(datetime.date.today(), routines)
+    practice = Practice(datetime.date.today(), routines, event)
     saved_practice = practice.save()
 
     for turn_num, turn in enumerate(routines):
@@ -310,10 +323,15 @@ def trampoline_log():
     for _, _, practice_files in os.walk(os.path.join("practices", username)):
         for practice_file in sorted(practice_files, reverse=True):
             full_path = os.path.join("practices", username, practice_file)
+            try:
+                practice_event = re.findall("[0-9]{8}_([a-z]*).txt", practice_file)[0]
+            except:
+                practice_event = ""
             with open(full_path) as practice_file:
                 practice_data = json.load(practice_file)
-                practice = Practice.load(practice_data)
-            title = practice.date.strftime("%A %m/%d/%Y")
+                practice = Practice.load(practice_data, practice_event)
+            title_date = practice.date.strftime("%A %m/%d/%Y")
+            title = f"{title_date} ({practice.event})"
             practice_table = skills_table(practice.turns, title=title)
             practice_tables.append(practice_table)
 
