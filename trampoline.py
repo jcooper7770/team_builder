@@ -8,12 +8,16 @@ TODO:
   - Add in notes for a practice or a turn
   - [Done] Add in double mini
   - Update difficulty for double mini
+  - Add about page on shortcuts
+  - Save in a database instead of text files
 """
 
 import datetime
 import json
 import os
 import re
+
+from collections import defaultdict
 
 
 NUM_FLIPS = {
@@ -30,6 +34,11 @@ NON_SKILLS = [
     "X", "..."
 ]
 
+COMMON_ROUTINES = defaultdict(str, {
+    "twisting swingtime": "40o 41o 42/ 41< 40< 43/ 40/ 41/ 44/",
+    "swingtime": "40o 41o 40< 41< 40/ 41/",
+    "three halfouts": "801< 40/ 801o 40/ 803<"
+})
 
 class Athlete:
     """
@@ -53,7 +62,6 @@ class Practice:
         """
         user_dir = os.path.join("practices", CURRENT_USER)
         file_name = os.path.join(user_dir, f"{self.date.strftime('%Y%m%d')}_{self.event}.txt")
-        #file_name = os.path.join("practices", f"{self.date.strftime('%Y%m%d')}.txt")
         current_day = {
             str(self.date): {
                 'turns': []
@@ -89,12 +97,16 @@ class Practice:
         """
         Deletes the practice from the given day
         """
+        deleted = False
         user_dir = os.path.join("practices", CURRENT_USER)
-        file_name = os.path.join(user_dir, f"{practice_date.strftime('%Y%m%d')}.txt")
-        if os.path.exists(file_name):
-            os.remove(file_name)
-            return True
-        return False
+        for _, _, practice_files in os.walk(user_dir):
+            print(f"files: {practice_files}")
+            for practice_file in practice_files:
+                if practice_file.startswith(f"{practice_date.strftime('%Y%m%d')}"):
+                    file_name = os.path.join(user_dir, practice_file)
+                    os.remove(file_name)
+                    deleted = True
+        return deleted
         
 
 class Skill:
@@ -115,7 +127,7 @@ class Skill:
             self.flips, self.twists, self.difficulty = (0, [0], 0)
 
     def __str__(self):
-        return f"{self.flips} flips - {self.twists} twists - {self.pos} position ({self.difficulty:0.1f})"
+        return f"{self.shorthand} - {self.flips} flips - {self.twists} twists - {self.pos} position ({self.difficulty:0.1f})"
 
     def __repr__(self):
         return str(self)
@@ -125,9 +137,10 @@ class Routine():
     """
     Routine
     """
-    def __init__(self, skills, event=EVENT):
+    def __init__(self, skills, event=EVENT, note=None):
         self.skills = skills
         self.event = event
+        self.note = note
         self.total_flips = sum([skill.flips for skill in self.skills])
         self.total_twists = sum([sum(skill.twists) for skill in self.skills])
         self.difficulty = sum([skill.difficulty for skill in self.skills])
@@ -191,6 +204,22 @@ def convert_form_data(form_data, logger=print, event=EVENT):
     """
     if not form_data:
         return []
+
+    # Replace any thing inside of a parentethese
+    #  i.e. (40o 41o)x2 -> 40o 41o 40o 41o
+    matches = re.findall("(\((.*)\)x([0-9]*))", form_data)
+    if matches:
+        form_data = form_data.replace(
+            # Takes the entire string
+            matches[0][0],
+            # and replaces it with the correct number of what is inside the parentethese
+            ' '.join([matches[0][1]]*int(matches[0][2]))
+        )
+
+    # Replace common routines
+    for common_name, common_routine in COMMON_ROUTINES.items():
+        form_data = form_data.replace(common_name, common_routine)
+    
     # Split by spaces for each skill
     #turns = form_data.split('\r\n')
     turns = form_data.splitlines()
@@ -240,5 +269,14 @@ if __name__ == '__main__':
     pretty_print(routines)
 
     routines = convert_form_data('12001< 811< 12001o 811o 803< 813o 803o 800< 801< 813<')
+    pretty_print(routines)
+
+    routines = convert_form_data('40o X 40o 41o ... 822/')
+    pretty_print(routines)
+
+    routines = convert_form_data('swingtime 822/')
+    pretty_print(routines)
+
+    routines = convert_form_data('(swingtime)x3 822/')
     pretty_print(routines)
 

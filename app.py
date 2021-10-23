@@ -17,7 +17,7 @@ import re
 import sys
 import traceback
 
-from flask import Flask, request, render_template, jsonify
+from flask import Flask, request, render_template, jsonify, redirect, url_for
 
 from team_building import get_counters_for_rating, LEAGUE_RANKINGS, NoPokemonFound, LEAGUE_VALUE, TeamCreater
 from battle_sim import sim_battle
@@ -267,8 +267,10 @@ def clear_day():
     return jsonify(status="fail")
 
 
-@app.route("/logger", methods=['GET', 'POST'])
-def trampoline_log():
+def _save_trampoline_data(request):
+    """
+    Saves the routine data from the forms
+    """
     # Convert form data to trampoline skills
     form_data = request.form.get('log', '')
     username = request.form.get('name', None) or current_user()
@@ -283,25 +285,22 @@ def trampoline_log():
     practice = Practice(datetime.date.today(), routines, event)
     saved_practice = practice.save()
 
+    # Log the turns to the log file
     for turn_num, turn in enumerate(routines):
         logger.info(f"{turn_num+1}: {turn.skills}")
     pretty_print(routines, logger.info)
 
-    # Store trampoline skills to a file?
+    # Store trampoline skills to a file
     if not os.path.exists('routines.txt'):
         with open('routines.txt','w') as routine_file:
             pass
 
-    historical_routines = []
+    # Get the current routines
     with open('routines.txt') as routine_file:
         old_routines = routine_file.read()
     logger.info("-----")
     logger.info(f"old routines: {old_routines}")
     logger.info("-----")
-
-    # Collect all routines up to now
-    historical_routines.extend(convert_form_data(old_routines, logger=logger.info))
-    historical_routines.extend(routines)
 
     # Save historical and current routines to routines file
     if form_data:
@@ -312,24 +311,50 @@ def trampoline_log():
             else:
                 routine_file.write(new_routines)
 
+
+
+@app.route("/logger", methods=['GET', 'POST'])
+def trampoline_log():
+    # POST/Redirect/GET to avoid resubmitting form on refresh
+    if request.method == "POST":
+        _save_trampoline_data(request)
+        return redirect(url_for('trampoline_log'))
+
+    username, event = current_user(), current_event()
+    if os.path.exists('routines.txt'):
+        with open('routines.txt') as routine_file:
+            old_routines = routine_file.read()
+    else:
+        old_routines = ""
+
+    logger.info("-----")
+    logger.info(f"old routines: {old_routines}")
+    logger.info("-----")
+
+    # Collect all routines up to now
+    routines = convert_form_data(old_routines, logger=logger.info)
+
     # Write all trampoline skills to a table
     table = skills_table(routines)
-    historical_table = skills_table(historical_routines, title="Historical Routines")
-
-    # add a button to clear the historical data
 
     # Print out a table per date
     practice_tables = []
     for _, _, practice_files in os.walk(os.path.join("practices", username)):
         for practice_file in sorted(practice_files, reverse=True):
             full_path = os.path.join("practices", username, practice_file)
+
+            # Get the event from the filename
             try:
                 practice_event = re.findall("[0-9]{8}_([a-z]*).txt", practice_file)[0]
             except:
                 practice_event = ""
+
+            # Load in the practice to get the turns
             with open(full_path) as practice_file:
                 practice_data = json.load(practice_file)
                 practice = Practice.load(practice_data, practice_event)
+
+            # Add the turns into a table for that practice
             title_date = practice.date.strftime("%A %m/%d/%Y")
             title = f"{title_date} ({practice.event})"
             practice_table = skills_table(practice.turns, title=title)
@@ -340,14 +365,13 @@ def trampoline_log():
     html = [
         table,
         "<br><br>",
-        historical_table,
         "<h1 style='text-align:center;'>Previous Practices</h1>",
+        # Div for practices so they are scrollable
         "<div id='practices' class='practices'><br><br>",
         all_practice_tables,
         "</div>"
     ]
     body = "".join(html)
-    #body = request.form.get('log', 'Nothing yet')
     return render_template("trampoline.html", body=body, username=username, event=event)
 
 
