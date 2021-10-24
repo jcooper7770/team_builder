@@ -50,7 +50,6 @@ Event: <input type="text" id="event" name="event" placeholder="event" value="{{e
     });
 
     $("#delete-day-button").click(function(e){
-    e.preventDefault();
     $.ajax({
       type: 'GET',
       url: "/logger/_clearDay",

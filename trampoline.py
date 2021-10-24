@@ -47,6 +47,7 @@ class Athlete:
     def __init__(self, name):
         self.name = name
 
+
 class Practice:
     """
     All turns/skills done in a practice
@@ -207,13 +208,13 @@ def convert_form_data(form_data, logger=print, event=EVENT):
 
     # Replace any thing inside of a parentethese
     #  i.e. (40o 41o)x2 -> 40o 41o 40o 41o
-    matches = re.findall("(\((.*)\)x([0-9]*))", form_data)
-    if matches:
+    matches = re.findall("(\((.[^x]*)\)x([0-9]*))", form_data)
+    for match in matches:
         form_data = form_data.replace(
             # Takes the entire string
-            matches[0][0],
+            match[0],
             # and replaces it with the correct number of what is inside the parentethese
-            ' '.join([matches[0][1]]*int(matches[0][2]))
+            ' '.join([match[1]]*int(match[2]))
         )
 
     # Replace common routines
