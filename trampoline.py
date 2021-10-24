@@ -208,7 +208,7 @@ def convert_form_data(form_data, logger=print, event=EVENT):
 
     # Replace any thing inside of a parentethese
     #  i.e. (40o 41o)x2 -> 40o 41o 40o 41o
-    matches = re.findall("(\((.*)\)x([0-9]*))", form_data)
+    matches = re.findall("(\((.[^x]*)\)x([0-9]*))", form_data)
     for match in matches:
         form_data = form_data.replace(
             # Takes the entire string
