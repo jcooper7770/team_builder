@@ -42,6 +42,7 @@ REQUEST_TIMEOUT = 180
 
 LEAGUE_RANKINGS = {
     "ULP": "https://vps.gobattlelog.com/data/overall/rankings-2500-premier.json?v=1.25.10",
+    "ULPC": "https://vps.gobattlelog.com/data/overall/rankings-2500-premierclassic.json?v=1.25.10",
     "UL": "https://vps.gobattlelog.com/data/overall/rankings-2500.json?v=1.25.10",
     "ML": "https://vps.gobattlelog.com/data/overall/rankings-10000.json?v=1.25.31",
     "MLC": "https://vps.gobattlelog.com/data/overall/rankings-10000-classic.json?v=1.25.31",
@@ -54,6 +55,7 @@ LEAGUE_RANKINGS = {
 }
 LEAGUE_DATA = {
     "ULP": "https://vps.gobattlelog.com/records/ultra-premier/latest.json?ts=449983.3",
+    "ULPC": "https://vps.gobattlelog.com/records/ultra-premierclassic/latest.json?ts=449983.3",
     #"UL": "https://vps.gobattlelog.com/records/ultra/latest.json?ts=449983.3",
     "UL": "https://vps.gobattlelog.com/records/ultra/latest.json?ts=452212.3",
     "GL": "https://vps.gobattlelog.com/records/great/latest.json?ts=450364.2",
@@ -72,6 +74,7 @@ LEAGUE_VALUE = {
     'UL': '2500',
     'ULRemix': '2500',
     'ULP': '2500',
+    'ULPC': '2500',
     'ULPC': '2500-40',
     'MLC': '10000-40',
     'ML': '10000',
