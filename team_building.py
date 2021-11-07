@@ -46,12 +46,14 @@ LEAGUE_RANKINGS = {
     "UL": "https://vps.gobattlelog.com/data/overall/rankings-2500.json?v=1.25.10",
     "ML": "https://vps.gobattlelog.com/data/overall/rankings-10000.json?v=1.25.31",
     "MLC": "https://vps.gobattlelog.com/data/overall/rankings-10000-classic.json?v=1.25.31",
+    "MLPC": "https://vps.gobattlelog.com/data/overall/rankings-10000-premierclassic.json?v=1.25.31",
     "Element": "https://vps.gobattlelog.com/data/overall/rankings-500-element.json?v=1.25.31",
     "Remix": "https://vps.gobattlelog.com/data/overall/rankings-1500-remix.json?v=1.25.35",
     "ULRemix": "https://vps.gobattlelog.com/data/overall/rankings-2500-remix.json?v=1.25.35",
     "GL": "https://vps.gobattlelog.com/data/overall/rankings-1500.json?v=1.25.35",
     "Jungle": "https://vps.gobattlelog.com/data/overall/rankings-500-littlejungle.json?v=1.28.0",
-    "Halloween": "https://vps.gobattlelog.com/data/overall/rankings-1500-halloween.json?v=1.25.35"
+    "Halloween": "https://vps.gobattlelog.com/data/overall/rankings-1500-halloween.json?v=1.25.35",
+    'Kanto':"https://vps.gobattlelog.com/data/overall/rankings-1500-kanto.json?v=1.25.35"
 }
 LEAGUE_DATA = {
     "ULP": "https://vps.gobattlelog.com/records/ultra-premier/latest.json?ts=449983.3",
@@ -62,11 +64,13 @@ LEAGUE_DATA = {
     "Kanto": "https://vps.gobattlelog.com/records/great-kanto/latest.json?ts=450364.2",
     "ML": "https://vps.gobattlelog.com/records/master/latest.json?ts=451466.3",
     "MLC": "https://vps.gobattlelog.com/records/master/latest.json?ts=451466.3",
+    "MLPC": "https://vps.gobattlelog.com/records/master-premierclassic/latest.json?ts=451466.3",
     "Element": "https://vps.gobattlelog.com/records/element/latest.json?ts=451466.3",
     "Remix": "https://vps.gobattlelog.com/records/great-remix/latest.json?ts=451709.1",
     "ULRemix": "https://vps.gobattlelog.com/records/ultra-remix/latest.json?ts=451709.1",
     "Jungle": "https://vps.gobattlelog.com/records/littlejungle/latest.json?ts=451709.1",
-    "Halloween": "https://vps.gobattlelog.com/records/great-halloween/latest.json?ts=451466.3"
+    "Halloween": "https://vps.gobattlelog.com/records/great-halloween/latest.json?ts=451466.3",
+    "Kanto": "https://vps.gobattlelog.com/records/great-kanto/latest.json?ts=451466.3"
 }
 LEAGUE_VALUE = {
     'GL': '1500',
@@ -77,17 +81,21 @@ LEAGUE_VALUE = {
     'ULPC': '2500',
     'ULPC': '2500-40',
     'MLC': '10000-40',
+    'MLPC': '10000-40',
     'ML': '10000',
     'Element': '500',
     'Jungle': '500',
-    'Halloween': '1500'
+    'Halloween': '1500',
+    'Kanto': '1500'
 }
 CUP_VALUE = {
     'MLC': 'classic',
     'ULRemix': 'remix',
     'Jungle': 'littlejungle',
     'ULPC': 'premierclassic',
-    'Halloween': 'halloween'
+    'MLPC': 'premierclassic',
+    'Halloween': 'halloween',
+    'Kanto': 'kanto'
 }
 
 # https://gamepress.gg/pokemongo/cp-multiplier
