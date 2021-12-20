@@ -384,7 +384,7 @@ def about():
 def run():
     global CACHE
     global N_TEAMS
-    chosen_league = request.args.get("league", "ULPC")
+    chosen_league = request.args.get("league", "Holiday")
     chosen_pokemon = request.args.get('pokemon', '')
     chosen_position = request.args.get('position', 'lead')
     num_days = int(request.args.get('num_days', '1'))
