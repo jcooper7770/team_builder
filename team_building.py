@@ -54,7 +54,9 @@ LEAGUE_RANKINGS = {
     "Jungle": "https://vps.gobattlelog.com/data/overall/rankings-500-littlejungle.json?v=1.28.0",
     "Halloween": "https://vps.gobattlelog.com/data/overall/rankings-1500-halloween.json?v=1.25.35",
     "Kanto":"https://vps.gobattlelog.com/data/overall/rankings-1500-kanto.json?v=1.25.35",
-    "Holiday":"https://vps.gobattlelog.com/data/overall/rankings-1500-holiday.json?v=1.25.35"
+    "Holiday":"https://vps.gobattlelog.com/data/overall/rankings-1500-holiday.json?v=1.25.35",
+    "Sinnoh": "https://vps.gobattlelog.com/data/overall/rankings-1500-sinnoh.json?v=1.25.35",
+    "Love": "https://vps.gobattlelog.com/data/overall/rankings-1500-love.json?v=1.25.35"
 }
 LEAGUE_DATA = {
     "ULP": "https://vps.gobattlelog.com/records/ultra-premier/latest.json?ts=449983.3",
@@ -72,7 +74,9 @@ LEAGUE_DATA = {
     "Jungle": "https://vps.gobattlelog.com/records/littlejungle/latest.json?ts=451709.1",
     "Halloween": "https://vps.gobattlelog.com/records/great-halloween/latest.json?ts=451466.3",
     "Kanto": "https://vps.gobattlelog.com/records/great-kanto/latest.json?ts=451466.3",
-    "Holiday": "https://vps.gobattlelog.com/records/great-holiday/latest.json?ts=451466.3"
+    "Holiday": "https://vps.gobattlelog.com/records/great-holiday/latest.json?ts=451466.3",
+    "Sinnoh": "https://vps.gobattlelog.com/records/great-sinnoh/latest.json?ts=451466.3",
+    "Love": "https://vps.gobattlelog.com/records/great-love/latest.json?ts=451466.3"
 }
 LEAGUE_VALUE = {
     'GL': '1500',
@@ -89,7 +93,9 @@ LEAGUE_VALUE = {
     'Jungle': '500',
     'Halloween': '1500',
     'Kanto': '1500',
-    'Holiday': '1500'
+    'Holiday': '1500',
+    'Sinnoh': '1500',
+    "Love": '1500'
 }
 CUP_VALUE = {
     'MLC': 'classic',
@@ -99,7 +105,9 @@ CUP_VALUE = {
     'MLPC': 'premierclassic',
     'Halloween': 'halloween',
     'Kanto': 'kanto',
-    'Holiday': 'holiday'
+    'Holiday': 'holiday',
+    'Sinnoh': 'sinnoh',
+    'Love': 'love'
 }
 
 # https://gamepress.gg/pokemongo/cp-multiplier
