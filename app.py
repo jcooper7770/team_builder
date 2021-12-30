@@ -22,7 +22,7 @@ from flask import Flask, request, render_template, jsonify, redirect, url_for
 from team_building import get_counters_for_rating, LEAGUE_RANKINGS, NoPokemonFound, LEAGUE_VALUE, TeamCreater
 from battle_sim import sim_battle
 from trampoline import convert_form_data, pretty_print, Practice, current_user, set_current_user,\
-     current_event, set_current_event, NON_SKILLS
+     current_event, set_current_event, set_current_athlete, NON_SKILLS
 
 app = Flask(__name__, static_url_path="", static_folder="static")
 
@@ -277,6 +277,7 @@ def _save_trampoline_data(request):
     event = request.form.get('event', None) or current_event()
     set_current_event(event)
     set_current_user(username)
+    set_current_athlete(username)
     logger.info(f"Username: {username}")
     routines = convert_form_data(form_data, event=event)
     logger.info(request.form.get('log', 'None').split('\r\n'))
