@@ -10,6 +10,7 @@ TODO:
   - Update difficulty for double mini
   - Add about page on shortcuts
   - Save in a database instead of text files
+  - [DONE] Add athlete compulsory and optional
 """
 
 import datetime
@@ -29,6 +30,7 @@ NUM_FLIPS = {
 }
 
 CURRENT_USER = "bob"
+CURRENT_ATHLETE = None
 EVENT = "trampoline"
 NON_SKILLS = [
     "X", "..."
@@ -46,6 +48,55 @@ class Athlete:
     """
     def __init__(self, name):
         self.name = name
+        self.compulsory = []
+        self.optional = []
+
+    def set_comp(self, skills):
+        """
+        Sets the athlete's compulsory
+        """
+        self.compulsory = skills
+        self.save()
+
+    def set_opt(self, skills):
+        """
+        Sets the athlete's optional
+        """
+        self.optional = skills
+        self.save()
+
+    def save(self):
+        """
+        Saves the athlete into the database
+        """
+        file_name = os.path.join("athletes", f'{self.name}.json')
+        if not os.path.isdir("athletes"):
+            os.mkdir("athletes")
+
+        athlete_data = {
+            'name': self.name,
+            'compulsory': self.compulsory,
+            'optional': self.optional
+        }
+        with open(file_name, 'w') as athlete_file:
+            json.dump(athlete_data, athlete_file)
+
+    @classmethod
+    def load(self, name):
+        """
+        Loads in an athlete
+        """
+        file_path = os.path.join("athletes", f'{name}.json')
+
+        if not os.path.exists(file_path):
+            return Athlete(name)
+
+        with open(file_path) as athlete_file:
+            athlete_data = json.load(athlete_file)
+            athlete = Athlete(athlete_data['name'])
+            athlete.compulsory = athlete_data['compulsory']
+            athlete.optional = athlete_data['optional']
+            return athlete
 
 
 class Practice:
@@ -78,6 +129,10 @@ class Practice:
         with open(file_name, 'w') as practice_file:
             current_day[str(self.date)]['turns'].extend([turn.toJSON() for turn in self.turns])
             json.dump(current_day, practice_file)
+
+        # Save the athlete also
+        athlete = Athlete.load(CURRENT_USER)
+        athlete.save()
 
         return current_day
 
@@ -184,6 +239,13 @@ def set_current_event(event):
     global EVENT
     EVENT = event
 
+def set_current_athlete(name):
+    """
+    Sets the current athlete
+    """
+    global CURRENT_ATHLETE
+    CURRENT_ATHLETE = Athlete.load(name)
+
 
 def get_skill_difficulty(skill):
     """
@@ -203,6 +265,10 @@ def convert_form_data(form_data, logger=print, event=EVENT):
     Converts the data from the form into trampoline routines
     and returns a list of Routine objs
     """
+    athlete = Athlete.load(CURRENT_USER)
+    logger(f"Comp: {athlete.compulsory}")
+    logger(f"opt: {athlete.optional}")
+
     if not form_data:
         return []
 
@@ -220,6 +286,10 @@ def convert_form_data(form_data, logger=print, event=EVENT):
     # Replace common routines
     for common_name, common_routine in COMMON_ROUTINES.items():
         form_data = form_data.replace(common_name, common_routine)
+
+    # Replace compulsory or optional
+    form_data = form_data.replace('compulsory', ' '.join(athlete.compulsory))
+    form_data = form_data.replace('optional', ' '.join(athlete.optional))
     
     # Split by spaces for each skill
     #turns = form_data.split('\r\n')
@@ -232,6 +302,12 @@ def convert_form_data(form_data, logger=print, event=EVENT):
         skills = []
         if not turn:
             continue
+        # Set athlete compulsory or optional
+        if turn[0] == 'comp:':
+            athlete.set_comp(turn[1:])
+        elif turn[0] == 'opt:':
+            athlete.set_opt(turn[1:])
+
         for skill in turn:
             try:
                 skills.append(Skill(skill))
