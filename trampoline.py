@@ -226,7 +226,7 @@ class Routine():
     def toJSON(self):
         if self.skills:
             return [skill.shorthand for skill in self.skills]
-        return [self.note]
+        return [f"-{self.note}"]
 
 
 def current_user():
@@ -318,8 +318,9 @@ def convert_form_data(form_data, logger=print, event=EVENT):
     skill_turns = []
     for turn in turn_skills:
         # notes start with '-'
-        if turn[0] == '-':
-            routine = Routine([], event=event, note=' '.join(turn[1:]))
+        if turn[0][0] == '-':
+            note_str = ' '.join(turn)
+            routine = Routine([], event=event, note=note_str.strip('-'))
             skill_turns.append(routine)
             continue
             
