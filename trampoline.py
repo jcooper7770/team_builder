@@ -5,8 +5,8 @@ TODO:
   - [DONE] incorporate '...' (stop in middle of turn)
   - [DONE] add in 'X' for bail during turn
   - Log in with different users so multiple people can use the logger
-  - Add in notes for a practice or a turn
-  - [Done] Add in double mini
+  - [DONE] Add in notes for a practice or a turn
+  - [DONE] Add in double mini
   - Update difficulty for double mini
   - Add about page on shortcuts
   - Save in a database instead of text files
@@ -41,6 +41,22 @@ COMMON_ROUTINES = defaultdict(str, {
     "swingtime": "40o 41o 40< 41< 40/ 41/",
     "three halfouts": "801< 40/ 801o 40/ 803<"
 })
+
+SKILLS = [
+    # Singles
+    "40", "41", "42", "43", "44", "45",
+    # Doubles
+    "800", "801", "802", "803", "805",
+    "811", "813", "815",
+    "822", "823", "824", "825", "826",
+    "831", "833", "835",
+    # Triples
+    "12000", "12001", "12003",
+    "12101", "12103",
+    "12200", "12222"
+]
+POSITIONS = ["o", "<", "/"]
+
 
 class Athlete:
     """
@@ -144,7 +160,7 @@ class Practice:
         date = list(practice_data.keys())[0]
         return Practice(
             datetime.datetime.strptime(date, '%Y-%m-%d').date(),
-            [Routine([Skill(skill) for skill in routine]) for routine in practice_data[date]['turns']],
+            [Routine([Skill(skill) for skill in routine]) if (routine and routine[0][0]!="-") else Routine([], note=routine[0][1:] if routine else routine) for routine in practice_data[date]['turns']],
             event
         )
 
@@ -208,7 +224,9 @@ class Routine():
         return str(self)
 
     def toJSON(self):
-        return [skill.shorthand for skill in self.skills]
+        if self.skills:
+            return [skill.shorthand for skill in self.skills]
+        return [self.note]
 
 
 def current_user():
@@ -299,6 +317,12 @@ def convert_form_data(form_data, logger=print, event=EVENT):
 
     skill_turns = []
     for turn in turn_skills:
+        # notes start with '-'
+        if turn[0] == '-':
+            routine = Routine([], event=event, note=' '.join(turn[1:]))
+            skill_turns.append(routine)
+            continue
+            
         skills = []
         if not turn:
             continue

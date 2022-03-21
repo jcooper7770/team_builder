@@ -22,7 +22,7 @@
 <form action="{{ url_for('trampoline_log') }}" method="post" id="logger" style="text-align:center;">
 Username: <input type="text" id="name" name="name" placeholder="new username" value="{{username}}"><br>
 Event: <input type="text" id="event" name="event" placeholder="event" value="{{event}}"><br>
-<textarea id="log" name="log" rows="10" cols="50" form="logger" placeholder="Input your routines here"></textarea>
+<textarea id="log" name="log" rows="10" cols="50" form="logger" placeholder="Input your routines here">{{routine_text}}</textarea>
 <br>
 <input type="submit">
 </form>
@@ -66,5 +66,23 @@ Event: <input type="text" id="event" name="event" placeholder="event" value="{{e
 <br>
 
 <br><br><br>
+
+<table align='center' border=1 style='background-color:#FFFFFF;'>
+<tr>
+<th align='center' colspan=9>Index</th>
+</tr>
+<tr>
+  <td>Skill 1</td>
+  <td>Skill 2</td>
+  <td></td>
+  <td># skills in this turn</td>
+  <td># flips in this turn</td>
+  <td># total skills in practice</td>
+  <td># total flips in practice</td>
+  <td>DoD for turn</td>
+  <td>total DoD for practice</td>
+</tr>
+</table>
+
 </body>
 </html>

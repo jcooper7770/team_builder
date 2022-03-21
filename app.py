@@ -22,7 +22,7 @@ from flask import Flask, request, render_template, jsonify, redirect, url_for
 from team_building import get_counters_for_rating, LEAGUE_RANKINGS, NoPokemonFound, LEAGUE_VALUE, TeamCreater
 from battle_sim import sim_battle
 from trampoline import convert_form_data, pretty_print, Practice, current_user, set_current_user,\
-     current_event, set_current_event, set_current_athlete, NON_SKILLS
+     current_event, set_current_event, set_current_athlete, NON_SKILLS, SKILLS, POSITIONS
 
 app = Flask(__name__, static_url_path="", static_folder="static")
 
@@ -208,10 +208,16 @@ def skills_table(skills, title="Routines"):
     total_skills = 0
     skills_table = TableMaker(border=1, align="center", width="30%")
     skills_table.new_header(title, colspan=most_cols+8)
+    total_turn_num = 0
     for turn_num, turn in enumerate(skills):
         skills_table.new_row()
-        # Turn number
-        skills_table.add_cell(f"<b>{turn_num+1}</b>")
+        if turn.note:
+            skills_table.add_cell(turn.note, colspan=most_cols+8)
+            continue
+        total_turn_num += 1
+        # Turn number (also a link to copy the turn)
+        routine_str = ' '.join(skill.shorthand for skill in turn.skills)
+        skills_table.add_cell(f"<b><a title='Copy text' href='/logger?routine={routine_str}'>{total_turn_num}</a></b>")
 
         # Skills
         for skill in turn.skills:
@@ -362,6 +368,16 @@ def trampoline_log():
             practice_tables.append(practice_table)
 
     all_practice_tables = "<br><br>".join(practice_tables)
+
+
+    # Test dropdown with all skills
+    skill_test = []
+    skill_test.append(f"<select id='mySelect' name='skill'>")
+    skill_test.append("<option value=''>None</option>")
+    for skill in SKILLS:
+        skill_test.append(f"<option value='{skill}'>{skill}</option>")
+    skill_test.append("</select>")
+    skill_test = "".join(skill_test)
             
     html = [
         table,
@@ -370,10 +386,12 @@ def trampoline_log():
         # Div for practices so they are scrollable
         "<div id='practices' class='practices'><br><br>",
         all_practice_tables,
-        "</div>"
+        "</div>",
+        #"<br><br>",
+        #skill_test
     ]
     body = "".join(html)
-    return render_template("trampoline.html", body=body, username=username, event=event)
+    return render_template("trampoline.html", body=body, username=username, event=event, routine_text=request.args.get('routine', ''))
 
 
 @app.route("/about")
