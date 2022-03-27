@@ -19,19 +19,33 @@
 </table>
 <br><br>
 
-<form action="{{ url_for('trampoline_log') }}" method="post" id="logger" style="text-align:center;">
+<table align="center">
+<tr><td>
+<form action="{{ url_for('trampoline_log') }}" method="post" id="logger" style="text-align:left;">
+
+<!-- Username -->
 Username: <input type="text" id="name" name="name" placeholder="new username" value="{{username}}"><br>
-Event: <input type="text" id="event" name="event" placeholder="event" value="{{event}}"><br>
+
+<!-- Event to be logged -->
+Event:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <select name="event" id="event">
+  <option value="trampoline"{% if event=="trampoline" %} selected{% endif %}>Trampoline</option>
+  <option value="dmt"{% if event=="dmt" %} selected{% endif %}>Double Mini</option>
+</select><br>
+
+<!-- Skills to be logged -->
 <textarea id="log" name="log" rows="10" cols="50" form="logger" placeholder="Input your routines here">{{routine_text}}</textarea>
 <br>
 <input type="submit">
 </form>
 
+
 <!--- Deleting past data --->
-<form method="post" id="clear-form" style='text-align:center;'>
+<form method="post" id="clear-form" style='text-align:left;'>
 <button type="submit" id="delete-button">Delete Historical Data</button>
 <button id="delete-day-button">Delete Today's Data</button>
 </form>
+</td></tr>
+</table>
 
 <script src="https://code.jquery.com/jquery-3.5.1.js"
           integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
@@ -67,6 +81,7 @@ Event: <input type="text" id="event" name="event" placeholder="event" value="{{e
 
 <br><br><br>
 
+<!-- Index for tables -->
 <table align='center' border=1 style='background-color:#FFFFFF;'>
 <tr>
 <th align='center' colspan=9>Index</th>
