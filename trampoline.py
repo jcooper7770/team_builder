@@ -7,7 +7,7 @@ TODO:
   - Log in with different users so multiple people can use the logger
   - [DONE] Add in notes for a practice or a turn
   - [DONE] Add in double mini
-  - Update difficulty for double mini
+  - [DONE] Update difficulty for double mini
   - Add about page on shortcuts
   - Save in a database instead of text files
   - [DONE] Add athlete compulsory and optional
@@ -160,7 +160,7 @@ class Practice:
         date = list(practice_data.keys())[0]
         return Practice(
             datetime.datetime.strptime(date, '%Y-%m-%d').date(),
-            [Routine([Skill(skill) for skill in routine]) if (routine and routine[0][0]!="-") else Routine([], note=routine[0][1:] if routine else routine) for routine in practice_data[date]['turns']],
+            [Routine([Skill(skill, event=event) for skill in routine], event=event) if (routine and routine[0][0]!="-") else Routine([], note=routine[0][1:] if routine else routine) for routine in practice_data[date]['turns']],
             event
         )
 
@@ -185,16 +185,17 @@ class Skill:
     """
     A skill converted from a string
     """
-    def __init__(self, string):
+    def __init__(self, string, event=EVENT):
         self.flips = 0
         self.twists = []
         self.pos = string[-1]
         self.shorthand = string
+        self.event = event
 
         if string not in NON_SKILLS:
             self.flips = float(string[:-(NUM_FLIPS[len(string[:-1])]+1)])/4.0
             self.twists = [int(n)/2.0 for n in string[len(str(int(self.flips*4))):-1]]
-            self.difficulty = get_skill_difficulty(self)
+            self.difficulty = get_skill_difficulty(self) if event != "dmt" else get_dmt_difficulty(self)
         else:
             self.flips, self.twists, self.difficulty = (0, [0], 0)
 
@@ -265,10 +266,78 @@ def set_current_athlete(name):
     CURRENT_ATHLETE = Athlete.load(name)
 
 
+def get_dmt_difficulty(skill):
+    """
+    Returns the difficulty/tarrif of the double mini skill
+
+    Got DD from: https://usagym.org/PDFs/Forms/T&T/DD_DMT.pdf
+    """
+    flip_difficulty = 0 # difficulty per flip
+    twist_difficulty = 0 # difficulty per half twist
+    # Single flips
+    if skill.flips == 1.0:
+        if skill.pos == "o":
+            if skill.twists[0] == 0.0: # No twist
+                return 0.5
+            elif skill.twists[0] == 0.5: # Barani
+                return 0.7
+        elif skill.pos in ["<", "/"]:
+            if skill.twists[0] == 0.0: # No twist
+                return 0.6
+            elif skill.twists[1] == 1.5: # Barani
+                return 0.7
+            elif skill.twists[0] == 1.0: # Full
+                return 0.9
+            elif skill.twists[0] == 1.5: # Rudi
+                return 1.2
+            elif skill.twists[0] == 2.0: # Double full
+                return 1.5
+            elif skill.twists[0] == 2.5: # Randi
+                return 1.9
+            elif skill.twists[0] == 3.0: # Triple full
+                return 2.3
+            elif skill.twists[0] > 3.0:
+                # 0.5 per 1/2 twist more than triple twist
+                return 2.3 + 0.5 * (skill.twists[0] - 3.0)*2
+    # Double flips
+    elif skill.flips == 2.0:
+        total_twists = sum(skill.twists) * 2
+        twist_difficulty = 0.4
+        if skill.pos == "o":
+            flip_difficulty = 2.0
+        elif skill.pos == "<":
+            flip_difficulty = 2.4
+        elif skill.pos == "/":
+            flip_difficulty = 2.8
+    # Triple flips
+    elif skill.flips == 3.0:
+        total_twists = sum(skill.twists) * 2
+        twist_difficulty = 0.6
+        if skill.pos == "o":
+            flip_difficulty = 4.5
+        elif skill.pos == "<":
+            flip_difficulty = 5.3
+        elif skill.pos == "/":
+            flip_difficulty = 6.1
+    # Quad flips
+    elif skill.flips == 4.0:
+        total_twists = sum(skill.twists) * 2
+        twist_difficulty = 0.8
+        if skill.pos == "o":
+            flip_difficulty = 8.0
+        elif skill.pos == "<":
+            flip_difficulty = 9.6
+        elif skill.pos == "/":
+            flip_difficulty = 11.2
+    return flip_difficulty + total_twists * twist_difficulty
+
+
 def get_skill_difficulty(skill):
     """
     Returns the difficulty/tarrif of the skill
     """
+    if skill.event == "dmt":
+        return get_dmt_difficulty(skill)
     difficulty_per_flip = 0.5 if skill.pos in ['o', 't'] else 0.6
     flip_difficulty = (skill.flips - skill.flips%1) * difficulty_per_flip + \
                       (skill.flips % 1 / 0.25) * 0.1
