@@ -278,28 +278,28 @@ def get_dmt_difficulty(skill):
     # Single flips
     if skill.flips == 1.0:
         if skill.pos == "o":
-            if skill.twists[0] == 0.0: # No twist
+            if total_twists == 0.0: # No twist
                 return 0.5
-            elif skill.twists[0] == 0.5: # Barani
+            elif total_twists == 1.0: # Barani
                 return 0.7
         elif skill.pos in ["<", "/"]:
-            if skill.twists[0] == 0.0: # No twist
+            if total_twists == 0.0: # No twist
                 return 0.6
-            elif skill.twists[1] == 1.5: # Barani
+            elif total_twists == 1.0: # Barani
                 return 0.7
-            elif skill.twists[0] == 1.0: # Full
+            elif total_twists == 2.0: # Full
                 return 0.9
-            elif skill.twists[0] == 1.5: # Rudi
+            elif total_twists == 3.0: # Rudi
                 return 1.2
-            elif skill.twists[0] == 2.0: # Double full
+            elif total_twists == 4.0: # Double full
                 return 1.5
-            elif skill.twists[0] == 2.5: # Randi
+            elif total_twists == 5.0: # Randi
                 return 1.9
-            elif skill.twists[0] == 3.0: # Triple full
+            elif total_twists == 6.0: # Triple full
                 return 2.3
-            elif skill.twists[0] > 3.0:
+            elif total_twists > 6.0:
                 # 0.5 per 1/2 twist more than triple twist
-                return 2.3 + 0.5 * (skill.twists[0] - 3.0)*2
+                return 2.3 + 0.5 * (total_twists - 6.0)
     # Double flips
     elif skill.flips == 2.0:
         twist_difficulty = 0.4
