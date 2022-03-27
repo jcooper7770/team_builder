@@ -274,6 +274,7 @@ def get_dmt_difficulty(skill):
     """
     flip_difficulty = 0 # difficulty per flip
     twist_difficulty = 0 # difficulty per half twist
+    total_twists = sum(skill.twists) * 2
     # Single flips
     if skill.flips == 1.0:
         if skill.pos == "o":
@@ -301,7 +302,6 @@ def get_dmt_difficulty(skill):
                 return 2.3 + 0.5 * (skill.twists[0] - 3.0)*2
     # Double flips
     elif skill.flips == 2.0:
-        total_twists = sum(skill.twists) * 2
         twist_difficulty = 0.4
         if skill.pos == "o":
             flip_difficulty = 2.0
@@ -311,7 +311,6 @@ def get_dmt_difficulty(skill):
             flip_difficulty = 2.8
     # Triple flips
     elif skill.flips == 3.0:
-        total_twists = sum(skill.twists) * 2
         twist_difficulty = 0.6
         if skill.pos == "o":
             flip_difficulty = 4.5
@@ -321,7 +320,6 @@ def get_dmt_difficulty(skill):
             flip_difficulty = 6.1
     # Quad flips
     elif skill.flips == 4.0:
-        total_twists = sum(skill.twists) * 2
         twist_difficulty = 0.8
         if skill.pos == "o":
             flip_difficulty = 8.0
