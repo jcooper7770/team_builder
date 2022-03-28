@@ -81,6 +81,7 @@ def create_engine(table_name=None):
     table_name = table_name or TABLE_NAME
     global ENGINE
     global DB_TABLE
+    url = "itsflippincoop.com" if table_name == "test_data" else "127.0.0.1"
     engine = sqlalchemy.create_engine('mysql+pymysql://itsflippincoop:password@itsflippincoop.com:3306/tramp', echo=True)
     ENGINE = engine
     metadata = sqlalchemy.MetaData()
