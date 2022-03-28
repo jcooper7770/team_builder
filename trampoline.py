@@ -553,6 +553,9 @@ def add_to_db(turns, user, event, practice_date, table=None):
 
 def get_from_db(table_name=None, user="test"):
     table_name = table_name or TABLE_NAME
+    if not ENGINE:
+        create_engine()
+
     try:
         result = ENGINE.execute(f'SELECT * from `{table_name}` WHERE {table_name}.user="{user}";')
     except sqlalchemy.exc.OperationalError:
