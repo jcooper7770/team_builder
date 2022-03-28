@@ -8,12 +8,14 @@ TODO:
   - Login with username and keep track of list of pokemon the user doesn't have
   - add youtube link to tutorial on about page
   - store team data in a database and refresh once a day
+  - Split trampoline code from pokemon code
 """
 
 import datetime
 import json
 import os
 import re
+import socket
 import sys
 import traceback
 
@@ -22,7 +24,8 @@ from flask import Flask, request, render_template, jsonify, redirect, url_for
 from team_building import get_counters_for_rating, LEAGUE_RANKINGS, NoPokemonFound, LEAGUE_VALUE, TeamCreater
 from battle_sim import sim_battle
 from trampoline import convert_form_data, pretty_print, Practice, current_user, set_current_user,\
-     current_event, set_current_event, set_current_athlete, NON_SKILLS, SKILLS, POSITIONS
+     current_event, set_current_event, set_current_athlete, NON_SKILLS, SKILLS, POSITIONS, create_engine,\
+     get_from_db, delete_from_db, set_table_name
 
 app = Flask(__name__, static_url_path="", static_folder="static")
 
@@ -346,6 +349,18 @@ def trampoline_log():
 
     # Print out a table per date
     practice_tables = []
+
+    # Get data from database
+    user_practices = Practice.load_from_db(username)
+    for practice in user_practices:
+        # Add the turns into a table for that practice
+        title_date = practice.date.strftime("%A %m/%d/%Y")
+        title = f"{title_date} ({practice.event})"
+        practice_table = skills_table(practice.turns, title=title)
+        practice_tables.append(practice_table)
+
+    '''
+    # Get data from files
     for _, _, practice_files in os.walk(os.path.join("practices", username)):
         for practice_file in sorted(practice_files, reverse=True):
             full_path = os.path.join("practices", username, practice_file)
@@ -366,6 +381,7 @@ def trampoline_log():
             title = f"{title_date} ({practice.event})"
             practice_table = skills_table(practice.turns, title=title)
             practice_tables.append(practice_table)
+    '''
 
     all_practice_tables = "<br><br>".join(practice_tables)
 
@@ -500,4 +516,13 @@ def run():
 
     
 if __name__ == "__main__":
+    # Start db connection
+    if socket.gethostname().endswith("secureserver.net"):
+        set_table_name("data")
+        create_engine(table_name="data")
+    else:
+        set_table_name("test_data")
+        create_engine(table_name="test_data")
+
+    # start app
     app.run(debug=True)

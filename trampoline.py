@@ -11,7 +11,12 @@ TODO:
   - Add about page on shortcuts
   - Save in a database instead of text files
   - [DONE] Add athlete compulsory and optional
+  - Add in visualizations per day. Maybe make table headers into links to visualization page
+    i.e /vis?date=20220326&user=bob[&event=dmt]
+  - Fix deleting data for db
 """
+
+import sqlalchemy
 
 import datetime
 import json
@@ -55,7 +60,32 @@ SKILLS = [
     "12101", "12103",
     "12200", "12222"
 ]
-POSITIONS = ["o", "<", "/"]
+
+TUCK_POS = "o"
+PIKE_POS = "<"
+STRAIGHT_POS = "/"
+POSITIONS = [
+    TUCK_POS, PIKE_POS, STRAIGHT_POS
+]
+
+ENGINE = None
+DB_TABLE = None
+TABLE_NAME = "test_data"
+
+def set_table_name(table_name):
+    global TABLE_NAME
+    TABLE_NAME = table_name
+
+
+def create_engine(table_name=None):
+    table_name = table_name or TABLE_NAME
+    global ENGINE
+    global DB_TABLE
+    engine = sqlalchemy.create_engine('mysql+pymysql://itsflippincoop:password@itsflippincoop.com:3306/tramp', echo=True)
+    ENGINE = engine
+    metadata = sqlalchemy.MetaData()
+    table = sqlalchemy.Table(table_name, metadata, autoload=True, autoload_with=engine)
+    DB_TABLE = table
 
 
 class Athlete:
@@ -120,6 +150,10 @@ class Practice:
     All turns/skills done in a practice
     """
     def __init__(self, practice_date, turns, event):
+        """
+        :type date: datetime.date
+        :type turns: [Routine]
+        """
         self.date = practice_date
         self.turns = turns
         self.event = event
@@ -128,6 +162,21 @@ class Practice:
         """
         Save the current practice
         """
+        # save to the db
+        user_data = get_from_db(user=CURRENT_USER)
+        try:
+            last_turn_num = max([data[0] for data in user_data if data[2].date() == self.date and data[4] == self.event])
+        except:
+            last_turn_num = 0
+
+        turns = {}
+        for turn_num, turn in enumerate(self.turns):
+            turns[last_turn_num + turn_num + 1] = turn.toJSON()
+        
+        #saving_turns = [turn.toJSON() for turn in self.turns]
+        add_to_db(turns, CURRENT_USER, self.event, self.date, table=TABLE_NAME)
+
+        # save to the file
         user_dir = os.path.join("practices", CURRENT_USER)
         file_name = os.path.join(user_dir, f"{self.date.strftime('%Y%m%d')}_{self.event}.txt")
         current_day = {
@@ -150,6 +199,8 @@ class Practice:
         athlete = Athlete.load(CURRENT_USER)
         athlete.save()
 
+
+
         return current_day
 
     @classmethod
@@ -165,6 +216,49 @@ class Practice:
         )
 
     @classmethod
+    def load_from_db(self, user):
+        """
+        Returns practices from the db
+        """
+        practices = {}
+        turns = get_from_db(user=user)
+        for turn in turns:
+            practice_date = turn[2]
+            if practice_date not in practices:
+                practices[practice_date] = {}
+            event = turn[4]
+            if event not in practices[practice_date]:
+                practices[practice_date][event] = {}
+
+            # {'1': '801o', '2': ...}
+            practices[practice_date][event][turn[0]] = turn[1]
+
+        return_vals = []
+        for practice_date, event_data in practices.items():
+            for event, turns in event_data.items():
+                turns_list = [y[1] for y in sorted(turns.items(), key=lambda x: x[0])]
+                # make routines for practice object
+                routines = []
+                for turn in turns_list:
+                    # not a note
+                    if turn and turn[0]!="-":
+                        routine = Routine([Skill(skill, event=event) for skill in turn.split()], event=event)
+                        routines.append(routine)
+                        continue
+                    # notes
+                    routine = Routine([], note=turn[1:] if turn else turn)
+                    routines.append(routine)
+                
+                # make practice object
+                p = Practice(
+                    practice_date,
+                    routines,
+                    event
+                )
+                return_vals.append(p)
+        return return_vals
+
+    @classmethod
     def delete(self, practice_date):
         """
         Deletes the practice from the given day
@@ -178,6 +272,7 @@ class Practice:
                     file_name = os.path.join(user_dir, practice_file)
                     os.remove(file_name)
                     deleted = True
+        #delete_from_db(practice_date, user=CURRENT_USER)
         return deleted
         
 
@@ -277,12 +372,12 @@ def get_dmt_difficulty(skill):
     total_twists = sum(skill.twists) * 2
     # Single flips
     if skill.flips == 1.0:
-        if skill.pos == "o":
+        if skill.pos == TUCK_POS:
             if total_twists == 0.0: # No twist
                 return 0.5
             elif total_twists == 1.0: # Barani
                 return 0.7
-        elif skill.pos in ["<", "/"]:
+        elif skill.pos in [PIKE_POS, STRAIGHT_POS]:
             if total_twists == 0.0: # No twist
                 return 0.6
             elif total_twists == 1.0: # Barani
@@ -303,29 +398,29 @@ def get_dmt_difficulty(skill):
     # Double flips
     elif skill.flips == 2.0:
         twist_difficulty = 0.4
-        if skill.pos == "o":
+        if skill.pos == TUCK_POS:
             flip_difficulty = 2.0
-        elif skill.pos == "<":
+        elif skill.pos == PIKE_POS:
             flip_difficulty = 2.4
-        elif skill.pos == "/":
+        elif skill.pos == STRAIGHT_POS:
             flip_difficulty = 2.8
     # Triple flips
     elif skill.flips == 3.0:
         twist_difficulty = 0.6
-        if skill.pos == "o":
+        if skill.pos == TUCK_POS:
             flip_difficulty = 4.5
-        elif skill.pos == "<":
+        elif skill.pos == PIKE_POS:
             flip_difficulty = 5.3
-        elif skill.pos == "/":
+        elif skill.pos == STRAIGHT_POS:
             flip_difficulty = 6.1
     # Quad flips
     elif skill.flips == 4.0:
         twist_difficulty = 0.8
-        if skill.pos == "o":
+        if skill.pos == TUCK_POS:
             flip_difficulty = 8.0
-        elif skill.pos == "<":
+        elif skill.pos == PIKE_POS:
             flip_difficulty = 9.6
-        elif skill.pos == "/":
+        elif skill.pos == STRAIGHT_POS:
             flip_difficulty = 11.2
     return flip_difficulty + total_twists * twist_difficulty
 
@@ -336,7 +431,7 @@ def get_skill_difficulty(skill):
     """
     if skill.event == "dmt":
         return get_dmt_difficulty(skill)
-    difficulty_per_flip = 0.5 if skill.pos in ['o', 't'] else 0.6
+    difficulty_per_flip = 0.5 if skill.pos in [TUCK_POS, 't'] else 0.6
     flip_difficulty = (skill.flips - skill.flips%1) * difficulty_per_flip + \
                       (skill.flips % 1 / 0.25) * 0.1
     
@@ -427,7 +522,61 @@ def pretty_print(routine, logger=print):
             logger(f"\t{skill}")
         logger(turn)
 
+def add_to_db(turns, user, event, practice_date, table=None):
+    table = table or TABLE_NAME
+    if DB_TABLE is None:
+        create_engine(table)
+    if isinstance(turns, list):
+        for turn_num, turn in enumerate(turns):
+            turn_str = ' '.join(turn)
+            ins = DB_TABLE.insert().values(
+                turn_num=turn_num + 1,
+                turn=turn_str,
+                event=event,
+                user=user,
+                date=practice_date
+            )
+            ENGINE.execute(ins)
+    elif isinstance(turns, dict):
+        for turn_num, turn in turns.items():
+            turn_str = ' '.join(turn)
+            ins = DB_TABLE.insert().values(
+                turn_num=turn_num,
+                turn=turn_str,
+                event=event,
+                user=user,
+                date=practice_date
+            )
+            ENGINE.execute(ins)
 
+
+def get_from_db(table_name=None, user="test"):
+    table_name = table_name or TABLE_NAME
+    try:
+        result = ENGINE.execute(f'SELECT * from `{table_name}` WHERE {table_name}.user="{user}";')
+    except sqlalchemy.exc.OperationalError:
+        create_engine()
+        result = ENGINE.execute(f'SELECT * from `{table_name}` WHERE {table_name}.user="{user}";')
+    turns = [res for res in result]
+    print(f"Got {result.rowcount} turns")
+    result.close()
+    #return sorted(turns, key=lambda turn: (turn[2], turn[0]))
+    return sorted(turns, key=lambda turn: (turn[2]), reverse=True)
+    
+def delete_from_db(date, user="test", table_name=None):
+    table_name = table_name or TABLE_NAME
+    date_time = datetime.datetime.combine(date, datetime.datetime.min.time())
+    try:
+        #DB_TABLE.delete().where(DB_TABLE.c.user==user).where(DB_TABLE.c.date==date_time)
+        #result = ENGINE.execute(f'SELECT * from `{table_name}` WHERE {table_name}.user="{user}" AND {table_name}.date="{date_time}";')        
+        result = ENGINE.execute(f'DELETE * from `{table_name}` WHERE {table_name}.user="{user}" AND {table_name}.date="{date_time}";')
+    except sqlalchemy.exc.OperationalError:
+        create_engine()
+        result = ENGINE.execute(f'DELETE * from `{table_name}` WHERE {table_name}.user="{user}" AND {table_name}.date="{date_time}";')
+        #DB_TABLE.delete().where(DB_TABLE.c.user==user).where(DB_TABLE.c.date==date_time)
+    print(f"removed {result.rowcount} rows")
+
+    
 if __name__ == '__main__':
     pretty_print(convert_form_data('12001o 811< 803< 40/'))
     print()
