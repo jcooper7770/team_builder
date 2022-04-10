@@ -14,6 +14,7 @@ TODO:
   - Add in visualizations per day. Maybe make table headers into links to visualization page
     i.e /vis?date=20220326&user=bob[&event=dmt]
   - Fix deleting data for db
+  - Fix using test database
 """
 
 import sqlalchemy
@@ -441,7 +442,7 @@ def get_skill_difficulty(skill):
            + (0.1 if skill.flips == 3 else 0) # extra 0.1 for a triple flip
 
 
-def convert_form_data(form_data, logger=print, event=EVENT):
+def convert_form_data(form_data, logger=print, event=EVENT, notes=None):
     """
     Converts the data from the form into trampoline routines
     and returns a list of Routine objs
@@ -510,6 +511,11 @@ def convert_form_data(form_data, logger=print, event=EVENT):
         routine = Routine(skills, event=event)
         skill_turns.append(routine)
         #skill_turns.append(skills)
+    # add the notes after
+    if notes:
+        skill_turns.append(
+            Routine([], event=event, note=notes)
+        )
     return skill_turns
 
 
@@ -522,6 +528,7 @@ def pretty_print(routine, logger=print):
         for skill in turn.skills:
             logger(f"\t{skill}")
         logger(turn)
+
 
 def add_to_db(turns, user, event, practice_date, table=None):
     table = table or TABLE_NAME

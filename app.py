@@ -51,32 +51,43 @@ class TableMaker:
         self.width = width
         self.first_table = True
         self.new_table()
-
+        self._row_num = 0
+        
     def new_table(self):
         options = [
             f"border='{self.border}'",
             f"align='{self.align}'",
-            f"style='background-color:{self.bgcolor};'"
+            #f"style='background-color:{self.bgcolor};'",
+            'class="table table-striped"'
         ]
         if self.width:
             options.append(f"width='{self.width}'")
         options_str = " ".join(options)
+        self.table.append('<div class="container">')
         self.table.append(f"<table {options_str}>")
+        self.table.append("<thead>")
+        self._row_num = 0
 
     def end_table(self):
-        self.table.append("</table>")
+        self.table.append("</tbody></table></div>")
+        self._row_num = 0
 
-    def new_row(self):
+    def new_row(self):           
         self.table.append("<tr>")
+        self._row_num += 1
 
     def end_row(self):
         self.table.append("</tr>")
+        if self._row_num == 1:
+            self.table.append("</thead><tbody>")
 
     def new_line(self):
         self.table.append("<br>")
 
     def new_header(self, value, colspan):
-        self.table.append(f"<th colspan={colspan}>{value}</th>")
+        self.new_row()
+        self.table.append(f'<th colspan={colspan} align="center">{value}</th>')
+        self.end_row()
 
     def reset_table(self):
         if not self.first_table:
@@ -85,6 +96,7 @@ class TableMaker:
             self.new_line()
             self.new_table()
             self.new_row()
+            
         self.first_table = False
 
     def add_cell(self, value, colspan=None, align=None):
@@ -212,6 +224,7 @@ def skills_table(skills, title="Routines"):
     skills_table = TableMaker(border=1, align="center", width="30%")
     skills_table.new_header(title, colspan=most_cols+8)
     total_turn_num = 0
+    
     for turn_num, turn in enumerate(skills):
         skills_table.new_row()
         if turn.note:
@@ -284,11 +297,12 @@ def _save_trampoline_data(request):
     form_data = request.form.get('log', '')
     username = request.form.get('name', None) or current_user()
     event = request.form.get('event', None) or current_event()
+    notes = request.form.get('notes', None)
     set_current_event(event)
     set_current_user(username)
     set_current_athlete(username)
     logger.info(f"Username: {username}")
-    routines = convert_form_data(form_data, event=event)
+    routines = convert_form_data(form_data, event=event, notes=notes)
     logger.info(request.form.get('log', 'None').split('\r\n'))
 
     # Save the current practice
