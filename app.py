@@ -65,7 +65,7 @@ class TableMaker:
         options_str = " ".join(options)
         self.table.append('<div class="container">')
         self.table.append(f"<table {options_str}>")
-        self.table.append("<thead>")
+        self.table.append("<thead class=\"thead-dark\">")
         self._row_num = 0
 
     def end_table(self):
@@ -412,7 +412,7 @@ def trampoline_log():
     html = [
         table,
         "<br><br>",
-        "<h1 style='text-align:center;'>Previous Practices</h1>",
+        "<h1 style='text-align:center;' class=\"header\">Previous Practices</h1>",
         # Div for practices so they are scrollable
         "<div id='practices' class='practices'><br><br>",
         all_practice_tables,

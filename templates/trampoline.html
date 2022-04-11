@@ -6,7 +6,11 @@
     height:700px;
     overflow-y:auto;
   }
+  @import url("templates/background.css");
   </style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='background.css')}}" type="text/css" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='trampoline_styles.css')}}" type="text/css" />
+
   <title>Trampoline Logger</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -16,14 +20,39 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 <body style="background-color:lightblue;">
-<table align="center">
+
+<!--
+   <div class="context">
+        <h1>Trampoline Practice Logger</h1>
+    </div>
+-->
+
+<div class="area" >
+            <ul class="circles">
+                    <li></li>
+                    <li></li>
+                    <li></li>
+                    <li></li>
+                    <li></li>
+                    <li></li>
+                    <li></li>
+                    <li></li>
+                    <li></li>
+                    <li></li>
+            </ul>
+    </div >
+
+<!--
+<table align="center" class="header">
 <tr>
   <td rowspan=1>
-  <p style="text-align:center;"><img src="flippinCoopLogo.png" width=200 height=200></p>
+  <p style="text-align:center;"><img src="flippinCoopLogo.png" width=50 height=50></p>
   </td>
-  <td colspan=4 height="80%"><font size="+30" style="text-align:center;">Trampoline Practice Logging</font></td>
+  <td colspan=4 height="80%"><font style="text-align:center;">Trampoline Practice Logger</font></td>
 </tr>
 </table>
+-->
+<h1 class="header">Trampoline Practice Logger</h1>
 <br><br>
 
 <!-- Test table with boobstrap
@@ -42,7 +71,9 @@
 </div>
 -->
 
-<div class="form-group">
+
+
+<div class="form-group" align="center">
 <table align="center">
 <tr><td>
 <form action="{{ url_for('trampoline_log') }}" method="post" id="logger" style="text-align:left;">
@@ -95,8 +126,8 @@ Notes:
 
 <!--- Deleting past data --->
 <form method="post" id="clear-form" style='text-align:left;'>
-<button type="submit" id="delete-button" class="btn btn-primary">Delete Historical Data</button>
-<button id="delete-day-button" class="btn btn-primary">Delete Today's Data</button>
+<button type="submit" id="delete-button" class="btn btn-danger">Delete Historical Data</button>
+<button id="delete-day-button" class="btn btn-danger">Delete Today's Data</button>
 </form>
 </td></tr>
 </table>
@@ -136,6 +167,7 @@ Notes:
 <br><br><br>
 
 <!-- Index for tables -->
+<div class="container">
 <table align='center' border=1 style='background-color:#FFFFFF;'>
 <tr>
 <th align='center' colspan=9>Index</th>
@@ -152,6 +184,8 @@ Notes:
   <td>total DoD for practice</td>
 </tr>
 </table>
+</div>
+
 
 
 </body>
