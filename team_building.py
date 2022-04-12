@@ -52,6 +52,7 @@ LEAGUE_RANKINGS = {
     "ULRemix": "https://vps.gobattlelog.com/data/overall/rankings-2500-remix.json?v=1.25.35",
     "GL": "https://vps.gobattlelog.com/data/overall/rankings-1500.json?v=1.25.35",
     "Jungle": "https://vps.gobattlelog.com/data/overall/rankings-500-littlejungle.json?v=1.28.0",
+    "Little": "https://vps.gobattlelog.com/data/overall/rankings-500-little.json?v=1.28.0",
     "Halloween": "https://vps.gobattlelog.com/data/overall/rankings-1500-halloween.json?v=1.25.35",
     "Kanto":"https://vps.gobattlelog.com/data/overall/rankings-1500-kanto.json?v=1.25.35",
     "Holiday":"https://vps.gobattlelog.com/data/overall/rankings-1500-holiday.json?v=1.25.35",
@@ -73,6 +74,7 @@ LEAGUE_DATA = {
     "Remix": "https://vps.gobattlelog.com/records/great-remix/latest.json?ts=451709.1",
     "ULRemix": "https://vps.gobattlelog.com/records/ultra-remix/latest.json?ts=451709.1",
     "Jungle": "https://vps.gobattlelog.com/records/littlejungle/latest.json?ts=451709.1",
+    "Little": "https://vps.gobattlelog.com/records/little/latest.json?ts=451709.1",
     "Halloween": "https://vps.gobattlelog.com/records/great-halloween/latest.json?ts=451466.3",
     "Kanto": "https://vps.gobattlelog.com/records/great-kanto/latest.json?ts=451466.3",
     "Holiday": "https://vps.gobattlelog.com/records/great-holiday/latest.json?ts=451466.3",
@@ -98,7 +100,8 @@ LEAGUE_VALUE = {
     'Holiday': '1500',
     'Sinnoh': '1500',
     "Love": '1500',
-    "Johto": '1500'
+    "Johto": '1500',
+    'Little': '500'
 }
 CUP_VALUE = {
     'MLC': 'classic',
@@ -111,7 +114,8 @@ CUP_VALUE = {
     'Holiday': 'holiday',
     'Sinnoh': 'sinnoh',
     'Love': 'love',
-    'Johto': 'johto'
+    'Johto': 'johto',
+    'Little': 'little'
 }
 
 # https://gamepress.gg/pokemongo/cp-multiplier
