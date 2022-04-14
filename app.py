@@ -3,12 +3,15 @@ Flask application
 
 Endpoints:
   - /[?league=GL|Remix|UL|ULP|ULRemix|ML|MLC&pokemon=pokemon]
+  - /logger
 
 TODO:
   - Login with username and keep track of list of pokemon the user doesn't have
   - add youtube link to tutorial on about page
   - store team data in a database and refresh once a day
   - Split trampoline code from pokemon code
+  - (Trampoline) Replace "Routines" section with "Goals" with checkboxes
+  - (Trampoline) Write goals to DB
 """
 
 import datetime
@@ -31,6 +34,9 @@ app = Flask(__name__, static_url_path="", static_folder="static")
 
 CACHE = {'results': {}, 'team_maker': {}, 'num_days': 1, 'rating': None}
 N_TEAMS = 3
+USER_GOALS = {
+    "bob": [{"goal": "goal1", "done": False}, {"goal": "goal2", "done": True}]
+}
 
 import logging
 logging.basicConfig(level=logging.DEBUG)
@@ -99,10 +105,11 @@ class TableMaker:
             
         self.first_table = False
 
-    def add_cell(self, value, colspan=None, align=None):
+    def add_cell(self, value, colspan=None, align=None, width=None):
         colspan_text = f" colspan={colspan}" if colspan else ""
         align_text = f" align='{align}'" if align else ""
-        self.table.append(f"<td{colspan_text}{align_text}>{value}</td>")
+        width_text = f" width='{width}'" if width else ""
+        self.table.append(f"<td{colspan_text}{align_text}{width_text}>{value}</td>")
 
     def render(self):
         return "".join(self.table)
@@ -305,6 +312,29 @@ def _save_trampoline_data(request):
     routines = convert_form_data(form_data, event=event, notes=notes)
     logger.info(request.form.get('log', 'None').split('\r\n'))
 
+    # Save new goal
+    num_goals = request.form.get("goals_form")
+    if num_goals:
+        # reset all checkboxes
+        for goal_num, _ in enumerate(USER_GOALS[current_user()]):
+            USER_GOALS[current_user()][goal_num]["done"] = False
+            
+        goal_string = request.form.get('goal_string', None)
+        if goal_string:
+            USER_GOALS[current_user()].append({"goal": goal_string, "done": False})
+        for key in request.form.keys():
+            if key in ["goal_string", "goals_form"]:
+                continue
+            if key.startswith("delete"):
+                USER_GOALS[current_user()].pop(int(key[6:]))
+                continue
+            try:
+                # inside of try/except incase checked goal was deleted
+                USER_GOALS[current_user()][int(key)]["done"] = True
+            except:
+                pass
+
+
     # Save the current practice
     practice = Practice(datetime.date.today(), routines, event)
     saved_practice = practice.save()
@@ -335,7 +365,33 @@ def _save_trampoline_data(request):
             else:
                 routine_file.write(new_routines)
 
-
+def goals_text():
+    """
+    Adds in the goals table text
+    """
+    goals_table = TableMaker(border=1, align="center", width="30%")
+    goals_table.new_header("Goals", colspan=3)
+    goals_table.new_row()
+    goals_table.add_cell('<input type="text" name="goal_string" id="goal_string" placeholder="Write goal here" size=100 \><button type="submit" class="btn btn-primary">Submit Goal</button>', colspan=3)
+    goals_table.end_row()
+    if current_user() not in USER_GOALS:
+        USER_GOALS[current_user()] = []
+    for goal_num, goal in enumerate(USER_GOALS[current_user()]):
+        goals_table.new_row()
+        selected_text = " checked" if goal.get("done") else ""
+        goals_table.add_cell(f'<input type="checkbox" id="{goal_num}" name="{goal_num}"{selected_text} \>', width="5%")
+        goals_table.add_cell(goal.get('goal'))
+        goals_table.add_cell(f'<button type="submit" id="delete{goal_num}" name="delete{goal_num}" class="btn btn-danger">Delete</button>', width="5%")
+        goals_table.end_row()
+    goals_table.end_table()
+    tramp_url = url_for('trampoline_log')
+    goals_text_str = [
+        f'<form action="{tramp_url}" method="post" id="goals" style="text-align:left;">',
+        f'<input type="hidden" name="goals_form" id="goals_form" value="{len(USER_GOALS[current_user()])}" \>',
+        goals_table.render(),
+        '</form>'
+    ]
+    return goals_text_str
 
 @app.route("/logger", methods=['GET', 'POST'])
 def trampoline_log():
@@ -358,6 +414,9 @@ def trampoline_log():
     # Collect all routines up to now
     routines = convert_form_data(old_routines, logger=logger.info)
 
+    # Write goals table
+    goals_text_str = goals_text()
+    
     # Write all trampoline skills to a table
     table = skills_table(routines)
 
@@ -410,8 +469,7 @@ def trampoline_log():
     skill_test = "".join(skill_test)
             
     html = [
-        table,
-        "<br><br>",
+        #table, "<br><br>",
         "<h1 style='text-align:center;' class=\"header\">Previous Practices</h1>",
         # Div for practices so they are scrollable
         "<div id='practices' class='practices'><br><br>",
@@ -421,7 +479,13 @@ def trampoline_log():
         #skill_test
     ]
     body = "".join(html)
-    return render_template("trampoline.html", body=body, username=username, event=event, routine_text=request.args.get('routine', ''))
+    return render_template(
+        "trampoline.html",
+        goals_text="".join(goals_text_str),
+        body=body, username=username,
+        event=event,
+        routine_text=request.args.get('routine', '')
+    )
 
 
 @app.route("/about")

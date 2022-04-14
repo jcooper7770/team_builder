@@ -15,6 +15,7 @@ TODO:
     i.e /vis?date=20220326&user=bob[&event=dmt]
   - Fix deleting data for db
   - Fix using test database
+  - Fetch data daily instead of every time refreshed and save to DB
 """
 
 import sqlalchemy

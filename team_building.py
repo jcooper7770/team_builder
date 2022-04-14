@@ -12,6 +12,8 @@
  images of pokemon: https://img.pokemondb.net/sprites/black-white/normal/charizard.png
 
  TODO:
+  - write gobattlelog data to local DB daily instead of a file
+     - Only pull from gobattlelog if/when new data
   - create my own counters lists instead of the 5 from pvpoke
   - [DONE] create smart team comp (with ABB option)
   - [DONE?] host online somewhere
