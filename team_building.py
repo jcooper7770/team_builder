@@ -27,6 +27,7 @@
   - check out amgesus.tar.gz in our #computer-science channel. It shows how to run all of pvpoke'sscripts from the comand line.
   - [DONE] Click on a pokmeon and simulate a battle in pvpoke
      - https://pvpoke.com/battle/1500/{pokemon1}/{pokemon2}/{#shields1}{#shields2}
+  - Fetch data daily instead of every time refreshed and save to DB
 """
 
 import json

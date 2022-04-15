@@ -13,9 +13,8 @@ TODO:
   - [DONE] Add athlete compulsory and optional
   - Add in visualizations per day. Maybe make table headers into links to visualization page
     i.e /vis?date=20220326&user=bob[&event=dmt]
-  - Fix deleting data for db
+  - [DONE] Fix deleting data for db
   - Fix using test database
-  - Fetch data daily instead of every time refreshed and save to DB
 """
 
 import sqlalchemy
@@ -275,7 +274,8 @@ class Practice:
                     file_name = os.path.join(user_dir, practice_file)
                     os.remove(file_name)
                     deleted = True
-        #delete_from_db(practice_date, user=CURRENT_USER)
+
+        delete_from_db(practice_date, user=CURRENT_USER)
         return deleted
         
 
@@ -559,6 +559,60 @@ def add_to_db(turns, user, event, practice_date, table=None):
             ENGINE.execute(ins)
 
 
+def insert_goal_to_db(user, goal):
+    """
+    Add goal to db for user
+    """
+    metadata = sqlalchemy.MetaData()
+    table = sqlalchemy.Table("goals", metadata, autoload=True, autoload_with=ENGINE)
+    ins = table.insert().values(
+        user=user,
+        goal=goal,
+        done=False
+    )
+    ENGINE.execute(ins)
+
+def complete_goal(user, goal, done=True):
+    """
+    Completes the goal
+    """
+    metadata = sqlalchemy.MetaData()
+    table = sqlalchemy.Table("goals", metadata, autoload=True, autoload_with=ENGINE)
+    update = table.update().where(table.c.user==user).where(table.c.goal==goal).values(
+        user=user,
+        goal=goal,
+        done=done
+    )
+    ENGINE.execute(update)
+
+    
+def get_user_goals(user):
+    """
+    Returns the goals for the user
+    """
+    if not ENGINE:
+        create_engine()
+    try:
+        result = ENGINE.execute(f'SELECT * from `goals` WHERE goals.user="{user}";')
+    except sqlalchemy.exc.OperationalError:
+        create_engine()
+        result = ENGINE.execute(f'SELECT * from `goals` WHERE goals.user="{user}";')
+
+    goals = [goal for goal in result]
+    print(f"Returned {result.rowcount} goals")
+    result.close()
+    return sorted(goals, key=lambda x: x[3])
+
+def delete_goal_from_db(user, goal):
+    """
+    Deletes the goal
+    """
+    metadata = sqlalchemy.MetaData()
+    table = sqlalchemy.Table("goals", metadata, autoload=True, autoload_with=ENGINE)
+    delete = table.delete().where(table.c.user==user).where(table.c.goal==goal)
+    ENGINE.execute(delete)
+
+
 def get_from_db(table_name=None, user="test"):
     table_name = table_name or TABLE_NAME
     if not ENGINE:
@@ -581,10 +635,10 @@ def delete_from_db(date, user="test", table_name=None):
     try:
         #DB_TABLE.delete().where(DB_TABLE.c.user==user).where(DB_TABLE.c.date==date_time)
         #result = ENGINE.execute(f'SELECT * from `{table_name}` WHERE {table_name}.user="{user}" AND {table_name}.date="{date_time}";')        
-        result = ENGINE.execute(f'DELETE * from `{table_name}` WHERE {table_name}.user="{user}" AND {table_name}.date="{date_time}";')
+        result = ENGINE.execute(f'DELETE from `{table_name}` WHERE ({table_name}.user="{user}" AND {table_name}.date="{date}");')
     except sqlalchemy.exc.OperationalError:
         create_engine()
-        result = ENGINE.execute(f'DELETE * from `{table_name}` WHERE {table_name}.user="{user}" AND {table_name}.date="{date_time}";')
+        result = ENGINE.execute(f'DELETE from `{table_name}` WHERE ({table_name}.user="{user}" AND {table_name}.date="{date}");')
         #DB_TABLE.delete().where(DB_TABLE.c.user==user).where(DB_TABLE.c.date==date_time)
     print(f"removed {result.rowcount} rows")
 
