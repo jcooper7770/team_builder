@@ -262,7 +262,7 @@ class Practice:
         return return_vals
 
     @classmethod
-    def delete(self, practice_date):
+    def delete(self, practice_date, event=None):
         """
         Deletes the practice from the given day
         """
@@ -276,7 +276,7 @@ class Practice:
                     os.remove(file_name)
                     deleted = True
 
-        delete_from_db(practice_date, user=CURRENT_USER)
+        delete_from_db(practice_date, user=CURRENT_USER, event=event)
         return deleted
         
 
@@ -634,17 +634,20 @@ def get_from_db(table_name=None, user="test", date=None):
     #return sorted(turns, key=lambda turn: (turn[2], turn[0]))
     return sorted(turns, key=lambda turn: (turn[2]), reverse=True)
     
-def delete_from_db(date, user="test", table_name=None):
+def delete_from_db(date, user="test", table_name=None, event=None):
     table_name = table_name or TABLE_NAME
     date_time = datetime.datetime.combine(date, datetime.datetime.min.time())
-    try:
-        #DB_TABLE.delete().where(DB_TABLE.c.user==user).where(DB_TABLE.c.date==date_time)
-        #result = ENGINE.execute(f'SELECT * from `{table_name}` WHERE {table_name}.user="{user}" AND {table_name}.date="{date_time}";')        
-        result = ENGINE.execute(f'DELETE from `{table_name}` WHERE ({table_name}.user="{user}" AND {table_name}.date="{date}");')
+    try:        
+        if event:
+            result = ENGINE.execute(f'DELETE from `{table_name}` WHERE ({table_name}.user="{user}" AND {table_name}.date="{date}" AND {table_name}.event="{event}");')
+        else:
+            result = ENGINE.execute(f'DELETE from `{table_name}` WHERE ({table_name}.user="{user}" AND {table_name}.date="{date}");')
     except sqlalchemy.exc.OperationalError:
         create_engine()
-        result = ENGINE.execute(f'DELETE from `{table_name}` WHERE ({table_name}.user="{user}" AND {table_name}.date="{date}");')
-        #DB_TABLE.delete().where(DB_TABLE.c.user==user).where(DB_TABLE.c.date==date_time)
+        if event:
+            result = ENGINE.execute(f'DELETE from `{table_name}` WHERE ({table_name}.user="{user}" AND {table_name}.date="{date}" AND {table_name}.event="{event}");')
+        else:
+            result = ENGINE.execute(f'DELETE from `{table_name}` WHERE ({table_name}.user="{user}" AND {table_name}.date="{date}");')
     print(f"removed {result.rowcount} rows")
 
     

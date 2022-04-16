@@ -50,7 +50,12 @@ class TableMaker:
 
     def new_header(self, value, colspan):
         self.new_row()
-        self.table.append(f'<th colspan={colspan} align="center">{value}</th>')
+        try:
+            date_to_remove = value.split()[1].replace("/", '-')
+            event_to_remove = value.split()[2].replace("(", "").replace(")", "")
+            self.table.append(f'<th colspan={colspan} align="center">{value}<button type="button" class="btn float-right"><a title="remove day" href="/logger/delete/{date_to_remove}/{event_to_remove}"><span class="fa fa-remove" aria-hidden=\'true\'></span></a></button></th>')
+        except:
+            self.table.append(f'<th colspan={colspan} align="center">{value}</th>')
         self.end_row()
 
     def reset_table(self):

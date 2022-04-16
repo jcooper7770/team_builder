@@ -112,6 +112,16 @@ def clear_day():
     return jsonify(status="fail")
 
 
+@app.route("/logger/delete/<day>/<event>")
+def delete_day(day, event):
+    """
+    Deletes the given day and event
+    """
+    datetime_to_remove = datetime.datetime.strptime(day, "%m-%d-%Y")
+    Practice.delete(datetime_to_remove, event=event)
+    return redirect(url_for("trampoline_log"))
+
+
 @app.route("/logger/search", methods=["POST"])
 def search_date():
     """
