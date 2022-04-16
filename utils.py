@@ -1,4 +1,7 @@
-from trampoline import NON_SKILLS
+NON_SKILLS = [
+    "X", "..."
+]
+
 
 class TableMaker:
     """

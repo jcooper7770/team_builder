@@ -10,10 +10,11 @@ Endpoints:
 TODO:
   - Login with username and keep track of list of pokemon the user doesn't have
   - add youtube link to tutorial on about page
-  - store team data in a database and refresh once a day
+  - [DONE] store team data in a database and refresh once a day
   - Split trampoline code from pokemon code
   - [DONE] (Trampoline) Replace "Routines" section with "Goals" with checkboxes
   - [DONE] (Trampoline) Write goals to DB
+  - [DONE] Search for certain day of practice
 """
 
 import datetime
@@ -42,6 +43,7 @@ USER_GOALS = {
     "bob": [{"goal": "goal1", "done": False}, {"goal": "goal2", "done": True}]
 }
 LOGGED_IN_USER = ""
+SEARCH_DATE = None
 
 import logging
 logging.basicConfig(level=logging.DEBUG)
@@ -109,6 +111,21 @@ def clear_day():
     logger.error("Failed to delete data for today")
     return jsonify(status="fail")
 
+
+@app.route("/logger/search", methods=["POST"])
+def search_date():
+    """
+    Search by certain date
+    """
+    global SEARCH_DATE
+    practice_date = request.form.get("practice_date")
+    if not practice_date:
+        SEARCH_DATE = None
+    else:
+        # convert practice date to datetime
+        SEARCH_DATE = datetime.datetime.strptime(practice_date, "%m/%d/%Y")
+    return redirect(url_for("trampoline_log"))
+    
 
 def _save_trampoline_data(request):
     """
@@ -212,7 +229,7 @@ def trampoline_log():
     practice_tables = []
 
     # Get data from database
-    user_practices = Practice.load_from_db(username)
+    user_practices = Practice.load_from_db(username, date=SEARCH_DATE)
     for practice in user_practices:
         # Add the turns into a table for that practice
         title_date = practice.date.strftime("%A %m/%d/%Y")

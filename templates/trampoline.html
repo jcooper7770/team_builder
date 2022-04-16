@@ -36,7 +36,7 @@ Event:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <!-- Skills to be logged -->
 <div class="form-row">
 <div class="col">
-<textarea id="log" name="log" rows="10" cols="50" form="logger" placeholder="Input your routines here">{{routine_text}}</textarea>
+<textarea id="log" name="log" rows="3" cols="50" form="logger" placeholder="Input your routines here" >{{routine_text}}</textarea>
 </div>
 </div>
 <br>
@@ -117,15 +117,25 @@ Notes:
       <input type="checkbox" id="{{ loop.index0 }}" name="{{ loop.index0 }}"  \>
       {% endif %}
     </td>
-    <td>{{ goal.goal }}</td>
+    <td>
+      {% if goal.done %}
+      <!--<strike>{{ goal.goal }}</strike>-->
+      <span style="color:red">[DONE]</span> {{ goal.goal }}
+      {% else %}
+      {{ goal.goal }}
+      {% endif %}
+    </td>
     <td width="5%">
-    <button type="submit" id="delete{{ loop.index0 }}" name="delete{{ loop.index0 }}" class="btn btn-danger">Delete</button>
+    <button type="submit" id="delete{{ loop.index0 }}" name="delete{{ loop.index0 }}" class="btn">
+        <span class="fa fa-remove" aria-hidden='true'></span>
+    </button>
     </td>
   </tr>
   {% endfor %}
   
 </tbody>
 </table>
+</form>
 </div>
 
 <br><br>

@@ -4,12 +4,12 @@ Utilities for trampoline app
 TODO:
   - [DONE] incorporate '...' (stop in middle of turn)
   - [DONE] add in 'X' for bail during turn
-  - Log in with different users so multiple people can use the logger
+  - [DONE] Log in with different users so multiple people can use the logger
   - [DONE] Add in notes for a practice or a turn
   - [DONE] Add in double mini
   - [DONE] Update difficulty for double mini
   - Add about page on shortcuts
-  - Save in a database instead of text files
+  - [DONE] Save in a database instead of text files
   - [DONE] Add athlete compulsory and optional
   - Add in visualizations per day. Maybe make table headers into links to visualization page
     i.e /vis?date=20220326&user=bob[&event=dmt]
@@ -26,6 +26,8 @@ import re
 
 from collections import defaultdict
 
+from utils import NON_SKILLS
+
 
 NUM_FLIPS = {
     1: 0,
@@ -38,9 +40,7 @@ NUM_FLIPS = {
 CURRENT_USER = "bob"
 CURRENT_ATHLETE = None
 EVENT = "trampoline"
-NON_SKILLS = [
-    "X", "..."
-]
+
 
 COMMON_ROUTINES = defaultdict(str, {
     "twisting swingtime": "40o 41o 42/ 41< 40< 43/ 40/ 41/ 44/",
@@ -88,6 +88,7 @@ def create_engine(table_name=None):
     metadata = sqlalchemy.MetaData()
     table = sqlalchemy.Table(table_name, metadata, autoload=True, autoload_with=engine)
     DB_TABLE = table
+    return engine
 
 
 class Athlete:
@@ -218,12 +219,12 @@ class Practice:
         )
 
     @classmethod
-    def load_from_db(self, user):
+    def load_from_db(self, user, date=None):
         """
         Returns practices from the db
         """
         practices = {}
-        turns = get_from_db(user=user)
+        turns = get_from_db(user=user, date=date)
         for turn in turns:
             practice_date = turn[2]
             if practice_date not in practices:
@@ -613,16 +614,20 @@ def delete_goal_from_db(user, goal):
     ENGINE.execute(delete)
 
 
-def get_from_db(table_name=None, user="test"):
+def get_from_db(table_name=None, user="test", date=None):
     table_name = table_name or TABLE_NAME
     if not ENGINE:
         create_engine()
 
     try:
-        result = ENGINE.execute(f'SELECT * from `{table_name}` WHERE {table_name}.user="{user}";')
+        if date:
+            result = ENGINE.execute(f'SELECT * from `{table_name}` WHERE ({table_name}.user="{user}" AND {table_name}.date="{date}");')
+        else:
+            result = ENGINE.execute(f'SELECT * from `{table_name}` WHERE {table_name}.user="{user}";')
     except sqlalchemy.exc.OperationalError:
         create_engine()
-        result = ENGINE.execute(f'SELECT * from `{table_name}` WHERE {table_name}.user="{user}";')
+        return get_from_db(table_name=table_name, user=user, date=date)
+        #result = ENGINE.execute(f'SELECT * from `{table_name}` WHERE {table_name}.user="{user}";')
     turns = [res for res in result]
     print(f"Got {result.rowcount} turns")
     result.close()

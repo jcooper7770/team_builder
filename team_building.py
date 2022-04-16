@@ -12,7 +12,7 @@
  images of pokemon: https://img.pokemondb.net/sprites/black-white/normal/charizard.png
 
  TODO:
-  - write gobattlelog data to local DB daily instead of a file
+  - [DONE] write gobattlelog data to local DB daily instead of a file
      - Only pull from gobattlelog if/when new data
   - create my own counters lists instead of the 5 from pvpoke
   - [DONE] create smart team comp (with ABB option)
@@ -27,14 +27,18 @@
   - check out amgesus.tar.gz in our #computer-science channel. It shows how to run all of pvpoke'sscripts from the comand line.
   - [DONE] Click on a pokmeon and simulate a battle in pvpoke
      - https://pvpoke.com/battle/1500/{pokemon1}/{pokemon2}/{#shields1}{#shields2}
-  - Fetch data daily instead of every time refreshed and save to DB
+  - [DONE] Fetch data daily instead of every time refreshed and save to DB
 """
+
+import sqlalchemy
 
 import json
 import random
 import requests
 from datetime import datetime, timedelta
 from collections import defaultdict
+
+from trampoline import create_engine
 
 
 # The number of pokemon to consider
@@ -206,26 +210,12 @@ class MetaTeamDestroyer:
         self.league = league
         self.league_cp = LEAGUE_VALUE[league]
 
-        try:
-            self.all_pokemon = requests.get(rankings_url, timeout=REQUEST_TIMEOUT).json()
-            json.dump(self.all_pokemon, open("data/pokemon_rankings.json", 'w'))
-        except Exception as exc:
-            print(f"Failed to load ranking data because: {exc}")
-            self.all_pokemon = json.load(open("data/pokemon_rankings.json"))
 
-        try:
-            self.game_master = requests.get("https://vps.gobattlelog.com/data/gamemaster.json?v=1.25.10", timeout=REQUEST_TIMEOUT).json()
-            json.dump(self.game_master, open("game_master.json"))
-        except Exception as exc:
-            print(f"Failed to load game master data because: {exc}")
-            self.game_master = json.load(open("game_master.json"))
-
-        try:
-            self.latest_info = requests.get(latest_url, timeout=REQUEST_TIMEOUT).json().get("records")
-            json.dump(self.latest_info, open(f"data/latest_{league}.json", 'w'))
-        except Exception as exc:
-            print(f"Failed to load latest data because: {exc}")
-            self.all_pokemon = json.load(open(f"data/latest_{league}.json"))
+        # Fetch data from db
+        self.all_pokemon = self.get_league_data_from_db("all_pokemon", url=rankings_url)
+        game_master_url = "https://vps.gobattlelog.com/data/gamemaster.json?v=1.25.10"
+        self.game_master = self.get_league_data_from_db("game_master", url=game_master_url)
+        self.latest_info = self.get_league_data_from_db(league, url=latest_url).get("records")
 
         # Sort reports by time and get last X teams
         sorted_latest_info = sorted(self.latest_info, key=lambda x: x.get('time'), reverse=True)
@@ -254,8 +244,7 @@ class MetaTeamDestroyer:
             self.latest_info = temp_latest_info
 
         if len(self.latest_info) == 0:
-            raise NoPokemonFound(f"Did not find {league} data last {days_back} days at {rating or 'all'} rating")
-                    
+            raise NoPokemonFound(f"Did not find {league} data last {days_back} days at {rating or 'all'} rating")           
 
 
         # Create common leads and backlines lists
@@ -302,6 +291,56 @@ class MetaTeamDestroyer:
         
             # Add the movesets
             self.species_moveset_dict[species.get('speciesId')] = species.get('moveset')
+
+    def get_league_data_from_db(self, league, url=None):
+        """
+        Returns the league data from the db
+        """
+        fetch_new = False
+        # first check if in db andf if data is older than today
+        engine = create_engine()
+        metadata = sqlalchemy.MetaData()
+        table = sqlalchemy.Table("pokemon_data", metadata, autoload=True, autoload_with=engine)
+        query_results = engine.execute(f'SELECT * from `pokemon_data` WHERE pokemon_data.league="{league}";')
+        results = [result for result in query_results]
+        
+        # then check if data is old
+        if results:
+            league_data = results[0]
+            last_fetched_date = league_data[2]
+            if last_fetched_date == datetime.today():
+                latest_info = json.loads(league_data[1])
+                return latest_info
+        else:
+            ins = table.insert().values(
+                league=league,
+                data=json.dumps({}),
+                last_fetched_date=datetime.today()
+            )
+            engine.execute(ins)
+        # if not in db or old data then pull data and push to db
+        if not url:
+            latest_url = LEAGUE_DATA.get(league)
+
+            # Get the latest-large data
+            latest_url = latest_url.replace('latest', 'latest-large')
+            url = latest_url
+
+        try:
+            latest_info = requests.get(url, timeout=REQUEST_TIMEOUT).json()
+            json.dump(latest_info, open(f"data/latest_{league}.json", 'w'))
+        except Exception as exc:
+            print(f"Failed to load latest {league} data because: {exc}")
+            latest_info = json.load(open(f"data/latest_{league}.json"))
+
+        update = table.update().where(table.c.league==league).values(
+            league=league,
+            data=json.dumps(latest_info),
+            last_fetched_date=datetime.today()
+        )
+        engine.execute(update)
+        return latest_info
+
 
     @staticmethod
     def filter_top_pokemon(pokemon_list):

@@ -1,0 +1,100 @@
+<!doctype html>
+<html>
+<head>
+  <style type="text/css">
+  .data {
+    height:700px;
+    overflow-y:auto;
+  }
+
+  /* Tooltip container */
+  .tooltip {
+    position: relative;
+    display: inline-block;
+    /* border-bottom: 1px dotted black; /* If you want dots under the hoverable text */
+  }
+
+  /* Tooltip text */
+  .tooltip .tooltiptext {
+    visibility: hidden;
+    width: 500px;
+    background-color: black;
+    color: #fff;
+    text-align: center;
+    padding: 5px 0;
+    border-radius: 6px;
+    height: 200px;
+    overflow-y:auto; 
+
+    /* Position the tooltip text - see examples below! */
+    position: absolute;
+    z-index: 1;
+  }
+
+  /* Show the tooltip text when you mouse over the tooltip container */
+  .tooltip:hover .tooltiptext {
+    visibility: visible;
+  }
+
+  .abs-center-x {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+  }
+  </style>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=0.71, maximum-scale=1" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+<body style="background-image: url('https://pokemondeal.com/wp-content/uploads/2020/12/Pokeball-wallpaper.jpg')">
+<!-- function for hiding a section -->
+<script>
+function hideData() {
+  var x = document.getElementById("data");
+  if (x.style.display === "none") {
+    x.style.display = "block";
+  } else {
+    x.style.display = "none";
+  }
+}
+</script>
+
+<!-- Grey navbar with black text -->
+<nav class="navbar navbar-expand-sm bg-dark navbar-dark">
+   <a class="navbar-brand" href="#">
+    <img src="flippinCoopLogo.png" alt="Logo" style="width:40px;">
+  </a>
+  <ul class="navbar-nav mr-auto">
+    {% if request.endpoint == "run" %}
+    <li class="nav-item active">
+    {% else %}
+    <li class="nav-item">
+    {% endif %}
+      <a class="nav-link" href="/">Home</a>
+    </li>
+    {% if request.endpoint == "about" %}
+    <li class="nav-item active">
+    {% else %}
+    <li class="nav-item">
+    {% endif %}
+      <a class="nav-link" href="/about">About</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="https://gobattlelog.com/">GoBattleLog</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="https://pvpoke.com/">PVPoke</a>
+    </li>
+  </ul>
+  <ul class="nav navbar-nav mx-auto abs-center-x">
+    <li class="nav-item"><a class="navbar-brand disabled" href="#">Anti-Meta Team Generator</a></li>
+  </ul>
+</nav>
+
+{% block content %} {% endblock %}
+</body>
+</html>
