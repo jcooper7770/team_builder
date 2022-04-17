@@ -270,7 +270,7 @@ def trampoline_log():
 
 @app.route("/logger/about")
 def about_trampoline():
-    return render_template("about_trampoline.html")
+    return render_template("about_trampoline.html", user=LOGGED_IN_USER)
 
 @app.route("/about")
 def about():
