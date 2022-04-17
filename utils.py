@@ -1,3 +1,9 @@
+"""
+
+ Todo:
+  - Round tables using <div class="card">
+"""
+
 NON_SKILLS = [
     "X", "..."
 ]

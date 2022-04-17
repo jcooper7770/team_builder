@@ -4,7 +4,7 @@
 <div class="form-group" align="center">
 <table align="center">
 <tr><td>
-<form action="{{ url_for('trampoline_log') }}" method="post" id="logger" style="text-align:left;">
+<form action="{{ url_for('trampoline_log') }}" method="post" id="logger" name="logger" style="text-align:left;">
 
 <!-- Username -->
 <div class="form-row">
@@ -39,7 +39,43 @@ Event:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <textarea id="log" name="log" rows="3" cols="50" form="logger" placeholder="Input your routines here" >{{routine_text}}</textarea>
 </div>
 </div>
-<br>
+<!-- button skills -->
+<!--
+{% for flips, skills in all_skills.items() %}
+  <p>{{flips}}</p>
+  {% for skill in skills %}
+    {% for pos in ['t', 'p', 's'] %}
+      <button id="skill{{skill}}{{pos}}" name="skill{{skill}}{{pos}}" class="btn btn-success btn-sm">{{skill}}{{pos | replace("t", "o") | replace("p", "<") | replace("s", "/")}}</button>
+    {% endfor %}
+  {% endfor %}
+  <br>
+{% endfor %}
+-->
+<!--
+{% for flips, skills in all_skills.items() %}
+  <select name="{{flips}}_skills" id="{{flips}}_skills">
+  {% for skill in skills %}
+    {% for pos in ['t', 'p', 's'] %}
+      <option id="skill{{skill}}{{pos}}" value="skill{{skill}}{{pos}}">{{skill}}{{pos | replace("t", "o") | replace("p", "<") | replace("s", "/")}}</option>
+    {% endfor %}
+  {% endfor %}
+</select>
+{% endfor %}
+-->
+{% for flips, skills in all_skills.items() %}
+  <div class="dropdown" style="display:inline-block">
+  <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+    {{flips}}
+  </button>
+  <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+  {% for skill in skills %}
+    {% for pos in ['t', 'p', 's'] %}
+      <a class="dropdown-item" href="#" id="skill{{skill}}{{pos}}" value="skill{{skill}}{{pos}}">{{skill}}{{pos | replace("t", "o") | replace("p", "<") | replace("s", "/")}}</a>
+    {% endfor %}
+  {% endfor %}
+  </div>
+  </div>
+{% endfor %}
 
 <!-- Notes -->
 <div class="form-row">
@@ -63,35 +99,13 @@ Notes:
 <button id="delete-day-button" class="btn btn-danger">Delete Today's Data</button>
 </form>
 -->
+
+
+
 </td></tr>
 </table>
 
-<script src="https://code.jquery.com/jquery-3.5.1.js"
-          integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
-          crossorigin="anonymous"></script>
- 
-  <script type="text/javascript">
-    $("#delete-button").click(function(e){
-    	e.preventDefault();
-    	$.ajax({
-      		type: 'GET',
-      		url: "/logger/_clear",
-      		success: function(data){
-                 alert("Deleted data");
-         	}
-    	});
-    });
 
-    $("#delete-day-button").click(function(e){
-    $.ajax({
-      type: 'GET',
-      url: "/logger/_clearDay",
-      success: function(data){
-                 alert("Deleted data");
-               }
-    });
-    });
-</script>
 
 
 
@@ -166,5 +180,50 @@ Notes:
 </table>
 </div>
 
+<script src="https://code.jquery.com/jquery-3.5.1.js"
+          integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
+          crossorigin="anonymous"></script>
+ 
+  <script type="text/javascript">
+    $("[id^=skill]").click(function(e){
+      e.preventDefault();
+      var skill = event.target.id.slice(5).replace('t','o').replace('p', '<').replace('s', '/');
+      var routineText = document.getElementById('log').value;
+      if (routineText != ""){
+        $('#log').val(routineText + ' ' + skill);
+      } else {
+        $('#log').val(skill);
+      }
+    });
+    $("[id$=_skills]").change(function(e){
+      var skill = $(this).val().slice(5).replace('t','o').replace('p', '<').replace('s', '/');
+      var routineText = document.getElementById('log').value;
+      if (routineText != ""){
+        $('#log').val(routineText + ' ' + skill);
+      } else {
+        $('#log').val(skill);
+      }
+    });
+    $("#delete-button").click(function(e){
+    	e.preventDefault();
+    	$.ajax({
+      		type: 'GET',
+      		url: "/logger/_clear",
+      		success: function(data){
+                 alert("Deleted data");
+         	}
+    	});
+    });
+
+    $("#delete-day-button").click(function(e){
+    $.ajax({
+      type: 'GET',
+      url: "/logger/_clearDay",
+      success: function(data){
+                 alert("Deleted data");
+               }
+    });
+    });
+</script>
 
 {% endblock %}

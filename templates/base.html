@@ -26,13 +26,16 @@
 <!-- Grey navbar with black text -->
 <nav class="navbar navbar-expand-sm bg-dark navbar-dark">
    <a class="navbar-brand" href="#">
-    <img src="flipLogo.png" alt="Logo" style="width:40px;">
+    <img src="/flipLogo.png" alt="Logo" style="width:40px;">
   </a>
   <ul class="navbar-nav mr-auto">
-    {% if user != "" %}
-    <li class="nav-item active">
+    <li class="nav-item{%if url_for(request.endpoint)=="/logger" %} active{% endif %}">
       <a class="nav-link" href="/logger">Home</a>
     </li>
+    <li class="nav-item{%if url_for(request.endpoint)=="/logger/about" %} active{% endif %}">
+      <a class="nav-link" href="/logger/about">About</a>
+    </li>
+    {% if user != "" %}
     <li class="nav-item">
       <a class="nav-link" href="/logout">Logout</a>
     </li>

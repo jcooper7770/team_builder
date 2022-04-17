@@ -31,7 +31,8 @@ from team_building import get_counters_for_rating, LEAGUE_RANKINGS, NoPokemonFou
 from battle_sim import sim_battle
 from trampoline import convert_form_data, pretty_print, Practice, current_user, set_current_user,\
      current_event, set_current_event, set_current_athlete, NON_SKILLS, SKILLS, POSITIONS, create_engine,\
-     get_from_db, delete_from_db, set_table_name, insert_goal_to_db, get_user_goals, complete_goal, delete_goal_from_db
+     get_from_db, delete_from_db, set_table_name, insert_goal_to_db, get_user_goals, complete_goal, delete_goal_from_db,\
+     ALL_SKILLS    
 from utils import *
 
 app = Flask(__name__, static_url_path="", static_folder="static")
@@ -263,9 +264,13 @@ def trampoline_log():
         event=event,
         routine_text=request.args.get('routine', ''),
         user=LOGGED_IN_USER,
-        goals=get_user_goals(current_user())
+        goals=get_user_goals(current_user()),
+        all_skills=ALL_SKILLS
     )
 
+@app.route("/logger/about")
+def about_trampoline():
+    return render_template("about_trampoline.html")
 
 @app.route("/about")
 def about():

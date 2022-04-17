@@ -8,13 +8,15 @@ TODO:
   - [DONE] Add in notes for a practice or a turn
   - [DONE] Add in double mini
   - [DONE] Update difficulty for double mini
-  - Add about page on shortcuts
+  - [DONE] Add about page on shortcuts
   - [DONE] Save in a database instead of text files
   - [DONE] Add athlete compulsory and optional
   - Add in visualizations per day. Maybe make table headers into links to visualization page
     i.e /vis?date=20220326&user=bob[&event=dmt]
   - [DONE] Fix deleting data for db
   - Fix using test database
+  - Split up front/back skills for skill dropdowns
+  - Split up uncommon skills or remove them for skill dropdowns
 """
 
 import sqlalchemy
@@ -61,6 +63,23 @@ SKILLS = [
     "12101", "12103",
     "12200", "12222"
 ]
+
+# TODO: Add common and uncommon skill separators
+# TODO: Or split up front and back skills
+ALL_SKILLS = {
+    "singles": ["40", "41", "42", "43", "44", "45"],
+    "doubles": [
+        "800", "801", "802", "803", "805",
+        "811", "813", "815",
+        "822", "823", "824", "825", "826",
+        "831", "833", "835",
+    ],
+    "triples": [
+        "12000", "12001", "12003",
+        "12101", "12103",
+        "12200", "12222"
+    ]
+}
 
 TUCK_POS = "o"
 PIKE_POS = "<"
