@@ -59,7 +59,7 @@ class TableMaker:
         try:
             date_to_remove = value.split()[1].replace("/", '-')
             event_to_remove = value.split()[2].replace("(", "").replace(")", "")
-            self.table.append(f'<th colspan={colspan} align="center">{value}<button type="button" class="btn float-right"><a title="remove day" href="/logger/delete/{date_to_remove}/{event_to_remove}"><span class="fa fa-remove" aria-hidden=\'true\'></span></a></button></th>')
+            self.table.append(f'<th colspan={colspan} align="center">{value}<button type="button" class="btn float-right"><a title="remove day" href="#"><span id="remove_{date_to_remove}_{event_to_remove}" class="fa fa-remove" aria-hidden=\'true\'></span></button></th>')
         except:
             self.table.append(f'<th colspan={colspan} align="center">{value}</th>')
         self.end_row()

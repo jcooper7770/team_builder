@@ -208,6 +208,21 @@ Notes:
         $('#log').val(skill);
       }
     });
+    $("[id^=remove_]").click(function(e){
+        e.preventDefault();
+        var date_to_remove = event.target.id.split("_")[1];
+	var event_to_remove = event.target.id.split("_")[2];
+        let confirmText = "".concat("Are you sure you want to delete ",date_to_remove, " ", event_to_remove, "?");
+        if (confirm(confirmText) == true) {
+            $.ajax({
+      		type: 'GET',
+      		url: "/logger/delete/"+date_to_remove+"/"+event_to_remove,
+      		success: function(data){
+                  location.reload();
+         	}
+    	});
+        }
+    });
     $("#delete-button").click(function(e){
     	e.preventDefault();
     	$.ajax({
