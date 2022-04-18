@@ -27,18 +27,20 @@ import traceback
 
 from flask import Flask, request, render_template, jsonify, redirect, url_for
 
-from team_building import get_counters_for_rating, LEAGUE_RANKINGS, NoPokemonFound, LEAGUE_VALUE, TeamCreater
+from team_building import get_counters_for_rating, LEAGUE_RANKINGS, NoPokemonFound, LEAGUE_VALUE, TeamCreater,\
+     create_table_from_results
+
 from battle_sim import sim_battle
 from trampoline import convert_form_data, pretty_print, Practice, current_user, set_current_user,\
      current_event, set_current_event, set_current_athlete, NON_SKILLS, SKILLS, POSITIONS, create_engine,\
      get_from_db, delete_from_db, set_table_name, insert_goal_to_db, get_user_goals, complete_goal, delete_goal_from_db,\
-     ALL_SKILLS    
+     ALL_SKILLS
 from utils import *
 
 app = Flask(__name__, static_url_path="", static_folder="static")
 app.config["CACHE_TYPE"] = "null"
 
-CACHE = {'results': {}, 'team_maker': {}, 'num_days': 1, 'rating': None}
+#CACHE = {'results': {}, 'team_maker': {}, 'num_days': 1, 'rating': None}
 N_TEAMS = 3
 USER_GOALS = {
     "bob": [{"goal": "goal1", "done": False}, {"goal": "goal2", "done": True}]
@@ -46,12 +48,7 @@ USER_GOALS = {
 LOGGED_IN_USER = ""
 SEARCH_DATE = None
 
-import logging
-logging.basicConfig(level=logging.DEBUG)
 
-logger = logging.getLogger('werkzeug') # grabs underlying WSGI logger
-handler = logging.FileHandler('test.log') # creates handler for the log file
-logger.addHandler(handler) # adds handler to the werkzeug WSGI logger
 
 
 def make_recommended_teams(team_maker, chosen_pokemon, chosen_league, chosen_position):
@@ -289,16 +286,16 @@ def run():
     use_tooltip = bool(request.args.get('tooltips', False))
     N_TEAMS = int(request.args.get('num_teams', N_TEAMS))
     html = []
+    error_text = ""
 
-    html.append("<h1 align='center'><u>Options</u></h1>")
+
 
     # Data tables from cache
     if get_new_data(chosen_league, num_days, rating):
         try:
             results, team_maker = get_counters_for_rating(rating, chosen_league, days_back=num_days)
         except NoPokemonFound as exc:
-            error = f"ERROR: Could not get data because: {str(exc)}. Using all data instead"
-            html.append(f"<p  style='background-color:yellow;text-align:center'><b>{error}</b></p>")
+            error_text = f"ERROR: Could not get data because: {str(exc)}. Using all data instead"
             results, team_maker = get_counters_for_rating(None, chosen_league, days_back=None)
     else:
         results, team_maker, num_days, rating = CACHE.get('results').get(chosen_league), CACHE.get('team_maker').get(chosen_league), CACHE.get("num_days"), CACHE.get("rating")
@@ -307,57 +304,6 @@ def run():
     CACHE['num_days'] = num_days
     CACHE['rating'] = rating
     CACHE['league'] = chosen_league
-
-    # Navigation table
-    leagues_table = TableMaker(border=1, align="center", bgcolor="#FFFFFF", width="30%")
-    leagues_table.new_header(value="Different Leagues", colspan=len(LEAGUE_RANKINGS))
-    leagues_table.new_row()
-    for league in sorted(list(LEAGUE_RANKINGS.keys())):
-        if league == chosen_league:
-            leagues_table.add_cell(league)
-        else:
-            leagues_table.add_cell(f'<a href="?league={league}&pokemon={chosen_pokemon}&num_days={num_days}">{league}</a>')
-    leagues_table.end_row()
-    leagues_table.end_table()
-    html.append(leagues_table.render())
-
-    # Options: pokemon team, # days of data
-    options_table = TableMaker(border=1, align="center", width="30%")
-    options_table.new_header("Options", colspan=2)
-    options_table.new_row()
-    options_table.add_cell("Create team from pokemon:")
-    pokemon_form = []
-    pokemon_form.append(f"<input type='hidden' value='{chosen_league}' name='league' />")
-    pokemon_form.append(f"<select id='mySelect' name='pokemon'>")
-    pokemon_form.append("<option value=''>None</option>")
-    for species in sorted(team_maker.all_pokemon, key=lambda x: x.get('speciesId')):
-        species_name = species.get('speciesId')
-        if species_name == chosen_pokemon:
-            pokemon_form.append(f"<option value='{species_name}' selected>{species_name}</option>")
-        else:
-            pokemon_form.append(f"<option value='{species_name}'>{species_name}</option>")
-    pokemon_form.append("</select>")
-    pokemon_form.append(f"<br><input type='radio' id='lead' value='lead' name='position'{' checked' if chosen_position=='lead' else ''}><label for='lead'>In the lead</label>")
-    pokemon_form.append(f"<br><input type='radio' id='back' value='back' name='position'{' checked' if chosen_position=='back' else ''} ><label for='back'>In the back</label>")
-    options_table.add_cell("".join(pokemon_form))
-    options_table.end_row()
-    options_table.new_row()
-    options_table.add_cell("Number of days of data:")
-    options_table.add_cell(f"<input type='text' value={num_days} name=num_days />")
-    options_table.end_row()
-    options_table.new_row()
-    options_table.add_cell("Rating:")
-    options_table.add_cell(f"<input type='text' value={rating} name=rating />")
-    options_table.end_row()
-    options_table.new_row()
-    options_table.add_cell("Number of recommended teams:")
-    options_table.add_cell(f"<input type='text' value={N_TEAMS} name=num_teams />")
-    options_table.end_row()
-    options_table.new_row()
-    options_table.add_cell("<input type='submit' value='submit' /></p></form>", colspan=2, align="right")
-    options_table.end_row()
-    options_table.end_table()
-    html.extend(["<form action='/'>", options_table.render(), "</form>"])
 
     # Recommended teams
     #  make N_TEAMS unique teams. But try 2*N_TEAMS times to make unique teams
@@ -374,7 +320,19 @@ def run():
     html.append(create_table_from_results(results, pokemon=chosen_pokemon, width='75%', tc=tc, tooltip=use_tooltip))
     html.append("</div>")
 
-    return render_template("index.html", body="".join(html))
+    return render_template(
+        "index.html",
+        body="".join(html),
+        leagues=sorted(LEAGUE_RANKINGS.keys()),
+        current_league=chosen_league,
+        all_pokemon=sorted(team_maker.all_pokemon, key=lambda x: x.get('speciesId')),
+        chosen_position=chosen_position,
+        num_days=num_days,
+        rating=rating,
+        number_teams=N_TEAMS,
+        current_pokemon=chosen_pokemon,
+        error_text=error_text
+    )
 
 
 

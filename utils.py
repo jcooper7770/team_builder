@@ -4,10 +4,21 @@
   - Round tables using <div class="card">
 """
 
+
+import traceback
+
+import logging
+logging.basicConfig(level=logging.DEBUG)
+
+logger = logging.getLogger('werkzeug') # grabs underlying WSGI logger
+handler = logging.FileHandler('test.log') # creates handler for the log file
+logger.addHandler(handler) # adds handler to the werkzeug WSGI logger
+
+
 NON_SKILLS = [
     "X", "..."
 ]
-
+CACHE = {'results': {}, 'team_maker': {}, 'num_days': 1, 'rating': None}
 
 class TableMaker:
     """
@@ -82,80 +93,6 @@ class TableMaker:
 
     def render(self):
         return "".join(self.table)
-
-
-def create_table_from_results(results, pokemon=None, width=None, tc=None, tooltip=True):
-    """
-    Creates an html table from the results.
-    Results are in the form:
-    value
-    value    value    value    value
-    value    value    value    value
-    value    value    value    value
-
-    :param results: The results
-    :type results: str
-    :param pokemon: The pokemon to simulatem battles for (Default: None)
-    :type pokemon: str
-
-    :return: the table for the results
-    :rtype: str
-    """
-    table = TableMaker(border=1, align="center", bgcolor="#FFFFFF", width=width)
-
-    for line in results.split("\n"):
-        if not line:
-            continue
-        table.new_row()
-
-        # If a single value in a line then create a new table
-        values = line.split("\t")
-        if len(values) == 0:
-            table.end_row()
-            table.end_table()
-        elif len(values) == 1:
-            table.reset_table()
-            table.add_cell(values[0], colspan=4, align="center")
-        else:
-            for value in values:
-                if value:
-                    # Provide links to battles
-                    if pokemon and ':' in value:
-                        league_val = LEAGUE_VALUE.get(CACHE.get('league', ''), '1500')
-                        cell_pokemon = value.split(':')[0].strip()
-
-                        # make pvpoke link
-                        pvpoke_link = f"https://pvpoke.com/battle/{league_val}/{cell_pokemon}/{pokemon}/11"
-
-                        # simulate battle for text color
-                        try:
-                            winner, leftover_health, battle_text = sim_battle(cell_pokemon, pokemon, tc)
-                            tool_tip_text = "&#013;&#010;</br>".join(battle_text)
-                            #logger.info(f"winner: {winner} - leftover_health: {leftover_health}")
-                        except Exception as exc:
-                            winner = None
-                            logger.error(f"{cell_pokemon}")
-                            logger.error(traceback.format_exc())
-                            leftover_health = 0
-                            tool_tip_text=  ""
-    
-                        if winner == pokemon:
-                            text_color = "#00FF00"
-                            text_color = "#%02x%02x%02x" % (0, 100 + int(155 * leftover_health), 0)
-                        elif winner == cell_pokemon:
-                            text_color = "#FF0000"
-                            text_color = "#%02x%02x%02x" % (100 + int(155 * leftover_health), 0, 0)
-                        else:
-                            text_color = "#000000"
-                        #logger.info(f"{cell_pokemon}: {text_color}")
-                        tooltip_addition = f"<span class='tooltiptext'>{tool_tip_text}</span>" if tooltip else ""
-                        value = f"<a class='tooltip' href='{pvpoke_link}' style='color: {text_color}; text-decoration: none;' target='_blank'>{value}{tooltip_addition}</a>"
-                    table.add_cell(value)
-
-        table.end_row()
-
-    table.end_table()
-    return table.render()
 
 
 def skills_table(skills, title="Routines"):

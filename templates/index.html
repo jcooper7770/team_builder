@@ -2,5 +2,79 @@
 
 {% block content %}
 <br><br>
+{% if error_text %}
+<p style='background-color:yellow;text-align:center'><b>{{error_text}}</b></p>
+{% endif %}
+<h1 align="center"><u>Options</u></h1>
+<br>
+<div class="container">
+  <form action="/">
+  <table border=1 align="center" class="table table-striped">
+    <thead class="thead-dark">
+      <th colspan=2>Options</th>
+    </thead>
+    <tbody>
+      <tr>
+        <td>League</td>
+        <td>
+        <select id="league_picker" name="league_picker">
+        {% for league in leagues %}
+          <option value="{{league}}" id="option_{{league}}"{% if current_league==league %} selected{% endif %}>{{league}}</option>
+        {% endfor %}
+        </select>
+        </td>
+      </tr>
+      <tr>
+        <td>Create team from pokemon</td>
+        <td>
+         <input type='hidden' value='{{current_league}}' name='league' />
+         <select id="mySelect" name="pokemon">
+           <option value="">None</option>
+         {% for pokemon in all_pokemon %}
+           <option value='{{pokemon.speciesId}}'{% if current_pokemon == pokemon.speciesId %} selected{% endif %}>{{pokemon.speciesId}}</option>
+         {% endfor %}
+         </select>
+         <br><input type='radio' id='lead' value='lead' name='position' {% if chosen_position=="lead" %} checked {% endif %}><label for='lead'>In the lead</label>
+         <br><input type='radio' id='back' value='back' name='position' {% if chosen_position=="back" %} checked {% endif %}><label for='back'>In the back</label>
+        </td>
+      </tr>
+      <tr>
+        <td>Number of days of data:</td>
+        <td>
+          <input type="text" id="num_days" value="{{num_days}}" name="num_days" class="form-control" />
+        </td>
+      </tr>
+      <tr>
+        <td>Rating:</td>
+        <td>
+          <input type="text" id="rating" value="{{rating}}" name="rating" class="form-control" />
+        </td>
+      </tr>
+      <tr>
+        <td>Number of recommended teams:</td>
+        <td>
+          <input type="text" id="num_teams" value="{{number_teams}}" name="num_teams" class="form-control" />
+        </td>
+      </tr>
+      <tr>
+        <td colspan=2 align="right"><button type="submit" class="btn btn-primary">Submit</button></td>
+      </tr>
+    </tbody>
+  </table>
+  </form>
+</div>
 {{body|safe}}
+
+<script src="https://code.jquery.com/jquery-3.5.1.js"
+          integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
+          crossorigin="anonymous"></script>
+ 
+<script type="text/javascript">
+$("#league_picker").change(function(e){
+        var league= $(this).val();
+        var chosen_pokemon = $("#mySelect").val();
+        var num_days = $("#num_days").val();
+        location.href = "?league="+league+"&pokemon="+chosen_pokemon+"&num_days="+num_days;
+    });
+</script>
 {% endblock %}
