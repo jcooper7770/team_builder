@@ -46,10 +46,12 @@
   <ul class="nav navbar-nav mx-auto abs-center-x">
     <li class="nav-item"><a class="navbar-brand disabled" href="#">Trampoline Practice Logger</a></li>
   </ul>
+  {% if url_for(request.endpoint)=="/logger" %}
   <form class="form-inline my-2 my-lg-0" action="{{url_for('search_date')}}" method="POST">
-    <input class="form-control mr-sm-2" type="text" placeholder="Search practice date" name="practice_date" id="practice_date">
-    <button class="btn btn-secondary my-2 my-sm-0" type="submit">Search</button>
+    <input class="form-control mr-sm-2" type="text" placeholder="mm/dd/yyyy" name="practice_date" id="practice_date">
+    <button class="btn btn-secondary my-2 my-sm-0" type="submit">Search Practice</button>
   </form>
+  {% endif %}
 
     {% else %}
     <li class="nav-item">

@@ -17,7 +17,7 @@
       <tr>
         <td>League</td>
         <td>
-        <select id="league_picker" name="league_picker">
+        <select id="league_picker" name="league">
         {% for league in leagues %}
           <option value="{{league}}" id="option_{{league}}"{% if current_league==league %} selected{% endif %}>{{league}}</option>
         {% endfor %}

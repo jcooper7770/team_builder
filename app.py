@@ -15,6 +15,7 @@ TODO:
   - [DONE] (Trampoline) Replace "Routines" section with "Goals" with checkboxes
   - [DONE] (Trampoline) Write goals to DB
   - [DONE] Search for certain day of practice
+  - Add user profiles and get data from scorsync
 """
 
 import datetime
@@ -47,6 +48,7 @@ USER_GOALS = {
 }
 LOGGED_IN_USER = ""
 SEARCH_DATE = None
+ERROR = None
 
 
 
@@ -126,12 +128,17 @@ def search_date():
     Search by certain date
     """
     global SEARCH_DATE
+    global ERROR
+    ERROR = ""
     practice_date = request.form.get("practice_date")
     if not practice_date:
         SEARCH_DATE = None
     else:
         # convert practice date to datetime
-        SEARCH_DATE = datetime.datetime.strptime(practice_date, "%m/%d/%Y")
+        try:
+            SEARCH_DATE = datetime.datetime.strptime(practice_date, "%m/%d/%Y")
+        except Exception as error:
+            ERROR = error
     return redirect(url_for("trampoline_log"))
     
 
@@ -216,6 +223,10 @@ def trampoline_log():
         _save_trampoline_data(request)
         return redirect(url_for('trampoline_log'))
 
+    # Require user to be logged in to use the app
+    if not LOGGED_IN_USER:
+        return redirect(url_for('landing_page'))
+
     username, event = current_user(), current_event()
     if os.path.exists('routines.txt'):
         with open('routines.txt') as routine_file:
@@ -262,12 +273,15 @@ def trampoline_log():
         routine_text=request.args.get('routine', ''),
         user=LOGGED_IN_USER,
         goals=get_user_goals(current_user()),
-        all_skills=ALL_SKILLS
+        all_skills=ALL_SKILLS,
+        error_text=ERROR
     )
+
 
 @app.route("/logger/about")
 def about_trampoline():
     return render_template("about_trampoline.html", user=LOGGED_IN_USER)
+
 
 @app.route("/about")
 def about():
@@ -287,8 +301,6 @@ def run():
     N_TEAMS = int(request.args.get('num_teams', N_TEAMS))
     html = []
     error_text = ""
-
-
 
     # Data tables from cache
     if get_new_data(chosen_league, num_days, rating):
@@ -359,6 +371,13 @@ def logout():
     LOGGED_IN_USER = ""
     return redirect(url_for('login'))
 
+
+@app.route("/logger/landing")
+def landing_page():
+    """
+    Landing page
+    """
+    return render_template("landing_page.html", user=LOGGED_IN_USER)
 
 
 def get_app():

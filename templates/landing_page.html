@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block content %}
+<br><br>
+<div class="container">
+<div class="card">
+  <div class="row card-body">
+    <div class="col-sm-3">
+      <img class="col-sm" src="/flipLogo.png" alt="logo" />
+    </div>
+    <div class="col-sm-9">
+      <h5 class="card-title">Trampoline Practice Logger</h5>
+      <p class="card-text">
+        How often do you find yourself manually handwriting each and every skill you do at practice then spending time to calculate metrics like the Degree of Difficulty (DD) of your turn? Well now there is an app you can use for that!
+      </p>
+      <p class="card-text">Things that this tool can do:</p>
+      <ul style="list-style-type: none;">
+        <li><i class="fa fa-book"></i> Stores all previous trainings in one place</i></li>
+        <li><i class="fa fa-book"></i> Easy input of a single turn or multiple turns</i></li>
+        <li><i class="fa fa-book"></i> Simple search functionality to go back to a certain training</li>
+        <li><i class="fa fa-book"></i> Caluclates metrics per turn and practice like:
+          <ul style="list-style-type: none;">
+            <li><i class="fa fa-book"></i> Number of skills</li>
+            <li><i class="fa fa-book"></i> Number of flips</li>
+            <li><i class="fa fa-book"></i> Total Difficulty</li>
+          </ul>
+        </li>
+      </ul>
+      <p class="card-text">Try it today!</p>
+      <a href="/login" class="btn btn-primary">Login</a>
+    </div>
+  </div>
+</div>
+</div>
+{% endblock %}

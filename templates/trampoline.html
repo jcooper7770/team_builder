@@ -1,6 +1,13 @@
 {% extends "base.html" %}
 
 {% block content %}
+{% if error_text %}
+<p style='background-color:yellow;text-align:center' id="error">
+  <b>{{error_text}}</b>
+  <a id="close_error" href="#"><span class="fa fa-remove float-right" aria-hidden='true'></span></a>
+</p>
+{% endif %}
+<br>
 <div class="form-group" align="center">
 <table align="center">
 <tr><td>
@@ -8,22 +15,20 @@
 
 <!-- Username -->
 <div class="form-row">
-<div class="col">
-<label for="name">Username:</label>
-</div>
+<div class="col-sm-3"><label for="name">Username:</label></div>
 <div class="col">
 {% if user == "" %}
 <input type="text" id="name" name="name" placeholder="new username" value="{{username}}" class="form-control"><br>
 {% else %}
-<input type="text" id="name" name="name" placeholder="new username" value="{{user}}" class="form-control" disabled><br>
+<input type="text" id="name" name="name" placeholder="new username" value="{{user}}" class="form-control" disabled>
 {% endif %}
 </div>
 </div>
 
 <!-- Event to be logged -->
 <div class="form-row">
-<div class="col">
-Event:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<div class="col-sm-3">
+Event:
 </div>
 <div class="col">
 <select name="event" id="event">
@@ -76,18 +81,14 @@ Event:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
   </div>
   </div>
 {% endfor %}
-
+<!--<span id="num_skills">Number of skills: 0</span>-->
 <!-- Notes -->
 <div class="form-row">
-<div class="col">
-Notes:
-</div>
-<div class=col">
-<input type="text" id="notes" name="notes" value="">
-</div>
+<div class="col-sm-3"><label for="notes">Notes:</label></div>
+<div class="col"><input type="text" id="notes" name="notes" placeholder="Enter notes" value="" class="form-control" ></div>
 </div>
 
-<br>
+
 <button type="submit" class="btn btn-primary">Submit</button>
 </form>
 </div>
@@ -199,6 +200,15 @@ Notes:
         $('#log').val(skill);
       }
     });
+    function updateNumSkills() {
+        let skills = $("#log").val().trim().split(/[\s]/);
+        let num_skills = skills.length;
+        document.getElementById('num_skills').textContent = "Number of skills: "+num_skills;
+    }
+
+    $("#log").on('input', function(e){
+        //updateNumSkills();
+    });
     $("[id$=_skills]").change(function(e){
       var skill = $(this).val().slice(5).replace('t','o').replace('p', '<').replace('s', '/');
       var routineText = document.getElementById('log').value;
@@ -207,6 +217,7 @@ Notes:
       } else {
         $('#log').val(skill);
       }
+      //updateNumSkills();
     });
     $("[id^=remove_]").click(function(e){
         e.preventDefault();
@@ -222,6 +233,13 @@ Notes:
          	}
     	});
         }
+    });
+    $("#close_error").click(function(e){
+        var errorText = document.getElementById("error");
+        errorText.opacity = 1;
+        //(function fade(){(errorText.opacity-=.1)<0?errorText.display="none":setTimeout(fade,40)})();
+        errorText.style.transition = '1s';
+        errorText.style.opacity = 0;
     });
     $("#delete-button").click(function(e){
     	e.preventDefault();
