@@ -58,6 +58,7 @@ LEAGUE_RANKINGS = {
     "MLPC": "https://vps.gobattlelog.com/data/overall/rankings-10000-premierclassic.json?v=1.25.31",
     "Element": "https://vps.gobattlelog.com/data/overall/rankings-500-element.json?v=1.25.31",
     "Remix": "https://vps.gobattlelog.com/data/overall/rankings-1500-remix.json?v=1.25.35",
+    "Retro": "https://vps.gobattlelog.com/data/overall/rankings-1500-retro.json?v=1.25.35",
     "ULRemix": "https://vps.gobattlelog.com/data/overall/rankings-2500-remix.json?v=1.25.35",
     "GL": "https://vps.gobattlelog.com/data/overall/rankings-1500.json?v=1.25.35",
     "Jungle": "https://vps.gobattlelog.com/data/overall/rankings-500-littlejungle.json?v=1.28.0",
@@ -81,6 +82,7 @@ LEAGUE_DATA = {
     "MLPC": "https://vps.gobattlelog.com/records/master-premierclassic/latest.json?ts=451466.3",
     "Element": "https://vps.gobattlelog.com/records/element/latest.json?ts=451466.3",
     "Remix": "https://vps.gobattlelog.com/records/great-remix/latest.json?ts=451709.1",
+    "Retro": "https://vps.gobattlelog.com/records/great-retro/latest.json?ts=451709.1",
     "ULRemix": "https://vps.gobattlelog.com/records/ultra-remix/latest.json?ts=451709.1",
     "Jungle": "https://vps.gobattlelog.com/records/littlejungle/latest.json?ts=451709.1",
     "Little": "https://vps.gobattlelog.com/records/little/latest.json?ts=451709.1",
@@ -94,6 +96,7 @@ LEAGUE_DATA = {
 LEAGUE_VALUE = {
     'GL': '1500',
     'Remix': '1500',
+    'Retro': '1500',
     'UL': '2500',
     'ULRemix': '2500',
     'ULP': '2500',
@@ -124,7 +127,8 @@ CUP_VALUE = {
     'Sinnoh': 'sinnoh',
     'Love': 'love',
     'Johto': 'johto',
-    'Little': 'little'
+    'Little': 'little',
+    'Retro': 'retro'
 }
 
 # https://gamepress.gg/pokemongo/cp-multiplier
