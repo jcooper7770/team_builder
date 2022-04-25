@@ -32,10 +32,10 @@ from team_building import get_counters_for_rating, LEAGUE_RANKINGS, NoPokemonFou
      create_table_from_results
 
 from battle_sim import sim_battle
-from trampoline import convert_form_data, pretty_print, Practice, current_user, set_current_user,\
+from trampoline import convert_form_data, get_leaderboards, pretty_print, Practice, current_user, set_current_user,\
      current_event, set_current_event, set_current_athlete, NON_SKILLS, SKILLS, POSITIONS, create_engine,\
      get_from_db, delete_from_db, set_table_name, insert_goal_to_db, get_user_goals, complete_goal, delete_goal_from_db,\
-     ALL_SKILLS
+     ALL_SKILLS, get_leaderboards, Athlete
 from utils import *
 
 app = Flask(__name__, static_url_path="", static_folder="static")
@@ -228,6 +228,8 @@ def trampoline_log():
         return redirect(url_for('landing_page'))
 
     username, event = current_user(), current_event()
+
+    '''
     if os.path.exists('routines.txt'):
         with open('routines.txt') as routine_file:
             old_routines = routine_file.read()
@@ -243,7 +245,8 @@ def trampoline_log():
     
     # Write all trampoline skills to a table
     table = skills_table(routines)
-
+    '''
+    
     # Print out a table per date
     practice_tables = []
 
@@ -358,6 +361,7 @@ def login():
         LOGGED_IN_USER = request.form.get("username")
         if LOGGED_IN_USER:
             set_current_user(LOGGED_IN_USER)
+            set_current_athlete(LOGGED_IN_USER)
         return redirect(url_for('trampoline_log'))
     return render_template("login.html", user=LOGGED_IN_USER)
 
@@ -377,7 +381,65 @@ def landing_page():
     """
     Landing page
     """
-    return render_template("landing_page.html", user=LOGGED_IN_USER)
+    leaderboard = {
+        "DD": {
+            "Trampoline": {
+                "Ruben": 18.2,
+                "coop4440": 15.8,
+                "Jer": 15.0
+            },
+            "DMT": {
+                "Ruben": 24.1,
+                "coop4440": 18.4,
+                "Jer": 14.8
+            }
+        },
+        "Flips": {
+            "Trampoline": {"Ruben": 10, "Jer": 9},
+            "DMT": {"Ruben": 5, "Jer": 2}
+        }
+    }
+    leaderboard = get_leaderboards()
+    return render_template("landing_page.html", user=LOGGED_IN_USER, leaderboard=leaderboard)
+
+
+@app.route("/logger/user")
+def user_profile():
+    """
+    User profile
+    """
+    # get user from db
+    engine = create_engine()
+    conn = engine.connect()
+    result = engine.execute(f'SELECT * from `users` WHERE `user`="{LOGGED_IN_USER}"')
+    if result.rowcount == 0:
+        return render_template("user_profile.html", user=LOGGED_IN_USER, user_data={})
+    users = [u for u in result][0]
+    user_data = {
+        "private": users[1],
+        "compulsory": users[2],
+        "optional": users[3]
+    }
+    result.close()
+    conn.close()
+    engine.dispose()
+    return render_template("user_profile.html", user=LOGGED_IN_USER, user_data=user_data)
+
+
+@app.route("/logger/user/update", methods=["POST"])
+def update_user():
+    """
+    Update user
+    """
+    private = True if request.form.get("private")=="true" else False
+    compulsory = request.form.get("compulsory")
+    optional = request.form.get("optional")
+    athlete = Athlete.load(LOGGED_IN_USER)
+    athlete.private = private
+    athlete.compulsory = [skill for skill in compulsory.split()]
+    athlete.optional = [skill for skill in optional.split()]
+    athlete.save()
+    return redirect(url_for("user_profile"))
 
 
 def get_app():

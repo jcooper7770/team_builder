@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block content %}
+<br><br>
+<div class="container">
+  <div class="card border-primary">
+    <div class="card-header text-center">
+      <h2>{{user}}</h2>
+    </div>
+    <div class="row card-body">
+      <div class="col-sm">
+        <form action="/logger/user/update" method="POST">
+          <div class="row">
+            <div class="col-sm-2">
+              <p class="card-text" style="display:inline-block">Private:</p>
+            </div>
+            <div class="col-sm-10">
+              <label for="yes">Yes</label>
+              <input type="radio" id="yes" name="private" value="true" {% if user_data["private"]==True %} checked{%
+                endif %}><br>
+              <label for="no">No</label>
+              <input type="radio" id="no" name="private" value="false" {% if user_data["private"]==False %} checked{%
+                endif %}><br>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-2">
+              <label for="compulsory">Compulsory:</label>
+            </div>
+            <div class="col-sm-10">
+              <input type="text" value="{{user_data['compulsory']}}" class="form-control" name="compulsory"><br>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-2">
+              <label for="optional">Optional:</label>
+            </div>
+            <div class="col-sm-10">
+              <input type="text" value="{{user_data['optional']}}" class="form-control" name="optional"><br>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col">
+              <button type="submit" class="btn btn-primary">Save</button>
+            </div>
+          </div>
+        </form>
+        <br>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<br><br>
+{% endblock %}

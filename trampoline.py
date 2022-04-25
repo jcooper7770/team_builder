@@ -114,10 +114,11 @@ class Athlete:
     """
     Information about athlete
     """
-    def __init__(self, name):
+    def __init__(self, name, private=False, compulsory=[], optional=[]):
         self.name = name
-        self.compulsory = []
-        self.optional = []
+        self.compulsory = compulsory
+        self.optional = optional
+        self.private = private
 
     def set_comp(self, skills):
         """
@@ -144,16 +145,40 @@ class Athlete:
         athlete_data = {
             'name': self.name,
             'compulsory': self.compulsory,
-            'optional': self.optional
+            'optional': self.optional,
+            'private': self.private
         }
         with open(file_name, 'w') as athlete_file:
             json.dump(athlete_data, athlete_file)
+        
+        # Save to DB
+        save_athlete(self)
 
     @classmethod
     def load(self, name):
         """
         Loads in an athlete
         """
+        engine = create_engine()
+        conn = engine.connect()
+
+        # First check if user exists
+        result = ENGINE.execute(f'SELECT * from `users` WHERE `user`="{name}"')
+        athlete = None
+        if result.rowcount != 0:
+            athlete_db = [res for res in result][0]
+            name = athlete_db[0]
+            private = athlete_db[1]
+            compulsory = athlete_db[2].split()
+            optional = athlete_db[3].split()
+            athlete = Athlete(name, private, compulsory, optional)
+
+        result.close()
+        conn.close()
+        engine.dispose()
+        if athlete:
+            return athlete
+
         file_path = os.path.join("athletes", f'{name}.json')
 
         if not os.path.exists(file_path):
@@ -161,11 +186,14 @@ class Athlete:
 
         with open(file_path) as athlete_file:
             athlete_data = json.load(athlete_file)
-            athlete = Athlete(athlete_data['name'])
-            athlete.compulsory = athlete_data['compulsory']
-            athlete.optional = athlete_data['optional']
+            athlete = Athlete(
+                athlete_data['name'],
+                athlete_data.get("private", False),
+                athlete_data["compulsory"],
+                athlete_data["optional"]    
+            )
             return athlete
-
+        
 
 class Practice:
     """
@@ -220,8 +248,6 @@ class Practice:
         # Save the athlete also
         athlete = Athlete.load(CURRENT_USER)
         athlete.save()
-
-
 
         return current_day
 
@@ -468,9 +494,13 @@ def convert_form_data(form_data, logger=print, event=EVENT, notes=None):
     Converts the data from the form into trampoline routines
     and returns a list of Routine objs
     """
-    athlete = Athlete.load(CURRENT_USER)
-    logger(f"Comp: {athlete.compulsory}")
-    logger(f"opt: {athlete.optional}")
+    if not CURRENT_ATHLETE:
+        set_current_athlete(CURRENT_USER)
+    athlete = CURRENT_ATHLETE
+    #set_current_athlete(athlete)
+    if logger:
+        logger(f"Comp: {athlete.compulsory}")
+        logger(f"opt: {athlete.optional}")
 
     if not form_data:
         return []
@@ -498,7 +528,8 @@ def convert_form_data(form_data, logger=print, event=EVENT, notes=None):
     #turns = form_data.split('\r\n')
     turns = form_data.splitlines()
     turn_skills = [turn.split(' ') for turn in turns]
-    logger(f"turn_skills: {turn_skills}")
+    if logger:
+        logger(f"turn_skills: {turn_skills}")
 
     skill_turns = []
     for turn in turn_skills:
@@ -515,19 +546,22 @@ def convert_form_data(form_data, logger=print, event=EVENT, notes=None):
         # Set athlete compulsory or optional
         if turn[0] == 'comp:':
             athlete.set_comp(turn[1:])
+            athlete.save()
         elif turn[0] == 'opt:':
             athlete.set_opt(turn[1:])
+            athlete.save()
 
         for skill in turn:
             try:
-                skills.append(Skill(skill))
+                skills.append(Skill(skill, event=event))
             except:
                 repeats = re.findall("x([0-9]*)", skill)
                 if repeats:
                     for _ in range(int(repeats[0]) - 1):
                         skills.append(skills[-1])
                 else:
-                    logger(f"Cannot convert '{skill}' into a skill")
+                    if logger:
+                        logger(f"Cannot convert '{skill}' into a skill")
                 continue
         routine = Routine(skills, event=event)
         skill_turns.append(routine)
@@ -537,6 +571,7 @@ def convert_form_data(form_data, logger=print, event=EVENT, notes=None):
         skill_turns.append(
             Routine([], event=event, note=notes)
         )
+    
     return skill_turns
 
 
@@ -592,6 +627,7 @@ def insert_goal_to_db(user, goal):
     )
     ENGINE.execute(ins)
 
+
 def complete_goal(user, goal, done=True):
     """
     Completes the goal
@@ -623,6 +659,7 @@ def get_user_goals(user):
     result.close()
     return sorted(goals, key=lambda x: x[3])
 
+
 def delete_goal_from_db(user, goal):
     """
     Deletes the goal
@@ -653,6 +690,8 @@ def get_from_db(table_name=None, user="test", date=None):
     #return sorted(turns, key=lambda turn: (turn[2], turn[0]))
     return sorted(turns, key=lambda turn: (turn[2]), reverse=True)
     
+
+
 def delete_from_db(date, user="test", table_name=None, event=None):
     table_name = table_name or TABLE_NAME
     date_time = datetime.datetime.combine(date, datetime.datetime.min.time())
@@ -669,6 +708,102 @@ def delete_from_db(date, user="test", table_name=None, event=None):
             result = ENGINE.execute(f'DELETE from `{table_name}` WHERE ({table_name}.user="{user}" AND {table_name}.date="{date}");')
     print(f"removed {result.rowcount} rows")
 
+
+def save_athlete(athlete):
+    """
+    Saves the athlete to the DB
+    """
+    engine = create_engine()
+    conn = engine.connect()
+    metadata = sqlalchemy.MetaData()
+    table = sqlalchemy.Table("users", metadata, autoload=True, autoload_with=engine)
+
+    # First check if user exists
+    result = ENGINE.execute(f'SELECT * from `users` WHERE `user`="{athlete.name}"')
+    if result.rowcount == 0:
+        # add in user
+        ins = table.insert().values(
+            user=athlete.name,
+            private=athlete.private,
+            compulsory=" ".join(athlete.compulsory),
+            optional=" ".join(athlete.optional)
+        )
+        ENGINE.execute(ins)
+    else:
+        # else update user
+        update = table.update().where(table.c.user==athlete.name).values(
+            private=athlete.private,
+            compulsory=" ".join(athlete.compulsory),
+            optional=" ".join(athlete.optional)
+        )
+        ENGINE.execute(update)
+    
+    result.close()
+    conn.close()
+    engine.dispose()
+
+
+def get_leaderboards():
+    """
+    Creates the leaderboards from data in the db
+    """
+    engine = create_engine()
+    result = engine.execute("SELECT * from `test_data`")
+    user_result = engine.execute("SELECT * from `users`")
+    conn = engine.connect()
+    all_turns = [res for res in result]
+    user_data = {
+        user[0]: {"private": user[1]}
+        for user in user_result
+    }
+    result.close()
+    user_result.close()
+    conn.close()
+    engine.dispose()
+
+    # Gather all turns
+    event_turns = {}
+    for turn in all_turns:
+        event = turn[4]
+        if event not in event_turns:
+            event_turns[event] = []
+        
+        # Get dd of skills
+        skills_text = turn[1]
+        routines = convert_form_data(skills_text, event=event, logger=None) # List of Routine objs
+        turn_dd = sum([skill.difficulty for routine in routines for skill in routine.skills])
+
+        # add to all turns
+        single_turn = {
+            "turn": skills_text,
+            "user": turn[3],
+            "date": turn[2],
+            "dd": turn_dd
+        }
+        event_turns[event].append(single_turn)
+
+    # Sort the turns and take top for each user
+    top_turns = {}
+    for event in event_turns:
+        event_turns[event] = sorted(event_turns[event], key=lambda x:x["dd"], reverse=True)
+
+        top_turns[event] = {}
+        for turn in event_turns[event]:
+            user = turn["user"]
+            if user in top_turns[event]:
+                continue
+            # Ignore private users
+            if user in user_data and user_data[user]["private"]:
+                continue
+
+            turn_date = turn['date'].date().strftime('%m/%d/%Y')
+            top_turns[event][user] = f"{turn['dd']:.1f} ({turn_date})"
+
+    # Convert to leaderboard
+    leaderboards = {"DD": top_turns}
+    print(f"Leaderboard: {leaderboards}")
+
+    return leaderboards
     
 if __name__ == '__main__':
     pretty_print(convert_form_data('12001o 811< 803< 40/'))

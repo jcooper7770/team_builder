@@ -3,33 +3,78 @@
 {% block content %}
 <br><br>
 <div class="container">
-<div class="card">
-  <div class="row card-body">
-    <div class="col-sm-3">
-      <img class="col-sm" src="/flipLogo.png" alt="logo" />
+  <div class="card border-primary">
+    <div class="card-header text-center">
+      <h2>Trampoline Practice Logger</h2>
     </div>
-    <div class="col-sm-9">
-      <h5 class="card-title">Trampoline Practice Logger</h5>
-      <p class="card-text">
-        How often do you find yourself manually handwriting each and every skill you do at practice then spending time to calculate metrics like the Degree of Difficulty (DD) of your turn? Well now there is an app you can use for that!
-      </p>
-      <p class="card-text">Things that this tool can do:</p>
-      <ul style="list-style-type: none;">
-        <li><i class="fa fa-book"></i> Stores all previous trainings in one place</i></li>
-        <li><i class="fa fa-book"></i> Easy input of a single turn or multiple turns</i></li>
-        <li><i class="fa fa-book"></i> Simple search functionality to go back to a certain training</li>
-        <li><i class="fa fa-book"></i> Caluclates metrics per turn and practice like:
-          <ul style="list-style-type: none;">
-            <li><i class="fa fa-book"></i> Number of skills</li>
-            <li><i class="fa fa-book"></i> Number of flips</li>
-            <li><i class="fa fa-book"></i> Total Difficulty</li>
-          </ul>
-        </li>
-      </ul>
-      <p class="card-text">Try it today!</p>
-      <a href="/login" class="btn btn-primary">Login</a>
+    <div class="row card-body">
+      <div class="col-sm-3">
+        <img class="col-sm" src="/flipLogo.png" alt="logo" />
+      </div>
+      <div class="col-sm-9">
+        <!--<h5 class="card-title text-center">Trampoline Practice Logger</h5>-->
+        <p class="card-text">
+          How often do you find yourself manually handwriting each and every skill you do at practice then spending time
+          to calculate metrics like the Degree of Difficulty (DD) of your turn? Well now there is an app you can use for
+          that!
+        </p>
+        <p class="card-text">Things that this tool can do:</p>
+        <ul style="list-style-type: none;">
+          <li><i class="fa fa-book"></i> Stores all previous trainings in one place</i></li>
+          <li><i class="fa fa-book"></i> Easy input of a single turn or multiple turns</i></li>
+          <li><i class="fa fa-book"></i> Simple search functionality to go back to a certain training</li>
+          <li><i class="fa fa-book"></i> Caluclates metrics per turn and practice like:
+            <ul style="list-style-type: none;">
+              <li><i class="fa fa-book"></i> Number of skills</li>
+              <li><i class="fa fa-book"></i> Number of flips</li>
+              <li><i class="fa fa-book"></i> Total Difficulty</li>
+            </ul>
+          </li>
+        </ul>
+        <p class="card-text">Try it today!</p>
+        <a href="/login" class="btn btn-primary">Login</a>
+      </div>
     </div>
   </div>
 </div>
+
+ <!-- Leaderboards -->
+<br><br>
+<div class="container">
+  <div class="card border-primary">
+    <div class="card-header text-center">
+      <h2>Leaderboards</h2>
+    </div>
+    {% for board_type, board in leaderboard.items() %}
+    <div class="row card-body">
+      <div class="col">
+        <h3 class="text-center">{{board_type}}</h3>
+      </div>
+    </div>
+    <div class="row card-body">
+      {% for event, event_board in board.items() %}
+      <div class="col-sm">
+        <h5 class="card-title">{{event}}</h5>
+        <table border="1" class="table table-striped">
+          <thead class="thead-dark">
+            <th>User</th>
+            <th>{{board_type}}</th>
+          </thead>
+          <tbody>
+            {% for user, score in event_board.items() %}
+            <tr>
+              <td>{{user}}</td>
+              <td>{{score}}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% endfor %}
+    </div>
+    {% endfor %}
+  </div>
 </div>
+
+<br><br>
 {% endblock %}

@@ -1,0 +1,15 @@
+# ignore practice data
+practices/
+
+# ignore athlete data
+athletes/
+
+# Ignore python compiled files
+*.pyc
+
+# Ignore local files
+routines.txt
+test.log
+
+# Ignore vscode files
+.vscode/
