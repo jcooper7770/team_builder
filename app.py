@@ -15,26 +15,23 @@ TODO:
   - [DONE] (Trampoline) Replace "Routines" section with "Goals" with checkboxes
   - [DONE] (Trampoline) Write goals to DB
   - [DONE] Search for certain day of practice
-  - Add user profiles and get data from scorsync
+  - [DONE] Add user profiles
+  - Get data from scorsync
 """
 
 import datetime
-import json
 import os
-import re
 import socket
-import sys
 import traceback
 
 from flask import Flask, request, render_template, jsonify, redirect, url_for
 
-from team_building import get_counters_for_rating, LEAGUE_RANKINGS, NoPokemonFound, LEAGUE_VALUE, TeamCreater,\
+from team_building import get_counters_for_rating, LEAGUE_RANKINGS, NoPokemonFound, TeamCreater,\
      create_table_from_results
 
-from battle_sim import sim_battle
 from trampoline import convert_form_data, get_leaderboards, pretty_print, Practice, current_user, set_current_user,\
-     current_event, set_current_event, set_current_athlete, NON_SKILLS, SKILLS, POSITIONS, create_engine,\
-     get_from_db, delete_from_db, set_table_name, insert_goal_to_db, get_user_goals, complete_goal, delete_goal_from_db,\
+     current_event, set_current_event, set_current_athlete, create_engine,\
+     set_table_name, insert_goal_to_db, get_user_goals, complete_goal, delete_goal_from_db,\
      ALL_SKILLS, get_leaderboards, Athlete
 from utils import *
 
@@ -80,7 +77,6 @@ def get_new_data(league, num_days, rating):
     diff_days = CACHE.get("num_days") != num_days
     diff_rating = CACHE.get("rating") != rating
     return diff_league or diff_days or diff_rating
-
 
 
 @app.route("/logger/_clear")
@@ -246,7 +242,7 @@ def trampoline_log():
     # Write all trampoline skills to a table
     table = skills_table(routines)
     '''
-    
+
     # Print out a table per date
     practice_tables = []
 

@@ -91,6 +91,8 @@ POSITIONS = [
 ENGINE = None
 DB_TABLE = None
 TABLE_NAME = "test_data"
+TABLE_NAME = "test_data" if os.environ.get("FLASK_ENV", "prod") == "prod" else "test_db"
+print(f"Using table: {TABLE_NAME}")
 
 def set_table_name(table_name):
     global TABLE_NAME
@@ -102,7 +104,9 @@ def create_engine(table_name=None):
     global ENGINE
     global DB_TABLE
     url = "itsflippincoop.com" if table_name == "test_data" else "127.0.0.1"
-    engine = sqlalchemy.create_engine('mysql+pymysql://itsflippincoop:password@itsflippincoop.com:3306/tramp', echo=True)
+    db_name = "tramp" if os.environ.get("FLASK_ENV", "prod") == "prod" else "test_tramp"
+    print(f"Using db: {db_name}")
+    engine = sqlalchemy.create_engine(f'mysql+pymysql://itsflippincoop:password@itsflippincoop.com:3306/{db_name}', echo=True)
     ENGINE = engine
     metadata = sqlalchemy.MetaData()
     table = sqlalchemy.Table(table_name, metadata, autoload=True, autoload_with=engine)
@@ -114,11 +118,15 @@ class Athlete:
     """
     Information about athlete
     """
-    def __init__(self, name, private=False, compulsory=[], optional=[]):
+    def __init__(self, name, private=False, compulsory=[], optional=[], dm_prelims1=[], dm_prelims2=[], dm_finals1=[], dm_finals2=[]):
         self.name = name
         self.compulsory = compulsory
         self.optional = optional
         self.private = private
+        self.dm_prelim1 = dm_prelims1
+        self.dm_prelim2 = dm_prelims2
+        self.dm_finals1 = dm_finals1
+        self.dm_finals2 = dm_finals2
 
     def set_comp(self, skills):
         """
@@ -146,7 +154,11 @@ class Athlete:
             'name': self.name,
             'compulsory': self.compulsory,
             'optional': self.optional,
-            'private': self.private
+            'private': self.private,
+            'dm_prelim1': self.dm_prelim1,
+            'dm_prelim2': self.dm_prelim2,
+            'dm_finals1': self.dm_finals1,
+            'dm_finals2': self.dm_finals2
         }
         with open(file_name, 'w') as athlete_file:
             json.dump(athlete_data, athlete_file)
@@ -748,7 +760,7 @@ def get_leaderboards():
     Creates the leaderboards from data in the db
     """
     engine = create_engine()
-    result = engine.execute("SELECT * from `test_data`")
+    result = engine.execute(f"SELECT * from `{TABLE_NAME}`")
     user_result = engine.execute("SELECT * from `users`")
     conn = engine.connect()
     all_turns = [res for res in result]
