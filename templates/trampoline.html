@@ -273,14 +273,22 @@
     //var skills = $('log').val();
     var skills = document.getElementById('log').value;
     if (skills != "") {
-      $('#log').val(skills + ' ' + skills);
+      if (skills.endsWith('\n')) {
+        var newText = skills + skills;
+      } else {
+        var newText = skills + ' ' + skills;
+      }
+      nextText = newText.trim().replace('\n ', '\n');
+      $('#log').val(newText);
     }
+    $('#log').focus();
   });
   $('#next-line').click(function(e) {
     var skills = document.getElementById('log').value;
-    if (skills != "") {
+    if (skills != "" && !skills.endsWith('\n')) {
       $('#log').val(skills + '\n');
     }
+    $('#log').focus();
   });
   $("[id^=remove_]").click(function (e) {
     e.preventDefault();
