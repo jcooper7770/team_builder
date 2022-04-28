@@ -118,7 +118,8 @@ def skills_table(skills, title="Routines"):
         total_turn_num += 1
         # Turn number (also a link to copy the turn)
         routine_str = ' '.join(skill.shorthand for skill in turn.skills)
-        skills_table.add_cell(f"<b><a title='Copy text' href='/logger?routine={routine_str}'>{total_turn_num}</a></b>")
+        #skills_table.add_cell(f"<b><a id='copy-text' title='Copy text' href='/logger?routine={routine_str}'>{total_turn_num}</a></b>")
+        skills_table.add_cell(f"<b><a id='copy-text' title='Copy text' href='#'>{total_turn_num}</a></b>")
 
         # Skills
         for skill in turn.skills:

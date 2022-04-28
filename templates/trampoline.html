@@ -73,23 +73,32 @@
 </select>
 {% endfor %}
 -->
-          {% for flips, skills in all_skills.items() %}
-          <div class="dropdown" style="display:inline-block">
-            <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton"
-              data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-              {{flips}}
-            </button>
-            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-              {% for skill in skills %}
-              {% for pos in ['t', 'p', 's'] %}
-              <a class="dropdown-item" href="#" id="skill{{skill}}{{pos}}" value="skill{{skill}}{{pos}}">{{skill}}{{pos
-                | replace("t", "o") | replace("p", "<") | replace("s", "/" )}}</a>
-                  {% endfor %}
-                  {% endfor %}
+          <div class="form-row">
+            <div class="col-sm-9">
+              {% for flips, skills in all_skills.items() %}
+              <div class="dropdown" style="display:inline-block">
+                <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton"
+                  data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  {{flips}}
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                  {% for skill in skills %}
+                  {% for pos in ['t', 'p', 's'] %}
+                  <a class="dropdown-item" href="#" id="skill{{skill}}{{pos}}"
+                    value="skill{{skill}}{{pos}}">{{skill}}{{pos
+                    | replace("t", "o") | replace("p", "<") | replace("s", "/" )}}</a>
+                      {% endfor %}
+                      {% endfor %}
+                </div>
+              </div>
+              {% endfor %}
+              <!--<span id="num_skills">Number of skills: 0</span>-->
+            </div>
+            <div class="col-sm">
+              <a id="repeat-skills" title="repeat skills" href="#"><span class="fa fa-repeat ml-3 mr-1 float-right" aria-hidden='true'></span></a>
+              <a id="next-line" title="add a new line" href="#"><span class="fa fa-level-down ml-3 mr-1 float-right" aria-hidden='true'></span></a>
             </div>
           </div>
-          {% endfor %}
-          <!--<span id="num_skills">Number of skills: 0</span>-->
           <!-- Notes -->
           <div class="form-row">
             <div class="col-sm-3"><label for="notes">Notes:</label></div>
@@ -230,6 +239,48 @@
       $('#log').val(skill);
     }
     //updateNumSkills();
+  });
+  $('[id^=copy-text]').click(function(e){
+    // Add copy of text to log
+    var tds = e.target.parentNode.parentNode.parentNode.children;
+    var routine = "";
+    for (var i=0; i<tds.length; i++){
+      var td = tds[i];
+      if (td.firstChild == null){
+        break;
+      }  
+      else {
+        if (td.firstChild.tagName == undefined){
+          var doc = new DOMParser().parseFromString(td.innerHTML, "text/html");
+          var elementText = doc.documentElement.textContent;
+          routine = routine + " " + elementText;
+        }
+      }
+    }
+    var skills = document.getElementById('log').value;
+    var newText = "";
+    if (skills != ""){
+      newText = skills + '\n' + routine;
+    } else {
+      newText = routine;
+    }
+    
+    // Remove extra spaces
+    newText = newText.trim().replace('\n ', '\n');
+    $('#log').val(newText);
+  });
+  $('#repeat-skills').click(function (e) {
+    //var skills = $('log').val();
+    var skills = document.getElementById('log').value;
+    if (skills != "") {
+      $('#log').val(skills + ' ' + skills);
+    }
+  });
+  $('#next-line').click(function(e) {
+    var skills = document.getElementById('log').value;
+    if (skills != "") {
+      $('#log').val(skills + '\n');
+    }
   });
   $("[id^=remove_]").click(function (e) {
     e.preventDefault();

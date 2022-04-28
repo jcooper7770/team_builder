@@ -526,16 +526,16 @@ def convert_form_data(form_data, logger=print, event=EVENT, notes=None):
 
     skill_turns = []
     for turn in turn_skills:
+        if not turn:
+            continue
         # notes start with '-'
-        if turn[0][0] == '-':
+        if turn[0] and turn[0][0] == '-':
             note_str = ' '.join(turn)
             routine = Routine([], event=event, note=note_str.strip('-'))
             skill_turns.append(routine)
             continue
             
         skills = []
-        if not turn:
-            continue
         # Set athlete compulsory or optional
         if turn[0] == 'comp:':
             athlete.set_comp(turn[1:])
