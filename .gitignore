@@ -1,5 +1,6 @@
 # ignore practice data
 practices/
+exported_data/
 
 # ignore athlete data
 athletes/

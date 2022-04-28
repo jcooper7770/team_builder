@@ -1,51 +1,57 @@
 {% extends "base.html" %}
 
 {% block content %}
+<!--
 {% if error_text %}
 <p style='background-color:yellow;text-align:center' id="error">
   <b>{{error_text}}</b>
   <a id="close_error" href="#"><span class="fa fa-remove float-right" aria-hidden='true'></span></a>
 </p>
 {% endif %}
+-->
 <br>
 <div class="form-group" align="center">
-<table align="center">
-<tr><td>
-<form action="{{ url_for('trampoline_log') }}" method="post" id="logger" name="logger" style="text-align:left;">
+  <table align="center">
+    <tr>
+      <td>
+        <form action="{{ url_for('trampoline_log') }}" method="post" id="logger" name="logger" style="text-align:left;">
 
-<!-- Username -->
-<div class="form-row">
-<div class="col-sm-3"><label for="name">Username:</label></div>
-<div class="col">
-{% if user == "" %}
-<input type="text" id="name" name="name" placeholder="new username" value="{{username}}" class="form-control"><br>
-{% else %}
-<input type="text" id="name" name="name" placeholder="new username" value="{{user}}" class="form-control" disabled>
-{% endif %}
-</div>
-</div>
+          <!-- Username -->
+          <div class="form-row">
+            <div class="col-sm-3"><label for="name">Username:</label></div>
+            <div class="col">
+              {% if user == "" %}
+              <input type="text" id="name" name="name" placeholder="new username" value="{{username}}"
+                class="form-control"><br>
+              {% else %}
+              <input type="text" id="name" name="name" placeholder="new username" value="{{user}}" class="form-control"
+                disabled>
+              {% endif %}
+            </div>
+          </div>
 
-<!-- Event to be logged -->
-<div class="form-row">
-<div class="col-sm-3">
-Event:
-</div>
-<div class="col">
-<select name="event" id="event">
-  <option value="trampoline"{% if event=="trampoline" %} selected{% endif %}>Trampoline</option>
-  <option value="dmt"{% if event=="dmt" %} selected{% endif %}>Double Mini</option>
-</select><br>
-</div>
-</div>
+          <!-- Event to be logged -->
+          <div class="form-row">
+            <div class="col-sm-3">
+              Event:
+            </div>
+            <div class="col">
+              <select name="event" id="event">
+                <option value="trampoline" {% if event=="trampoline" %} selected{% endif %}>Trampoline</option>
+                <option value="dmt" {% if event=="dmt" %} selected{% endif %}>Double Mini</option>
+              </select><br>
+            </div>
+          </div>
 
-<!-- Skills to be logged -->
-<div class="form-row">
-<div class="col">
-<textarea id="log" name="log" rows="5" cols="50" form="logger" placeholder="Input your routines here" >{{routine_text}}</textarea>
-</div>
-</div>
-<!-- button skills -->
-<!--
+          <!-- Skills to be logged -->
+          <div class="form-row">
+            <div class="col">
+              <textarea id="log" name="log" rows="5" cols="50" form="logger"
+                placeholder="Input your routines here">{{routine_text}}</textarea>
+            </div>
+          </div>
+          <!-- button skills -->
+          <!--
 {% for flips, skills in all_skills.items() %}
   <p>{{flips}}</p>
   {% for skill in skills %}
@@ -56,7 +62,7 @@ Event:
   <br>
 {% endfor %}
 -->
-<!--
+          <!--
 {% for flips, skills in all_skills.items() %}
   <select name="{{flips}}_skills" id="{{flips}}_skills">
   {% for skill in skills %}
@@ -67,30 +73,33 @@ Event:
 </select>
 {% endfor %}
 -->
-{% for flips, skills in all_skills.items() %}
-  <div class="dropdown" style="display:inline-block">
-  <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-    {{flips}}
-  </button>
-  <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-  {% for skill in skills %}
-    {% for pos in ['t', 'p', 's'] %}
-      <a class="dropdown-item" href="#" id="skill{{skill}}{{pos}}" value="skill{{skill}}{{pos}}">{{skill}}{{pos | replace("t", "o") | replace("p", "<") | replace("s", "/")}}</a>
-    {% endfor %}
-  {% endfor %}
-  </div>
-  </div>
-{% endfor %}
-<!--<span id="num_skills">Number of skills: 0</span>-->
-<!-- Notes -->
-<div class="form-row">
-<div class="col-sm-3"><label for="notes">Notes:</label></div>
-<div class="col"><input type="text" id="notes" name="notes" placeholder="Enter notes" value="" class="form-control" ></div>
-</div>
+          {% for flips, skills in all_skills.items() %}
+          <div class="dropdown" style="display:inline-block">
+            <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton"
+              data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              {{flips}}
+            </button>
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+              {% for skill in skills %}
+              {% for pos in ['t', 'p', 's'] %}
+              <a class="dropdown-item" href="#" id="skill{{skill}}{{pos}}" value="skill{{skill}}{{pos}}">{{skill}}{{pos
+                | replace("t", "o") | replace("p", "<") | replace("s", "/" )}}</a>
+                  {% endfor %}
+                  {% endfor %}
+            </div>
+          </div>
+          {% endfor %}
+          <!--<span id="num_skills">Number of skills: 0</span>-->
+          <!-- Notes -->
+          <div class="form-row">
+            <div class="col-sm-3"><label for="notes">Notes:</label></div>
+            <div class="col"><input type="text" id="notes" name="notes" placeholder="Enter notes" value=""
+                class="form-control"></div>
+          </div>
 
 
-<button type="submit" class="btn btn-primary">Submit</button>
-</form>
+          <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
 </div>
 
 <!--- Deleting past data --->
@@ -103,7 +112,8 @@ Event:
 
 
 
-</td></tr>
+</td>
+</tr>
 </table>
 
 
@@ -113,50 +123,53 @@ Event:
 <!-- Goals -->
 <br><br>
 <div class="container">
-<form action="{{ url_for('trampoline_log') }}" method="post" id="goals" style="text-align:left;">
-<input type="hidden" name="goals_form" id="goals_form" value="goals_form" \>
-<table align="center" width="30%" border=1 class="table table-striped">
-<thead class="thead-dark"><th colspan=3 >Goals</th></thead>
-  <tbody>
-  <tr>
-    <td colspan=3>
+  <form action="{{ url_for('trampoline_log') }}" method="post" id="goals" style="text-align:left;">
+    <input type="hidden" name="goals_form" id="goals_form" value="goals_form" \>
+    <table align="center" width="30%" border=1 class="table table-striped">
+      <thead class="thead-dark">
+        <th colspan=3>Goals</th>
+      </thead>
+      <tbody>
+        <tr>
+          <td colspan=3>
 
-      <div class="form-inline">
-        <input type="text" name="goal_string" id="goal_string" placeholder="Write goal here" style="width:70%;" class="form-control mr-1" \>
-        <button type="submit" class="btn btn-primary" style="display:inline-block">Submit Goal</button>
-      </div>
-     
-    </td>
-  </tr>
+            <div class="form-inline">
+              <input type="text" name="goal_string" id="goal_string" placeholder="Write goal here" style="width:70%;"
+                class="form-control mr-1" \>
+              <button type="submit" class="btn btn-primary" style="display:inline-block">Submit Goal</button>
+            </div>
 
-  {% for goal in goals %}
-  <tr>
-    <td width="5%" >
-      {% if goal.done %}
-      <input type="checkbox" id="{{ loop.index0 }}" name="{{ loop.index0 }}" checked \>
-      {% else %}
-      <input type="checkbox" id="{{ loop.index0 }}" name="{{ loop.index0 }}"  \>
-      {% endif %}
-    </td>
-    <td>
-      {% if goal.done %}
-      <!--<strike>{{ goal.goal }}</strike>-->
-      <span style="color:red">[DONE]</span> {{ goal.goal }}
-      {% else %}
-      {{ goal.goal }}
-      {% endif %}
-    </td>
-    <td width="5%">
-    <button type="submit" id="delete{{ loop.index0 }}" name="delete{{ loop.index0 }}" class="btn">
-        <span class="fa fa-remove" aria-hidden='true'></span>
-    </button>
-    </td>
-  </tr>
-  {% endfor %}
-  
-</tbody>
-</table>
-</form>
+          </td>
+        </tr>
+
+        {% for goal in goals %}
+        <tr>
+          <td width="5%">
+            {% if goal.done %}
+            <input type="checkbox" id="{{ loop.index0 }}" name="{{ loop.index0 }}" checked \>
+            {% else %}
+            <input type="checkbox" id="{{ loop.index0 }}" name="{{ loop.index0 }}" \>
+            {% endif %}
+          </td>
+          <td>
+            {% if goal.done %}
+            <!--<strike>{{ goal.goal }}</strike>-->
+            <span style="color:red">[DONE]</span> {{ goal.goal }}
+            {% else %}
+            {{ goal.goal }}
+            {% endif %}
+          </td>
+          <td width="5%">
+            <button type="submit" id="delete{{ loop.index0 }}" name="delete{{ loop.index0 }}" class="btn">
+              <span class="fa fa-remove" aria-hidden='true'></span>
+            </button>
+          </td>
+        </tr>
+        {% endfor %}
+
+      </tbody>
+    </table>
+  </form>
 </div>
 
 <br><br>
@@ -167,100 +180,99 @@ Event:
 
 <!-- Index for tables -->
 <div class="container">
-<table align='center' border=1 style='background-color:#FFFFFF;'>
-<tr>
-<th align='center' colspan=9>Index</th>
-</tr>
-<tr>
-  <td>Skill 1</td>
-  <td>Skill 2</td>
-  <td></td>
-  <td># skills in this turn</td>
-  <td># flips in this turn</td>
-  <td># total skills in practice</td>
-  <td># total flips in practice</td>
-  <td>DoD for turn</td>
-  <td>total DoD for practice</td>
-</tr>
-</table>
+  <table align='center' border=1 style='background-color:#FFFFFF;'>
+    <tr>
+      <th align='center' colspan=9>Index</th>
+    </tr>
+    <tr>
+      <td>Skill 1</td>
+      <td>Skill 2</td>
+      <td></td>
+      <td># skills in this turn</td>
+      <td># flips in this turn</td>
+      <td># total skills in practice</td>
+      <td># total flips in practice</td>
+      <td>DoD for turn</td>
+      <td>total DoD for practice</td>
+    </tr>
+  </table>
 </div>
 
-<script src="https://code.jquery.com/jquery-3.5.1.js"
-          integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
-          crossorigin="anonymous"></script>
- 
-  <script type="text/javascript">
-    $("[id^=skill]").click(function(e){
-      e.preventDefault();
-      var skill = event.target.id.slice(5).replace('t','o').replace('p', '<').replace('s', '/');
-      var routineText = document.getElementById('log').value;
-      if (routineText != ""){
-        $('#log').val(routineText + ' ' + skill);
-      } else {
-        $('#log').val(skill);
-      }
-    });
-    function updateNumSkills() {
-        let skills = $("#log").val().trim().split(/[\s]/);
-        let num_skills = skills.length;
-        document.getElementById('num_skills').textContent = "Number of skills: "+num_skills;
+<script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
+  crossorigin="anonymous"></script>
+
+<script type="text/javascript">
+  $("[id^=skill]").click(function (e) {
+    e.preventDefault();
+    var skill = event.target.id.slice(5).replace('t', 'o').replace('p', '<').replace('s', '/');
+    var routineText = document.getElementById('log').value;
+    if (routineText != "") {
+      $('#log').val(routineText + ' ' + skill);
+    } else {
+      $('#log').val(skill);
     }
+  });
+  function updateNumSkills() {
+    let skills = $("#log").val().trim().split(/[\s]/);
+    let num_skills = skills.length;
+    document.getElementById('num_skills').textContent = "Number of skills: " + num_skills;
+  }
 
-    $("#log").on('input', function(e){
-        //updateNumSkills();
-    });
-    $("[id$=_skills]").change(function(e){
-      var skill = $(this).val().slice(5).replace('t','o').replace('p', '<').replace('s', '/');
-      var routineText = document.getElementById('log').value;
-      if (routineText != ""){
-        $('#log').val(routineText + ' ' + skill);
-      } else {
-        $('#log').val(skill);
-      }
-      //updateNumSkills();
-    });
-    $("[id^=remove_]").click(function(e){
-        e.preventDefault();
-        var date_to_remove = event.target.id.split("_")[1];
-	var event_to_remove = event.target.id.split("_")[2];
-        let confirmText = "".concat("Are you sure you want to delete ",date_to_remove, " ", event_to_remove, "?");
-        if (confirm(confirmText) == true) {
-            $.ajax({
-      		type: 'GET',
-      		url: "/logger/delete/"+date_to_remove+"/"+event_to_remove,
-      		success: function(data){
-                  location.reload();
-         	}
-    	});
+  $("#log").on('input', function (e) {
+    //updateNumSkills();
+  });
+  $("[id$=_skills]").change(function (e) {
+    var skill = $(this).val().slice(5).replace('t', 'o').replace('p', '<').replace('s', '/');
+    var routineText = document.getElementById('log').value;
+    if (routineText != "") {
+      $('#log').val(routineText + ' ' + skill);
+    } else {
+      $('#log').val(skill);
+    }
+    //updateNumSkills();
+  });
+  $("[id^=remove_]").click(function (e) {
+    e.preventDefault();
+    var date_to_remove = event.target.id.split("_")[1];
+    var event_to_remove = event.target.id.split("_")[2];
+    let confirmText = "".concat("Are you sure you want to delete ", date_to_remove, " ", event_to_remove, "?");
+    if (confirm(confirmText) == true) {
+      $.ajax({
+        type: 'GET',
+        url: "/logger/delete/" + date_to_remove + "/" + event_to_remove,
+        success: function (data) {
+          location.reload();
         }
+      });
+    }
+  });
+  $("#close_error").click(function (e) {
+    var errorText = document.getElementById("error");
+    errorText.opacity = 1;
+    //(function fade(){(errorText.opacity-=.1)<0?errorText.display="none":setTimeout(fade,40)})();
+    errorText.style.transition = '1s';
+    errorText.style.opacity = 0;
+  });
+  $("#delete-button").click(function (e) {
+    e.preventDefault();
+    $.ajax({
+      type: 'GET',
+      url: "/logger/_clear",
+      success: function (data) {
+        alert("Deleted data");
+      }
     });
-    $("#close_error").click(function(e){
-        var errorText = document.getElementById("error");
-        errorText.opacity = 1;
-        //(function fade(){(errorText.opacity-=.1)<0?errorText.display="none":setTimeout(fade,40)})();
-        errorText.style.transition = '1s';
-        errorText.style.opacity = 0;
-    });
-    $("#delete-button").click(function(e){
-    	e.preventDefault();
-    	$.ajax({
-      		type: 'GET',
-      		url: "/logger/_clear",
-      		success: function(data){
-                 alert("Deleted data");
-         	}
-    	});
-    });
+  });
 
-    $("#delete-day-button").click(function(e){
+  $("#delete-day-button").click(function (e) {
     $.ajax({
       type: 'GET',
       url: "/logger/_clearDay",
-      success: function(data){
-                 alert("Deleted data");
-               }
+      success: function (data) {
+        alert("Deleted data");
+      }
     });
-    });
+  });
 </script>
 
 {% endblock %}

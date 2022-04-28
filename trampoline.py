@@ -17,19 +17,23 @@ TODO:
   - Fix using test database
   - Split up front/back skills for skill dropdowns
   - Split up uncommon skills or remove them for skill dropdowns
+  - export data
 """
-
+ 
 import sqlalchemy
 
 import datetime
 import json
 import os
+import random
 import re
 
 from collections import defaultdict
 
+from database import create_engine, get_user, get_users_and_turns, save_athlete,\
+    delete_from_db, get_from_db, delete_goal_from_db, get_user_goals,\
+    complete_goal, insert_goal_to_db, add_to_db
 from utils import NON_SKILLS
-
 
 NUM_FLIPS = {
     1: 0,
@@ -99,21 +103,6 @@ def set_table_name(table_name):
     TABLE_NAME = table_name
 
 
-def create_engine(table_name=None):
-    table_name = table_name or TABLE_NAME
-    global ENGINE
-    global DB_TABLE
-    url = "itsflippincoop.com" if table_name == "test_data" else "127.0.0.1"
-    db_name = "tramp" if os.environ.get("FLASK_ENV", "prod") == "prod" else "test_tramp"
-    print(f"Using db: {db_name}")
-    engine = sqlalchemy.create_engine(f'mysql+pymysql://itsflippincoop:password@itsflippincoop.com:3306/{db_name}', echo=True)
-    ENGINE = engine
-    metadata = sqlalchemy.MetaData()
-    table = sqlalchemy.Table(table_name, metadata, autoload=True, autoload_with=engine)
-    DB_TABLE = table
-    return engine
-
-
 class Athlete:
     """
     Information about athlete
@@ -171,23 +160,15 @@ class Athlete:
         """
         Loads in an athlete
         """
-        engine = create_engine()
-        conn = engine.connect()
-
         # First check if user exists
-        result = ENGINE.execute(f'SELECT * from `users` WHERE `user`="{name}"')
-        athlete = None
-        if result.rowcount != 0:
-            athlete_db = [res for res in result][0]
-            name = athlete_db[0]
-            private = athlete_db[1]
-            compulsory = athlete_db[2].split()
-            optional = athlete_db[3].split()
-            athlete = Athlete(name, private, compulsory, optional)
+        try:
+            user = get_user(name)
+            athlete = Athlete(
+                user['name'], user["private"], user['compulsory'], user['optional']
+            )
+        except:
+            athlete = None
 
-        result.close()
-        conn.close()
-        engine.dispose()
         if athlete:
             return athlete
 
@@ -598,180 +579,26 @@ def pretty_print(routine, logger=print):
         logger(turn)
 
 
-def add_to_db(turns, user, event, practice_date, table=None):
-    table = table or TABLE_NAME
-    if DB_TABLE is None:
-        create_engine(table)
-    if isinstance(turns, list):
-        for turn_num, turn in enumerate(turns):
-            turn_str = ' '.join(turn)
-            ins = DB_TABLE.insert().values(
-                turn_num=turn_num + 1,
-                turn=turn_str,
-                event=event,
-                user=user,
-                date=practice_date
-            )
-            ENGINE.execute(ins)
-    elif isinstance(turns, dict):
-        for turn_num, turn in turns.items():
-            turn_str = ' '.join(turn)
-            ins = DB_TABLE.insert().values(
-                turn_num=turn_num,
-                turn=turn_str,
-                event=event,
-                user=user,
-                date=practice_date
-            )
-            ENGINE.execute(ins)
-
-
-def insert_goal_to_db(user, goal):
+def get_user_turns(user):
     """
-    Add goal to db for user
+    Returns all turns for the given user in order of date
     """
-    metadata = sqlalchemy.MetaData()
-    table = sqlalchemy.Table("goals", metadata, autoload=True, autoload_with=ENGINE)
-    ins = table.insert().values(
-        user=user,
-        goal=goal,
-        done=False
-    )
-    ENGINE.execute(ins)
-
-
-def complete_goal(user, goal, done=True):
-    """
-    Completes the goal
-    """
-    metadata = sqlalchemy.MetaData()
-    table = sqlalchemy.Table("goals", metadata, autoload=True, autoload_with=ENGINE)
-    update = table.update().where(table.c.user==user).where(table.c.goal==goal).values(
-        user=user,
-        goal=goal,
-        done=done
-    )
-    ENGINE.execute(update)
-
-    
-def get_user_goals(user):
-    """
-    Returns the goals for the user
-    """
-    if not ENGINE:
-        create_engine()
-    try:
-        result = ENGINE.execute(f'SELECT * from `goals` WHERE goals.user="{user}";')
-    except sqlalchemy.exc.OperationalError:
-        create_engine()
-        result = ENGINE.execute(f'SELECT * from `goals` WHERE goals.user="{user}";')
-
-    goals = [goal for goal in result]
-    print(f"Returned {result.rowcount} goals")
-    result.close()
-    return sorted(goals, key=lambda x: x[3])
-
-
-def delete_goal_from_db(user, goal):
-    """
-    Deletes the goal
-    """
-    metadata = sqlalchemy.MetaData()
-    table = sqlalchemy.Table("goals", metadata, autoload=True, autoload_with=ENGINE)
-    delete = table.delete().where(table.c.user==user).where(table.c.goal==goal)
-    ENGINE.execute(delete)
-
-
-def get_from_db(table_name=None, user="test", date=None):
-    table_name = table_name or TABLE_NAME
-    if not ENGINE:
-        create_engine()
-
-    try:
-        if date:
-            result = ENGINE.execute(f'SELECT * from `{table_name}` WHERE ({table_name}.user="{user}" AND {table_name}.date="{date}");')
-        else:
-            result = ENGINE.execute(f'SELECT * from `{table_name}` WHERE {table_name}.user="{user}";')
-    except sqlalchemy.exc.OperationalError:
-        create_engine()
-        return get_from_db(table_name=table_name, user=user, date=date)
-        #result = ENGINE.execute(f'SELECT * from `{table_name}` WHERE {table_name}.user="{user}";')
-    turns = [res for res in result]
-    print(f"Got {result.rowcount} turns")
-    result.close()
-    #return sorted(turns, key=lambda turn: (turn[2], turn[0]))
-    return sorted(turns, key=lambda turn: (turn[2]), reverse=True)
-    
-
-
-def delete_from_db(date, user="test", table_name=None, event=None):
-    table_name = table_name or TABLE_NAME
-    date_time = datetime.datetime.combine(date, datetime.datetime.min.time())
-    try:        
-        if event:
-            result = ENGINE.execute(f'DELETE from `{table_name}` WHERE ({table_name}.user="{user}" AND {table_name}.date="{date}" AND {table_name}.event="{event}");')
-        else:
-            result = ENGINE.execute(f'DELETE from `{table_name}` WHERE ({table_name}.user="{user}" AND {table_name}.date="{date}");')
-    except sqlalchemy.exc.OperationalError:
-        create_engine()
-        if event:
-            result = ENGINE.execute(f'DELETE from `{table_name}` WHERE ({table_name}.user="{user}" AND {table_name}.date="{date}" AND {table_name}.event="{event}");')
-        else:
-            result = ENGINE.execute(f'DELETE from `{table_name}` WHERE ({table_name}.user="{user}" AND {table_name}.date="{date}");')
-    print(f"removed {result.rowcount} rows")
-
-
-def save_athlete(athlete):
-    """
-    Saves the athlete to the DB
-    """
-    engine = create_engine()
-    conn = engine.connect()
-    metadata = sqlalchemy.MetaData()
-    table = sqlalchemy.Table("users", metadata, autoload=True, autoload_with=engine)
-
-    # First check if user exists
-    result = ENGINE.execute(f'SELECT * from `users` WHERE `user`="{athlete.name}"')
-    if result.rowcount == 0:
-        # add in user
-        ins = table.insert().values(
-            user=athlete.name,
-            private=athlete.private,
-            compulsory=" ".join(athlete.compulsory),
-            optional=" ".join(athlete.optional)
-        )
-        ENGINE.execute(ins)
-    else:
-        # else update user
-        update = table.update().where(table.c.user==athlete.name).values(
-            private=athlete.private,
-            compulsory=" ".join(athlete.compulsory),
-            optional=" ".join(athlete.optional)
-        )
-        ENGINE.execute(update)
-    
-    result.close()
-    conn.close()
-    engine.dispose()
+    _, all_turns = get_users_and_turns()
+    if not all_turns:
+        all_turns = [
+            #[skill_num, '801<', datetime.datetime.now(), user, random.choice(["trampoline", "dmt"])]
+            [skill_num, '801<', str(datetime.datetime.now()), user, random.choice(["trampoline", "dmt"])]
+            for skill_num in range(10)
+        ]
+    user_turns = [turn for turn in all_turns if turn[3] == user]
+    return sorted(user_turns, key=lambda turn: turn[2])
 
 
 def get_leaderboards():
     """
     Creates the leaderboards from data in the db
     """
-    engine = create_engine()
-    result = engine.execute(f"SELECT * from `{TABLE_NAME}`")
-    user_result = engine.execute("SELECT * from `users`")
-    conn = engine.connect()
-    all_turns = [res for res in result]
-    user_data = {
-        user[0]: {"private": user[1]}
-        for user in user_result
-    }
-    result.close()
-    user_result.close()
-    conn.close()
-    engine.dispose()
+    user_data, all_turns = get_users_and_turns()
 
     # Gather all turns
     event_turns = {}
@@ -816,7 +643,8 @@ def get_leaderboards():
     print(f"Leaderboard: {leaderboards}")
 
     return leaderboards
-    
+
+
 if __name__ == '__main__':
     pretty_print(convert_form_data('12001o 811< 803< 40/'))
     print()
@@ -837,4 +665,3 @@ if __name__ == '__main__':
 
     routines = convert_form_data('(swingtime)x3 822/')
     pretty_print(routines)
-

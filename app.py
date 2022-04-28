@@ -1,9 +1,10 @@
 """
-Flask application
+Flask application for trampoline logger and pokemon team maker
 
 Endpoints:
   - /[?league=GL|Remix|UL|ULP|ULRemix|ML|MLC&pokemon=pokemon]
   - /logger
+  - /logger/landing
   - /login
   - /logout
 
@@ -20,20 +21,23 @@ TODO:
 """
 
 import datetime
+import json
 import os
 import socket
 import traceback
 
-from flask import Flask, request, render_template, jsonify, redirect, url_for
+from flask import Flask, request, render_template, jsonify, redirect, url_for, send_file
 
 from team_building import get_counters_for_rating, LEAGUE_RANKINGS, NoPokemonFound, TeamCreater,\
      create_table_from_results
 
 from trampoline import convert_form_data, get_leaderboards, pretty_print, Practice, current_user, set_current_user,\
-     current_event, set_current_event, set_current_athlete, create_engine,\
-     set_table_name, insert_goal_to_db, get_user_goals, complete_goal, delete_goal_from_db,\
-     ALL_SKILLS, get_leaderboards, Athlete
+     current_event, set_current_event, set_current_athlete,\
+     ALL_SKILLS, get_leaderboards, Athlete, get_user_turns
+from database import create_engine, set_table_name, insert_goal_to_db, get_user_goals, complete_goal,\
+    delete_goal_from_db, get_user
 from utils import *
+
 
 app = Flask(__name__, static_url_path="", static_folder="static")
 app.config["CACHE_TYPE"] = "null"
@@ -46,8 +50,6 @@ USER_GOALS = {
 LOGGED_IN_USER = ""
 SEARCH_DATE = None
 ERROR = None
-
-
 
 
 def make_recommended_teams(team_maker, chosen_pokemon, chosen_league, chosen_position):
@@ -346,6 +348,44 @@ def run():
     )
 
 
+@app.route("/sign_up", methods=["GET", "POST"])
+def sign_up():
+    """
+    Sign up
+    """
+    if request.method == "POST":
+        global ERROR
+        ERROR = ""
+        username = request.form.get("username", "")
+        password = request.form.get("password", "")
+        confirm = request.form.get("confirm", "")
+        private = True if request.form.get("private")=="true" else False
+
+        if not username:
+            ERROR = "Please enter a username"
+            return redirect(url_for('sign_up'))
+        try:
+            get_user(username)
+            ERROR = f"Username {username} already exists."
+            return redirect(url_for('sign_up'))
+        except:
+            pass
+        '''
+        if not password:
+            ERROR = "Missing Password"
+            return redirect(url_for('sign_up'))
+        elif confirm != password:
+            ERROR = "Passwords do not match"
+            return redirect(url_for('sign_up'))
+        '''
+        if ERROR:
+            return redirect(url_for('sign_up'))
+        # Create the user and go to login page
+        athlete = Athlete(username, private)
+        athlete.save()
+        return redirect(url_for('login'))
+    return render_template("sign_up.html", error_text=ERROR, user="")
+
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -354,12 +394,20 @@ def login():
     """
     if request.method == "POST":
         global LOGGED_IN_USER
-        LOGGED_IN_USER = request.form.get("username")
+        global ERROR
+        ERROR = ""
+        username = request.form.get("username")
+        try:
+            get_user(username)
+        except:
+            ERROR = f"Username {username} does not exists."
+            return redirect(url_for('login'))
+        LOGGED_IN_USER = username
         if LOGGED_IN_USER:
             set_current_user(LOGGED_IN_USER)
             set_current_athlete(LOGGED_IN_USER)
         return redirect(url_for('trampoline_log'))
-    return render_template("login.html", user=LOGGED_IN_USER)
+    return render_template("login.html", user=LOGGED_IN_USER, error_text=ERROR)
 
 
 @app.route("/logout", methods=["GET"])
@@ -377,7 +425,7 @@ def landing_page():
     """
     Landing page
     """
-    leaderboard = {
+    mock_leaderboard = {
         "DD": {
             "Trampoline": {
                 "Ruben": 18.2,
@@ -396,6 +444,8 @@ def landing_page():
         }
     }
     leaderboard = get_leaderboards()
+    if not leaderboard["DD"]:
+        leaderboard = mock_leaderboard
     return render_template("landing_page.html", user=LOGGED_IN_USER, leaderboard=leaderboard)
 
 
@@ -404,21 +454,14 @@ def user_profile():
     """
     User profile
     """
+    if not LOGGED_IN_USER:
+        return redirect(url_for('login'))
     # get user from db
-    engine = create_engine()
-    conn = engine.connect()
-    result = engine.execute(f'SELECT * from `users` WHERE `user`="{LOGGED_IN_USER}"')
-    if result.rowcount == 0:
-        return render_template("user_profile.html", user=LOGGED_IN_USER, user_data={})
-    users = [u for u in result][0]
-    user_data = {
-        "private": users[1],
-        "compulsory": users[2],
-        "optional": users[3]
-    }
-    result.close()
-    conn.close()
-    engine.dispose()
+    try:
+        user_data = get_user(LOGGED_IN_USER)
+    except Exception as exc:
+        logger.error(f"Exception: {exc}")
+        user_data = {}
     return render_template("user_profile.html", user=LOGGED_IN_USER, user_data=user_data)
 
 
@@ -436,6 +479,38 @@ def update_user():
     athlete.optional = [skill for skill in optional.split()]
     athlete.save()
     return redirect(url_for("user_profile"))
+
+
+@app.route("/logger/user/export", methods=["GET", "POST"])
+def export_user_data():
+    """
+    Export user data
+    """
+    if not LOGGED_IN_USER:
+        return jsonify(status="failure", reason="User not logged in")
+    user_turns = get_user_turns(LOGGED_IN_USER)
+    export_dir = os.path.join(app.root_path, "exported_data")
+    #if not os.path.exists("exported_data"):
+    if not os.path.exists(export_dir):
+        os.mkdir(export_dir)
+    
+    # Save json file
+    #file_path = os.path.join("exported_data", f'{LOGGED_IN_USER}_turns.json')
+    #file_path = os.path.join(export_dir, f'{LOGGED_IN_USER}_turns.json')
+    #with open(file_path, 'w') as turns_file:
+    #    json.dump(user_turns, turns_file, indent=4)
+    
+    # Save csv file
+    csv_file_path = os.path.join(export_dir, f"{LOGGED_IN_USER}_turns.csv")
+    with open(csv_file_path, 'w') as turns_file:
+        turns_file.write("turn number, skills, date, event\n")
+        for turn in user_turns:
+            line = f"{turn[0]}, {turn[1]}, {turn[2]}, {turn[4]}\n"
+            turns_file.write(line)
+    # TODO: figure out how to download the saved csv file, then delete it
+    if request.method == "GET":
+        return send_file(csv_file_path, as_attachment=True)
+    return jsonify(status="success", filename=csv_file_path)
 
 
 def get_app():
