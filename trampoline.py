@@ -30,6 +30,8 @@ import re
 
 from collections import defaultdict
 
+from flask import session
+
 from database import create_engine, get_user, get_users_and_turns, save_athlete,\
     delete_from_db, get_from_db, delete_goal_from_db, get_user_goals,\
     complete_goal, insert_goal_to_db, add_to_db
@@ -206,7 +208,9 @@ class Practice:
         Save the current practice
         """
         # save to the db
-        user_data = get_from_db(user=CURRENT_USER)
+        #user_data = get_from_db(user=CURRENT_USER)
+        user = session.get('name')
+        user_data = get_from_db(user=user)
         try:
             last_turn_num = max([data[0] for data in user_data if data[2].date() == self.date and data[4] == self.event])
         except:
@@ -217,10 +221,12 @@ class Practice:
             turns[last_turn_num + turn_num + 1] = turn.toJSON()
         
         #saving_turns = [turn.toJSON() for turn in self.turns]
-        add_to_db(turns, CURRENT_USER, self.event, self.date, table=TABLE_NAME)
+        #add_to_db(turns, CURRENT_USER, self.event, self.date, table=TABLE_NAME)
+        add_to_db(turns, user, self.event, self.date, table=TABLE_NAME)
 
         # save to the file
-        user_dir = os.path.join("practices", CURRENT_USER)
+        #user_dir = os.path.join("practices", CURRENT_USER)
+        user_dir = os.path.join("practices", user)
         file_name = os.path.join(user_dir, f"{self.date.strftime('%Y%m%d')}_{self.event}.txt")
         current_day = {
             str(self.date): {
@@ -239,7 +245,8 @@ class Practice:
             json.dump(current_day, practice_file)
 
         # Save the athlete also
-        athlete = Athlete.load(CURRENT_USER)
+        #athlete = Athlete.load(CURRENT_USER)
+        athlete = Athlete.load(user)
         athlete.save()
 
         return current_day
@@ -305,7 +312,8 @@ class Practice:
         Deletes the practice from the given day
         """
         deleted = False
-        user_dir = os.path.join("practices", CURRENT_USER)
+        #user_dir = os.path.join("practices", CURRENT_USER)
+        user_dir = os.path.join("practices", session.get('name'))
         for _, _, practice_files in os.walk(user_dir):
             print(f"files: {practice_files}")
             for practice_file in practice_files:
@@ -314,7 +322,8 @@ class Practice:
                     os.remove(file_name)
                     deleted = True
 
-        delete_from_db(practice_date, user=CURRENT_USER, event=event)
+        #delete_from_db(practice_date, user=CURRENT_USER, event=event)
+        delete_from_db(practice_date, user=session.get('name'), event=event)
         return deleted
         
 
@@ -371,7 +380,8 @@ def current_user():
     """
     Returns the current user
     """
-    return CURRENT_USER
+    #return CURRENT_USER
+    return session.get('name')
 
 
 def set_current_user(user):
@@ -482,14 +492,19 @@ def get_skill_difficulty(skill):
            + (0.1 if skill.flips == 3 else 0) # extra 0.1 for a triple flip
 
 
-def convert_form_data(form_data, logger=print, event=EVENT, notes=None):
+def convert_form_data(form_data, logger=print, event=EVENT, notes=None, get_athlete=True):
     """
     Converts the data from the form into trampoline routines
     and returns a list of Routine objs
     """
+    '''
     if not CURRENT_ATHLETE:
-        set_current_athlete(CURRENT_USER)
-    athlete = CURRENT_ATHLETE
+        #set_current_athlete(CURRENT_USER)
+        #set_current_athlete(session.get('name'))
+    '''
+    #athlete = CURRENT_ATHLETE
+    if get_athlete:
+        athlete = Athlete.load(session.get('name')) 
     #set_current_athlete(athlete)
     if logger:
         logger(f"Comp: {athlete.compulsory}")
@@ -514,8 +529,9 @@ def convert_form_data(form_data, logger=print, event=EVENT, notes=None):
         form_data = form_data.replace(common_name, common_routine)
 
     # Replace compulsory or optional
-    form_data = form_data.replace('compulsory', ' '.join(athlete.compulsory))
-    form_data = form_data.replace('optional', ' '.join(athlete.optional))
+    if get_athlete:
+        form_data = form_data.replace('compulsory', ' '.join(athlete.compulsory))
+        form_data = form_data.replace('optional', ' '.join(athlete.optional))
     
     # Split by spaces for each skill
     #turns = form_data.split('\r\n')
@@ -537,10 +553,10 @@ def convert_form_data(form_data, logger=print, event=EVENT, notes=None):
             
         skills = []
         # Set athlete compulsory or optional
-        if turn[0] == 'comp:':
+        if turn[0] == 'comp:' and get_athlete:
             athlete.set_comp(turn[1:])
             athlete.save()
-        elif turn[0] == 'opt:':
+        elif turn[0] == 'opt:' and get_athlete:
             athlete.set_opt(turn[1:])
             athlete.save()
 
@@ -609,7 +625,7 @@ def get_leaderboards():
         
         # Get dd of skills
         skills_text = turn[1]
-        routines = convert_form_data(skills_text, event=event, logger=None) # List of Routine objs
+        routines = convert_form_data(skills_text, event=event, logger=None, get_athlete=False) # List of Routine objs
         turn_dd = sum([skill.difficulty for routine in routines for skill in routine.skills])
 
         # add to all turns

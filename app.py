@@ -26,7 +26,8 @@ import os
 import socket
 import traceback
 
-from flask import Flask, request, render_template, jsonify, redirect, url_for, send_file
+from flask import Flask, request, render_template, jsonify, redirect, url_for, send_file, session
+from flask_session import Session
 
 from team_building import get_counters_for_rating, LEAGUE_RANKINGS, NoPokemonFound, TeamCreater,\
      create_table_from_results
@@ -41,6 +42,9 @@ from utils import *
 
 app = Flask(__name__, static_url_path="", static_folder="static")
 app.config["CACHE_TYPE"] = "null"
+app.config["SESSION_PERMANENT"] = False
+app.config["SESSION_TYPE"] = "filesystem"
+Session(app)
 
 #CACHE = {'results': {}, 'team_maker': {}, 'num_days': 1, 'rating': None}
 N_TEAMS = 3
@@ -146,7 +150,8 @@ def _save_trampoline_data(request):
     """
     # Convert form data to trampoline skills
     form_data = request.form.get('log', '')
-    username = request.form.get('name', None) or current_user()
+    #username = request.form.get('name', None) or current_user()
+    username = request.form.get('name', None) or session.get('name')
     event = request.form.get('event', None) or current_event()
     notes = request.form.get('notes', None)
     set_current_event(event)
@@ -222,9 +227,10 @@ def trampoline_log():
         return redirect(url_for('trampoline_log'))
 
     # Require user to be logged in to use the app
-    if not LOGGED_IN_USER:
+    #if not LOGGED_IN_USER:
+    #    return redirect(url_for('landing_page'))
+    if not session.get("name"):
         return redirect(url_for('landing_page'))
-
     username, event = current_user(), current_event()
 
     '''
@@ -272,7 +278,8 @@ def trampoline_log():
         body=body, username=username,
         event=event,
         routine_text=request.args.get('routine', ''),
-        user=LOGGED_IN_USER,
+        #user=LOGGED_IN_USER,
+        user=session.get('name'),
         goals=get_user_goals(current_user()),
         all_skills=ALL_SKILLS,
         error_text=ERROR
@@ -281,7 +288,8 @@ def trampoline_log():
 
 @app.route("/logger/about")
 def about_trampoline():
-    return render_template("about_trampoline.html", user=LOGGED_IN_USER)
+    #return render_template("about_trampoline.html", user=LOGGED_IN_USER)
+    return render_template("about_trampoline.html", user=session.get("name"))
 
 
 @app.route("/about")
@@ -402,12 +410,16 @@ def login():
         except:
             ERROR = f"Username {username} does not exists."
             return redirect(url_for('login'))
-        LOGGED_IN_USER = username
-        if LOGGED_IN_USER:
+        #LOGGED_IN_USER = username
+        session["name"] = username
+
+        #if LOGGED_IN_USER:
+        if session.get('name'):
             set_current_user(LOGGED_IN_USER)
             set_current_athlete(LOGGED_IN_USER)
         return redirect(url_for('trampoline_log'))
-    return render_template("login.html", user=LOGGED_IN_USER, error_text=ERROR)
+    #return render_template("login.html", user=LOGGED_IN_USER, error_text=ERROR)
+    return render_template("login.html", user=session.get("name"), error_text=ERROR)
 
 
 @app.route("/logout", methods=["GET"])
@@ -417,6 +429,7 @@ def logout():
     """
     global LOGGED_IN_USER
     LOGGED_IN_USER = ""
+    session["name"] = None
     return redirect(url_for('login'))
 
 
@@ -446,7 +459,8 @@ def landing_page():
     leaderboard = get_leaderboards()
     if not leaderboard["DD"]:
         leaderboard = mock_leaderboard
-    return render_template("landing_page.html", user=LOGGED_IN_USER, leaderboard=leaderboard)
+    #return render_template("landing_page.html", user=LOGGED_IN_USER, leaderboard=leaderboard)
+    return render_template("landing_page.html", user=session.get("name"), leaderboard=leaderboard)
 
 
 @app.route("/logger/user")
@@ -454,15 +468,18 @@ def user_profile():
     """
     User profile
     """
-    if not LOGGED_IN_USER:
+    #if not LOGGED_IN_USER:
+    if not session.get("name"):
         return redirect(url_for('login'))
     # get user from db
     try:
-        user_data = get_user(LOGGED_IN_USER)
+        #user_data = get_user(LOGGED_IN_USER)
+        user_data = get_user(session.get("name"))
     except Exception as exc:
         logger.error(f"Exception: {exc}")
         user_data = {}
-    return render_template("user_profile.html", user=LOGGED_IN_USER, user_data=user_data)
+    #return render_template("user_profile.html", user=LOGGED_IN_USER, user_data=user_data)
+    return render_template("user_profile.html", user=session.get("name"), user_data=user_data)
 
 
 @app.route("/logger/user/update", methods=["POST"])
@@ -473,7 +490,8 @@ def update_user():
     private = True if request.form.get("private")=="true" else False
     compulsory = request.form.get("compulsory")
     optional = request.form.get("optional")
-    athlete = Athlete.load(LOGGED_IN_USER)
+    #athlete = Athlete.load(LOGGED_IN_USER)
+    athlete = Athlete.load(session.get("name"))
     athlete.private = private
     athlete.compulsory = [skill for skill in compulsory.split()]
     athlete.optional = [skill for skill in optional.split()]
@@ -486,9 +504,11 @@ def export_user_data():
     """
     Export user data
     """
-    if not LOGGED_IN_USER:
+    #if not LOGGED_IN_USER:
+    if not session.get('name'):
         return jsonify(status="failure", reason="User not logged in")
-    user_turns = get_user_turns(LOGGED_IN_USER)
+    #user_turns = get_user_turns(LOGGED_IN_USER)
+    user_turns = get_user_turns(session.get("name"))
     export_dir = os.path.join(app.root_path, "exported_data")
     #if not os.path.exists("exported_data"):
     if not os.path.exists(export_dir):
@@ -501,7 +521,8 @@ def export_user_data():
     #    json.dump(user_turns, turns_file, indent=4)
     
     # Save csv file
-    csv_file_path = os.path.join(export_dir, f"{LOGGED_IN_USER}_turns.csv")
+    #csv_file_path = os.path.join(export_dir, f"{LOGGED_IN_USER}_turns.csv")
+    csv_file_path = os.path.join(export_dir, f"{session.get('name')}_turns.csv")
     with open(csv_file_path, 'w') as turns_file:
         turns_file.write("turn number, skills, date, event\n")
         for turn in user_turns:
