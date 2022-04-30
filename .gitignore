@@ -4,6 +4,7 @@ exported_data/
 
 # ignore athlete data
 athletes/
+flask_session/
 
 # Ignore python compiled files
 *.pyc
