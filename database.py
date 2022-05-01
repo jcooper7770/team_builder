@@ -244,16 +244,16 @@ def save_athlete(athlete):
         ins = table.insert().values(
             user=athlete.name,
             private=athlete.private,
-            compulsory=" ".join(athlete.compulsory),
-            optional=" ".join(athlete.optional)
+            compulsory=" ".join(athlete.compulsory) if isinstance(athlete.compulsory, list) else athlete.compulsory,
+            optional=" ".join(athlete.optional) if isinstance(athlete.optional, list) else athlete.optional
         )
         engine.execute(ins)
     else:
         # else update user
         update = table.update().where(table.c.user==athlete.name).values(
             private=athlete.private,
-            compulsory=" ".join(athlete.compulsory),
-            optional=" ".join(athlete.optional)
+            compulsory=" ".join(athlete.compulsory) if isinstance(athlete.compulsory, list) else athlete.compulsory,
+            optional=" ".join(athlete.optional) if isinstance(athlete.optional, list) else athlete.optional
         )
         engine.execute(update)
     

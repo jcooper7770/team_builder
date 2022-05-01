@@ -412,11 +412,10 @@ def login():
             return redirect(url_for('login'))
         #LOGGED_IN_USER = username
         session["name"] = username
-
         #if LOGGED_IN_USER:
         if session.get('name'):
-            set_current_user(LOGGED_IN_USER)
-            set_current_athlete(LOGGED_IN_USER)
+            set_current_user(username)
+            set_current_athlete(username)
         return redirect(url_for('trampoline_log'))
     #return render_template("login.html", user=LOGGED_IN_USER, error_text=ERROR)
     return render_template("login.html", user=session.get("name"), error_text=ERROR)
@@ -506,6 +505,7 @@ def export_user_data():
     """
     #if not LOGGED_IN_USER:
     if not session.get('name'):
+        print(f"User not logged in: {session}")
         return jsonify(status="failure", reason="User not logged in")
     #user_turns = get_user_turns(LOGGED_IN_USER)
     user_turns = get_user_turns(session.get("name"))

@@ -390,6 +390,7 @@ def set_current_user(user):
     """
     global CURRENT_USER
     CURRENT_USER = user
+    session["name"] = user
 
 def current_event():
     """

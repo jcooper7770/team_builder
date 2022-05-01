@@ -38,7 +38,7 @@
       <li class="nav-item{%if url_for(request.endpoint)==" /logger/about" %} active{% endif %}">
         <a class="nav-link" href="/logger/about">About</a>
       </li>
-      {% if user != None %}
+      {% if user %}
       <li class="nav-item">
         <a class="nav-link" href="/logout">Logout</a>
       </li>
