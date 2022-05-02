@@ -531,7 +531,8 @@ def export_user_data():
     with open(csv_file_path, 'w') as turns_file:
         turns_file.write("turn number, skills, date, event\n")
         for turn in user_turns:
-            line = f"{turn[0]}, {turn[1]}, {turn[2]}, {turn[4]}\n"
+            turn_date = str(turn[2]).split()[0]
+            line = f"{turn[0]}, {turn[1]}, {turn_date}, {turn[4]}\n"
             turns_file.write(line)
     # TODO: figure out how to download the saved csv file, then delete it
     if request.method == "GET":
