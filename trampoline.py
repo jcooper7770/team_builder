@@ -14,10 +14,10 @@ TODO:
   - Add in visualizations per day. Maybe make table headers into links to visualization page
     i.e /vis?date=20220326&user=bob[&event=dmt]
   - [DONE] Fix deleting data for db
-  - Fix using test database
+  - [DONE] Fix using test database
   - Split up front/back skills for skill dropdowns
   - Split up uncommon skills or remove them for skill dropdowns
-  - export data
+  - [DONE] export data
 """
  
 import datetime
@@ -622,9 +622,17 @@ def get_user_turns(user, from_date="", to_date=""):
     return sorted(user_turns, key=lambda turn: turn[2])
 
 
-def get_leaderboards():
+def get_turn_dds():
     """
-    Creates the leaderboards from data in the db
+    Returns all turns and their dds for each event
+
+    { 
+        'trampoline': [
+            {'turn': '801<', 'user': 'user', date: '01-02-2022', 'dd': 10.5},
+            ...
+        ],
+        ...
+    }
     """
     user_data, all_turns = get_users_and_turns()
 
@@ -639,15 +647,26 @@ def get_leaderboards():
         skills_text = turn[1]
         routines = convert_form_data(skills_text, event=event, logger=None, get_athlete=False) # List of Routine objs
         turn_dd = sum([skill.difficulty for routine in routines for skill in routine.skills])
+        turn_flips = sum([skill.flips for routine in routines for skill in routine.skills])
 
         # add to all turns
         single_turn = {
             "turn": skills_text,
             "user": turn[3],
             "date": turn[2],
-            "dd": turn_dd
+            "dd": turn_dd,
+            "flips": turn_flips
         }
         event_turns[event].append(single_turn)
+    return event_turns, user_data
+
+
+def get_leaderboards():
+    """
+    Creates the leaderboards from data in the db
+    """
+    # Gather all turns
+    event_turns, user_data = get_turn_dds()
 
     # Sort the turns and take top for each user
     top_turns = {}

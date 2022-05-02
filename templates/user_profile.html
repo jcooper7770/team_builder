@@ -99,9 +99,23 @@
   </div>
 </div>
 
-
-
 <br><br>
+
+<!-- User charts -->
+<div class="container">
+  {% for event in datapts.keys() %}
+  <div class="card border-primary">
+    <div class="card-header text-center">
+      <h2>{{event.replace('_', ' ').capitalize()}}</h2>
+    </div>
+    <canvas class="mx-auto" id="{{event}}Canvas" width="900" height="500"></canvas>
+    <br><br>
+  </div>
+  <br><br>
+  {% endfor %}
+
+</div>
+
 
 <script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
   crossorigin="anonymous"></script>
@@ -112,19 +126,42 @@
     var fromText = $('#export-from').val();
     var toText = $('#export-to').val();
     var url = "/logger/user/export?from=" + fromText + "&to=" + toText;
-    //location.href = "/logger/user/export?from="+fromText+"&to="+toText;
     location.href = encodeURI(url);
-    /*
-    $.ajax({
-      type: 'GET',
-      url: "/logger/user/export",
-      success: function (data) {
-        //alert("Saved data to: "+data.filename)
-        //location.reload();
-        location.href='/logger/user/export';
-      }
-    });
-    */
   });
+  
+  // One scatter plot per event
+  {% for event, data in datapts.items() %}
+  const ctx{{event}} = document.getElementById('{{event}}Canvas').getContext('2d');
+  const myChart{{event}} = new Chart(ctx{{event}}, {
+    type: 'scatter',
+    data: {
+      datasets: [
+        {
+          label: '{{ event }}',
+          data: [
+            {%- for datapt in data -%}
+            {x: '{{datapt.x}}', y: {{datapt.y}}}{% if not loop.last %},{% endif %}
+            {%- endfor -%}
+          ],
+          showLine: true,
+          fill: false,
+          borderColor: {%- if event.startswith("dmt") -%}'rgba(255, 99, 132, 1)'{%- else -%}'rgba(99, 99, 255, 1)'{%- endif -%},
+        }
+      ]
+    },
+    options: {
+      responsive: false,
+      scales: {
+        xAxes: [{
+          type: 'time',
+          time: {
+            unit: 'day'
+          }
+        }]
+      }
+    }
+  });
+  {% endfor %}
+
 </script>
 {% endblock %}

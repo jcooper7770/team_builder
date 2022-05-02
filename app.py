@@ -18,6 +18,7 @@ TODO:
   - [DONE] Search for certain day of practice
   - [DONE] Add user profiles
   - Get data from scorsync
+  - [DONE] Add in graphs
 """
 
 import datetime
@@ -34,7 +35,7 @@ from team_building import get_counters_for_rating, LEAGUE_RANKINGS, NoPokemonFou
 
 from trampoline import convert_form_data, get_leaderboards, pretty_print, Practice, current_user, set_current_user,\
      current_event, set_current_event, set_current_athlete,\
-     ALL_SKILLS, get_leaderboards, Athlete, get_user_turns
+     ALL_SKILLS, get_leaderboards, Athlete, get_user_turns, get_turn_dds
 from database import create_engine, set_table_name, insert_goal_to_db, get_user_goals, complete_goal,\
     delete_goal_from_db, get_user
 from utils import *
@@ -227,29 +228,9 @@ def trampoline_log():
         return redirect(url_for('trampoline_log'))
 
     # Require user to be logged in to use the app
-    #if not LOGGED_IN_USER:
-    #    return redirect(url_for('landing_page'))
     if not session.get("name"):
         return redirect(url_for('landing_page'))
     username, event = current_user(), current_event()
-
-    '''
-    if os.path.exists('routines.txt'):
-        with open('routines.txt') as routine_file:
-            old_routines = routine_file.read()
-    else:
-        old_routines = ""
-
-    logger.info("-----")
-    logger.info(f"old routines: {old_routines}")
-    logger.info("-----")
-
-    # Collect all routines up to now
-    routines = convert_form_data(old_routines, logger=logger.info)
-    
-    # Write all trampoline skills to a table
-    table = skills_table(routines)
-    '''
 
     # Print out a table per date
     practice_tables = []
@@ -278,7 +259,6 @@ def trampoline_log():
         body=body, username=username,
         event=event,
         routine_text=request.args.get('routine', ''),
-        #user=LOGGED_IN_USER,
         user=session.get('name'),
         goals=get_user_goals(current_user()),
         all_skills=ALL_SKILLS,
@@ -288,7 +268,6 @@ def trampoline_log():
 
 @app.route("/logger/about")
 def about_trampoline():
-    #return render_template("about_trampoline.html", user=LOGGED_IN_USER)
     return render_template("about_trampoline.html", user=session.get("name"))
 
 
@@ -410,14 +389,11 @@ def login():
         except:
             ERROR = f"Username {username} does not exists."
             return redirect(url_for('login'))
-        #LOGGED_IN_USER = username
         session["name"] = username
-        #if LOGGED_IN_USER:
         if session.get('name'):
             set_current_user(username)
             set_current_athlete(username)
         return redirect(url_for('trampoline_log'))
-    #return render_template("login.html", user=LOGGED_IN_USER, error_text=ERROR)
     return render_template("login.html", user=session.get("name"), error_text=ERROR)
 
 
@@ -458,7 +434,6 @@ def landing_page():
     leaderboard = get_leaderboards()
     if not leaderboard["DD"]:
         leaderboard = mock_leaderboard
-    #return render_template("landing_page.html", user=LOGGED_IN_USER, leaderboard=leaderboard)
     return render_template("landing_page.html", user=session.get("name"), leaderboard=leaderboard)
 
 
@@ -467,18 +442,43 @@ def user_profile():
     """
     User profile
     """
-    #if not LOGGED_IN_USER:
+    current_user = session.get('name')
     if not session.get("name"):
         return redirect(url_for('login'))
     # get user from db
     try:
-        #user_data = get_user(LOGGED_IN_USER)
-        user_data = get_user(session.get("name"))
+        user_data = get_user(current_user)
     except Exception as exc:
         logger.error(f"Exception: {exc}")
         user_data = {}
-    #return render_template("user_profile.html", user=LOGGED_IN_USER, user_data=user_data)
-    return render_template("user_profile.html", user=session.get("name"), user_data=user_data)
+
+    event_turns, _ = get_turn_dds()
+    datapts = {}
+    for event, all_turns in event_turns.items():
+        datapts[f'{event}_dd'] = []
+        datapts[f'{event}_flips'] = []
+        # TODO: Add in # skills
+        for turn in sorted(all_turns, key=lambda x: x['date']):
+            # Skip notes
+            if turn['turn'].startswith('-'):
+                continue
+            if current_user and turn['user'] != current_user:
+                continue 
+            datapts[f'{event}_dd'].append({
+                'x': str(turn['date']).split()[0],
+                'y': turn['dd']
+            })
+            datapts[f'{event}_flips'].append({
+                'x': str(turn['date']).split()[0],
+                'y': turn['flips']
+            })
+
+    return render_template(
+        "user_profile.html",
+        user=current_user,
+        user_data=user_data,
+        datapts=datapts
+    )
 
 
 @app.route("/logger/user/update", methods=["POST"])
@@ -489,7 +489,6 @@ def update_user():
     private = True if request.form.get("private")=="true" else False
     compulsory = request.form.get("compulsory")
     optional = request.form.get("optional")
-    #athlete = Athlete.load(LOGGED_IN_USER)
     athlete = Athlete.load(session.get("name"))
     athlete.private = private
     athlete.compulsory = [skill for skill in compulsory.split()]
@@ -503,11 +502,9 @@ def export_user_data():
     """
     Export user data
     """
-    #if not LOGGED_IN_USER:
     if not session.get('name'):
         print(f"User not logged in: {session}")
         return jsonify(status="failure", reason="User not logged in")
-    #user_turns = get_user_turns(LOGGED_IN_USER)
     fromDate = request.args.get('from')
     toDate = request.args.get('to')
     user_turns = get_user_turns(session.get("name"), from_date=fromDate, to_date=toDate)
@@ -538,6 +535,28 @@ def export_user_data():
         return send_file(csv_file_path, as_attachment=True, cache_timeout=0)
         #return send_from_directory(export_dir, file_name, mimetype="text/csv", as_attachment=True)
     return jsonify(status="success", filename=csv_file_path)
+
+
+@app.route("/logger/chart", methods=["GET"])
+def chart():
+    event_turns, _ = get_turn_dds()
+    current_user = session.get('name')
+    datapts = {}
+    for event, all_turns in event_turns.items():
+        datapts[f'{event}_dd'] = []
+        datapts[f'{event}_flips'] = []
+        for turn in sorted(all_turns, key=lambda x: x['date']):
+            if current_user and turn['user'] != current_user:
+                continue 
+            datapts[f'{event}_dd'].append({
+                'x': str(turn['date']).split()[0],
+                'y': turn['dd']
+            })
+            datapts[f'{event}_flips'].append({
+                'x': str(turn['date']).split()[0],
+                'y': turn['flips']
+            })
+    return render_template("graph.html", user=current_user, datapts=datapts)
 
 
 def get_app():

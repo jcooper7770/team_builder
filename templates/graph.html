@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block content %}
+<br><br>
+
+<div class="container">
+  <br><br>
+
+  {% for event in datapts.keys() %}
+  <div class="card border-primary">
+    <div class="card-header text-center">
+      <h2>{{event.replace('_', ' ').capitalize()}}</h2>
+    </div>
+    <canvas class="mx-auto" id="{{event}}Canvas" width="900" height="500"></canvas>
+    <br><br>
+  </div>
+  <br><br>
+  {% endfor %}
+ 
+</div>
+
+<script type="text/javascript">
+  // One scatter plot per event
+  {% for event, data in datapts.items() %}
+  const ctx{{event}} = document.getElementById('{{event}}Canvas').getContext('2d');
+  const myChart{{event}} = new Chart(ctx{{event}}, {
+    type: 'scatter',
+    data: {
+      datasets: [
+        {
+          label: '{{ event }}',
+          data: [
+            {%- for datapt in data -%}
+            {x: '{{datapt.x}}', y: {{datapt.y}}}{% if not loop.last %},{% endif %}
+            {%- endfor -%}
+          ],
+          showLine: true,
+          fill: false,
+          borderColor: {%- if event.startswith("dmt") -%}'rgba(255, 99, 132, 1)'{%- else -%}'rgba(99, 99, 255, 1)'{%- endif -%},
+        }
+      ]
+    },
+    options: {
+      responsive: false,
+      scales: {
+        xAxes: [{
+          type: 'time',
+          time: {
+            unit: 'day'
+          }
+        }]
+      }
+    }
+  });
+  {% endfor %}
+
+</script>
+{% endblock %}
