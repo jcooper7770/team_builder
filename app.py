@@ -26,7 +26,8 @@ import os
 import socket
 import traceback
 
-from flask import Flask, request, render_template, jsonify, redirect, url_for, send_file, session
+from flask import Flask, request, render_template, jsonify, redirect, url_for, send_file,\
+    session, send_from_directory
 from flask_session import Session
 
 from team_building import get_counters_for_rating, LEAGUE_RANKINGS, NoPokemonFound, TeamCreater,\
@@ -508,7 +509,9 @@ def export_user_data():
         print(f"User not logged in: {session}")
         return jsonify(status="failure", reason="User not logged in")
     #user_turns = get_user_turns(LOGGED_IN_USER)
-    user_turns = get_user_turns(session.get("name"))
+    fromDate = request.args.get('from')
+    toDate = request.args.get('to')
+    user_turns = get_user_turns(session.get("name"), from_date=fromDate, to_date=toDate)
     export_dir = os.path.join(app.root_path, "exported_data")
     #if not os.path.exists("exported_data"):
     if not os.path.exists(export_dir):
@@ -522,7 +525,9 @@ def export_user_data():
     
     # Save csv file
     #csv_file_path = os.path.join(export_dir, f"{LOGGED_IN_USER}_turns.csv")
-    csv_file_path = os.path.join(export_dir, f"{session.get('name')}_turns.csv")
+    file_name = f"{session.get('name')}_turns.csv"
+    #csv_file_path = os.path.join(export_dir, f"{session.get('name')}_turns.csv")
+    csv_file_path = os.path.join(export_dir, file_name)
     with open(csv_file_path, 'w') as turns_file:
         turns_file.write("turn number, skills, date, event\n")
         for turn in user_turns:
@@ -530,7 +535,8 @@ def export_user_data():
             turns_file.write(line)
     # TODO: figure out how to download the saved csv file, then delete it
     if request.method == "GET":
-        return send_file(csv_file_path, as_attachment=True)
+        return send_file(csv_file_path, as_attachment=True, cache_timeout=0)
+        #return send_from_directory(export_dir, file_name, mimetype="text/csv", as_attachment=True)
     return jsonify(status="success", filename=csv_file_path)
 
 

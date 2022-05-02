@@ -596,7 +596,7 @@ def pretty_print(routine, logger=print):
         logger(turn)
 
 
-def get_user_turns(user):
+def get_user_turns(user, from_date="", to_date=""):
     """
     Returns all turns for the given user in order of date
     """
@@ -608,6 +608,20 @@ def get_user_turns(user):
             for skill_num in range(10)
         ]
     user_turns = [turn for turn in all_turns if turn[3] == user]
+    if from_date:
+        from_date = from_date.replace('/', '-')
+        try:
+            from_date = datetime.datetime.strptime(from_date, "%m-%d-%Y")
+            user_turns = [turn for turn in user_turns if turn[2]>=from_date]
+        except:
+            print(f"Failed to convert {from_date} to datetime")
+    if to_date:
+        to_date = to_date.replace('/', '-')
+        try:
+            to_date = datetime.datetime.strptime(to_date, "%m-%d-%Y")
+            user_turns = [turn for turn in user_turns if turn[2]<=to_date]
+        except:
+            print(f"Failed to convert {to_date} to datetime")
     return sorted(user_turns, key=lambda turn: turn[2])
 
 

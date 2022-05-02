@@ -70,6 +70,22 @@
           </div>
           <div class="col-sm-5">
             <p class="card-text">Save all your data into a csv</p>
+            <div class="row">
+              <div class="col-sm-2">
+                <label for="export-from">From: </label>
+              </div>
+              <div class="col-sm">
+                <input name="export-from" id="export-from" placeholder="mm/dd/yyyy" />
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-2">
+                <label for="export-to">To: </label>
+              </div>
+              <div class="col-sm">
+                <input name="export-to" id="export-to" placeholder="mm/dd/yyyy" />
+              </div>
+            </div>
             <button class="btn btn-primary" id="export-data">Export Data</button>
           </div>
           <div class="col-sm-5">
@@ -93,7 +109,11 @@
 <script type="text/javascript">
   $("#export-data").click(function (e) {
     e.preventDefault();
-    location.href = "/logger/user/export";
+    var fromText = $('#export-from').val();
+    var toText = $('#export-to').val();
+    var url = "/logger/user/export?from=" + fromText + "&to=" + toText;
+    //location.href = "/logger/user/export?from="+fromText+"&to="+toText;
+    location.href = encodeURI(url);
     /*
     $.ajax({
       type: 'GET',
