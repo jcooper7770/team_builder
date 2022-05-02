@@ -39,7 +39,7 @@ import traceback
 from datetime import datetime, timedelta
 from collections import defaultdict
 
-from trampoline import create_engine
+from database import create_engine
 from battle_sim import sim_battle
 from utils import CACHE, logger, TableMaker
 
@@ -442,7 +442,7 @@ class MetaTeamDestroyer:
         return '-'.join(moves)
 
 
-    def simulate_battle(pokemon1, pokemon2, n_shields=1):
+    def simulate_battle(self, pokemon1, pokemon2, n_shields=1):
         """
         last numbers are the movesets..
         to get default movesets use pvpoke rankings and the game master to get the numbers

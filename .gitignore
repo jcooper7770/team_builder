@@ -12,6 +12,7 @@ flask_session/
 # Ignore local files
 routines.txt
 test.log
+data/
 
 # Ignore vscode files
 .vscode/

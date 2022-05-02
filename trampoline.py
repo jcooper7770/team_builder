@@ -20,8 +20,6 @@ TODO:
   - export data
 """
  
-import sqlalchemy
-
 import datetime
 import json
 import os
@@ -32,9 +30,8 @@ from collections import defaultdict
 
 from flask import session
 
-from database import create_engine, get_user, get_users_and_turns, save_athlete,\
-    delete_from_db, get_from_db, delete_goal_from_db, get_user_goals,\
-    complete_goal, insert_goal_to_db, add_to_db
+from database import get_user, get_users_and_turns, save_athlete,\
+    delete_from_db, get_from_db, add_to_db
 from utils import NON_SKILLS
 
 NUM_FLIPS = {
