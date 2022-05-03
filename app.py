@@ -290,6 +290,7 @@ def run():
     html = []
     error_text = ""
 
+    print("----- Refreshed -----")
     # Data tables from cache
     if get_new_data(chosen_league, num_days, rating):
         try:

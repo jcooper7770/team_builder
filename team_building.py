@@ -210,6 +210,8 @@ class MetaTeamDestroyer:
         :param num_reports: The number of latest reports to check (Default: None)
         :type num_reports: int
         """
+        print("------ Initializing the data -------")
+
         # Initialize all of the data
         rankings_url = LEAGUE_RANKINGS.get(league)
         latest_url = LEAGUE_DATA.get(league)
@@ -225,7 +227,10 @@ class MetaTeamDestroyer:
         self.all_pokemon = self.get_league_data_from_db("all_pokemon", url=rankings_url)
         game_master_url = "https://vps.gobattlelog.com/data/gamemaster.json?v=1.25.10"
         self.game_master = self.get_league_data_from_db("game_master", url=game_master_url)
-        self.latest_info = self.get_league_data_from_db(league, url=latest_url).get("records")
+        info = self.get_league_data_from_db(league, url=latest_url)
+        if isinstance(info, str):
+            info = json.loads(info)
+        self.latest_info = info.get("records")
 
         # Sort reports by time and get last X teams
         sorted_latest_info = sorted(self.latest_info, key=lambda x: x.get('time'), reverse=True)
@@ -318,14 +323,16 @@ class MetaTeamDestroyer:
         if results:
             league_data = results[0]
             last_fetched_date = league_data[2]
-            if last_fetched_date == datetime.today():
+            if last_fetched_date == datetime.today().date():
                 latest_info = json.loads(league_data[1])
-                return latest_info
+                #print(f"results: {results}\n\n")
+                #print(f"info: {latest_info}")
+                return json.loads(latest_info)
         else:
             ins = table.insert().values(
                 league=league,
                 data=json.dumps({}),
-                last_fetched_date=datetime.today()
+                last_fetched_date=datetime.today().date()
             )
             engine.execute(ins)
         # if not in db or old data then pull data and push to db
@@ -553,6 +560,9 @@ class MetaTeamDestroyer:
         """
         Returns the results of the pokemon team created
         """
+        # Skip the team if it has no pokemon
+        if pokemon_team == []:
+            return "", []
         results = f"Team for {chosen_pokemon}"
         #pvpoke_link = f"https://pvpoke.com/team-builder/all/{LEAGUE_VALUE[self.league]}/{pokemon_team[0]}-m-{team_ivs[0]}%2C{pokemon_team[1]}-m-{team_ivs[1]}%2C{pokemon_team[2]}-m-{team_ivs[2]}"
         cup = CUP_VALUE.get(self.league, 'all')
@@ -592,6 +602,11 @@ class MetaTeamDestroyer:
                 #print(f"Should skip {counter} with weaknesses: {pokemon_weaknesses}")
                 removed_counters.append(counter[0])
         counter_counters = [counter for counter in counter_counters if counter[0] not in removed_counters]
+
+        # return the same pokemon 3 times if no counters
+        if not counter_counters:
+            print(f"Could not find counters for {pokemon}. Returning empty team")
+            return self.team_results([], pokemon)
         
         # need to pick one at a time so there are no repeats      
         back_pokemon1 = self.choose_weighted_pokemon(counter_counters)[0]
