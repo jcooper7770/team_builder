@@ -68,7 +68,8 @@ LEAGUE_RANKINGS = {
     "Holiday":"https://vps.gobattlelog.com/data/overall/rankings-1500-holiday.json?v=1.25.35",
     "Sinnoh": "https://vps.gobattlelog.com/data/overall/rankings-1500-sinnoh.json?v=1.25.35",
     "Love": "https://vps.gobattlelog.com/data/overall/rankings-1500-love.json?v=1.25.35",
-    "Johto": "https://vps.gobattlelog.com/data/overall/rankings-1500-johto.json?v=1.25.35"
+    "Johto": "https://vps.gobattlelog.com/data/overall/rankings-1500-johto.json?v=1.25.35",
+    "Flying": "https://vps.gobattlelog.com/data/overall/rankings-1500-flying.json?v=1.25.35"
 }
 LEAGUE_DATA = {
     "ULP": "https://vps.gobattlelog.com/records/ultra-premier/latest.json?ts=449983.3",
@@ -91,7 +92,8 @@ LEAGUE_DATA = {
     "Holiday": "https://vps.gobattlelog.com/records/great-holiday/latest.json?ts=451466.3",
     "Sinnoh": "https://vps.gobattlelog.com/records/great-sinnoh/latest.json?ts=451466.3",
     "Love": "https://vps.gobattlelog.com/records/great-love/latest.json?ts=451466.3",
-    "Johto": "https://vps.gobattlelog.com/records/great-johto/latest.json?ts=451466.3"
+    "Johto": "https://vps.gobattlelog.com/records/great-johto/latest.json?ts=451466.3",
+    "Flying": "https://vps.gobattlelog.com/records/great-flying/latest.json?ts=451466.3"
 }
 LEAGUE_VALUE = {
     'GL': '1500',
@@ -113,6 +115,7 @@ LEAGUE_VALUE = {
     'Sinnoh': '1500',
     "Love": '1500',
     "Johto": '1500',
+    "Flying": '1500',
     'Little': '500'
 }
 CUP_VALUE = {
@@ -127,6 +130,7 @@ CUP_VALUE = {
     'Sinnoh': 'sinnoh',
     'Love': 'love',
     'Johto': 'johto',
+    'Flying': 'flying',
     'Little': 'little',
     'Retro': 'retro'
 }
