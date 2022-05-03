@@ -224,7 +224,7 @@ class MetaTeamDestroyer:
 
 
         # Fetch data from db
-        self.all_pokemon = self.get_league_data_from_db("all_pokemon", url=rankings_url)
+        self.all_pokemon = self.get_league_data_from_db(f"all_pokemon_{league}", url=rankings_url)
         game_master_url = "https://vps.gobattlelog.com/data/gamemaster.json?v=1.25.10"
         self.game_master = self.get_league_data_from_db("game_master", url=game_master_url)
         info = self.get_league_data_from_db(league, url=latest_url)
