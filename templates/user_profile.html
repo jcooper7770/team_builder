@@ -143,7 +143,7 @@
             {x: '{{datapt.x}}', y: {{datapt.y}}}{% if not loop.last %},{% endif %}
             {%- endfor -%}
           ],
-          showLine: true,
+          showLine: false,
           fill: false,
           borderColor: {%- if event.startswith("dmt") -%}'rgba(255, 99, 132, 1)'{%- else -%}'rgba(99, 99, 255, 1)'{%- endif -%},
         }
