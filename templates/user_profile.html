@@ -101,26 +101,40 @@
 
 <br><br>
 
-<!-- User charts -->
+<!-- User chart tabs-->
 <div class="container">
-  {% for event in datapts.keys() %}
   <div class="card border-primary">
-    <div class="card-header text-center">
-      <h2>{{event.replace('_', ' ').capitalize()}}</h2>
+    <div class="card-header">
+      <ul class="nav nav-tabs card-header-tabs" id="charts-list" role="tablist">
+        {% for event in datapts.keys() %}
+        <li class="nav-item">
+          <a class="nav-link{% if loop.first %} active{% endif %}" href="#{{event}}" id="{{event}}-tab" data-toggle="tab" aria-controls="{{event}}" role="tab" aria-selected="{% if loop.first %}true{% else %}false{% endif %}">{{ event.replace('_', ' ').capitalize() }}</a>
+        </li>
+        {% endfor %}
+      </ul>
     </div>
-    <canvas class="mx-auto" id="{{event}}Canvas" width="900" height="500"></canvas>
-    <br><br>
+    <div class="card-body">
+
+    <div class="tab-content">
+      {% for event in datapts.keys() %}
+      <div class="tab-pane fade{% if loop.first %}show active{% endif %}" id="{{ event }}" role="tabpanel" aria-labelledby="{{ event }}-tab">
+        <canvas class="mx-auto" id="{{event}}Canvas" width="900" height="500"></canvas>
+      </div>
+      {% endfor %}
+    </div>
   </div>
-  <br><br>
-  {% endfor %}
-
 </div>
-
+<br/>
+<br/>
 
 <script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
   crossorigin="anonymous"></script>
 
 <script type="text/javascript">
+  $("charts-list a").on('click', function(e){
+    e.preventDefault();
+    $(this).tab('show');
+  });
   $("#export-data").click(function (e) {
     e.preventDefault();
     var fromText = $('#export-from').val();
