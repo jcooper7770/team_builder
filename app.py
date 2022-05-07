@@ -444,6 +444,13 @@ def user_profile():
     """
     User profile
     """
+    start_date = request.args.get('chart_start')
+    if start_date:
+        start_date = datetime.datetime.strptime(start_date, "%m/%d/%Y")
+    end_date = request.args.get('chart_end')
+    if end_date:
+        end_date = datetime.datetime.strptime(end_date, "%m/%d/%Y")
+
     current_user = session.get('name')
     if not session.get("name"):
         return redirect(url_for('login'))
@@ -476,6 +483,10 @@ def user_profile():
             if current_user and turn['user'] != current_user:
                 continue 
             turn_date = str(turn['date']).split()[0]
+            if start_date and turn['date'] < start_date:
+                continue
+            if end_date and turn['date'] > end_date:
+                continue
             turn_flips = turn['flips']
             datapts[f'{event}_dd'].append({
                 #'x': str(turn['date']).split()[0],
@@ -500,7 +511,9 @@ def user_profile():
         "user_profile.html",
         user=current_user,
         user_data=user_data,
-        datapts=datapts
+        datapts=datapts,
+        chart_start=request.args.get('chart_start'),
+        chart_end=request.args.get('chart_end')
     )
 
 
