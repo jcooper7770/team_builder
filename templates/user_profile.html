@@ -139,7 +139,18 @@
 <script type="text/javascript">
   $('#chart-dates').click(function(e){
     var start = $('#chart-start').val();
+    const dateRegExp = /^[0-9]{2}\/[0-9]{2}\/[0-9]{4}$/;
+    const startValid = dateRegExp.test(start);
+    if (start != "" && startValid == false) {
+      alert("Start date has to be in mm/dd/yyyy format");
+      return
+    }
     var end = $('#chart-end').val();
+    const endValid = dateRegExp.test(end);
+    if (end != "" && endValid == false) {
+      alert("End date has to be in mm/dd/yyyy format");
+      return
+    }
     var url = "/logger/user?chart_start=" + start + "&chart_end=" + end;
     location.href = encodeURI(url);
   });

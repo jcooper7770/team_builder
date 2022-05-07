@@ -512,8 +512,8 @@ def user_profile():
         user=current_user,
         user_data=user_data,
         datapts=datapts,
-        chart_start=request.args.get('chart_start'),
-        chart_end=request.args.get('chart_end')
+        chart_start=request.args.get('chart_start', ""),
+        chart_end=request.args.get('chart_end', "")
     )
 
 
