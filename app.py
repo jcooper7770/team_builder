@@ -25,6 +25,7 @@ import datetime
 import os
 import socket
 import traceback
+from collections import defaultdict
 
 from flask import Flask, request, render_template, jsonify, redirect, url_for, send_file,\
     session, send_from_directory
@@ -455,6 +456,15 @@ def user_profile():
 
     event_turns, _ = get_turn_dds()
     datapts = {}
+    day_flips = {
+        'trampoline': defaultdict(int),
+        'dmt': defaultdict(int),
+    }
+    flips_per_turn = {
+        'trampoline': defaultdict(list),
+        'dmt': defaultdict(list)
+    }
+    turns_per_practice = defaultdict(int)
     for event, all_turns in event_turns.items():
         datapts[f'{event}_dd'] = []
         datapts[f'{event}_flips'] = []
@@ -465,14 +475,26 @@ def user_profile():
                 continue
             if current_user and turn['user'] != current_user:
                 continue 
+            turn_date = str(turn['date']).split()[0]
+            turn_flips = turn['flips']
             datapts[f'{event}_dd'].append({
-                'x': str(turn['date']).split()[0],
+                #'x': str(turn['date']).split()[0],
+                'x': turn_date,
                 'y': turn['dd']
             })
             datapts[f'{event}_flips'].append({
-                'x': str(turn['date']).split()[0],
-                'y': turn['flips']
+                #'x': str(turn['date']).split()[0],
+                'x': turn_date,
+                'y': turn_flips
             })
+            day_flips[event][turn_date] += turn_flips
+            flips_per_turn[event][turn_date].append(turn_flips)
+            turns_per_practice[turn_date] += 1
+    datapts['trampoline_flips_per_day'] = [{'x': date, 'y': flips} for date, flips in day_flips['trampoline'].items()]
+    datapts['dmt_flips_per_day'] = [{'x': date, 'y': flips} for date, flips in day_flips['dmt'].items()]
+    datapts['dmt_flips_per_turn'] = [{'x': date, 'y': sum(flips)/len(flips)} for date, flips in flips_per_turn['dmt'].items()]
+    datapts['trampoline_flips_per_turn'] = [{'x': date, 'y': sum(flips)/len(flips)} for date, flips in flips_per_turn['trampoline'].items()]
+    datapts['turns_per_practice'] = [{'x': date, 'y': turns} for date, turns in turns_per_practice.items()]
 
     return render_template(
         "user_profile.html",
