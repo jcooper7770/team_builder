@@ -139,7 +139,7 @@
 <script type="text/javascript">
   $('#chart-dates').click(function(e){
     var start = $('#chart-start').val();
-    const dateRegExp = /^[0-9]{2}\/[0-9]{2}\/[0-9]{4}$/;
+    const dateRegExp = /^[0-9]{1,2}\/[0-9]{1,2}\/[0-9]{4}$/;
     const startValid = dateRegExp.test(start);
     if (start != "" && startValid == false) {
       alert("Start date has to be in mm/dd/yyyy format");
@@ -151,8 +151,12 @@
       alert("End date has to be in mm/dd/yyyy format");
       return
     }
-    var url = "/logger/user?chart_start=" + start + "&chart_end=" + end;
-    location.href = encodeURI(url);
+    // refresh the page to update the charts
+    //var url = "/logger/user?chart_start=" + start + "&chart_end=" + end;
+    //location.href = encodeURI(url);
+  
+    // dynamically update the charts
+    updateCharts(start, end);
   });
   $("charts-list a").on('click', function(e){
     e.preventDefault();
@@ -165,7 +169,29 @@
     var url = "/logger/user/export?from=" + fromText + "&to=" + toText;
     location.href = encodeURI(url);
   });
-  
+ 
+  function updateCharts(start_date, end_date) {
+    start = new Date(start_date);
+    end = new Date(end_date);
+
+    {% for event, data in datapts.items() %}
+    var data_{{event}} = [];
+    for (var j=0; j < {{ data | length }}; j++){
+      data_date = new Date({{ data | safe }}[j]['x']);
+      if ( data_date < start) {
+        continue;
+      }
+      if ( data_date > end ){
+        continue;
+      }
+      data_{{event}}.push({'x': {{ data | safe }}[j]['x'], 'y': {{ data | safe }}[j]['y']});
+    }
+    myChart{{event}}.data.datasets[0].data = data_{{event}};
+    myChart{{event}}.update();
+    {% endfor %}
+
+  }
+
   // One scatter plot per event
   {% for event, data in datapts.items() %}
   const ctx{{event}} = document.getElementById('{{event}}Canvas').getContext('2d');
