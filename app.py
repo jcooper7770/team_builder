@@ -501,11 +501,12 @@ def user_profile():
             day_flips[event][turn_date] += turn_flips
             flips_per_turn[event][turn_date].append(turn_flips)
             turns_per_practice[turn_date] += 1
-    datapts['trampoline_flips_per_day'] = [{'x': date, 'y': flips} for date, flips in day_flips['trampoline'].items()]
+    
+    datapts['trampoline_flips_per_day'] = [{'x': date, 'y': flips} for date, flips in sorted(day_flips['trampoline'].items(), key=lambda x: x[0])]
     datapts['dmt_flips_per_day'] = [{'x': date, 'y': flips} for date, flips in day_flips['dmt'].items()]
     datapts['dmt_flips_per_turn'] = [{'x': date, 'y': sum(flips)/len(flips)} for date, flips in flips_per_turn['dmt'].items()]
     datapts['trampoline_flips_per_turn'] = [{'x': date, 'y': sum(flips)/len(flips)} for date, flips in flips_per_turn['trampoline'].items()]
-    datapts['turns_per_practice'] = [{'x': date, 'y': turns} for date, turns in turns_per_practice.items()]
+    datapts['turns_per_practice'] = [{'x': date, 'y': turns} for date, turns in sorted(turns_per_practice.items(), key=lambda x: x[0])]
 
     return render_template(
         "user_profile.html",

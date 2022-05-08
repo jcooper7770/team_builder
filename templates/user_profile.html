@@ -126,6 +126,10 @@
     Start: <input type="text" id="chart-start" name="chart-start" placeholder="mm/dd/yyyy" value="{{chart_start}}" \>
     End: <input type="text" id="chart-end" name="chart-end" placeholder="mm/dd/yyyy" value="{{chart_end}}" \>
     <button class="btn btn-primary" id="chart-dates">Update</button>
+    <br>
+    Show lines: 
+    yes: <input type="radio" id="chart-lines-yes" name="chart-lines" value="yes" \>
+    no: <input type="radio" id="chart-lines-no" name="chart-lines" value="no" checked \>
     </div>
     </div>
   </div>
@@ -137,6 +141,22 @@
   crossorigin="anonymous"></script>
 
 <script type="text/javascript">
+  $("[id^=chart-lines]").click(function (e) {
+    var showLines = event.target.id.slice(12);
+    if (showLines == "yes"){
+      {% for event, data in datapts.items() %}
+      myChart{{event}}.data.datasets[0].showLine = true;
+      myChart{{event}}.update();
+      {% endfor %} 
+    } else {
+      {% for event, data in datapts.items() %}
+      myChart{{event}}.data.datasets[0].showLine = false;
+      myChart{{event}}.update();
+      {% endfor %} 
+
+    }
+
+  });
   $('#chart-dates').click(function(e){
     var start = $('#chart-start').val();
     const dateRegExp = /^[0-9]{1,2}\/[0-9]{1,2}\/[0-9]{4}$/;
