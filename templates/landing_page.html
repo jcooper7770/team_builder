@@ -31,8 +31,10 @@
             </ul>
           </li>
         </ul>
+        {% if user == None %}
         <p class="card-text">Try it today!</p>
         <a href="/login" class="btn btn-primary">Login</a>
+        {% endif %}
       </div>
     </div>
   </div>
