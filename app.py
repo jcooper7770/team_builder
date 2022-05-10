@@ -191,7 +191,10 @@ def _save_trampoline_data(request):
 
 
     # Save the current practice
-    practice = Practice(datetime.date.today(), routines, event)
+    form_date_str = request.form.get('date', str(datetime.date.today()))
+    form_date = datetime.datetime.strptime(form_date_str, "%Y-%m-%d")
+    print(f"\n\n----- {form_date}, {type(form_date)} , {str(datetime.date.today())}----\n\n")
+    practice = Practice(form_date, routines, event)
     saved_practice = practice.save()
 
     # Log the turns to the log file

@@ -30,6 +30,16 @@
             </div>
           </div>
 
+          <!-- Date of practice being logged -->
+          <div class="form-row">
+            <div class="col-sm-3">
+              Date:
+            </div>
+            <div class="col-sm">
+              <input type="date" name="date" class="form-control" id="logger-date" \>
+            </div>
+          </div>
+
           <!-- Event to be logged -->
           <div class="form-row">
             <div class="col-sm-3">
@@ -211,6 +221,9 @@
   crossorigin="anonymous"></script>
 
 <script type="text/javascript">
+  $(document).ready(function() {
+    document.getElementById("logger-date").valueAsDate = new Date();
+  });
   $("[id^=skill]").click(function (e) {
     e.preventDefault();
     var skill = event.target.id.slice(5).replace('t', 'o').replace('p', '<').replace('s', '/');
