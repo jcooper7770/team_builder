@@ -482,7 +482,7 @@ def user_profile():
             # Skip notes
             if turn['turn'].startswith('-'):
                 continue
-            if current_user and turn['user'] != current_user:
+            if current_user and turn['user'].lower() != current_user:
                 continue 
             turn_date = str(turn['date']).split()[0]
             if start_date and turn['date'] < start_date:
