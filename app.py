@@ -140,7 +140,7 @@ def search_date():
     else:
         # convert practice date to datetime
         try:
-            SEARCH_DATE = datetime.datetime.strptime(practice_date, "%m/%d/%Y")
+            SEARCH_DATE = datetime.datetime.strptime(practice_date, "%Y-%m-%d")
         except Exception as error:
             ERROR = error
     return redirect(url_for("trampoline_log"))

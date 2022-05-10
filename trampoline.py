@@ -608,14 +608,14 @@ def get_user_turns(user, from_date="", to_date=""):
     if from_date:
         from_date = from_date.replace('/', '-')
         try:
-            from_date = datetime.datetime.strptime(from_date, "%m-%d-%Y")
+            from_date = datetime.datetime.strptime(from_date, "%Y-%m-%d")
             user_turns = [turn for turn in user_turns if turn[2]>=from_date]
         except:
             print(f"Failed to convert {from_date} to datetime")
     if to_date:
         to_date = to_date.replace('/', '-')
         try:
-            to_date = datetime.datetime.strptime(to_date, "%m-%d-%Y")
+            to_date = datetime.datetime.strptime(to_date, "%Y-%m-%d")
             user_turns = [turn for turn in user_turns if turn[2]<=to_date]
         except:
             print(f"Failed to convert {to_date} to datetime")
