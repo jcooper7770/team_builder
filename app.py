@@ -387,7 +387,7 @@ def login():
         global LOGGED_IN_USER
         global ERROR
         ERROR = ""
-        username = request.form.get("username")
+        username = request.form.get("username", "").lower()
         try:
             get_user(username)
         except:
