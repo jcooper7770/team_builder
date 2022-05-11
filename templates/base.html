@@ -41,31 +41,28 @@
       <li class="nav-item{%if url_for(request.endpoint)==" /logger/about" %} active{% endif %}">
         <a class="nav-link" href="/logger/about">About</a>
       </li>
+    </ul>
+    <ul class="nav navbar-nav mx-auto abs-center-x">
+      <li class="nav-item"><a class="navbar-brand disabled" href="#">Trampoline Practice Logger</a></li>
+    </ul>
+    <ul class="nav navbar-nav ml-auto mr-sm-3">
       {% if user %}
-      <li class="nav-item">
-        <a class="nav-link" href="/logout">Logout</a>
+      <li class="nav-item dropdown ml-auto">
+        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Hello {{ user }}!</a>
+        <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+          <a class="dropdown-item" href="/logger/user">User Profile</a>
+          <a class="dropdown-item" href="/logout">Logout</a>
+        </div>
       </li>
-      <li class="nav-item">
-        <a class="nav-link" href="/logger/user">Hello {{ user }}!</a>
+      {% else %}
+      <li class="nav-item ml-auto">
+        <a class="nav-link" href="/login">Login</a>
       </li>
+      {% endif %}
     </ul>
-    <ul class="nav navbar-nav mx-auto abs-center-x">
-      <li class="nav-item"><a class="navbar-brand disabled" href="#">Trampoline Practice Logger</a></li>
-    </ul>
-
-    {% else %}
-    <li class="nav-item">
-      <a class="nav-link" href="/login">Login</a>
-    </li>
-    </ul>
-    <ul class="nav navbar-nav mx-auto abs-center-x">
-      <li class="nav-item"><a class="navbar-brand disabled" href="#">Trampoline Practice Logger</a></li>
-    </ul>
-    {% endif %}
 
   </nav>
 
-  <!--<h1 class="header">Trampoline Practice Logger</h1>-->
   {% if error_text %}
   <p style='background-color:yellow;text-align:center' id="error">
     <b>{{error_text}}</b>
