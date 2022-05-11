@@ -250,7 +250,7 @@ def trampoline_log():
     all_practice_tables = "<br><br>".join(practice_tables)
    
     html = [
-        "<h1 style='text-align:center;' class=\"header\">Previous Practices</h1>",
+        #"<h1 style='text-align:center;' class=\"header\">Previous Practices</h1>",
         # Div for practices so they are scrollable
         "<div id='practices' class='practices'><br><br>",
         all_practice_tables,

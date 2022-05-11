@@ -192,6 +192,18 @@
 </div>
 
 <br><br>
+<div class="row header">
+  <div class="col-sm-4"></div>
+  <div class="col-sm-4">
+    <h1 style='text-align:center;' class="header" >Previous Practices</h1>
+  </div>
+  <div class="col-sm-4 float-right">
+    <form class="form-inline my-2" action="{{url_for('search_date')}}" method="POST">
+      <input class="form-control mr-sm-2 ml-auto" type="date" name="practice_date" id="practice_date">
+      <button class="btn btn-secondary" type="submit">Search Practice</button>
+    </form>
+  </div>
+</div>
 {{body|safe}}
 <br>
 
