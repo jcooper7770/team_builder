@@ -653,7 +653,7 @@ def get_turn_dds():
         # add to all turns
         single_turn = {
             "turn": skills_text,
-            "user": turn[3],
+            "user": turn[3].lower(),
             "date": turn[2],
             "dd": turn_dd,
             "flips": turn_flips
@@ -676,7 +676,7 @@ def get_leaderboards():
 
         top_turns[event] = {}
         for turn in event_turns[event]:
-            user = turn["user"]
+            user = turn["user"].lower()
             if user in top_turns[event]:
                 continue
             # Ignore private users

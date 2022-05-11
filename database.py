@@ -205,7 +205,7 @@ def get_from_db(table_name=None, user="test", date=None):
     turns = [res for res in result]
     num_results = result.rowcount
     if num_results == 0:
-        turns = mock_turns
+        #turns = mock_turns
         print(f"Got {len(turns)} mock turns")
     else:
         print(f"Got {num_results} turns")
@@ -272,7 +272,7 @@ def get_users_and_turns():
     conn = engine.connect()
     all_turns = [res for res in result]
     user_data = {
-        user[0]: {"private": user[1]}
+        user[0].lower(): {"private": user[1]}
         for user in user_result
     }
     result.close()

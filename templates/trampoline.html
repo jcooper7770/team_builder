@@ -234,9 +234,9 @@
 
 <script type="text/javascript">
   $(document).ready(function() {
+    // Set logger date to current local date
     var date = new Date();
     date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
-    //document.getElementById("logger-date").valueAsDate = date.toJSON().slice(0,10);
     document.getElementById("logger-date").value = date.toJSON().slice(0,10);
   });
   $("[id^=skill]").click(function (e) {
