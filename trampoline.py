@@ -210,7 +210,8 @@ class Practice:
         user_data = get_from_db(user=user)
         try:
             last_turn_num = max([data[0] for data in user_data if data[2].date() == self.date and data[4] == self.event])
-        except:
+        except Exception as error:
+            print(f"error when picking turn number: {error}")
             last_turn_num = 0
 
         turns = {}

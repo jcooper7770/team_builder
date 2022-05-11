@@ -87,7 +87,7 @@ def get_user(user):
     conn = engine.connect()
 
     # First check if user exists
-    result = engine.execute(f'SELECT * from `users` WHERE `user`="{user}"')
+    result = engine.execute(f'SELECT * from `users` WHERE LOWER(`user`)="{user.lower()}"')
     if result.rowcount == 0:
         raise Exception(f"No user in db by name of {user}")
 
@@ -192,9 +192,9 @@ def get_from_db(table_name=None, user="test", date=None):
     engine = create_engine(table_name)
 
     if date:
-        result = engine.execute(f'SELECT * from `{table_name}` WHERE ({table_name}.user="{user}" AND {table_name}.date="{date}");')
+        result = engine.execute(f'SELECT * from `{table_name}` WHERE (LOWER({table_name}.user)="{user.lower()}" AND {table_name}.date="{date}");')
     else:
-        result = engine.execute(f'SELECT * from `{table_name}` WHERE {table_name}.user="{user}";')
+        result = engine.execute(f'SELECT * from `{table_name}` WHERE LOWER({table_name}.user)="{user.lower()}";')
     
     mock_turns = [
         [skill_num, '801<', datetime.datetime.now(), user, random.choice(["trampoline", "dmt"])]
