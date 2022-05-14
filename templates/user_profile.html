@@ -205,7 +205,8 @@
 
       if(confirm("Would you like to go to the practice on " + date + "?")){
         var url = "/logger/search?practice_date=" + date;
-        location.href = encodeURI(url);
+        window.open(encodeURI(url));
+        //location.href = encodeURI(url);
 
       }
     }
