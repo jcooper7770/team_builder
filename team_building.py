@@ -587,7 +587,7 @@ class MetaTeamDestroyer:
                 moveset_str = f"{moves[0].title()}\t{moves[1].title()}<br>{moves[2].title()}"
             elif len(moves) == 2:
                 moveset_str = f"{moves[0].title()}\t{moves[1].title()}"
-            results = f"{results}\n{p}\t{moveset_str}"
+            results = f"{results}\n{p.title()}\t{moveset_str}"
             team_ivs.append(self.get_default_ivs(p, self.league))
 
         return results, pokemon_team

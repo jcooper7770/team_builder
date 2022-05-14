@@ -349,7 +349,7 @@ def run():
 def pokemonColor(pokemon_name, chosen_pokemon, chosen_league):
     """ Choose the color of the pokemon"""
     if not chosen_pokemon:
-        return pokemon_name
+        return pokemon_name.title()
     battle_results = get_simmed_battle(pokemon_name, chosen_pokemon)
     if not battle_results:
         tc = TeamCreater(CACHE['team_maker'][chosen_league])
@@ -381,7 +381,7 @@ def pokemonColor(pokemon_name, chosen_pokemon, chosen_league):
     #logger.info(f"{cell_pokemon}: {text_color}")
     tooltip=True
     tooltip_addition = f"<span class='tooltiptext' id='{pokemon_name}-{chosen_pokemon}-battle'>{tool_tip_text}</span>" if tooltip else ""
-    value = f"<a class='tooltip1' href='#' style='color: {text_color}; text-decoration: none;' target='_blank'>{pokemon_name}{tooltip_addition}</a>"
+    value = f"<a class='tooltip1' href='#' style='color: {text_color}; text-decoration: none;' target='_blank'>{pokemon_name.title()}{tooltip_addition}</a>"
     return value
 
 
