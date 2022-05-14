@@ -6,6 +6,7 @@ Database operations
 from ast import Return
 import sqlalchemy
 
+import json
 import os
 import datetime
 import random
@@ -280,3 +281,44 @@ def get_users_and_turns():
     conn.close()
     engine.dispose()
     return user_data, all_turns
+
+
+def get_simmed_battle(pokemon1, pokemon2):
+    """
+    Checks if there was a simulated battle saved in the db
+    """
+    engine = create_engine()
+    pokemon_key = "_".join(sorted([pokemon1, pokemon2]))
+    result = engine.execute(f'SELECT * from `battles` WHERE `pokemon_key`="{pokemon_key}"')
+    if result.rowcount == 0:
+        return {}
+    
+    # results will have (pokemon_key, battle_text, winner, leftover_health)
+    simmed_battle = [row for row in result][0]
+    result.close()
+    engine.dispose()
+
+    return {
+        'battle_text': json.loads(simmed_battle[1]),
+        'winner': simmed_battle[2],
+        'leftover_health': simmed_battle[3]
+    }
+
+
+def add_simmed_battle(pokemon1, pokemon2, battle_text, winner, leftover_health):
+    """
+    Adds in the simmed battle to the database
+    """
+    engine = create_engine()
+    conn = engine.connect()
+    metadata = sqlalchemy.MetaData()
+    table = sqlalchemy.Table("battles", metadata, autoload=True, autoload_with=engine)
+    ins = table.insert().values(
+        pokemon_key="_".join(sorted([pokemon1, pokemon2])),
+        battle_text=json.dumps(battle_text),
+        winner=winner,
+        leftover_health=leftover_health
+    )
+    engine.execute(ins)
+    conn.close()
+    engine.dispose()

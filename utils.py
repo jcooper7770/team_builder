@@ -46,7 +46,7 @@ class TableMaker:
         options_str = " ".join(options)
         self.table.append('<div class="container">')
         self.table.append(f"<table {options_str}>")
-        self.table.append("<thead class=\"thead-dark\">")
+        self.table.append("<thead class=\"thead-dark bg-dark text-white\">")
         self._row_num = 0
 
     def end_table(self):

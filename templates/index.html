@@ -65,11 +65,226 @@
 </div>
 {{body|safe}}
 
+<br><br>
+<div class="container">
+  <div class="border-dark">
+    <nav class="bg-dark">
+      <ul class="nav nav-tabs" id="pokemon-position" role="tablist">
+        <li class="nav-item">
+          <a class="nav-link active" href="#nav-leads" id="nav-leads-tab" data-toggle="tab" aria-controls="nav-leads" role="tab" aria-selected="true">Leads</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#nav-ss" id="nav-ss-tab" data-toggle="tab" aria-controls="nav-ss" role="tab" aria-selected="false">Safe Swaps</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#nav-back" id="nav-back-tab" data-toggle="tab" aria-controls="nav-back" role="tab" aria-selected="false">Back</a>
+        </li>
+      </ul>
+    </nav>
+    <div class="p-0">
+      <div class="tab-content">
+
+        <!-- Leads Tab -->
+        <div class="tab-pane fade show active" id="nav-leads" role="tabpanel" aria-labelledby="nav-leads-tab">
+          <table class="table my-0" border="1">
+            <thead class="thead-dark">
+              <th colspan="2">Leads</th>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="width:50%">
+                  <b>Leads reported on GoBattleLog</b>
+                  <br>
+                  <p>The number of times the pokemon is reported as first on a team by trainers using GoBattleLog.</p>
+                </td>
+                <td>
+                  <b>Leads that beat the meta leads</b>
+                  <br>
+                  <p>Weighted percent of the leads (on the left) that the pokemon beats (using a 1-1 shield scenario).</p>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="data" style="height:400px;">
+                    <table>
+                    {% for lead in result_data.meta_leads %}
+                      <tr style="border:none;">
+                        <td style="border:none;padding-top:1px;padding-bottom:0px;overflow: visible;">
+                          {{ lead[0] | pokemonColor(current_pokemon, current_league) | safe }}
+                          <!--{{ lead[0] }}-->
+                        </td>
+                        <td style="border:none;padding-top:1px;padding-bottom:0px">
+                          {{ lead[1] }}
+                        </td>
+                      </tr>
+                    {% endfor %}
+                    </table>
+                  </div>
+                </td>
+                <td>
+                  <div class="data" style="height:400px;">
+                    <table border="0">
+                    {% for lead in result_data.good_leads %}
+                      {% if lead[1] >= 15 %}
+                      <tr border="0">
+                        <td style="border:none;padding-top:1px;padding-bottom:0px">
+                          {{ lead[0] | pokemonColor(current_pokemon, current_league) | safe }}
+                          <!--{{ lead[0] }}-->
+                        </td>
+                        <td style="border:none;padding-top:1px;padding-bottom:0px">
+                          {{ "%.2f" | format(lead[1]) }}%
+                        </td>
+                      </tr>
+                      {% endif %}
+                    {% endfor %}
+                    </table>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Safe Swaps Tab -->
+        <div class="tab-pane fade" id="nav-ss" role="tabpanel" aria-labelledby="nav-ss-tab">
+          <table class="table my-0" border="1">
+            <thead class="thead-dark">
+              <th colspan="2">Safe Swaps</th>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="width:50%">
+                  <b>Safe Swaps reported on GoBattleLog</b>
+                  <br>
+                  <p>The number of times the pokemon is reported as a safe swap (second pokemon on a team) by trainers using GoBattleLog.</p>
+                </td>
+                <td>
+                  <b>Safe Swaps that beat the meta safe swaps</b>
+                  <br>
+                  <p>Weighted percent of the safe swaps (on the left) that the pokemon beats (using a 1-1 shield scenario).</p>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="data" style="height:400px;">
+                    <table>
+                    {% for ss in result_data.meta_ss %}
+                      <tr style="border:none;">
+                        <td style="border:none;padding-top:1px;padding-bottom:0px">
+                          {{ ss[0] }}
+                        </td>
+                        <td style="border:none;padding-top:1px;padding-bottom:0px">
+                          {{ ss[1] }}
+                        </td>
+                      </tr>
+                    {% endfor %}
+                    </table>
+                  </div>
+                </td>
+                <td>
+                  <div class="data" style="height:400px;">
+                    <table border="0">
+                    {% for ss in result_data.good_ss %}
+                      {% if ss[1] >= 15 %}
+                      <tr border="0">
+                        <td style="border:none;padding-top:1px;padding-bottom:0px">
+                          {{ ss[0] }}
+                        </td>
+                        <td style="border:none;padding-top:1px;padding-bottom:0px">
+                          {{ "%.2f" | format(ss[1]) }}%
+                        </td>
+                      </tr>
+                      {% endif %}
+                    {% endfor %}
+                    </table>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Back Pokemon Tab -->
+        <div class="tab-pane fade" id="nav-back" role="tabpanel" aria-labelledby="nav-back-tab">
+          <table class="table my-0" border="1">
+            <thead class="thead-dark">
+              <th colspan="2">Back Pokemon</th>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="width:50%">
+                  <b>Back pokemon reported on GoBattleLog</b>
+                  <br>
+                  <p>The number of times the pokemon is reported as last on a team by trainers using GoBattleLog.</p>
+                </td>
+                <td>
+                  <b>Back pokemon that beat the meta back</b>
+                  <br>
+                  <p>Weighted percent of the back (on the left) that the pokemon beats (using a 1-1 shield scenario).</p>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="data" style="height:400px;">
+                    <table>
+                    {% for back in result_data.meta_backs %}
+                      <tr style="border:none;">
+                        <td style="border:none;padding-top:1px;padding-bottom:0px">
+                          {{ back[0] }}
+                        </td>
+                        <td style="border:none;padding-top:1px;padding-bottom:0px">
+                          {{ back[1] }}
+                        </td>
+                      </tr>
+                    {% endfor %}
+                    </table>
+                  </div>
+                </td>
+                <td>
+                  <div class="data" style="height:400px;">
+                    <table border="0">
+                    {% for back in result_data.good_backs %}
+                      {% if back[1] >= 15 %}
+                      <tr border="0">
+                        <td style="border:none;padding-top:1px;padding-bottom:0px">
+                          {{ back[0] }}
+                        </td>
+                        <td style="border:none;padding-top:1px;padding-bottom:0px">
+                          {{ "%.2f" | format(back[1]) }}%
+                        </td>
+                      </tr>
+                      {% endif %}
+                    {% endfor %}
+                    </table>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <br><br>
+</div>
+
 <script src="https://code.jquery.com/jquery-3.5.1.js"
           integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
           crossorigin="anonymous"></script>
  
 <script type="text/javascript">
+// Fix for showing tooltips inside of a overflow scrollable div
+$("a.tooltip1").hover(function() {
+  $(this).addClass("hover");
+  $(this).parent().parent().parent().parent().parent().css("overflow-y", "visible");
+  $(this).parent().parent().parent().parent().parent().css("overflow-x", "visible");
+}, function() {
+  $(this).removeClass("hover");
+  $(this).parent().parent().parent().parent().parent().css("overflow-y", "auto");
+  $(this).parent().parent().parent().parent().parent().css("overflow-x", "auto");
+});
+
+// Refreshes once a new league is chosen
 $("#league_picker").change(function(e){
         var league= $(this).val();
         var chosen_pokemon = $("#mySelect").val();

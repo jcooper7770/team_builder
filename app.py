@@ -33,12 +33,13 @@ from flask_session import Session
 
 from team_building import get_counters_for_rating, LEAGUE_RANKINGS, NoPokemonFound, TeamCreater,\
      create_table_from_results
+from battle_sim import sim_battle
 
 from trampoline import convert_form_data, get_leaderboards, pretty_print, Practice, current_user, set_current_user,\
      current_event, set_current_event, set_current_athlete,\
      ALL_SKILLS, get_leaderboards, Athlete, get_user_turns, get_turn_dds
 from database import create_engine, set_table_name, insert_goal_to_db, get_user_goals, complete_goal,\
-    delete_goal_from_db, get_user
+    delete_goal_from_db, get_user, get_simmed_battle, add_simmed_battle
 from utils import *
 
 
@@ -318,11 +319,11 @@ def run():
 
     # Data
     html.append("<h1 align='center'><u>Meta Data</u></h1>")
-    html.append("<div align='center'><button onclick='hideData()'>Toggle data</button></div>")
-    html.append("<div id='data' class='data'>")
-    tc = TeamCreater(team_maker)
-    html.append(create_table_from_results(results, pokemon=chosen_pokemon, width='75%', tc=tc, tooltip=use_tooltip))
-    html.append("</div>")
+    #html.append("<div align='center'><button onclick='hideData()'>Toggle data</button></div>")
+    #html.append("<div id='data' class='data'>")
+    #tc = TeamCreater(team_maker)
+    #html.append(create_table_from_results(results, pokemon=chosen_pokemon, width='75%', tc=tc, tooltip=use_tooltip))
+    #html.append("</div>")
 
     return render_template(
         "index.html",
@@ -335,8 +336,48 @@ def run():
         rating=rating,
         number_teams=N_TEAMS,
         current_pokemon=chosen_pokemon,
-        error_text=error_text
+        error_text=error_text,
+        result_data=team_maker.result_data
     )
+
+@app.template_filter()
+def pokemonColor(pokemon_name, chosen_pokemon, chosen_league):
+    """ Choose the color of the pokemon"""
+    if not chosen_pokemon:
+        return pokemon_name
+    battle_results = get_simmed_battle(pokemon_name, chosen_pokemon)
+    if not battle_results:
+        tc = TeamCreater(CACHE['team_maker'][chosen_league])
+        try:
+            winner, leftover_health, battle_text = sim_battle(pokemon_name, chosen_pokemon, tc)
+            add_simmed_battle(pokemon_name, chosen_pokemon, battle_text, winner, leftover_health)
+            tool_tip_text = "&#013;&#010;</br>".join(battle_text)
+            #logger.info(f"winner: {winner} - leftover_health: {leftover_health}")
+        except Exception as exc:
+            winner = None
+            logger.error(f"{pokemon_name}")
+            logger.error(traceback.format_exc())
+            leftover_health = 0
+            tool_tip_text=  ""
+    else:
+        winner = battle_results.get('winner')
+        battle_text = battle_results.get('battle_text')
+        leftover_health = battle_results.get('leftover_health')
+        tool_tip_text = "&#013;&#010;</br>".join(battle_text)
+
+    if winner == chosen_pokemon:
+        text_color = "#00FF00"
+        text_color = "#%02x%02x%02x" % (0, 100 + int(155 * leftover_health), 0)
+    elif winner == pokemon_name:
+        text_color = "#FF0000"
+        text_color = "#%02x%02x%02x" % (100 + int(155 * leftover_health), 0, 0)
+    else:
+        text_color = "#000000"
+    #logger.info(f"{cell_pokemon}: {text_color}")
+    tooltip=True
+    tooltip_addition = f"<span class='tooltiptext' id='{pokemon_name}-{chosen_pokemon}-battle'>{tool_tip_text}</span>" if tooltip else ""
+    value = f"<a class='tooltip1' href='#' style='color: {text_color}; text-decoration: none;' target='_blank'>{pokemon_name}{tooltip_addition}</a>"
+    return value
 
 
 @app.route("/sign_up", methods=["GET", "POST"])

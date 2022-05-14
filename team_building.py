@@ -394,7 +394,13 @@ class MetaTeamDestroyer:
         return self.species_counters_dict[pokemon_name]
 
     def get_reccommended_counters(self, pokemon_list):
-        """ Returns recommended counters to the list of pokemon """
+        """ 
+        Returns recommended counters to the list of pokemon
+
+         Get the counters in the form of
+          [('p1', #,), ('p2', #), ...]
+         sorted by #
+        """
         # Only focus on top leads
         if TOP_TEAM_NUM:
             pokemon_list = pokemon_list[:TOP_TEAM_NUM]
