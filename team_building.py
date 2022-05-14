@@ -574,11 +574,20 @@ class MetaTeamDestroyer:
         cup = CUP_VALUE.get(self.league, 'all')
         pvpoke_link = f"https://pvpoke.com/team-builder/{cup}/{LEAGUE_VALUE[self.league]}/{pokemon_team[0]}-m-0-1-2%2C{pokemon_team[1]}-m-0-1-2%2C{pokemon_team[2]}-m-0-1-2"
         results = f"{results} (<a href='{pvpoke_link}' target='_blank'>See team in pvpoke</a>)"
+        results = f"{results}\n<b>Pokemon</b>\t<b>Fast Move</b>\t<b>Charge Moves</b>"
         team_ivs = []
         print(f"Full team:")
         for p in pokemon_team:
             print(f"    {p}: {self.species_moveset_dict[p]}")
-            results = f"{results}\n{p}\t{self.species_moveset_dict[p]}"
+            moves = self.species_moveset_dict[p]
+
+            # remove underscores from moves
+            moves = [move.replace('_', ' ' ) for move in moves]
+            if len(moves) == 3:
+                moveset_str = f"{moves[0].title()}\t{moves[1].title()}<br>{moves[2].title()}"
+            elif len(moves) == 2:
+                moveset_str = f"{moves[0].title()}\t{moves[1].title()}"
+            results = f"{results}\n{p}\t{moveset_str}"
             team_ivs.append(self.get_default_ivs(p, self.league))
 
         return results, pokemon_team

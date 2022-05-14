@@ -74,10 +74,10 @@
           <a class="nav-link active" href="#nav-leads" id="nav-leads-tab" data-toggle="tab" aria-controls="nav-leads" role="tab" aria-selected="true">Leads</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="#nav-ss" id="nav-ss-tab" data-toggle="tab" aria-controls="nav-ss" role="tab" aria-selected="false">Safe Swaps</a>
+          <a class="nav-link" href="#nav-ss" id="nav-ss-tab" data-toggle="tab" aria-controls="nav-ss" role="tab" aria-selected="false">Second</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="#nav-back" id="nav-back-tab" data-toggle="tab" aria-controls="nav-back" role="tab" aria-selected="false">Back</a>
+          <a class="nav-link" href="#nav-back" id="nav-back-tab" data-toggle="tab" aria-controls="nav-back" role="tab" aria-selected="false">Third</a>
         </li>
       </ul>
     </nav>
@@ -145,23 +145,23 @@
           </table>
         </div>
 
-        <!-- Safe Swaps Tab -->
+        <!-- Second pokemon Tab -->
         <div class="tab-pane fade" id="nav-ss" role="tabpanel" aria-labelledby="nav-ss-tab">
           <table class="table my-0" border="1">
             <thead class="thead-dark">
-              <th colspan="2">Safe Swaps</th>
+              <th colspan="2">Second Pokemon</th>
             </thead>
             <tbody>
               <tr>
                 <td style="width:50%">
-                  <b>Safe Swaps reported on GoBattleLog</b>
+                  <b>Second pokemon reported on GoBattleLog</b>
                   <br>
-                  <p>The number of times the pokemon is reported as a safe swap (second pokemon on a team) by trainers using GoBattleLog.</p>
+                  <p>The number of times the pokemon is reported as the second pokemon on a team by trainers using GoBattleLog.</p>
                 </td>
                 <td>
-                  <b>Safe Swaps that beat the meta safe swaps</b>
+                  <b>Second pokemon that beat the meta second pokemon</b>
                   <br>
-                  <p>Weighted percent of the safe swaps (on the left) that the pokemon beats (using a 1-1 shield scenario).</p>
+                  <p>Weighted percent of the second pokemon (on the left) that the pokemon beats (using a 1-1 shield scenario).</p>
                 </td>
               </tr>
               <tr>
@@ -204,23 +204,23 @@
           </table>
         </div>
 
-        <!-- Back Pokemon Tab -->
+        <!-- Third pokemon Tab -->
         <div class="tab-pane fade" id="nav-back" role="tabpanel" aria-labelledby="nav-back-tab">
           <table class="table my-0" border="1">
             <thead class="thead-dark">
-              <th colspan="2">Back Pokemon</th>
+              <th colspan="2">Third Pokemon</th>
             </thead>
             <tbody>
               <tr>
                 <td style="width:50%">
-                  <b>Back pokemon reported on GoBattleLog</b>
+                  <b>Third pokemon reported on GoBattleLog</b>
                   <br>
                   <p>The number of times the pokemon is reported as last on a team by trainers using GoBattleLog.</p>
                 </td>
                 <td>
-                  <b>Back pokemon that beat the meta back</b>
+                  <b>Third pokemon that beat the meta third pokemon</b>
                   <br>
-                  <p>Weighted percent of the back (on the left) that the pokemon beats (using a 1-1 shield scenario).</p>
+                  <p>Weighted percent of the third pokemon (on the left) that the pokemon beats (using a 1-1 shield scenario).</p>
                 </td>
               </tr>
               <tr>
@@ -289,6 +289,7 @@ $("#league_picker").change(function(e){
         var league= $(this).val();
         var chosen_pokemon = $("#mySelect").val();
         var num_days = $("#num_days").val();
+        alert("Reloading page for " + league + " league");
         location.href = "?league="+league+"&pokemon="+chosen_pokemon+"&num_days="+num_days;
     });
 </script>
