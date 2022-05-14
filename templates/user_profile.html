@@ -157,6 +157,8 @@
     }
 
   });
+
+  // Adjust chart dates
   $('#chart-dates').click(function(e){
     var start = $('#chart-start').val();
     //const dateRegExp = /^[0-9]{1,2}\/[0-9]{1,2}\/[0-9]{4}$/;
@@ -190,6 +192,20 @@
     var url = "/logger/user/export?from=" + fromText + "&to=" + toText;
     location.href = encodeURI(url);
   });
+
+  // Clicking on Canvas point should bring to that day
+  $("[id$='Canvas']").click(function (e) {
+    var chartId = e.target.id;
+    var eventIdx = chartId.slice(0, -6);
+    var chart = chartMap.get(eventIdx);
+    var activePoint = chart.getElementsAtEvent(e)[0];
+    if (activePoint !== undefined) {
+      var dataset = chart.data.datasets[activePoint._datasetIndex];
+      var date = dataset.data[activePoint._index].x;
+      var url = "/logger/search?practice_date=" + date;
+      location.href = encodeURI(url);
+    }
+  });
  
   function updateCharts(start_date, end_date) {
     start = new Date(start_date);
@@ -214,6 +230,7 @@
   }
 
   // One scatter plot per event
+  const chartMap = new Map();
   {% for event, data in datapts.items() %}
   const ctx{{event}} = document.getElementById('{{event}}Canvas').getContext('2d');
   const myChart{{event}} = new Chart(ctx{{event}}, {
@@ -245,6 +262,7 @@
       }
     }
   });
+  chartMap.set('{{event}}', myChart{{event}});
   {% endfor %}
 
 </script>

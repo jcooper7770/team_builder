@@ -19,6 +19,7 @@ TODO:
   - [DONE] Add user profiles
   - Get data from scorsync
   - [DONE] Add in graphs
+  - Add graphs to pokemon website
 """
 
 import datetime
@@ -127,7 +128,7 @@ def delete_day(day, event):
     return redirect(url_for("trampoline_log"))
 
 
-@app.route("/logger/search", methods=["POST"])
+@app.route("/logger/search", methods=["POST", "GET"])
 def search_date():
     """
     Search by certain date
@@ -135,7 +136,11 @@ def search_date():
     global SEARCH_DATE
     global ERROR
     ERROR = ""
-    practice_date = request.form.get("practice_date")
+    if request.method == "GET":
+        practice_date = request.args.get("practice_date", "")
+    else:
+        practice_date = request.form.get("practice_date", "")
+
     if not practice_date:
         SEARCH_DATE = None
     else:
@@ -449,6 +454,8 @@ def logout():
     """
     global LOGGED_IN_USER
     LOGGED_IN_USER = ""
+    global SEARCH_DATE
+    SEARCH_DATE = None
     session["name"] = None
     return redirect(url_for('login'))
 
