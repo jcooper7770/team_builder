@@ -618,7 +618,7 @@ class MetaTeamDestroyer:
                 removed_counters.append(counter[0])
         counter_counters = [counter for counter in counter_counters if counter[0] not in removed_counters]
 
-        # return the same pokemon 3 times if no counters
+        # return an empty list (handled later) if no counters
         if not counter_counters:
             print(f"Could not find counters for {pokemon}. Returning empty team")
             return self.team_results([], pokemon)
@@ -627,6 +627,12 @@ class MetaTeamDestroyer:
         back_pokemon1 = self.choose_weighted_pokemon(counter_counters)[0]
         index = [p[0] for p in counter_counters].index(back_pokemon1)
         counter_counters.pop(index)
+
+        # Also need to remove pokemon with similar names by checking for the first part of a pokemon name
+        pokemon_keyword = back_pokemon1.split('_')[0]
+        counter_counters = [c for c in counter_counters if pokemon_keyword not in c]
+
+        # Choose the third pokemon
         back_pokemon2 = self.choose_weighted_pokemon(counter_counters)[0]
 
         back_pokemon = sorted([back_pokemon1, back_pokemon2])
