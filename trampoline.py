@@ -372,6 +372,17 @@ class Routine():
         if self.skills:
             return [skill.shorthand for skill in self.skills]
         return [f"-{self.note}"]
+    
+    def add_skill(self, skill):
+        """ Add the given skill(s) to the routine """
+        # Skills ending in 'ooo' or 'o</' should be multiple of the same skill
+        no_pos_skill = ''.join(s for s in skill if s.isdigit())
+        skill_pos = ''.join(s for s in skill if not s.isdigit())
+        new_skills_list = []
+        for pos in skill_pos:
+            new_skill = Skill(f"{no_pos_skill}{pos}", event=self.event)
+            new_skills_list.append(new_skill)
+        self.skills.extend(new_skills_list)
 
 
 def current_user():
@@ -496,15 +507,9 @@ def convert_form_data(form_data, logger=print, event=EVENT, notes=None, get_athl
     Converts the data from the form into trampoline routines
     and returns a list of Routine objs
     """
-    '''
-    if not CURRENT_ATHLETE:
-        #set_current_athlete(CURRENT_USER)
-        #set_current_athlete(session.get('name'))
-    '''
-    #athlete = CURRENT_ATHLETE
     if get_athlete:
         athlete = Athlete.load(session.get('name')) 
-    #set_current_athlete(athlete)
+
     if logger:
         logger(f"Comp: {athlete.compulsory}")
         logger(f"opt: {athlete.optional}")
@@ -512,9 +517,13 @@ def convert_form_data(form_data, logger=print, event=EVENT, notes=None, get_athl
     if not form_data:
         return []
 
-    # Replace any thing inside of a parentethese
+    # Expands any thing inside of a parentethese
     #  i.e. (40o 41o)x2 -> 40o 41o 40o 41o
-    matches = re.findall("(\((.[^x]*)\)x([0-9]*))", form_data)
+    #matches = re.findall("(\((.[^x]*)\)x([0-9]*))", form_data)
+    # fix for allowing "(40o<//<o x2)x2 (40ooo)x3"
+    # 'laziness instead of greediness'
+    # https://www.regular-expressions.info/repeat.html
+    matches = re.findall("(\(([^)]*)\)x([0-9]*))", form_data)
     for match in matches:
         form_data = form_data.replace(
             # Takes the entire string
@@ -550,7 +559,6 @@ def convert_form_data(form_data, logger=print, event=EVENT, notes=None, get_athl
             skill_turns.append(routine)
             continue
             
-        skills = []
         # Set athlete compulsory or optional
         if turn[0] == 'comp:' and get_athlete:
             athlete.set_comp(turn[1:])
@@ -559,21 +567,24 @@ def convert_form_data(form_data, logger=print, event=EVENT, notes=None, get_athl
             athlete.set_opt(turn[1:])
             athlete.save()
 
-        for skill in turn:
-            try:
-                skills.append(Skill(skill, event=event))
-            except:
-                repeats = re.findall("x([0-9]*)", skill)
-                if repeats:
-                    for _ in range(int(repeats[0]) - 1):
-                        skills.append(skills[-1])
-                else:
-                    if logger:
-                        logger(f"Cannot convert '{skill}' into a skill")
+        routine = Routine([], event=event)
+        for skill_num, skill in enumerate(turn):
+            # Catch repeat skills with skill x#
+            repeats = re.findall("x([0-9]*)", skill)
+            if repeats:
+                for _ in range(int(repeats[0]) - 1):
+                    if skill_num > 0:
+                        routine.add_skill(turn[skill_num-1])
                 continue
-        routine = Routine(skills, event=event)
+
+            try:
+                # Allow multiple of the same skill (i.e. 40o<//<o)
+                routine.add_skill(skill)
+            except:
+                if logger:
+                    logger(f"Cannot convert '{skill}' into a skill")
+                continue
         skill_turns.append(routine)
-        #skill_turns.append(skills)
     # add the notes after
     if notes:
         skill_turns.append(
