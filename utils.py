@@ -112,15 +112,22 @@ def skills_table(skills, title="Routines"):
     
     for turn_num, turn in enumerate(skills):
         skills_table.new_row()
-        if turn.note:
+        if turn.note and not turn.skills:
             cell = f'<i class="fa fa-comments"></i> {turn.note}'
             skills_table.add_cell(cell, colspan=most_cols+8)
+            skills_table.new_row()
+        if not turn.skills:
             continue
         total_turn_num += 1
         # Turn number (also a link to copy the turn)
         routine_str = ' '.join(skill.shorthand for skill in turn.skills)
         #skills_table.add_cell(f"<b><a id='copy-text' title='Copy text' href='/logger?routine={routine_str}'>{total_turn_num}</a></b>")
-        skills_table.add_cell(f"<b><a id='copy-text' title='Copy text' href='#'>{total_turn_num}</a></b>")
+        #skills_table.add_cell(f"<b><a id='copy-text' title='Copy text' href='#'>{total_turn_num}</a></b>")
+
+        note_html = ""
+        if turn.note:
+            note_html = f' <i title="toggle comment" class="fa fa-comments" id="unhide-note"></i> <span id="hidden-note" style="display:none;">{turn.note}</span>'
+        skills_table.add_cell(f"<b><a id='copy-text' title='Copy text' href='#'>{total_turn_num}</a></b>{note_html}")
 
         # Skills
         for skill in turn.skills:

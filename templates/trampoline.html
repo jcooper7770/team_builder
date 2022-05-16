@@ -243,6 +243,15 @@
     document.getElementById("logger-date").value = "{{search_date}}";
     {% endif %}
   });
+  // unhide the hidden notes by clicking the comment button
+  $("[id^=unhide-note").click(function(e){
+    var comment = $(this).siblings('span')[0];
+    if (comment.style.display === "none") {
+      comment.style.display = "inline";
+    } else {
+      comment.style.display = "none";
+    }
+  });
   $("[id^=skill]").click(function (e) {
     e.preventDefault();
     var skill = event.target.id.slice(5).replace('t', 'o').replace('p', '<').replace('s', '/');

@@ -215,9 +215,9 @@ def _save_trampoline_data(request):
     # Get the current routines
     with open('routines.txt') as routine_file:
         old_routines = routine_file.read()
-    logger.info("-----")
-    logger.info(f"old routines: {old_routines}")
-    logger.info("-----")
+    #logger.info("-----")
+    #logger.info(f"old routines: {old_routines}")
+    #logger.info("-----")
 
     # Save historical and current routines to routines file
     if form_data:
@@ -531,6 +531,12 @@ def user_profile():
             # Skip notes
             if turn['turn'].startswith('-'):
                 continue
+
+            # notes also have empty turns
+            if not turn['turn'] and turn['note']:
+                continue
+
+            # skip other users
             if current_user and turn['user'].lower() != current_user:
                 continue 
             turn_date = str(turn['date']).split()[0]

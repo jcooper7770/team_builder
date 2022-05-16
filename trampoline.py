@@ -277,22 +277,28 @@ class Practice:
                 practices[practice_date][event] = {}
 
             # {'1': '801o', '2': ...}
-            practices[practice_date][event][turn[0]] = turn[1]
+            #practices[practice_date][event][turn[0]] = turn[1]
+
+            # {'1': {'skills': '801o', 'note': 'dfsd'}, '2': ...}
+            practices[practice_date][event][turn[0]] = {'skills': turn[1], 'note': turn[5]}
 
         return_vals = []
         for practice_date, event_data in practices.items():
-            for event, turns in event_data.items():
+            for event, turns in event_data.items():# turns = [{0: {'skills': '801o', 'note': 'dsfd'}}...]
                 turns_list = [y[1] for y in sorted(turns.items(), key=lambda x: x[0])]
                 # make routines for practice object
                 routines = []
                 for turn in turns_list:
+                    skills = turn['skills']
+                    note = turn['note']
+                    #print(f"{practice_date} - skills: '{skills}' - note: '{note}'")
                     # not a note
-                    if turn and turn[0]!="-":
-                        routine = Routine([Skill(skill, event=event) for skill in turn.split()], event=event)
+                    if skills and skills[0]!="-":
+                        routine = Routine([Skill(skill, event=event) for skill in skills.split()], event=event, note=note)
                         routines.append(routine)
                         continue
                     # notes
-                    routine = Routine([], note=turn[1:] if turn else turn)
+                    routine = Routine([], note=skills[1:] if skills else note)
                     routines.append(routine)
                 
                 # make practice object
@@ -369,9 +375,15 @@ class Routine():
         return str(self)
 
     def toJSON(self):
+        return {
+            "skills": [skill.shorthand for skill in self.skills],
+            "note": self.note or ""
+        }
+        '''
         if self.skills:
             return [skill.shorthand for skill in self.skills]
         return [f"-{self.note}"]
+        '''
     
     def add_skill(self, skill):
         """ Add the given skill(s) to the routine """
@@ -383,6 +395,11 @@ class Routine():
             new_skill = Skill(f"{no_pos_skill}{pos}", event=self.event)
             new_skills_list.append(new_skill)
         self.skills.extend(new_skills_list)
+
+        # re-adjust total metrics
+        self.total_flips = sum([skill.flips for skill in self.skills])
+        self.total_twists = sum([sum(skill.twists) for skill in self.skills])
+        self.difficulty = sum([skill.difficulty for skill in self.skills])
 
 
 def current_user():
@@ -557,8 +574,11 @@ def convert_form_data(form_data, logger=print, event=EVENT, notes=None, get_athl
         # notes start with '-'
         if turn[0] and turn[0][0] == '-':
             note_str = ' '.join(turn)
-            routine = Routine([], event=event, note=note_str.strip('-'))
-            skill_turns.append(routine)
+            if skill_turns and skill_turns[-1].skills and not skill_turns[-1].note:
+                skill_turns[-1].note = note_str.strip('-')
+            else:
+                routine = Routine([], event=event, note=note_str.strip('-'))
+                skill_turns.append(routine)
             continue
     
         # Replace compulsory and optional in turn
@@ -605,12 +625,13 @@ def convert_form_data(form_data, logger=print, event=EVENT, notes=None, get_athl
                     logger(f"Cannot convert '{skill}' into a skill")
                 continue
         skill_turns.append(routine)
-    # add the notes after
+    # add the notes to the beginning
     if notes:
-        skill_turns.append(
+        skill_turns.insert(
+            0,
             Routine([], event=event, note=notes)
         )
-    
+
     return skill_turns
 
 
@@ -680,6 +701,7 @@ def get_turn_dds():
         routines = convert_form_data(skills_text, event=event, logger=None, get_athlete=False) # List of Routine objs
         turn_dd = sum([skill.difficulty for routine in routines for skill in routine.skills])
         turn_flips = sum([skill.flips for routine in routines for skill in routine.skills])
+        turn_note = turn[5]
 
         # add to all turns
         single_turn = {
@@ -687,7 +709,8 @@ def get_turn_dds():
             "user": turn[3].lower(),
             "date": turn[2],
             "dd": turn_dd,
-            "flips": turn_flips
+            "flips": turn_flips,
+            "note": turn_note
         }
         event_turns[event].append(single_turn)
     return event_turns, user_data

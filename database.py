@@ -122,13 +122,14 @@ def add_to_db(turns, user, event, practice_date, table=None):
             engine.execute(ins)
     elif isinstance(turns, dict):
         for turn_num, turn in turns.items():
-            turn_str = ' '.join(turn)
+            turn_str = ' '.join(turn['skills'])
             ins = DB_TABLE.insert().values(
                 turn_num=turn_num,
                 turn=turn_str,
                 event=event,
                 user=user,
-                date=practice_date
+                date=practice_date,
+                note=turn['note']
             )
             engine.execute(ins)
 
