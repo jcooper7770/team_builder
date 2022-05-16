@@ -234,10 +234,14 @@
 
 <script type="text/javascript">
   $(document).ready(function() {
-    // Set logger date to current local date
+    // Set logger date to current local date if a search date isn't chosen
+    {% if not search_date %}
     var date = new Date();
     date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
     document.getElementById("logger-date").value = date.toJSON().slice(0,10);
+    {% else %}
+    document.getElementById("logger-date").value = "{{search_date}}";
+    {% endif %}
   });
   $("[id^=skill]").click(function (e) {
     e.preventDefault();

@@ -271,7 +271,8 @@ def trampoline_log():
         user=session.get('name'),
         goals=get_user_goals(current_user()),
         all_skills=ALL_SKILLS,
-        error_text=ERROR
+        error_text=ERROR,
+        search_date=SEARCH_DATE.strftime("%Y-%m-%d") if SEARCH_DATE else None
     )
 
 
