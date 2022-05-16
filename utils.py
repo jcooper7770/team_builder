@@ -113,7 +113,8 @@ def skills_table(skills, title="Routines"):
     for turn_num, turn in enumerate(skills):
         skills_table.new_row()
         if turn.note:
-            skills_table.add_cell(turn.note, colspan=most_cols+8)
+            cell = f'<i class="fa fa-comments"></i> {turn.note}'
+            skills_table.add_cell(cell, colspan=most_cols+8)
             continue
         total_turn_num += 1
         # Turn number (also a link to copy the turn)
