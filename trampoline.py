@@ -537,9 +537,11 @@ def convert_form_data(form_data, logger=print, event=EVENT, notes=None, get_athl
         form_data = form_data.replace(common_name, common_routine)
 
     # Replace compulsory or optional
+    '''
     if get_athlete:
         form_data = form_data.replace('compulsory', ' '.join(athlete.compulsory))
         form_data = form_data.replace('optional', ' '.join(athlete.optional))
+    '''
     
     # Split by spaces for each skill
     #turns = form_data.split('\r\n')
@@ -558,6 +560,19 @@ def convert_form_data(form_data, logger=print, event=EVENT, notes=None, get_athl
             routine = Routine([], event=event, note=note_str.strip('-'))
             skill_turns.append(routine)
             continue
+    
+        # Replace compulsory and optional in turn
+        new_turn = []
+        for skill in turn:
+            if get_athlete:
+                if skill == "compulsory":
+                    new_turn.extend(athlete.compulsory.split())
+                    continue
+                elif skill == "optional":
+                    new_turn.extend(athlete.optional.split())
+                    continue
+            new_turn.append(skill)
+        turn = new_turn
             
         # Set athlete compulsory or optional
         if turn[0] == 'comp:' and get_athlete:
