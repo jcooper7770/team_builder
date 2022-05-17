@@ -232,8 +232,16 @@ def _save_trampoline_data(request):
 @app.route("/logger", methods=['GET', 'POST'])
 def trampoline_log():
     # POST/Redirect/GET to avoid resubmitting form on refresh
+    global ERROR
     if request.method == "POST":
-        _save_trampoline_data(request)
+        ERROR = None
+        try:
+            _save_trampoline_data(request)
+        except Exception as exception:
+            ERROR = f"Error saving log data: {exception}"
+            logging.error(f"Error saving trampoline log data: {exception}")
+            return redirect(url_for('trampoline_log', routine=request.form.get('log')))
+
         return redirect(url_for('trampoline_log'))
 
     # Require user to be logged in to use the app
@@ -263,6 +271,7 @@ def trampoline_log():
         "</div>"
     ]
     body = "".join(html) if all_practice_tables else ""
+    logging.info(f"error: {ERROR}")
     return render_template(
         "trampoline.html",
         body=body, username=username,
