@@ -1,2 +1,6 @@
 flask
+Flask-Session
 requests
+#flask-login
+SQLAlchemy
+pymysql

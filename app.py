@@ -1,169 +1,63 @@
 """
-Flask application
+Flask application for trampoline logger and pokemon team maker
 
 Endpoints:
   - /[?league=GL|Remix|UL|ULP|ULRemix|ML|MLC&pokemon=pokemon]
+  - /logger
+  - /logger/landing
+  - /login
+  - /logout
 
 TODO:
   - Login with username and keep track of list of pokemon the user doesn't have
   - add youtube link to tutorial on about page
-  - store team data in a database and refresh once a day
+  - [DONE] store team data in a database and refresh once a day
+  - Split trampoline code from pokemon code
+  - [DONE] (Trampoline) Replace "Routines" section with "Goals" with checkboxes
+  - [DONE] (Trampoline) Write goals to DB
+  - [DONE] Search for certain day of practice
+  - [DONE] Add user profiles
+  - Get data from scorsync
+  - [DONE] Add in graphs
+  - Add graphs to pokemon website
 """
 
 import datetime
-import json
 import os
-import re
-import sys
+import socket
 import traceback
+from collections import defaultdict
 
-from flask import Flask, request, render_template, jsonify, redirect, url_for
+from flask import Flask, request, render_template, jsonify, redirect, url_for, send_file,\
+    session, send_from_directory
+from flask_session import Session
 
-from team_building import get_counters_for_rating, LEAGUE_RANKINGS, NoPokemonFound, LEAGUE_VALUE, TeamCreater
+from team_building import get_counters_for_rating, LEAGUE_RANKINGS, NoPokemonFound, TeamCreater,\
+     create_table_from_results
 from battle_sim import sim_battle
-from trampoline import convert_form_data, pretty_print, Practice, current_user, set_current_user,\
-     current_event, set_current_event, set_current_athlete, NON_SKILLS
+
+from trampoline import convert_form_data, get_leaderboards, pretty_print, Practice, current_user, set_current_user,\
+     current_event, set_current_event, set_current_athlete,\
+     ALL_SKILLS, get_leaderboards, Athlete, get_user_turns, get_turn_dds
+from database import create_engine, set_table_name, insert_goal_to_db, get_user_goals, complete_goal,\
+    delete_goal_from_db, get_user, get_simmed_battle, add_simmed_battle
+from utils import *
+
 
 app = Flask(__name__, static_url_path="", static_folder="static")
+app.config["CACHE_TYPE"] = "null"
+app.config["SESSION_PERMANENT"] = False
+app.config["SESSION_TYPE"] = "filesystem"
+Session(app)
 
-CACHE = {'results': {}, 'team_maker': {}, 'num_days': 1, 'rating': None}
+#CACHE = {'results': {}, 'team_maker': {}, 'num_days': 1, 'rating': None}
 N_TEAMS = 3
-
-import logging
-logging.basicConfig(level=logging.DEBUG)
-
-logger = logging.getLogger('werkzeug') # grabs underlying WSGI logger
-handler = logging.FileHandler('test.log') # creates handler for the log file
-logger.addHandler(handler) # adds handler to the werkzeug WSGI logger
-
-class TableMaker:
-    """
-    Makes a table from results
-    """
-    def __init__(self, border, align="center", bgcolor="#FFFFFF", width=None):
-        self.border = border
-        self.align = align
-        self.bgcolor = bgcolor
-        self.table = []
-        self.width = width
-        self.first_table = True
-        self.new_table()
-
-    def new_table(self):
-        options = [
-            f"border='{self.border}'",
-            f"align='{self.align}'",
-            f"style='background-color:{self.bgcolor};'"
-        ]
-        if self.width:
-            options.append(f"width='{self.width}'")
-        options_str = " ".join(options)
-        self.table.append(f"<table {options_str}>")
-
-    def end_table(self):
-        self.table.append("</table>")
-
-    def new_row(self):
-        self.table.append("<tr>")
-
-    def end_row(self):
-        self.table.append("</tr>")
-
-    def new_line(self):
-        self.table.append("<br>")
-
-    def new_header(self, value, colspan):
-        self.table.append(f"<th colspan={colspan}>{value}</th>")
-
-    def reset_table(self):
-        if not self.first_table:
-            self.end_row()
-            self.end_table()
-            self.new_line()
-            self.new_table()
-            self.new_row()
-        self.first_table = False
-
-    def add_cell(self, value, colspan=None, align=None):
-        colspan_text = f" colspan={colspan}" if colspan else ""
-        align_text = f" align='{align}'" if align else ""
-        self.table.append(f"<td{colspan_text}{align_text}>{value}</td>")
-
-    def render(self):
-        return "".join(self.table)
-
-def create_table_from_results(results, pokemon=None, width=None, tc=None, tooltip=True):
-    """
-    Creates an html table from the results.
-    Results are in the form:
-    value
-    value    value    value    value
-    value    value    value    value
-    value    value    value    value
-
-    :param results: The results
-    :type results: str
-    :param pokemon: The pokemon to simulatem battles for (Default: None)
-    :type pokemon: str
-
-    :return: the table for the results
-    :rtype: str
-    """
-    table = TableMaker(border=1, align="center", bgcolor="#FFFFFF", width=width)
-
-    for line in results.split("\n"):
-        if not line:
-            continue
-        table.new_row()
-
-        # If a single value in a line then create a new table
-        values = line.split("\t")
-        if len(values) == 0:
-            table.end_row()
-            table.end_table()
-        elif len(values) == 1:
-            table.reset_table()
-            table.add_cell(values[0], colspan=4, align="center")
-        else:
-            for value in values:
-                if value:
-                    # Provide links to battles
-                    if pokemon and ':' in value:
-                        league_val = LEAGUE_VALUE.get(CACHE.get('league', ''), '1500')
-                        cell_pokemon = value.split(':')[0].strip()
-
-                        # make pvpoke link
-                        pvpoke_link = f"https://pvpoke.com/battle/{league_val}/{cell_pokemon}/{pokemon}/11"
-
-                        # simulate battle for text color
-                        try:
-                            winner, leftover_health, battle_text = sim_battle(cell_pokemon, pokemon, tc)
-                            tool_tip_text = "&#013;&#010;</br>".join(battle_text)
-                            #logger.info(f"winner: {winner} - leftover_health: {leftover_health}")
-                        except Exception as exc:
-                            winner = None
-                            logger.error(f"{cell_pokemon}")
-                            logger.error(traceback.format_exc())
-                            leftover_health = 0
-                            tool_tip_text=  ""
-    
-                        if winner == pokemon:
-                            text_color = "#00FF00"
-                            text_color = "#%02x%02x%02x" % (0, 100 + int(155 * leftover_health), 0)
-                        elif winner == cell_pokemon:
-                            text_color = "#FF0000"
-                            text_color = "#%02x%02x%02x" % (100 + int(155 * leftover_health), 0, 0)
-                        else:
-                            text_color = "#000000"
-                        #logger.info(f"{cell_pokemon}: {text_color}")
-                        tooltip_addition = f"<span class='tooltiptext'>{tool_tip_text}</span>" if tooltip else ""
-                        value = f"<a class='tooltip' href='{pvpoke_link}' style='color: {text_color}; text-decoration: none;' target='_blank'>{value}{tooltip_addition}</a>"
-                    table.add_cell(value)
-
-        table.end_row()
-
-    table.end_table()
-    return table.render()
+USER_GOALS = {
+    "bob": [{"goal": "goal1", "done": False}, {"goal": "goal2", "done": True}]
+}
+LOGGED_IN_USER = ""
+SEARCH_DATE = None
+ERROR = None
 
 
 def make_recommended_teams(team_maker, chosen_pokemon, chosen_league, chosen_position):
@@ -195,52 +89,6 @@ def get_new_data(league, num_days, rating):
     return diff_league or diff_days or diff_rating
 
 
-def skills_table(skills, title="Routines"):
-    """
-    Writes all trampoline skills to a table
-    """
-    if skills:
-        most_cols = max([len(turn.skills) for turn in skills])
-    else:
-        most_cols = 0
-    total_flips = 0
-    total_difficulty = 0
-    total_skills = 0
-    skills_table = TableMaker(border=1, align="center", width="30%")
-    skills_table.new_header(title, colspan=most_cols+8)
-    for turn_num, turn in enumerate(skills):
-        skills_table.new_row()
-        # Turn number
-        skills_table.add_cell(f"<b>{turn_num+1}</b>")
-
-        # Skills
-        for skill in turn.skills:
-            skills_table.add_cell(skill.shorthand)
-        # metrics
-        skills_table.add_cell("")
-        for _ in range(most_cols - len(turn.skills)):
-            skills_table.add_cell("")
-
-        # total skills
-        num_skills = len([skill for skill in turn.skills if skill.shorthand not in NON_SKILLS])
-        skills_table.add_cell(num_skills)
-        total_skills += num_skills
-        skills_table.add_cell(total_skills)
-
-        # total flips
-        skills_table.add_cell(turn.total_flips)
-        total_flips += turn.total_flips
-        skills_table.add_cell(total_flips)
-
-        # total difficulty
-        skills_table.add_cell(f"{turn.difficulty:0.1f}")
-        total_difficulty += turn.difficulty
-        skills_table.add_cell(f"{total_difficulty:0.1f}")
-
-        skills_table.end_row()
-    skills_table.end_table()
-    return skills_table.render()
-
 @app.route("/logger/_clear")
 def clear_history():
     """
@@ -260,12 +108,49 @@ def clear_day():
     """
     Clears current day's data for the current user
     """
-    if Practice.delete(datetime.date.today()):
-        logger.info("deleted today's data")
-        return jsonify(status="success")
+    try:
+        if Practice.delete(datetime.date.today()):
+            logger.info("deleted today's data")
+            return jsonify(status="success")
+    except Exception as error:
+        logger.info(f"Failed to delete because: {error}")
     logger.error("Failed to delete data for today")
     return jsonify(status="fail")
 
+
+@app.route("/logger/delete/<day>/<event>")
+def delete_day(day, event):
+    """
+    Deletes the given day and event
+    """
+    datetime_to_remove = datetime.datetime.strptime(day, "%m-%d-%Y")
+    Practice.delete(datetime_to_remove, event=event)
+    return redirect(url_for("trampoline_log"))
+
+
+@app.route("/logger/search", methods=["POST", "GET"])
+def search_date():
+    """
+    Search by certain date
+    """
+    global SEARCH_DATE
+    global ERROR
+    ERROR = ""
+    if request.method == "GET":
+        practice_date = request.args.get("practice_date", "")
+    else:
+        practice_date = request.form.get("practice_date", "")
+
+    if not practice_date:
+        SEARCH_DATE = None
+    else:
+        # convert practice date to datetime
+        try:
+            SEARCH_DATE = datetime.datetime.strptime(practice_date, "%Y-%m-%d")
+        except Exception as error:
+            ERROR = error
+    return redirect(url_for("trampoline_log"))
+    
 
 def _save_trampoline_data(request):
     """
@@ -273,17 +158,48 @@ def _save_trampoline_data(request):
     """
     # Convert form data to trampoline skills
     form_data = request.form.get('log', '')
-    username = request.form.get('name', None) or current_user()
+    #username = request.form.get('name', None) or current_user()
+    username = request.form.get('name', None) or session.get('name')
     event = request.form.get('event', None) or current_event()
+    notes = request.form.get('notes', None)
     set_current_event(event)
     set_current_user(username)
     set_current_athlete(username)
     logger.info(f"Username: {username}")
-    routines = convert_form_data(form_data, event=event)
+    routines = convert_form_data(form_data, event=event, notes=notes)
     logger.info(request.form.get('log', 'None').split('\r\n'))
 
+    # Save new goal
+    all_goals = get_user_goals(current_user())
+    
+    num_goals = request.form.get("goals_form")
+    if num_goals:
+        # reset all checkboxes
+        for goal_num, _ in enumerate(all_goals):
+            complete_goal(current_user(), all_goals[goal_num]["goal"], done=False)
+            
+        goal_string = request.form.get('goal_string', None)
+        if goal_string:
+            new_goal = {"goal": goal_string, "done": False}
+            insert_goal_to_db(current_user(), goal_string)
+        for key in request.form.keys():
+            if key in ["goal_string", "goals_form"]:
+                continue
+            if key.startswith("delete"):
+                deleted_goal_num = int(key[6:])
+                delete_goal_from_db(current_user(), all_goals[deleted_goal_num]["goal"])
+                continue
+            try:
+                # inside of try/except incase checked goal was deleted
+                complete_goal(current_user(), all_goals[int(key)]["goal"])
+            except:
+                pass
+
+
     # Save the current practice
-    practice = Practice(datetime.date.today(), routines, event)
+    form_date_str = request.form.get('date', str(datetime.date.today()))
+    form_date = datetime.datetime.strptime(form_date_str, "%Y-%m-%d")
+    practice = Practice(form_date.date(), routines, event)
     saved_practice = practice.save()
 
     # Log the turns to the log file
@@ -299,9 +215,9 @@ def _save_trampoline_data(request):
     # Get the current routines
     with open('routines.txt') as routine_file:
         old_routines = routine_file.read()
-    logger.info("-----")
-    logger.info(f"old routines: {old_routines}")
-    logger.info("-----")
+    #logger.info("-----")
+    #logger.info(f"old routines: {old_routines}")
+    #logger.info("-----")
 
     # Save historical and current routines to routines file
     if form_data:
@@ -313,67 +229,65 @@ def _save_trampoline_data(request):
                 routine_file.write(new_routines)
 
 
-
 @app.route("/logger", methods=['GET', 'POST'])
 def trampoline_log():
     # POST/Redirect/GET to avoid resubmitting form on refresh
+    global ERROR
     if request.method == "POST":
-        _save_trampoline_data(request)
+        ERROR = None
+        try:
+            _save_trampoline_data(request)
+        except Exception as exception:
+            ERROR = f"Error saving log data: {exception}"
+            logging.error(f"Error saving trampoline log data: {exception}")
+            return redirect(url_for('trampoline_log', routine=request.form.get('log')))
+
         return redirect(url_for('trampoline_log'))
 
+    # Require user to be logged in to use the app
+    if not session.get("name"):
+        return redirect(url_for('landing_page'))
     username, event = current_user(), current_event()
-    if os.path.exists('routines.txt'):
-        with open('routines.txt') as routine_file:
-            old_routines = routine_file.read()
-    else:
-        old_routines = ""
-
-    logger.info("-----")
-    logger.info(f"old routines: {old_routines}")
-    logger.info("-----")
-
-    # Collect all routines up to now
-    routines = convert_form_data(old_routines, logger=logger.info)
-
-    # Write all trampoline skills to a table
-    table = skills_table(routines)
 
     # Print out a table per date
     practice_tables = []
-    for _, _, practice_files in os.walk(os.path.join("practices", username)):
-        for practice_file in sorted(practice_files, reverse=True):
-            full_path = os.path.join("practices", username, practice_file)
 
-            # Get the event from the filename
-            try:
-                practice_event = re.findall("[0-9]{8}_([a-z]*).txt", practice_file)[0]
-            except:
-                practice_event = ""
-
-            # Load in the practice to get the turns
-            with open(full_path) as practice_file:
-                practice_data = json.load(practice_file)
-                practice = Practice.load(practice_data, practice_event)
-
-            # Add the turns into a table for that practice
-            title_date = practice.date.strftime("%A %m/%d/%Y")
-            title = f"{title_date} ({practice.event})"
-            practice_table = skills_table(practice.turns, title=title)
-            practice_tables.append(practice_table)
+    # Get data from database
+    user_practices = Practice.load_from_db(username, date=SEARCH_DATE)
+    for practice in user_practices:
+        # Add the turns into a table for that practice
+        title_date = practice.date.strftime("%A %m/%d/%Y")
+        title = f"{title_date} ({practice.event})"
+        practice_table = skills_table(practice.turns, title=title)
+        practice_tables.append(practice_table)
 
     all_practice_tables = "<br><br>".join(practice_tables)
-            
+   
     html = [
-        table,
-        "<br><br>",
-        "<h1 style='text-align:center;'>Previous Practices</h1>",
+        #"<h1 style='text-align:center;' class=\"header\">Previous Practices</h1>",
         # Div for practices so they are scrollable
         "<div id='practices' class='practices'><br><br>",
         all_practice_tables,
         "</div>"
     ]
-    body = "".join(html)
-    return render_template("trampoline.html", body=body, username=username, event=event)
+    body = "".join(html) if all_practice_tables else ""
+    logging.info(f"error: {ERROR}")
+    return render_template(
+        "trampoline.html",
+        body=body, username=username,
+        event=event,
+        routine_text=request.args.get('routine', ''),
+        user=session.get('name'),
+        goals=get_user_goals(current_user()),
+        all_skills=ALL_SKILLS,
+        error_text=ERROR,
+        search_date=SEARCH_DATE.strftime("%Y-%m-%d") if SEARCH_DATE else None
+    )
+
+
+@app.route("/logger/about")
+def about_trampoline():
+    return render_template("about_trampoline.html", user=session.get("name"))
 
 
 @app.route("/about")
@@ -385,7 +299,7 @@ def about():
 def run():
     global CACHE
     global N_TEAMS
-    chosen_league = request.args.get("league", "Holiday")
+    chosen_league = request.args.get("league", "GL")
     chosen_pokemon = request.args.get('pokemon', '')
     chosen_position = request.args.get('position', 'lead')
     num_days = int(request.args.get('num_days', '1'))
@@ -393,16 +307,15 @@ def run():
     use_tooltip = bool(request.args.get('tooltips', False))
     N_TEAMS = int(request.args.get('num_teams', N_TEAMS))
     html = []
+    error_text = ""
 
-    html.append("<h1 align='center'><u>Options</u></h1>")
-
+    print("----- Refreshed -----")
     # Data tables from cache
     if get_new_data(chosen_league, num_days, rating):
         try:
             results, team_maker = get_counters_for_rating(rating, chosen_league, days_back=num_days)
         except NoPokemonFound as exc:
-            error = f"ERROR: Could not get data because: {str(exc)}. Using all data instead"
-            html.append(f"<p  style='background-color:yellow;text-align:center'><b>{error}</b></p>")
+            error_text = f"ERROR: Could not get data because: {str(exc)}. Using all data instead"
             results, team_maker = get_counters_for_rating(None, chosen_league, days_back=None)
     else:
         results, team_maker, num_days, rating = CACHE.get('results').get(chosen_league), CACHE.get('team_maker').get(chosen_league), CACHE.get("num_days"), CACHE.get("rating")
@@ -411,57 +324,6 @@ def run():
     CACHE['num_days'] = num_days
     CACHE['rating'] = rating
     CACHE['league'] = chosen_league
-
-    # Navigation table
-    leagues_table = TableMaker(border=1, align="center", bgcolor="#FFFFFF", width="30%")
-    leagues_table.new_header(value="Different Leagues", colspan=len(LEAGUE_RANKINGS))
-    leagues_table.new_row()
-    for league in sorted(list(LEAGUE_RANKINGS.keys())):
-        if league == chosen_league:
-            leagues_table.add_cell(league)
-        else:
-            leagues_table.add_cell(f'<a href="?league={league}&pokemon={chosen_pokemon}&num_days={num_days}">{league}</a>')
-    leagues_table.end_row()
-    leagues_table.end_table()
-    html.append(leagues_table.render())
-
-    # Options: pokemon team, # days of data
-    options_table = TableMaker(border=1, align="center", width="30%")
-    options_table.new_header("Options", colspan=2)
-    options_table.new_row()
-    options_table.add_cell("Create team from pokemon:")
-    pokemon_form = []
-    pokemon_form.append(f"<input type='hidden' value='{chosen_league}' name='league' />")
-    pokemon_form.append(f"<select id='mySelect' name='pokemon'>")
-    pokemon_form.append("<option value=''>None</option>")
-    for species in sorted(team_maker.all_pokemon, key=lambda x: x.get('speciesId')):
-        species_name = species.get('speciesId')
-        if species_name == chosen_pokemon:
-            pokemon_form.append(f"<option value='{species_name}' selected>{species_name}</option>")
-        else:
-            pokemon_form.append(f"<option value='{species_name}'>{species_name}</option>")
-    pokemon_form.append("</select>")
-    pokemon_form.append(f"<br><input type='radio' id='lead' value='lead' name='position'{' checked' if chosen_position=='lead' else ''}><label for='lead'>In the lead</label>")
-    pokemon_form.append(f"<br><input type='radio' id='back' value='back' name='position'{' checked' if chosen_position=='back' else ''} ><label for='back'>In the back</label>")
-    options_table.add_cell("".join(pokemon_form))
-    options_table.end_row()
-    options_table.new_row()
-    options_table.add_cell("Number of days of data:")
-    options_table.add_cell(f"<input type='text' value={num_days} name=num_days />")
-    options_table.end_row()
-    options_table.new_row()
-    options_table.add_cell("Rating:")
-    options_table.add_cell(f"<input type='text' value={rating} name=rating />")
-    options_table.end_row()
-    options_table.new_row()
-    options_table.add_cell("Number of recommended teams:")
-    options_table.add_cell(f"<input type='text' value={N_TEAMS} name=num_teams />")
-    options_table.end_row()
-    options_table.new_row()
-    options_table.add_cell("<input type='submit' value='submit' /></p></form>", colspan=2, align="right")
-    options_table.end_row()
-    options_table.end_table()
-    html.extend(["<form action='/'>", options_table.render(), "</form>"])
 
     # Recommended teams
     #  make N_TEAMS unique teams. But try 2*N_TEAMS times to make unique teams
@@ -472,14 +334,351 @@ def run():
 
     # Data
     html.append("<h1 align='center'><u>Meta Data</u></h1>")
-    html.append("<div align='center'><button onclick='hideData()'>Toggle data</button></div>")
-    html.append("<div id='data' class='data'>")
-    tc = TeamCreater(team_maker)
-    html.append(create_table_from_results(results, pokemon=chosen_pokemon, width='75%', tc=tc, tooltip=use_tooltip))
-    html.append("</div>")
+    #html.append("<div align='center'><button onclick='hideData()'>Toggle data</button></div>")
+    #html.append("<div id='data' class='data'>")
+    #tc = TeamCreater(team_maker)
+    #html.append(create_table_from_results(results, pokemon=chosen_pokemon, width='75%', tc=tc, tooltip=use_tooltip))
+    #html.append("</div>")
 
-    return render_template("index.html", body="".join(html))
+    return render_template(
+        "index.html",
+        body="".join(html),
+        leagues=sorted(LEAGUE_RANKINGS.keys()),
+        current_league=chosen_league,
+        all_pokemon=sorted(team_maker.all_pokemon, key=lambda x: x.get('speciesId')),
+        chosen_position=chosen_position,
+        num_days=num_days,
+        rating=rating,
+        number_teams=N_TEAMS,
+        current_pokemon=chosen_pokemon,
+        error_text=error_text,
+        result_data=team_maker.result_data
+    )
+
+@app.template_filter()
+def pokemonColor(pokemon_name, chosen_pokemon, chosen_league):
+    """ Choose the color of the pokemon"""
+    if not chosen_pokemon:
+        return pokemon_name.title()
+    battle_results = get_simmed_battle(pokemon_name, chosen_pokemon)
+    if not battle_results:
+        tc = TeamCreater(CACHE['team_maker'][chosen_league])
+        try:
+            winner, leftover_health, battle_text = sim_battle(pokemon_name, chosen_pokemon, tc)
+            add_simmed_battle(pokemon_name, chosen_pokemon, battle_text, winner, leftover_health)
+            tool_tip_text = "&#013;&#010;</br>".join(battle_text)
+            #logger.info(f"winner: {winner} - leftover_health: {leftover_health}")
+        except Exception as exc:
+            winner = None
+            logger.error(f"{pokemon_name}")
+            logger.error(traceback.format_exc())
+            leftover_health = 0
+            tool_tip_text=  ""
+    else:
+        winner = battle_results.get('winner')
+        battle_text = battle_results.get('battle_text')
+        leftover_health = battle_results.get('leftover_health')
+        tool_tip_text = "&#013;&#010;</br>".join(battle_text)
+
+    if winner == chosen_pokemon:
+        text_color = "#00FF00"
+        text_color = "#%02x%02x%02x" % (0, 100 + int(155 * leftover_health), 0)
+    elif winner == pokemon_name:
+        text_color = "#FF0000"
+        text_color = "#%02x%02x%02x" % (100 + int(155 * leftover_health), 0, 0)
+    else:
+        text_color = "#000000"
+    #logger.info(f"{cell_pokemon}: {text_color}")
+    tooltip=True
+    tooltip_addition = f"<span class='tooltiptext' id='{pokemon_name}-{chosen_pokemon}-battle'>{tool_tip_text}</span>" if tooltip else ""
+    value = f"<a class='tooltip1' href='#' style='color: {text_color}; text-decoration: none;' target='_blank'>{pokemon_name.title()}{tooltip_addition}</a>"
+    return value
+
+
+@app.route("/sign_up", methods=["GET", "POST"])
+def sign_up():
+    """
+    Sign up
+    """
+    if request.method == "POST":
+        global ERROR
+        ERROR = ""
+        username = request.form.get("username", "")
+        password = request.form.get("password", "")
+        confirm = request.form.get("confirm", "")
+        private = True if request.form.get("private")=="true" else False
+
+        if not username:
+            ERROR = "Please enter a username"
+            return redirect(url_for('sign_up'))
+        try:
+            get_user(username)
+            ERROR = f"Username {username} already exists."
+            return redirect(url_for('sign_up'))
+        except:
+            pass
+        '''
+        if not password:
+            ERROR = "Missing Password"
+            return redirect(url_for('sign_up'))
+        elif confirm != password:
+            ERROR = "Passwords do not match"
+            return redirect(url_for('sign_up'))
+        '''
+        if ERROR:
+            return redirect(url_for('sign_up'))
+        # Create the user and go to login page
+        athlete = Athlete(username, private)
+        athlete.save()
+        return redirect(url_for('login'))
+    return render_template("sign_up.html", error_text=ERROR, user="")
+
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    """
+    Login
+    """
+    if request.method == "POST":
+        global LOGGED_IN_USER
+        global ERROR
+        ERROR = ""
+        username = request.form.get("username", "").lower()
+        try:
+            get_user(username)
+        except:
+            ERROR = f"Username {username} does not exists."
+            return redirect(url_for('login'))
+        session["name"] = username
+        if session.get('name'):
+            set_current_user(username)
+            set_current_athlete(username)
+        return redirect(url_for('trampoline_log'))
+    return render_template("login.html", user=session.get("name"), error_text=ERROR)
+
+
+@app.route("/logout", methods=["GET"])
+def logout():
+    """
+    Logout
+    """
+    global LOGGED_IN_USER
+    LOGGED_IN_USER = ""
+    global SEARCH_DATE
+    SEARCH_DATE = None
+    session["name"] = None
+    return redirect(url_for('login'))
+
+
+@app.route("/logger/landing")
+def landing_page():
+    """
+    Landing page
+    """
+    mock_leaderboard = {
+        "DD": {
+            "Trampoline": {
+                "Ruben": 18.2,
+                "coop4440": 15.8,
+                "Jer": 15.0
+            },
+            "DMT": {
+                "Ruben": 24.1,
+                "coop4440": 18.4,
+                "Jer": 14.8
+            }
+        },
+        "Flips": {
+            "Trampoline": {"Ruben": 10, "Jer": 9},
+            "DMT": {"Ruben": 5, "Jer": 2}
+        }
+    }
+    leaderboard = get_leaderboards()
+    if not leaderboard["DD"]:
+        leaderboard = mock_leaderboard
+    return render_template("landing_page.html", user=session.get("name"), leaderboard=leaderboard)
+
+
+@app.route("/logger/user")
+def user_profile():
+    """
+    User profile
+    """
+    start_date = request.args.get('chart_start')
+    if start_date:
+        start_date = datetime.datetime.strptime(start_date, "%m/%d/%Y")
+    end_date = request.args.get('chart_end')
+    if end_date:
+        end_date = datetime.datetime.strptime(end_date, "%m/%d/%Y")
+
+    current_user = session.get('name')
+    if not session.get("name"):
+        return redirect(url_for('login'))
+    # get user from db
+    try:
+        user_data = get_user(current_user)
+    except Exception as exc:
+        logger.error(f"Exception: {exc}")
+        user_data = {}
+
+    event_turns, _ = get_turn_dds()
+    datapts = {}
+    day_flips = {
+        'trampoline': defaultdict(int),
+        'dmt': defaultdict(int),
+    }
+    flips_per_turn = {
+        'trampoline': defaultdict(list),
+        'dmt': defaultdict(list)
+    }
+    turns_per_practice = defaultdict(int)
+    for event, all_turns in event_turns.items():
+        datapts[f'{event}_dd'] = []
+        datapts[f'{event}_flips'] = []
+        # TODO: Add in # skills
+        for turn in sorted(all_turns, key=lambda x: x['date']):
+            # Skip notes
+            if turn['turn'].startswith('-'):
+                continue
+
+            # notes also have empty turns
+            if not turn['turn'] and turn['note']:
+                continue
+
+            # skip other users
+            if current_user and turn['user'].lower() != current_user:
+                continue 
+            turn_date = str(turn['date']).split()[0]
+            if start_date and turn['date'] < start_date:
+                continue
+            if end_date and turn['date'] > end_date:
+                continue
+            turn_flips = turn['flips']
+            datapts[f'{event}_dd'].append({
+                #'x': str(turn['date']).split()[0],
+                'x': turn_date,
+                'y': turn['dd']
+            })
+            datapts[f'{event}_flips'].append({
+                #'x': str(turn['date']).split()[0],
+                'x': turn_date,
+                'y': turn_flips
+            })
+            day_flips[event][turn_date] += turn_flips
+            flips_per_turn[event][turn_date].append(turn_flips)
+            turns_per_practice[turn_date] += 1
+    
+    datapts['trampoline_flips_per_day'] = [{'x': date, 'y': flips} for date, flips in sorted(day_flips['trampoline'].items(), key=lambda x: x[0])]
+    datapts['dmt_flips_per_day'] = [{'x': date, 'y': flips} for date, flips in day_flips['dmt'].items()]
+    datapts['dmt_flips_per_turn'] = [{'x': date, 'y': sum(flips)/len(flips)} for date, flips in flips_per_turn['dmt'].items()]
+    datapts['trampoline_flips_per_turn'] = [{'x': date, 'y': sum(flips)/len(flips)} for date, flips in flips_per_turn['trampoline'].items()]
+    datapts['turns_per_practice'] = [{'x': date, 'y': turns} for date, turns in sorted(turns_per_practice.items(), key=lambda x: x[0])]
+
+    return render_template(
+        "user_profile.html",
+        user=current_user,
+        user_data=user_data,
+        datapts=datapts,
+        chart_start=request.args.get('chart_start', ""),
+        chart_end=request.args.get('chart_end', "")
+    )
+
+
+@app.route("/logger/user/update", methods=["POST"])
+def update_user():
+    """
+    Update user
+    """
+    private = True if request.form.get("private")=="true" else False
+    compulsory = request.form.get("compulsory")
+    optional = request.form.get("optional")
+    athlete = Athlete.load(session.get("name"))
+    athlete.private = private
+    athlete.compulsory = [skill for skill in compulsory.split()]
+    athlete.optional = [skill for skill in optional.split()]
+    athlete.save()
+    return redirect(url_for("user_profile"))
+
+
+@app.route("/logger/user/export", methods=["GET", "POST"])
+def export_user_data():
+    """
+    Export user data
+    """
+    if not session.get('name'):
+        print(f"User not logged in: {session}")
+        return jsonify(status="failure", reason="User not logged in")
+    fromDate = request.args.get('from')
+    toDate = request.args.get('to')
+    user_turns = get_user_turns(session.get("name"), from_date=fromDate, to_date=toDate)
+    export_dir = os.path.join(app.root_path, "exported_data")
+    #if not os.path.exists("exported_data"):
+    if not os.path.exists(export_dir):
+        os.mkdir(export_dir)
+    
+    # Save json file
+    #file_path = os.path.join("exported_data", f'{LOGGED_IN_USER}_turns.json')
+    #file_path = os.path.join(export_dir, f'{LOGGED_IN_USER}_turns.json')
+    #with open(file_path, 'w') as turns_file:
+    #    json.dump(user_turns, turns_file, indent=4)
+    
+    # Save csv file
+    #csv_file_path = os.path.join(export_dir, f"{LOGGED_IN_USER}_turns.csv")
+    file_name = f"{session.get('name')}_turns.csv"
+    #csv_file_path = os.path.join(export_dir, f"{session.get('name')}_turns.csv")
+    csv_file_path = os.path.join(export_dir, file_name)
+    with open(csv_file_path, 'w') as turns_file:
+        turns_file.write("turn number, skills, date, event\n")
+        for turn in user_turns:
+            turn_date = str(turn[2]).split()[0]
+            line = f"{turn[0]}, {turn[1]}, {turn_date}, {turn[4]}\n"
+            turns_file.write(line)
+    # TODO: figure out how to download the saved csv file, then delete it
+    if request.method == "GET":
+        return send_file(csv_file_path, as_attachment=True, cache_timeout=0)
+        #return send_from_directory(export_dir, file_name, mimetype="text/csv", as_attachment=True)
+    return jsonify(status="success", filename=csv_file_path)
+
+
+@app.route("/logger/chart", methods=["GET"])
+def chart():
+    event_turns, _ = get_turn_dds()
+    current_user = session.get('name')
+    datapts = {}
+    for event, all_turns in event_turns.items():
+        datapts[f'{event}_dd'] = []
+        datapts[f'{event}_flips'] = []
+        for turn in sorted(all_turns, key=lambda x: x['date']):
+            if current_user and turn['user'] != current_user:
+                continue 
+            datapts[f'{event}_dd'].append({
+                'x': str(turn['date']).split()[0],
+                'y': turn['dd']
+            })
+            datapts[f'{event}_flips'].append({
+                'x': str(turn['date']).split()[0],
+                'y': turn['flips']
+            })
+    return render_template("graph.html", user=current_user, datapts=datapts)
+
+
+def get_app():
+    """
+    Returns the app
+    """
+    return app
 
     
 if __name__ == "__main__":
+    # Start db connection
+    if socket.gethostname().endswith("secureserver.net"):
+        set_table_name("data")
+        create_engine(table_name="data")
+        logger.info("Using main data table")
+    else:
+        set_table_name("test_data")
+        create_engine(table_name="test_data")
+        logger.info("Using test data table")
+
+    # start app
     app.run(debug=True)

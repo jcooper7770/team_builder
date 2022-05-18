@@ -1,21 +1,6 @@
-<!doctype html>
-<html>
-<body style="background-color:lightblue;">
-<table align="center">
-<tr>
-  <td rowspan=1>
-  <p style="text-align:center;"><img src="flippinCoopLogo.png" width=200 height=200></p>
-  </td>
-  <td colspan=4 height="80%"><font size="+30" style="text-align:center;">Anti-Meta Team Generator</font></td>
-</tr>
-<tr>
-  <td align="center"><a href="/">Home</a></td>
-  <td align="center">About</td>
-  <td align="center"><a href="https://gobattlelog.com/">GoBattleLog</a></td>
-  <td align="center"><a href="https://pvpoke.com/">PVPoke</a></td>
-</tr>
-</table>
-<br><br>
+{% extends "pokemon_base.html" %}
+
+{% block content %}
 
 <br><h1 style="text-align:center;">About</h1>
 
@@ -57,5 +42,5 @@ These values represent the number of times each of these pokemon was reported as
 </tr>
 </table>
 <br><br><br>
-</body>
-</html>
+
+{% endblock %}

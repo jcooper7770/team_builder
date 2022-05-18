@@ -12,6 +12,8 @@
  images of pokemon: https://img.pokemondb.net/sprites/black-white/normal/charizard.png
 
  TODO:
+  - [DONE] write gobattlelog data to local DB daily instead of a file
+     - Only pull from gobattlelog if/when new data
   - create my own counters lists instead of the 5 from pvpoke
   - [DONE] create smart team comp (with ABB option)
   - [DONE?] host online somewhere
@@ -25,14 +27,21 @@
   - check out amgesus.tar.gz in our #computer-science channel. It shows how to run all of pvpoke'sscripts from the comand line.
   - [DONE] Click on a pokmeon and simulate a battle in pvpoke
      - https://pvpoke.com/battle/1500/{pokemon1}/{pokemon2}/{#shields1}{#shields2}
+  - [DONE] Fetch data daily instead of every time refreshed and save to DB
 """
+
+import sqlalchemy
 
 import json
 import random
 import requests
+import traceback
 from datetime import datetime, timedelta
 from collections import defaultdict
 
+from database import create_engine
+from battle_sim import sim_battle
+from utils import CACHE, logger, TableMaker
 
 # The number of pokemon to consider
 TOP_TEAM_NUM = None
@@ -49,14 +58,18 @@ LEAGUE_RANKINGS = {
     "MLPC": "https://vps.gobattlelog.com/data/overall/rankings-10000-premierclassic.json?v=1.25.31",
     "Element": "https://vps.gobattlelog.com/data/overall/rankings-500-element.json?v=1.25.31",
     "Remix": "https://vps.gobattlelog.com/data/overall/rankings-1500-remix.json?v=1.25.35",
+    "Retro": "https://vps.gobattlelog.com/data/overall/rankings-1500-retro.json?v=1.25.35",
     "ULRemix": "https://vps.gobattlelog.com/data/overall/rankings-2500-remix.json?v=1.25.35",
     "GL": "https://vps.gobattlelog.com/data/overall/rankings-1500.json?v=1.25.35",
     "Jungle": "https://vps.gobattlelog.com/data/overall/rankings-500-littlejungle.json?v=1.28.0",
+    "Little": "https://vps.gobattlelog.com/data/overall/rankings-500-little.json?v=1.28.0",
     "Halloween": "https://vps.gobattlelog.com/data/overall/rankings-1500-halloween.json?v=1.25.35",
     "Kanto":"https://vps.gobattlelog.com/data/overall/rankings-1500-kanto.json?v=1.25.35",
     "Holiday":"https://vps.gobattlelog.com/data/overall/rankings-1500-holiday.json?v=1.25.35",
     "Sinnoh": "https://vps.gobattlelog.com/data/overall/rankings-1500-sinnoh.json?v=1.25.35",
-    "Love": "https://vps.gobattlelog.com/data/overall/rankings-1500-love.json?v=1.25.35"
+    "Love": "https://vps.gobattlelog.com/data/overall/rankings-1500-love.json?v=1.25.35",
+    "Johto": "https://vps.gobattlelog.com/data/overall/rankings-1500-johto.json?v=1.25.35",
+    "Flying": "https://vps.gobattlelog.com/data/overall/rankings-1500-flying.json?v=1.25.35"
 }
 LEAGUE_DATA = {
     "ULP": "https://vps.gobattlelog.com/records/ultra-premier/latest.json?ts=449983.3",
@@ -70,17 +83,22 @@ LEAGUE_DATA = {
     "MLPC": "https://vps.gobattlelog.com/records/master-premierclassic/latest.json?ts=451466.3",
     "Element": "https://vps.gobattlelog.com/records/element/latest.json?ts=451466.3",
     "Remix": "https://vps.gobattlelog.com/records/great-remix/latest.json?ts=451709.1",
+    "Retro": "https://vps.gobattlelog.com/records/great-retro/latest.json?ts=451709.1",
     "ULRemix": "https://vps.gobattlelog.com/records/ultra-remix/latest.json?ts=451709.1",
     "Jungle": "https://vps.gobattlelog.com/records/littlejungle/latest.json?ts=451709.1",
+    "Little": "https://vps.gobattlelog.com/records/little/latest.json?ts=451709.1",
     "Halloween": "https://vps.gobattlelog.com/records/great-halloween/latest.json?ts=451466.3",
     "Kanto": "https://vps.gobattlelog.com/records/great-kanto/latest.json?ts=451466.3",
     "Holiday": "https://vps.gobattlelog.com/records/great-holiday/latest.json?ts=451466.3",
     "Sinnoh": "https://vps.gobattlelog.com/records/great-sinnoh/latest.json?ts=451466.3",
-    "Love": "https://vps.gobattlelog.com/records/great-love/latest.json?ts=451466.3"
+    "Love": "https://vps.gobattlelog.com/records/great-love/latest.json?ts=451466.3",
+    "Johto": "https://vps.gobattlelog.com/records/great-johto/latest.json?ts=451466.3",
+    "Flying": "https://vps.gobattlelog.com/records/great-flying/latest.json?ts=451466.3"
 }
 LEAGUE_VALUE = {
     'GL': '1500',
     'Remix': '1500',
+    'Retro': '1500',
     'UL': '2500',
     'ULRemix': '2500',
     'ULP': '2500',
@@ -95,7 +113,10 @@ LEAGUE_VALUE = {
     'Kanto': '1500',
     'Holiday': '1500',
     'Sinnoh': '1500',
-    "Love": '1500'
+    "Love": '1500',
+    "Johto": '1500',
+    "Flying": '1500',
+    'Little': '500'
 }
 CUP_VALUE = {
     'MLC': 'classic',
@@ -107,7 +128,11 @@ CUP_VALUE = {
     'Kanto': 'kanto',
     'Holiday': 'holiday',
     'Sinnoh': 'sinnoh',
-    'Love': 'love'
+    'Love': 'love',
+    'Johto': 'johto',
+    'Flying': 'flying',
+    'Little': 'little',
+    'Retro': 'retro'
 }
 
 # https://gamepress.gg/pokemongo/cp-multiplier
@@ -185,6 +210,8 @@ class MetaTeamDestroyer:
         :param num_reports: The number of latest reports to check (Default: None)
         :type num_reports: int
         """
+        print("------ Initializing the data -------")
+
         # Initialize all of the data
         rankings_url = LEAGUE_RANKINGS.get(league)
         latest_url = LEAGUE_DATA.get(league)
@@ -195,26 +222,15 @@ class MetaTeamDestroyer:
         self.league = league
         self.league_cp = LEAGUE_VALUE[league]
 
-        try:
-            self.all_pokemon = requests.get(rankings_url, timeout=REQUEST_TIMEOUT).json()
-            json.dump(self.all_pokemon, open("data/pokemon_rankings.json", 'w'))
-        except Exception as exc:
-            print(f"Failed to load ranking data because: {exc}")
-            self.all_pokemon = json.load(open("data/pokemon_rankings.json"))
 
-        try:
-            self.game_master = requests.get("https://vps.gobattlelog.com/data/gamemaster.json?v=1.25.10", timeout=REQUEST_TIMEOUT).json()
-            json.dump(self.game_master, open("game_master.json"))
-        except Exception as exc:
-            print(f"Failed to load game master data because: {exc}")
-            self.game_master = json.load(open("game_master.json"))
-
-        try:
-            self.latest_info = requests.get(latest_url, timeout=REQUEST_TIMEOUT).json().get("records")
-            json.dump(self.latest_info, open(f"data/latest_{league}.json", 'w'))
-        except Exception as exc:
-            print(f"Failed to load latest data because: {exc}")
-            self.all_pokemon = json.load(open(f"data/latest_{league}.json"))
+        # Fetch data from db
+        self.all_pokemon = self.get_league_data_from_db(f"all_pokemon_{league}", url=rankings_url)
+        game_master_url = "https://vps.gobattlelog.com/data/gamemaster.json?v=1.25.10"
+        self.game_master = self.get_league_data_from_db("game_master", url=game_master_url)
+        info = self.get_league_data_from_db(league, url=latest_url)
+        if isinstance(info, str):
+            info = json.loads(info)
+        self.latest_info = info.get("records")
 
         # Sort reports by time and get last X teams
         sorted_latest_info = sorted(self.latest_info, key=lambda x: x.get('time'), reverse=True)
@@ -243,8 +259,7 @@ class MetaTeamDestroyer:
             self.latest_info = temp_latest_info
 
         if len(self.latest_info) == 0:
-            raise NoPokemonFound(f"Did not find {league} data last {days_back} days at {rating or 'all'} rating")
-                    
+            raise NoPokemonFound(f"Did not find {league} data last {days_back} days at {rating or 'all'} rating")           
 
 
         # Create common leads and backlines lists
@@ -292,6 +307,58 @@ class MetaTeamDestroyer:
             # Add the movesets
             self.species_moveset_dict[species.get('speciesId')] = species.get('moveset')
 
+    def get_league_data_from_db(self, league, url=None):
+        """
+        Returns the league data from the db
+        """
+        fetch_new = False
+        # first check if in db andf if data is older than today
+        engine = create_engine()
+        metadata = sqlalchemy.MetaData()
+        table = sqlalchemy.Table("pokemon_data", metadata, autoload=True, autoload_with=engine)
+        query_results = engine.execute(f'SELECT * from `pokemon_data` WHERE pokemon_data.league="{league}";')
+        results = [result for result in query_results]
+        
+        # then check if data is old
+        if results:
+            league_data = results[0]
+            last_fetched_date = league_data[2]
+            if last_fetched_date == datetime.today().date():
+                latest_info = json.loads(league_data[1])
+                #print(f"results: {results}\n\n")
+                #print(f"info: {latest_info}")
+                return json.loads(latest_info)
+        else:
+            ins = table.insert().values(
+                league=league,
+                data=json.dumps({}),
+                last_fetched_date=datetime.today().date()
+            )
+            engine.execute(ins)
+        # if not in db or old data then pull data and push to db
+        if not url:
+            latest_url = LEAGUE_DATA.get(league)
+
+            # Get the latest-large data
+            latest_url = latest_url.replace('latest', 'latest-large')
+            url = latest_url
+
+        try:
+            latest_info = requests.get(url, timeout=REQUEST_TIMEOUT).json()
+            json.dump(latest_info, open(f"data/latest_{league}.json", 'w'))
+        except Exception as exc:
+            print(f"Failed to load latest {league} data because: {exc}")
+            latest_info = json.load(open(f"data/latest_{league}.json"))
+
+        update = table.update().where(table.c.league==league).values(
+            league=league,
+            data=json.dumps(latest_info),
+            last_fetched_date=datetime.today()
+        )
+        engine.execute(update)
+        return latest_info
+
+
     @staticmethod
     def filter_top_pokemon(pokemon_list):
         """
@@ -327,7 +394,13 @@ class MetaTeamDestroyer:
         return self.species_counters_dict[pokemon_name]
 
     def get_reccommended_counters(self, pokemon_list):
-        """ Returns recommended counters to the list of pokemon """
+        """ 
+        Returns recommended counters to the list of pokemon
+
+         Get the counters in the form of
+          [('p1', #,), ('p2', #), ...]
+         sorted by #
+        """
         # Only focus on top leads
         if TOP_TEAM_NUM:
             pokemon_list = pokemon_list[:TOP_TEAM_NUM]
@@ -386,7 +459,7 @@ class MetaTeamDestroyer:
         return '-'.join(moves)
 
 
-    def simulate_battle(pokemon1, pokemon2, n_shields=1):
+    def simulate_battle(self, pokemon1, pokemon2, n_shields=1):
         """
         last numbers are the movesets..
         to get default movesets use pvpoke rankings and the game master to get the numbers
@@ -493,16 +566,28 @@ class MetaTeamDestroyer:
         """
         Returns the results of the pokemon team created
         """
+        # Skip the team if it has no pokemon
+        if pokemon_team == []:
+            return "", []
         results = f"Team for {chosen_pokemon}"
         #pvpoke_link = f"https://pvpoke.com/team-builder/all/{LEAGUE_VALUE[self.league]}/{pokemon_team[0]}-m-{team_ivs[0]}%2C{pokemon_team[1]}-m-{team_ivs[1]}%2C{pokemon_team[2]}-m-{team_ivs[2]}"
         cup = CUP_VALUE.get(self.league, 'all')
         pvpoke_link = f"https://pvpoke.com/team-builder/{cup}/{LEAGUE_VALUE[self.league]}/{pokemon_team[0]}-m-0-1-2%2C{pokemon_team[1]}-m-0-1-2%2C{pokemon_team[2]}-m-0-1-2"
         results = f"{results} (<a href='{pvpoke_link}' target='_blank'>See team in pvpoke</a>)"
+        results = f"{results}\n<b>Pokemon</b>\t<b>Fast Move</b>\t<b>Charge Moves</b>"
         team_ivs = []
         print(f"Full team:")
         for p in pokemon_team:
             print(f"    {p}: {self.species_moveset_dict[p]}")
-            results = f"{results}\n{p}\t{self.species_moveset_dict[p]}"
+            moves = self.species_moveset_dict[p]
+
+            # remove underscores from moves
+            moves = [move.replace('_', ' ' ) for move in moves]
+            if len(moves) == 3:
+                moveset_str = f"{moves[0].title()}\t{moves[1].title()}<br>{moves[2].title()}"
+            elif len(moves) == 2:
+                moveset_str = f"{moves[0].title()}\t{moves[1].title()}"
+            results = f"{results}\n{p.title()}\t{moveset_str}"
             team_ivs.append(self.get_default_ivs(p, self.league))
 
         return results, pokemon_team
@@ -532,11 +617,22 @@ class MetaTeamDestroyer:
                 #print(f"Should skip {counter} with weaknesses: {pokemon_weaknesses}")
                 removed_counters.append(counter[0])
         counter_counters = [counter for counter in counter_counters if counter[0] not in removed_counters]
+
+        # return an empty list (handled later) if no counters
+        if not counter_counters:
+            print(f"Could not find counters for {pokemon}. Returning empty team")
+            return self.team_results([], pokemon)
         
         # need to pick one at a time so there are no repeats      
         back_pokemon1 = self.choose_weighted_pokemon(counter_counters)[0]
         index = [p[0] for p in counter_counters].index(back_pokemon1)
         counter_counters.pop(index)
+
+        # Also need to remove pokemon with similar names by checking for the first part of a pokemon name
+        pokemon_keyword = back_pokemon1.split('_')[0]
+        counter_counters = [c for c in counter_counters if pokemon_keyword not in c]
+
+        # Choose the third pokemon
         back_pokemon2 = self.choose_weighted_pokemon(counter_counters)[0]
 
         back_pokemon = sorted([back_pokemon1, back_pokemon2])
@@ -609,6 +705,80 @@ def get_counters_for_rating(rating, league="ULP", days_back=None):
     }
     return f"Recommended Leads\n{lead_counter_text}\nMeta leads\n{lead_text}\n\nRecommended Safe swaps\n{ss_counter_text}\nMeta Safe swaps\n{ss_text}\n\nRecommended Back\n{back_counter_text}\nMeta back\n{back_text}", team_maker
 
+
+
+def create_table_from_results(results, pokemon=None, width=None, tc=None, tooltip=True):
+    """
+    Creates an html table from the results.
+    Results are in the form:
+    value
+    value    value    value    value
+    value    value    value    value
+    value    value    value    value
+
+    :param results: The results
+    :type results: str
+    :param pokemon: The pokemon to simulatem battles for (Default: None)
+    :type pokemon: str
+
+    :return: the table for the results
+    :rtype: str
+    """
+    table = TableMaker(border=1, align="center", bgcolor="#FFFFFF", width=width)
+
+    for line in results.split("\n"):
+        if not line:
+            continue
+        table.new_row()
+
+        # If a single value in a line then create a new table
+        values = line.split("\t")
+        if len(values) == 0:
+            table.end_row()
+            table.end_table()
+        elif len(values) == 1:
+            table.reset_table()
+            table.add_cell(values[0], colspan=4, align="center")
+        else:
+            for value in values:
+                if value:
+                    # Provide links to battles
+                    if pokemon and ':' in value:
+                        league_val = LEAGUE_VALUE.get(CACHE.get('league', ''), '1500')
+                        cell_pokemon = value.split(':')[0].strip()
+
+                        # make pvpoke link
+                        pvpoke_link = f"https://pvpoke.com/battle/{league_val}/{cell_pokemon}/{pokemon}/11"
+
+                        # simulate battle for text color
+                        try:
+                            winner, leftover_health, battle_text = sim_battle(cell_pokemon, pokemon, tc)
+                            tool_tip_text = "&#013;&#010;</br>".join(battle_text)
+                            #logger.info(f"winner: {winner} - leftover_health: {leftover_health}")
+                        except Exception as exc:
+                            winner = None
+                            logger.error(f"{cell_pokemon}")
+                            logger.error(traceback.format_exc())
+                            leftover_health = 0
+                            tool_tip_text=  ""
+    
+                        if winner == pokemon:
+                            text_color = "#00FF00"
+                            text_color = "#%02x%02x%02x" % (0, 100 + int(155 * leftover_health), 0)
+                        elif winner == cell_pokemon:
+                            text_color = "#FF0000"
+                            text_color = "#%02x%02x%02x" % (100 + int(155 * leftover_health), 0, 0)
+                        else:
+                            text_color = "#000000"
+                        #logger.info(f"{cell_pokemon}: {text_color}")
+                        tooltip_addition = f"<span class='tooltiptext'>{tool_tip_text}</span>" if tooltip else ""
+                        value = f"<a class='tooltip1' href='{pvpoke_link}' style='color: {text_color}; text-decoration: none;' target='_blank'>{value}{tooltip_addition}</a>"
+                    table.add_cell(value)
+
+        table.end_row()
+
+    table.end_table()
+    return table.render()
 
 if __name__ == "__main__":
     results, team_maker = get_counters_for_rating(rating=None, league="MLC", days_back=1)
