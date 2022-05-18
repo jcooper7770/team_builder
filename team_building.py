@@ -154,6 +154,57 @@ HIGH_MULTIPLIERS = {
 class NoPokemonFound(Exception):
     pass
 
+
+class PokemonUser:
+    """ Pokemon user object """
+    def __init__(self, name, password, fav_league, teams):
+        self.name = name
+        self.fav_league = fav_league
+        self.teams = teams
+        self.password = password
+    
+    def save(self):
+        engine = create_engine()
+        metadata = sqlalchemy.MetaData()
+        table = sqlalchemy.Table("pokemon_user", metadata, autoload=True, autoload_with=engine)
+        try:
+            # Check if the user exists, then update
+            PokemonUser.load(self.name)
+            update = table.update().where(table.c.name==self.name).values(
+                name=self.name,
+                password=self.password,
+                fav_league=self.fav_league,
+                teams=json.dumps(self.teams)
+            )
+            engine.execute(update)
+        except:
+            # else insert
+            ins = table.insert().values(
+                name=self.name,
+                password=self.password,
+                fav_league=self.fav_league,
+                teams=json.dumps(self.teams)
+            )
+            engine.execute(ins)
+        engine.dispose()
+
+    @classmethod
+    def load(self, name):
+        # if user doesn't exist then raise exception
+        engine = create_engine()
+        query_results = engine.execute(f'SELECT * from `pokemon_user` WHERE pokemon_user.name="{name}";')
+        if query_results.rowcount == 0:
+            raise Exception(f"user '{name}' doesn't exist")
+        results = [result for result in query_results][0]
+        engine.dispose()
+        return PokemonUser(
+            name=results[0],
+            password=results[1],
+            fav_league=results[2],
+            teams=json.loads(results[3])
+        )
+
+
 class TeamCreater:
     def __init__(self, team_maker):
         self.types = requests.get("https://pogoapi.net//api/v1/type_effectiveness.json").json()

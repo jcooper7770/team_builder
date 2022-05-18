@@ -20,9 +20,13 @@ TODO:
   - Get data from scorsync
   - [DONE] Add in graphs
   - Add graphs to pokemon website
+  - Split templates for pokemon and trampoline sites
+  - [DONE] Add login for pokemon site
+  - Add teams for pokemon users
 """
 
 import datetime
+import json
 import os
 import socket
 import traceback
@@ -32,7 +36,7 @@ from flask import Flask, request, render_template, jsonify, redirect, url_for, s
     session, send_from_directory
 from flask_session import Session
 
-from team_building import get_counters_for_rating, LEAGUE_RANKINGS, NoPokemonFound, TeamCreater,\
+from team_building import PokemonUser, get_counters_for_rating, LEAGUE_RANKINGS, NoPokemonFound, TeamCreater,\
      create_table_from_results
 from battle_sim import sim_battle
 
@@ -299,7 +303,7 @@ def about():
 def run():
     global CACHE
     global N_TEAMS
-    chosen_league = request.args.get("league", "GL")
+    chosen_league = request.args.get("league", "ML")
     chosen_pokemon = request.args.get('pokemon', '')
     chosen_position = request.args.get('position', 'lead')
     num_days = int(request.args.get('num_days', '1'))
@@ -352,7 +356,8 @@ def run():
         number_teams=N_TEAMS,
         current_pokemon=chosen_pokemon,
         error_text=error_text,
-        result_data=team_maker.result_data
+        result_data=team_maker.result_data,
+        user=session.get("name", ""),
     )
 
 @app.template_filter()
@@ -395,6 +400,42 @@ def pokemonColor(pokemon_name, chosen_pokemon, chosen_league):
     return value
 
 
+@app.route("/pokemon/sign_up", methods=["GET", "POST"])
+def pokemon_sign_up():
+    """
+    Sign up
+    """
+    if request.method == "POST":
+        global ERROR
+        ERROR = ""
+        username = request.form.get("username", "")
+        password = request.form.get("password", "")
+        confirm = request.form.get("confirm", "")
+
+        if not username:
+            ERROR = "Please enter a username"
+            return redirect(url_for('pokemon_sign_up'))
+        try:
+            PokemonUser.load(username)
+            ERROR = f"Username {username} already exists."
+            return redirect(url_for('pokemon_sign_up'))
+        except:
+            pass
+        if not password:
+            ERROR = "Missing Password"
+            return redirect(url_for('pokemon_sign_up'))
+        elif confirm != password:
+            ERROR = "Passwords do not match"
+            return redirect(url_for('pokemon_sign_up'))
+        if ERROR:
+            return redirect(url_for('pokemon_sign_up'))
+        # Create the user and go to login page
+        user = PokemonUser(username, password, "", [])
+        user.save()
+        return redirect(url_for('pokemon_login'))
+    return render_template("pokemon_sign_up.html", error_text=ERROR, user="")
+
+
 @app.route("/sign_up", methods=["GET", "POST"])
 def sign_up():
     """
@@ -434,6 +475,33 @@ def sign_up():
     return render_template("sign_up.html", error_text=ERROR, user="")
 
 
+@app.route("/pokemon/login", methods=["GET", "POST"])
+def pokemon_login():
+    """
+    Login for the pokemon app
+    """
+    if request.method == "POST":
+        global LOGGED_IN_USER
+        global ERROR
+        ERROR = ""
+        username = request.form.get("username", "").lower()
+        password = request.form.get('password')
+        try:
+            user = PokemonUser.load(username)
+            if user.password != password:
+                ERROR = f"Incorrect password for {username}"
+            else:
+                ERROR = ""
+        except Exception as load_err:
+            print(f"\n\nError: {load_err}")
+            ERROR = f"Username {username} does not exists."
+        if ERROR:
+            return redirect(url_for('pokemon_login'))
+        session["name"] = username
+        return redirect(url_for('run'))
+    return render_template("pokemon_login.html", user=session.get("name"), error_text=ERROR)
+
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     """
@@ -455,6 +523,19 @@ def login():
             set_current_athlete(username)
         return redirect(url_for('trampoline_log'))
     return render_template("login.html", user=session.get("name"), error_text=ERROR)
+
+
+@app.route("/pokemon/logout", methods=["GET"])
+def pokemon_logout():
+    """
+    Logout
+    """
+    global LOGGED_IN_USER
+    LOGGED_IN_USER = ""
+    global SEARCH_DATE
+    SEARCH_DATE = None
+    session["name"] = None
+    return redirect(url_for('pokemon_login'))
 
 
 @app.route("/logout", methods=["GET"])
@@ -497,6 +578,17 @@ def landing_page():
     if not leaderboard["DD"]:
         leaderboard = mock_leaderboard
     return render_template("landing_page.html", user=session.get("name"), leaderboard=leaderboard)
+
+@app.route("/pokemon/user")
+def pokemon_user_profile():
+    """
+    Pokmeon user profile
+    """
+    username = session.get('name')
+    if not username:
+        return redirect(url_for('pokemon_login'))
+    user=PokemonUser.load(username)
+    return render_template("pokemon_user_profile.html", user=username, userObj=user)
 
 
 @app.route("/logger/user")
@@ -582,6 +674,24 @@ def user_profile():
         chart_start=request.args.get('chart_start', ""),
         chart_end=request.args.get('chart_end', "")
     )
+
+
+@app.route("/pokemon/user/update", methods=["POST"])
+def pokemon_update_user():
+    """
+    Update user
+    """
+    league = request.form.get('league')
+    teams = json.loads(request.form.get('team', '[]').replace("'", '"'))
+    other_teams = [json.loads(value.replace("'", '"')) for key, value in sorted(request.form.items(), key=lambda x: x[0]) if key.startswith("team-")]
+
+    user = PokemonUser.load(session.get('name'))
+    user.fav_league = league
+    #user.teams = teams
+    user.teams = other_teams
+    user.save()
+    return redirect(url_for("pokemon_user_profile"))
+
 
 
 @app.route("/logger/user/update", methods=["POST"])
