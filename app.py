@@ -301,13 +301,15 @@ def about():
 
 @app.route("/")
 def run():
-    user = PokemonUser.load(session.get('name'))
+    user = None
+    if session.get('name'):
+        user = PokemonUser.load(session.get('name'))
 
     global CACHE
     global N_TEAMS
     chosen_league = request.args.get("league", None)
     if not chosen_league:
-        if user.fav_league in LEAGUE_RANKINGS.keys():
+        if user and user.fav_league in LEAGUE_RANKINGS.keys():
             chosen_league = user.fav_league
         else:
             chosen_league = "ML"
