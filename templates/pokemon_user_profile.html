@@ -17,27 +17,101 @@
             <div class="col-sm-10">
             </div>
           </div>
+
+          <!-- Favorite League -->
           <div class="row">
             <div class="col-sm-2">
               <label for="league">Preferred League/Cup:</label>
             </div>
-            <div class="col-sm-10">
-              <input type="text" value="{{userObj.fav_league}}" class="form-control" name="league"><br>
+            <div class="col-sm-3">
+              <select class="form-control" name="league">
+                {% for league in leagues %}
+                <option value="{{league}}"{% if userObj.fav_league == league %} selected{% endif %}>{{league}}</option>
+                {% endfor %}
+              </select>
+              <!--<input type="text" value="{{userObj.fav_league}}" class="form-control" name="league"><br>-->
             </div>
           </div>
+
+          <!-- Pokemon dropdowns -->
+          <!--
           <div class="row">
             <div class="col-sm-2">
               <label for="team">Favorite Teams:</label>
-              <a id="add-team"><i class="fa fa-plus-circle" aria-hidden="true"></i></a>
+              <a id="add-team-dropdown" title="add team"><i class="fa fa-plus-circle" aria-hidden="true"></i></a>
             </div>
-            <div class="col-sm-10">
-              <div id="team-inputs">
-                {% for team in userObj.teams %}
-                <input id="teams" type="text" value="{{team|safe}}" class="form-control" name="team-{{loop.index}}">
-                {% endfor %}
+            <div class="col-sm-10" id="team-dropdowns">
+              {% for team in userObj.teams %}
+              <div class="form-row">
+                <div class="form-group form-inline col-auto">
+                  <a title="delete team" id="delete-row-{{loop.index}}" class="d-inline-block" href="#"><i class="fa fa-minus-circle" aria-hidden="true"></i></a>
+                  <select id="select-{{loop.index}}-1" name="select-{{loop.index}}-1" class="form-control d-inline-block">
+                    {% for pokemon in all_pokemon %}
+                      <option value="{{pokemon}}"{% if pokemon==team[0] %} selected{% endif %}>{{pokemon}}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="col-auto">
+                  <select id="select-{{loop.index}}-2" name="select-{{loop.index}}-2" class="form-control">
+                    {% for pokemon in all_pokemon %}
+                      <option value="{{pokemon}}"{% if pokemon==team[1] %} selected{% endif %}>{{pokemon}}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="col-auto">
+                  <select id="select-{{loop.index}}-3" name="select-{{loop.index}}-3" class="form-control">
+                    {% for pokemon in all_pokemon %}
+                      <option value="{{pokemon}}"{% if pokemon==team[2] %} selected{% endif %}>{{pokemon}}</option>
+                    {% endfor %}
+                  </select>
+                </div>
               </div>
+              {% endfor %}
             </div>
           </div>
+          -->
+
+          {% for league_key, league_teams in userObj.teams.items() %}
+          <div class="row">
+            <div class="col-sm-2">
+              <label>{{league_key}}</label>
+              <a id="add-team-dropdown" title="add team"><i class="fa fa-plus-circle" aria-hidden="true"></i></a>
+            </div>
+            <div class="col-sm-10" id="team-dropdowns">
+              <hr>
+
+              {% for team_key, team in league_teams.items() %}
+              <div class="form-row">
+                <div class="form-group form-inline col-auto">
+                  <a title="delete team" id="delete-row-{{loop.index}}" class="d-inline-block" href="#"><i class="fa fa-minus-circle" aria-hidden="true"></i></a>
+                  <select id="select-{{loop.index}}-1" name="select-{{league_key}}-{{loop.index}}-1" class="form-control d-inline-block">
+                    {% for pokemon in all_pokemon %}
+                      <option value="{{pokemon}}"{% if pokemon==team[0] %} selected{% endif %}>{{pokemon}}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="col-auto">
+                  <select id="select-{{loop.index}}-2" name="select-{{league_key}}-{{loop.index}}-2" class="form-control">
+                    {% for pokemon in all_pokemon %}
+                      <option value="{{pokemon}}"{% if pokemon==team[1] %} selected{% endif %}>{{pokemon}}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="col-auto">
+                  <select id="select-{{loop.index}}-3" name="select-{{league_key}}-{{loop.index}}-3" class="form-control">
+                    {% for pokemon in all_pokemon %}
+                      <option value="{{pokemon}}"{% if pokemon==team[2] %} selected{% endif %}>{{pokemon}}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+              {% endfor %}
+
+
+            </div>
+          </div>
+          {% endfor %}
+
           <div class="row">
             <div class="col">
               <button type="submit" class="btn btn-primary">Save</button>
@@ -70,6 +144,57 @@ $("#add-team").click(function(e){
 
   all_inputs.appendChild(input);
 
+});
+// have to bind on the document for elements created in the future
+$(document).on('click', '[id^="delete-row"]', function(e){
+  var div = e.target.parentNode.parentNode.parentNode;
+  div.remove();
+});
+//$("#add-team-dropdown").click(function(e){
+$("[id^=add-team-dropdown]").click(function(e){
+  var league_text = $(this).siblings().first().text();
+  var all_dropdowns = $(this).parent().next()[0];
+  //var all_dropdowns = document.getElementById("team-dropdowns");
+  var br = document.createElement("br");
+  //all_dropdowns.appendChild(br);
+
+  var num_teams = all_dropdowns.children.length;
+  var row_div = document.createElement("div");
+  row_div.className = "form-row";
+
+  for(var i=1; i<4; i++) {
+    var col_div = document.createElement("div");
+    // First column contains delete button
+    if(i==1){
+      col_div.className = "form-group form-inline col-auto"
+      var minus_link = document.createElement("a");
+      minus_link.className = "d-inline-block";
+      minus_link.href = "#";
+      minus_link.id = "delete-row-"+num_teams
+      var minus_button = document.createElement("i");
+      minus_button.className = "fa fa-minus-circle";
+      minus_link.appendChild(minus_button);
+      col_div.appendChild(minus_link);
+    } else {
+      col_div.className = "col-auto";
+    }
+    var select = document.createElement("select");
+    select.name = "select-"+league_text+"-"+num_teams+"-"+i;
+    select.id = "select-"+league_text+"-"+num_teams+"-"+i;
+    //select.style.display = "inline";
+    select.className = "form-control d-inline-block";
+    for(const pokemon of {{all_pokemon|safe}}) {
+      var option = document.createElement("option");
+      option.value = pokemon;
+      //option.text = pokemon.toUpperCase();
+      option.text = pokemon;
+      select.appendChild(option);
+    }
+    col_div.appendChild(select);
+    //all_dropdowns.appendChild(select);
+    row_div.appendChild(col_div);
+  }
+  all_dropdowns.appendChild(row_div);
 });
 </script>
 {% endblock %}

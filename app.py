@@ -36,7 +36,7 @@ from flask import Flask, request, render_template, jsonify, redirect, url_for, s
     session, send_from_directory
 from flask_session import Session
 
-from team_building import PokemonUser, get_counters_for_rating, LEAGUE_RANKINGS, NoPokemonFound, TeamCreater,\
+from team_building import MetaTeamDestroyer, PokemonUser, get_counters_for_rating, LEAGUE_RANKINGS, NoPokemonFound, TeamCreater,\
      create_table_from_results
 from battle_sim import sim_battle
 
@@ -301,9 +301,16 @@ def about():
 
 @app.route("/")
 def run():
+    user = PokemonUser.load(session.get('name'))
+
     global CACHE
     global N_TEAMS
-    chosen_league = request.args.get("league", "ML")
+    chosen_league = request.args.get("league", None)
+    if not chosen_league:
+        if user.fav_league in LEAGUE_RANKINGS.keys():
+            chosen_league = user.fav_league
+        else:
+            chosen_league = "ML"
     chosen_pokemon = request.args.get('pokemon', '')
     chosen_position = request.args.get('position', 'lead')
     num_days = int(request.args.get('num_days', '1'))
@@ -430,7 +437,8 @@ def pokemon_sign_up():
         if ERROR:
             return redirect(url_for('pokemon_sign_up'))
         # Create the user and go to login page
-        user = PokemonUser(username, password, "", [])
+        default_teams = {"GL": {}, "UL": {}, "ML": {}}
+        user = PokemonUser(username, password, "GL", default_teams)
         user.save()
         return redirect(url_for('pokemon_login'))
     return render_template("pokemon_sign_up.html", error_text=ERROR, user="")
@@ -588,7 +596,23 @@ def pokemon_user_profile():
     if not username:
         return redirect(url_for('pokemon_login'))
     user=PokemonUser.load(username)
-    return render_template("pokemon_user_profile.html", user=username, userObj=user)
+    print(f"\n\nteams: {user.teams}")
+    if CACHE.get('team_maker', {}):
+        all_team_makers = CACHE.get('team_maker', {})
+    else:
+        all_team_makers = {"GL": MetaTeamDestroyer(league="GL")}
+    all_pokemon = []
+    for league, team_maker in all_team_makers.items():
+        all_pokemon.extend([p.get('speciesId') for p in team_maker.all_pokemon])
+    all_pokemon = list(set(all_pokemon))
+    all_pokemon = sorted(all_pokemon)
+
+    return render_template(
+        "pokemon_user_profile.html",
+        user=username, userObj=user,
+        leagues=sorted(LEAGUE_RANKINGS.keys()),
+        all_pokemon=all_pokemon
+        )
 
 
 @app.route("/logger/user")
@@ -681,14 +705,34 @@ def pokemon_update_user():
     """
     Update user
     """
-    league = request.form.get('league')
-    teams = json.loads(request.form.get('team', '[]').replace("'", '"'))
-    other_teams = [json.loads(value.replace("'", '"')) for key, value in sorted(request.form.items(), key=lambda x: x[0]) if key.startswith("team-")]
-
     user = PokemonUser.load(session.get('name'))
+
+    # update prefered league
+    league = request.form.get('league')
     user.fav_league = league
-    #user.teams = teams
-    user.teams = other_teams
+    
+    # update pokemon teams
+    selected_pokemon = {
+        key[7:]: pokemon
+        for key, pokemon in sorted(request.form.items(), key=lambda x: x[0])
+        if key.startswith("select-")
+    }
+    print(selected_pokemon)
+    print(list(request.form.items()))
+    teams = {"GL": {}, "UL": {}, "ML": {}}
+    pokemon_keys = sorted(selected_pokemon.keys())
+    for key in pokemon_keys:
+        pokemon = selected_pokemon[key]
+        print(f"\n\n{key} {pokemon}")
+        try:
+            league_key, x, _ = key.split("-")
+        except:
+            continue
+        if x not in teams[league_key]:
+            teams[league_key][x] = []
+        teams[league_key][x].append(pokemon)
+    print(teams)
+    user.teams = teams
     user.save()
     return redirect(url_for("pokemon_user_profile"))
 
