@@ -24,7 +24,7 @@
               <label for="league">Preferred League/Cup:</label>
             </div>
             <div class="col-sm-3">
-              <select class="form-control" name="league">
+              <select class="form-control select2" name="league">
                 {% for league in leagues %}
                 <option value="{{league}}"{% if userObj.fav_league == league %} selected{% endif %}>{{league}}</option>
                 {% endfor %}
@@ -84,21 +84,21 @@
               <div class="form-row">
                 <div class="form-group form-inline col-auto">
                   <a title="delete team" id="delete-row-{{loop.index}}" class="d-inline-block" href="#"><i class="fa fa-minus-circle" aria-hidden="true"></i></a>
-                  <select id="select-{{loop.index}}-1" name="select-{{league_key}}-{{loop.index}}-1" class="form-control d-inline-block">
+                  <select id="select-{{loop.index}}-1" name="select-{{league_key}}-{{loop.index}}-1" class="form-control d-inline-block select2">
                     {% for pokemon in all_pokemon %}
                       <option value="{{pokemon}}"{% if pokemon==team[0] %} selected{% endif %}>{{pokemon}}</option>
                     {% endfor %}
                   </select>
                 </div>
                 <div class="col-auto">
-                  <select id="select-{{loop.index}}-2" name="select-{{league_key}}-{{loop.index}}-2" class="form-control">
+                  <select id="select-{{loop.index}}-2" name="select-{{league_key}}-{{loop.index}}-2" class="form-control select2">
                     {% for pokemon in all_pokemon %}
                       <option value="{{pokemon}}"{% if pokemon==team[1] %} selected{% endif %}>{{pokemon}}</option>
                     {% endfor %}
                   </select>
                 </div>
                 <div class="col-auto">
-                  <select id="select-{{loop.index}}-3" name="select-{{league_key}}-{{loop.index}}-3" class="form-control">
+                  <select id="select-{{loop.index}}-3" name="select-{{league_key}}-{{loop.index}}-3" class="form-control select2">
                     {% for pokemon in all_pokemon %}
                       <option value="{{pokemon}}"{% if pokemon==team[2] %} selected{% endif %}>{{pokemon}}</option>
                     {% endfor %}
@@ -126,10 +126,17 @@
 
 <br><br>
 
+<!--
 <script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
   crossorigin="anonymous"></script>
+-->
 
 <script type="text/javascript">
+$(document).ready(function() {
+  $('.select2').select2({
+    closeOnSelect: true
+  });
+});
 //document.getElementById("teams").value = "{{userObj.teams|safe}}";
 $("#add-team").click(function(e){
   alert("adding a team");
@@ -179,10 +186,11 @@ $("[id^=add-team-dropdown]").click(function(e){
       col_div.className = "col-auto";
     }
     var select = document.createElement("select");
-    select.name = "select-"+league_text+"-"+num_teams+"-"+i;
-    select.id = "select-"+league_text+"-"+num_teams+"-"+i;
+    var name = "select-"+league_text+"-"+num_teams+"-"+i;
+    select.name = name;
+    select.id = name;
     //select.style.display = "inline";
-    select.className = "form-control d-inline-block";
+    select.className = "form-control d-inline-block select2";
     for(const pokemon of {{all_pokemon|safe}}) {
       var option = document.createElement("option");
       option.value = pokemon;
@@ -195,6 +203,10 @@ $("[id^=add-team-dropdown]").click(function(e){
     row_div.appendChild(col_div);
   }
   all_dropdowns.appendChild(row_div);
+
+  // Initialize select2 for all select boxes
+  $('.select2').select2();
+  
 });
 </script>
 {% endblock %}
