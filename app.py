@@ -463,7 +463,8 @@ def pokemon_sign_up():
             return redirect(url_for('pokemon_sign_up'))
         # Create the user and go to login page
         default_teams = {"GL": {}, "UL": {}, "ML": {}}
-        user = PokemonUser(username, password, "GL", default_teams)
+        hashed_password = sha256_crypt.encrypt(password)
+        user = PokemonUser(username, hashed_password, "GL", default_teams)
         user.save()
         return redirect(url_for('pokemon_login'))
     return render_template("pokemon_sign_up.html", error_text=ERROR, user="")
@@ -521,10 +522,20 @@ def pokemon_login():
         password = request.form.get('password')
         try:
             user = PokemonUser.load(username)
+            if not user.password:
+                hashed_password = sha256_crypt.encrypt("password")
+                user.password = hashed_password
+                user.save()
+            if not sha256_crypt.verify(password, user.password):
+                ERROR = f"Incorrect password for user {username}"
+            else:
+                ERROR = ""
+            '''
             if user.password != password:
                 ERROR = f"Incorrect password for {username}"
             else:
                 ERROR = ""
+            '''
         except Exception as load_err:
             print(f"\n\nError: {load_err}")
             ERROR = f"Username {username} does not exists."
@@ -647,7 +658,8 @@ def pokemon_user_profile():
         "pokemon_user_profile.html",
         user=username, userObj=user,
         leagues=sorted(LEAGUE_RANKINGS.keys()),
-        all_pokemon=all_pokemon
+        all_pokemon=all_pokemon,
+        error_text=ERROR
         )
 
 
@@ -732,7 +744,8 @@ def user_profile():
         user_data=user_data,
         datapts=datapts,
         chart_start=request.args.get('chart_start', ""),
-        chart_end=request.args.get('chart_end', "")
+        chart_end=request.args.get('chart_end', ""),
+        error_text=ERROR
     )
 
 
@@ -741,12 +754,26 @@ def pokemon_update_user():
     """
     Update user
     """
+    global ERROR
     user = PokemonUser.load(session.get('name'))
 
     # update prefered league
     league = request.form.get('league')
     user.fav_league = league
     
+    # update password
+    old_password = request.form.get('old_password')
+    new_password = request.form.get('new_password')
+    if old_password:
+        if sha256_crypt.verify(old_password, user.password):
+            if not new_password:
+                ERROR = "Please enter a new password"
+            else:
+                user.password = sha256_crypt.encrypt(new_password)
+                ERROR = ""
+        else:
+            ERROR = "Did not update password for user because old password was incorrect"
+
     # update pokemon teams
     selected_pokemon = {
         key[7:]: pokemon
@@ -779,11 +806,26 @@ def update_user():
     """
     Update user
     """
+    global ERROR
     private = True if request.form.get("private")=="true" else False
     expand_comments = True if request.form.get("expand")=="true" else False
     compulsory = request.form.get("compulsory")
     optional = request.form.get("optional")
     athlete = Athlete.load(session.get("name"))
+
+    # update password
+    ERROR = ""
+    old_password = request.form.get('old_password')
+    new_password = request.form.get('new_password')
+    if old_password:
+        if sha256_crypt.verify(old_password, athlete.password):
+            if not new_password:
+                ERROR = "Please enter a new password"
+            else:
+                athlete.password = sha256_crypt.encrypt(new_password)
+        else:
+            ERROR = "Did not update password for user because old password was incorrect"
+
     athlete.private = private
     athlete.compulsory = [skill for skill in compulsory.split()]
     athlete.optional = [skill for skill in optional.split()]
