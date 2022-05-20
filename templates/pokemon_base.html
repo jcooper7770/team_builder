@@ -132,5 +132,16 @@ function hideData() {
 
 <br>
 {% block content %} {% endblock %}
+
+<script type="text/javascript">
+$("#close_error").click(function (e) {
+  var errorText = document.getElementById("error");
+  errorText.opacity = 1;
+  //(function fade(){(errorText.opacity-=.1)<0?errorText.display="none":setTimeout(fade,40)})();
+  errorText.style.transition = '1s';
+  errorText.style.opacity = 0;
+});
+</script>
+
 </body>
 </html>

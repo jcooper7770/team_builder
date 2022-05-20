@@ -326,7 +326,10 @@ def about():
 def run():
     user = None
     if session.get('name'):
-        user = PokemonUser.load(session.get('name'))
+        try:
+            user = PokemonUser.load(session.get('name'))
+        except:
+            return redirect(url_for('pokemon_login'))
 
     global CACHE
     global N_TEAMS
