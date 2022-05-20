@@ -264,6 +264,7 @@ def trampoline_log():
     # Require user to be logged in to use the app
     if not session.get("name"):
         return redirect(url_for('landing_page'))
+    user = get_user(session.get('name'))
     username, event = current_user(), current_event()
 
     # Print out a table per date
@@ -275,7 +276,7 @@ def trampoline_log():
         # Add the turns into a table for that practice
         title_date = practice.date.strftime("%A %m/%d/%Y")
         title = f"{title_date} ({practice.event})"
-        practice_table = skills_table(practice.turns, title=title)
+        practice_table = skills_table(practice.turns, title=title, expand_comments=user.get("expand_comments", False))
         practice_tables.append(practice_table)
 
     all_practice_tables = "<br><br>".join(practice_tables)
@@ -771,12 +772,14 @@ def update_user():
     Update user
     """
     private = True if request.form.get("private")=="true" else False
+    expand_comments = True if request.form.get("expand")=="true" else False
     compulsory = request.form.get("compulsory")
     optional = request.form.get("optional")
     athlete = Athlete.load(session.get("name"))
     athlete.private = private
     athlete.compulsory = [skill for skill in compulsory.split()]
     athlete.optional = [skill for skill in optional.split()]
+    athlete.expand_comments = expand_comments
     athlete.save()
     return redirect(url_for("user_profile"))
 

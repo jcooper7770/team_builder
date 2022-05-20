@@ -102,7 +102,8 @@ def get_user(user):
         "private": user[1],
         "compulsory": user[2],
         "optional": user[3],
-        "password": user[4]
+        "password": user[4],
+        "expand_comments": user[5]
     }
 
 
@@ -262,7 +263,8 @@ def save_athlete(athlete):
             private=athlete.private,
             compulsory=" ".join(athlete.compulsory) if isinstance(athlete.compulsory, list) else athlete.compulsory,
             optional=" ".join(athlete.optional) if isinstance(athlete.optional, list) else athlete.optional,
-            password=athlete.password
+            password=athlete.password,
+            expand_comments=athlete.expand_comments
         )
         engine.execute(ins)
     else:
@@ -271,7 +273,8 @@ def save_athlete(athlete):
             private=athlete.private,
             compulsory=" ".join(athlete.compulsory) if isinstance(athlete.compulsory, list) else athlete.compulsory,
             optional=" ".join(athlete.optional) if isinstance(athlete.optional, list) else athlete.optional,
-            password=athlete.password
+            password=athlete.password,
+            expand_comments=athlete.expand_comments
         )
         engine.execute(update)
     

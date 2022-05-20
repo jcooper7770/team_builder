@@ -106,7 +106,7 @@ class Athlete:
     """
     Information about athlete
     """
-    def __init__(self, name, private=False, compulsory=[], optional=[], dm_prelims1=[], dm_prelims2=[], dm_finals1=[], dm_finals2=[], password=""):
+    def __init__(self, name, private=False, compulsory=[], optional=[], dm_prelims1=[], dm_prelims2=[], dm_finals1=[], dm_finals2=[], password="", expand_comments=False):
         self.name = name
         self.compulsory = compulsory
         self.optional = optional
@@ -115,7 +115,8 @@ class Athlete:
         self.dm_prelim2 = dm_prelims2
         self.dm_finals1 = dm_finals1
         self.dm_finals2 = dm_finals2
-        self.password = ""
+        self.password = password
+        self.expand_comments = expand_comments
 
     def set_comp(self, skills):
         """
@@ -148,7 +149,8 @@ class Athlete:
             'dm_prelim2': self.dm_prelim2,
             'dm_finals1': self.dm_finals1,
             'dm_finals2': self.dm_finals2,
-            'password': self.password
+            'password': self.password,
+            'expand_comments': self.expand_comments
         }
         with open(file_name, 'w') as athlete_file:
             json.dump(athlete_data, athlete_file)
@@ -165,7 +167,8 @@ class Athlete:
         try:
             user = get_user(name)
             athlete = Athlete(
-                user['name'], user["private"], user['compulsory'], user['optional'], user['password']
+                user['name'], user["private"], user['compulsory'], user['optional'],
+                password=user['password'], expand_comments=user.get('expand_comments', False)
             )
         except:
             athlete = None
@@ -185,7 +188,8 @@ class Athlete:
                 athlete_data.get("private", False),
                 athlete_data["compulsory"],
                 athlete_data["optional"],
-                athlete_data.get('password', '')
+                password=athlete_data.get('password', ''),
+                expand_comments=athlete_data.get('expand_comments', False)
             )
             return athlete
         

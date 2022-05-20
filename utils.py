@@ -95,7 +95,7 @@ class TableMaker:
         return "".join(self.table)
 
 
-def skills_table(skills, title="Routines"):
+def skills_table(skills, title="Routines", expand_comments=False):
     """
     Writes all trampoline skills to a table
     """
@@ -126,7 +126,8 @@ def skills_table(skills, title="Routines"):
 
         note_html = ""
         if turn.note:
-            note_html = f' <i title="toggle comment" class="fa fa-comments" id="unhide-note"></i> <span id="hidden-note" style="display:none;">{turn.note}</span>'
+            display = "none" if not expand_comments else "inline"
+            note_html = f' <i title="toggle comment" class="fa fa-comments" id="unhide-note"></i> <span id="hidden-note" style="display:{display};">{turn.note}</span>'
         skills_table.add_cell(f"<b><a id='copy-text' title='Copy text' href='#'>{total_turn_num}</a></b>{note_html}")
 
         # Skills
