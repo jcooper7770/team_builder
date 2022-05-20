@@ -62,6 +62,7 @@ USER_GOALS = {
 }
 LOGGED_IN_USER = ""
 SEARCH_DATE = None
+SEARCH_SKILLS = "" # Skills to search for
 ERROR = None
 
 
@@ -131,6 +132,17 @@ def delete_day(day, event):
     datetime_to_remove = datetime.datetime.strptime(day, "%m-%d-%Y")
     Practice.delete(datetime_to_remove, event=event)
     return redirect(url_for("trampoline_log"))
+
+
+@app.route("/logger/search/skills", methods=["POST"])
+def search_skills():
+    """
+    Search practices based on a skill or group of skills
+    """
+    global SEARCH_SKILLS
+    skills = request.form.get('practice_skills', '')
+    SEARCH_SKILLS = skills
+    return redirect(url_for('trampoline_log'))
 
 
 @app.route("/logger/search", methods=["POST", "GET"])
@@ -258,7 +270,7 @@ def trampoline_log():
     practice_tables = []
 
     # Get data from database
-    user_practices = Practice.load_from_db(username, date=SEARCH_DATE)
+    user_practices = Practice.load_from_db(username, date=SEARCH_DATE, skills=SEARCH_SKILLS)
     for practice in user_practices:
         # Add the turns into a table for that practice
         title_date = practice.date.strftime("%A %m/%d/%Y")
@@ -286,7 +298,8 @@ def trampoline_log():
         goals=get_user_goals(current_user()),
         all_skills=ALL_SKILLS,
         error_text=ERROR,
-        search_date=SEARCH_DATE.strftime("%Y-%m-%d") if SEARCH_DATE else None
+        search_date=SEARCH_DATE.strftime("%Y-%m-%d") if SEARCH_DATE else None,
+        search_skills=SEARCH_SKILLS
     )
 
 

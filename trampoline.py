@@ -106,7 +106,7 @@ class Athlete:
     """
     Information about athlete
     """
-    def __init__(self, name, private=False, compulsory=[], optional=[], dm_prelims1=[], dm_prelims2=[], dm_finals1=[], dm_finals2=[]):
+    def __init__(self, name, private=False, compulsory=[], optional=[], dm_prelims1=[], dm_prelims2=[], dm_finals1=[], dm_finals2=[], password=""):
         self.name = name
         self.compulsory = compulsory
         self.optional = optional
@@ -115,6 +115,7 @@ class Athlete:
         self.dm_prelim2 = dm_prelims2
         self.dm_finals1 = dm_finals1
         self.dm_finals2 = dm_finals2
+        self.password = ""
 
     def set_comp(self, skills):
         """
@@ -146,7 +147,8 @@ class Athlete:
             'dm_prelim1': self.dm_prelim1,
             'dm_prelim2': self.dm_prelim2,
             'dm_finals1': self.dm_finals1,
-            'dm_finals2': self.dm_finals2
+            'dm_finals2': self.dm_finals2,
+            'password': self.password
         }
         with open(file_name, 'w') as athlete_file:
             json.dump(athlete_data, athlete_file)
@@ -163,7 +165,7 @@ class Athlete:
         try:
             user = get_user(name)
             athlete = Athlete(
-                user['name'], user["private"], user['compulsory'], user['optional']
+                user['name'], user["private"], user['compulsory'], user['optional'], user['password']
             )
         except:
             athlete = None
@@ -182,7 +184,8 @@ class Athlete:
                 athlete_data['name'],
                 athlete_data.get("private", False),
                 athlete_data["compulsory"],
-                athlete_data["optional"]    
+                athlete_data["optional"],
+                athlete_data.get('password', '')
             )
             return athlete
         
@@ -262,12 +265,12 @@ class Practice:
         )
 
     @classmethod
-    def load_from_db(self, user, date=None):
+    def load_from_db(self, user, date=None, skills=None):
         """
         Returns practices from the db
         """
         practices = {}
-        turns = get_from_db(user=user, date=date)
+        turns = get_from_db(user=user, date=date, skills=skills)
         for turn in turns:
             practice_date = turn[2]
             if practice_date not in practices:

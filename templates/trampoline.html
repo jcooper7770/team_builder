@@ -193,7 +193,12 @@
 
 <br><br>
 <div class="row header">
-  <div class="col-sm-4"></div>
+  <div class="col-sm-4 float-left">
+    <form class="form-inline my-2" action="{{url_for('search_skills')}}" method="POST">
+      <input class="form-control mr-sm-2 mr-auto" type="text" name="practice_skills" id="practice_skills" placeholder="Input skills/combos"{% if search_skills %} value="{{search_skills}}"{% endif %}>
+      <button class="btn btn-secondary" type="submit">Search for skills</button>
+    </form>
+  </div>
   <div class="col-sm-4">
     <h1 style='text-align:center;' class="header" >Previous Practices</h1>
   </div>
@@ -241,6 +246,7 @@
     document.getElementById("logger-date").value = date.toJSON().slice(0,10);
     {% else %}
     document.getElementById("logger-date").value = "{{search_date}}";
+    document.getElementById("practice_date").value = "{{search_date}}";
     {% endif %}
   });
   // unhide the hidden notes by clicking the comment button

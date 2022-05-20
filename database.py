@@ -191,14 +191,26 @@ def delete_goal_from_db(user, goal):
     ENGINE.execute(delete)
 
 
-def get_from_db(table_name=None, user="test", date=None):
+def get_from_db(table_name=None, user="test", date=None, skills=None):
     table_name = table_name or TABLE_NAME
     engine = create_engine(table_name)
 
+    where_clause = [f'LOWER({table_name}.user)="{user}"']
+    if date:
+        where_clause.append(f'{table_name}.date="{date}"')
+    if skills:
+        where_clause.append(f'{table_name}.turn LIKE "%%{skills}%%"')
+    query_base = f'SELECT * from `{table_name}`'
+    query = f'{query_base} WHERE ({" AND ".join(where_clause)});'
+    print(f"query: {query}")
+
+    result = engine.execute(query)
+    '''
     if date:
         result = engine.execute(f'SELECT * from `{table_name}` WHERE (LOWER({table_name}.user)="{user.lower()}" AND {table_name}.date="{date}");')
     else:
         result = engine.execute(f'SELECT * from `{table_name}` WHERE LOWER({table_name}.user)="{user.lower()}";')
+    '''
     
     mock_turns = [
         [skill_num, '801<', datetime.datetime.now(), user, random.choice(["trampoline", "dmt"])]
