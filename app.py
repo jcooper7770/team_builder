@@ -272,7 +272,11 @@ def trampoline_log():
     # Require user to be logged in to use the app
     if not session.get("name"):
         return redirect(url_for('landing_page'))
-    user = get_user(session.get('name'))
+    try:
+        user = get_user(session.get('name'))
+    except:
+        return redirect(url_for('logout'))
+
     username, event = current_user(), current_event()
 
     # Print out a table per date
@@ -329,7 +333,7 @@ def run():
         try:
             user = PokemonUser.load(session.get('name'))
         except:
-            return redirect(url_for('pokemon_login'))
+            return redirect(url_for('pokemon_logout'))
 
     global CACHE
     global N_TEAMS
