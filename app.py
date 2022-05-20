@@ -141,6 +141,14 @@ def search_skills():
     """
     global SEARCH_SKILLS
     skills = request.form.get('practice_skills', '')
+
+    # expand user compulsory or optional
+    if skills == "optional":
+        user = Athlete.load(session.get('name'))
+        skills = user.optional
+    if skills == "compulsory":
+        user = Athlete.load(session.get('name'))
+        skills = user.compulsory
     SEARCH_SKILLS = skills
     return redirect(url_for('trampoline_log'))
 
