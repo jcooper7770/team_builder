@@ -31,6 +31,7 @@ import os
 import socket
 import traceback
 from collections import defaultdict
+from passlib.hash import sha256_crypt
 
 from flask import Flask, request, render_template, jsonify, redirect, url_for, send_file,\
     session, send_from_directory
@@ -468,18 +469,18 @@ def sign_up():
             return redirect(url_for('sign_up'))
         except:
             pass
-        '''
         if not password:
             ERROR = "Missing Password"
             return redirect(url_for('sign_up'))
         elif confirm != password:
             ERROR = "Passwords do not match"
             return redirect(url_for('sign_up'))
-        '''
         if ERROR:
             return redirect(url_for('sign_up'))
         # Create the user and go to login page
-        athlete = Athlete(username, private)
+
+        hashed_password = sha256_crypt.encrypt(password)
+        athlete = Athlete(username, private, password=hashed_password)
         athlete.save()
         return redirect(url_for('login'))
     return render_template("sign_up.html", error_text=ERROR, user="")
@@ -522,10 +523,21 @@ def login():
         global ERROR
         ERROR = ""
         username = request.form.get("username", "").lower()
+        password = request.form.get("password")
         try:
-            get_user(username)
-        except:
-            ERROR = f"Username {username} does not exists."
+            user = get_user(username)
+            # if empty password then save as fake password
+            if not user["password"]:
+                hashed_password = sha256_crypt.encrypt("password")
+                athlete = Athlete.load(username)
+                athlete.password = hashed_password
+                athlete.save()
+                user["password"] = hashed_password
+            if not sha256_crypt.verify(password, user["password"]):
+                ERROR = f"Incorrect password for user {username}"
+                return redirect(url_for('login'))
+        except Exception as login_err:
+            ERROR = f"Username {username} does not exists. {login_err}"
             return redirect(url_for('login'))
         session["name"] = username
         if session.get('name'):

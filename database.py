@@ -93,6 +93,7 @@ def get_user(user):
         raise Exception(f"No user in db by name of {user}")
 
     user = [res for res in result][0]
+    print(f"user: {user}")
     result.close()
     conn.close()
     engine.dispose()
@@ -100,7 +101,8 @@ def get_user(user):
         "name": user[0],
         "private": user[1],
         "compulsory": user[2],
-        "optional": user[3]
+        "optional": user[3],
+        "password": user[4]
     }
 
 
@@ -247,7 +249,8 @@ def save_athlete(athlete):
             user=athlete.name,
             private=athlete.private,
             compulsory=" ".join(athlete.compulsory) if isinstance(athlete.compulsory, list) else athlete.compulsory,
-            optional=" ".join(athlete.optional) if isinstance(athlete.optional, list) else athlete.optional
+            optional=" ".join(athlete.optional) if isinstance(athlete.optional, list) else athlete.optional,
+            password=athlete.password
         )
         engine.execute(ins)
     else:
@@ -255,7 +258,8 @@ def save_athlete(athlete):
         update = table.update().where(table.c.user==athlete.name).values(
             private=athlete.private,
             compulsory=" ".join(athlete.compulsory) if isinstance(athlete.compulsory, list) else athlete.compulsory,
-            optional=" ".join(athlete.optional) if isinstance(athlete.optional, list) else athlete.optional
+            optional=" ".join(athlete.optional) if isinstance(athlete.optional, list) else athlete.optional,
+            password=athlete.password
         )
         engine.execute(update)
     
