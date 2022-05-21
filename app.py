@@ -62,9 +62,7 @@ USER_GOALS = {
     "bob": [{"goal": "goal1", "done": False}, {"goal": "goal2", "done": True}]
 }
 LOGGED_IN_USER = ""
-SEARCH_DATE = None
 SEARCH_SKILLS = "" # Skills to search for
-ERROR = None
 
 
 def make_recommended_teams(team_maker, chosen_pokemon, chosen_league, chosen_position):
@@ -150,7 +148,8 @@ def search_skills():
     if skills == "compulsory":
         user = Athlete.load(session.get('name'))
         skills = user.compulsory
-    SEARCH_SKILLS = skills
+    session["search_skills"] = skills
+    #SEARCH_SKILLS = skills
     return redirect(url_for('trampoline_log'))
 
 
@@ -159,22 +158,20 @@ def search_date():
     """
     Search by certain date
     """
-    global SEARCH_DATE
-    global ERROR
-    ERROR = ""
+    session["error"] = ""
     if request.method == "GET":
         practice_date = request.args.get("practice_date", "")
     else:
         practice_date = request.form.get("practice_date", "")
 
     if not practice_date:
-        SEARCH_DATE = None
+        session["search_date"] = None
     else:
         # convert practice date to datetime
         try:
-            SEARCH_DATE = datetime.datetime.strptime(practice_date, "%Y-%m-%d")
+            session["search_date"] = datetime.datetime.strptime(practice_date, "%Y-%m-%d")
         except Exception as error:
-            ERROR = error
+            session["error"] = error
     return redirect(url_for("trampoline_log"))
     
 
@@ -258,13 +255,12 @@ def _save_trampoline_data(request):
 @app.route("/logger", methods=['GET', 'POST'])
 def trampoline_log():
     # POST/Redirect/GET to avoid resubmitting form on refresh
-    global ERROR
     if request.method == "POST":
-        ERROR = None
+        session["error"] = None
         try:
             _save_trampoline_data(request)
         except Exception as exception:
-            ERROR = f"Error saving log data: {exception}"
+            session["error"] = f"Error saving log data: {exception}"
             logging.error(f"Error saving trampoline log data: {exception}")
             return redirect(url_for('trampoline_log', routine=request.form.get('log')))
 
@@ -284,7 +280,7 @@ def trampoline_log():
     practice_tables = []
 
     # Get data from database
-    user_practices = Practice.load_from_db(username, date=SEARCH_DATE, skills=SEARCH_SKILLS)
+    user_practices = Practice.load_from_db(username, date=session.get("search_date"), skills=session.get("search_skills", ""))
     for practice in user_practices:
         # Add the turns into a table for that practice
         title_date = practice.date.strftime("%A %m/%d/%Y")
@@ -302,7 +298,7 @@ def trampoline_log():
         "</div>"
     ]
     body = "".join(html) if all_practice_tables else ""
-    logging.info(f"error: {ERROR}")
+    logging.info(f"error: {session.get('error', '')}")
     return render_template(
         "trampoline/trampoline.html",
         body=body, username=username,
@@ -311,9 +307,9 @@ def trampoline_log():
         user=session.get('name'),
         goals=get_user_goals(current_user()),
         all_skills=ALL_SKILLS,
-        error_text=ERROR,
-        search_date=SEARCH_DATE.strftime("%Y-%m-%d") if SEARCH_DATE else None,
-        search_skills=SEARCH_SKILLS
+        error_text=session.get('error'),
+        search_date=session.get("search_date").strftime("%Y-%m-%d") if session.get("search_date") else None,
+        search_skills=session.get("search_skills", "")
     )
 
 
@@ -448,28 +444,27 @@ def pokemon_sign_up():
     Sign up
     """
     if request.method == "POST":
-        global ERROR
-        ERROR = ""
+        session["error"] = ""
         username = request.form.get("username", "")
         password = request.form.get("password", "")
         confirm = request.form.get("confirm", "")
 
         if not username:
-            ERROR = "Please enter a username"
+            session["error"] = "Please enter a username"
             return redirect(url_for('pokemon_sign_up'))
         try:
             PokemonUser.load(username)
-            ERROR = f"Username {username} already exists."
+            session["error"] = f"Username {username} already exists."
             return redirect(url_for('pokemon_sign_up'))
         except:
             pass
         if not password:
-            ERROR = "Missing Password"
+            session["error"] = "Missing Password"
             return redirect(url_for('pokemon_sign_up'))
         elif confirm != password:
-            ERROR = "Passwords do not match"
+            session["error"] = "Passwords do not match"
             return redirect(url_for('pokemon_sign_up'))
-        if ERROR:
+        if session.get('error'):
             return redirect(url_for('pokemon_sign_up'))
         # Create the user and go to login page
         default_teams = {"GL": {}, "UL": {}, "ML": {}}
@@ -477,7 +472,7 @@ def pokemon_sign_up():
         user = PokemonUser(username, hashed_password, "GL", default_teams)
         user.save()
         return redirect(url_for('pokemon_login'))
-    return render_template("pokemon/sign_up.html", error_text=ERROR, user="")
+    return render_template("pokemon/sign_up.html", error_text=session.get('error'), user="")
 
 
 @app.route("/sign_up", methods=["GET", "POST"])
@@ -486,29 +481,28 @@ def sign_up():
     Sign up
     """
     if request.method == "POST":
-        global ERROR
-        ERROR = ""
+        session["error"] = ""
         username = request.form.get("username", "")
         password = request.form.get("password", "")
         confirm = request.form.get("confirm", "")
         private = True if request.form.get("private")=="true" else False
 
         if not username:
-            ERROR = "Please enter a username"
+            session["error"] = "Please enter a username"
             return redirect(url_for('sign_up'))
         try:
             get_user(username)
-            ERROR = f"Username {username} already exists."
+            session["error"] = f"Username {username} already exists."
             return redirect(url_for('sign_up'))
         except:
             pass
         if not password:
-            ERROR = "Missing Password"
+            session["error"] = "Missing Password"
             return redirect(url_for('sign_up'))
         elif confirm != password:
-            ERROR = "Passwords do not match"
+            session["error"] = "Passwords do not match"
             return redirect(url_for('sign_up'))
-        if ERROR:
+        if session.get('error'):
             return redirect(url_for('sign_up'))
         # Create the user and go to login page
 
@@ -516,7 +510,7 @@ def sign_up():
         athlete = Athlete(username, private, password=hashed_password)
         athlete.save()
         return redirect(url_for('login'))
-    return render_template("trampoline/sign_up.html", error_text=ERROR, user="")
+    return render_template("trampoline/sign_up.html", error_text=session.get('error'), user="")
 
 
 @app.route("/pokemon/login", methods=["GET", "POST"])
@@ -526,8 +520,7 @@ def pokemon_login():
     """
     if request.method == "POST":
         global LOGGED_IN_USER
-        global ERROR
-        ERROR = ""
+        session['error'] = ""
         username = request.form.get("username", "").lower()
         password = request.form.get('password')
         try:
@@ -537,23 +530,17 @@ def pokemon_login():
                 user.password = hashed_password
                 user.save()
             if not sha256_crypt.verify(password, user.password):
-                ERROR = f"Incorrect password for user {username}"
+                session['error'] = f"Incorrect password for user {username}"
             else:
-                ERROR = ""
-            '''
-            if user.password != password:
-                ERROR = f"Incorrect password for {username}"
-            else:
-                ERROR = ""
-            '''
+                session['error'] = ""
         except Exception as load_err:
             print(f"\n\nError: {load_err}")
-            ERROR = f"Username {username} does not exists."
-        if ERROR:
+            session['error'] = f"Username {username} does not exists."
+        if session.get('error'):
             return redirect(url_for('pokemon_login'))
         session["name"] = username
         return redirect(url_for('run'))
-    return render_template("pokemon/login.html", user=session.get("name"), error_text=ERROR)
+    return render_template("pokemon/login.html", user=session.get("name"), error_text=session.get('error'))
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -563,8 +550,7 @@ def login():
     """
     if request.method == "POST":
         global LOGGED_IN_USER
-        global ERROR
-        ERROR = ""
+        session["error"] = ""
         username = request.form.get("username", "").lower()
         password = request.form.get("password")
         try:
@@ -577,17 +563,17 @@ def login():
                 athlete.save()
                 user["password"] = hashed_password
             if not sha256_crypt.verify(password, user["password"]):
-                ERROR = f"Incorrect password for user {username}"
+                session["error"] = f"Incorrect password for user {username}"
                 return redirect(url_for('login'))
         except Exception as login_err:
-            ERROR = f"Username {username} does not exists. {login_err}"
+            session["error"] = f"Username {username} does not exists. {login_err}"
             return redirect(url_for('login'))
         session["name"] = username
         if session.get('name'):
             set_current_user(username)
             set_current_athlete(username)
         return redirect(url_for('trampoline_log'))
-    return render_template("trampoline/login.html", user=session.get("name"), error_text=ERROR)
+    return render_template("trampoline/login.html", user=session.get("name"), error_text=session.get('error'))
 
 
 @app.route("/pokemon/logout", methods=["GET"])
@@ -597,9 +583,8 @@ def pokemon_logout():
     """
     global LOGGED_IN_USER
     LOGGED_IN_USER = ""
-    global SEARCH_DATE
-    SEARCH_DATE = None
     session["name"] = None
+    session['error'] = ""
     return redirect(url_for('pokemon_login'))
 
 
@@ -610,9 +595,10 @@ def logout():
     """
     global LOGGED_IN_USER
     LOGGED_IN_USER = ""
-    global SEARCH_DATE
-    SEARCH_DATE = None
     session["name"] = None
+    session["search_skills"] = ""
+    session["search_date"] = None
+    session["error"] = ""
     return redirect(url_for('login'))
 
 
@@ -669,7 +655,7 @@ def pokemon_user_profile():
         user=username, userObj=user,
         leagues=sorted(LEAGUE_RANKINGS.keys()),
         all_pokemon=all_pokemon,
-        error_text=ERROR
+        error_text=session.get('error')
         )
 
 
@@ -755,7 +741,7 @@ def user_profile():
         datapts=datapts,
         chart_start=request.args.get('chart_start', ""),
         chart_end=request.args.get('chart_end', ""),
-        error_text=ERROR
+        error_text=session.get('error')
     )
 
 
@@ -764,7 +750,6 @@ def pokemon_update_user():
     """
     Update user
     """
-    global ERROR
     user = PokemonUser.load(session.get('name'))
 
     # update prefered league
@@ -777,12 +762,12 @@ def pokemon_update_user():
     if old_password:
         if sha256_crypt.verify(old_password, user.password):
             if not new_password:
-                ERROR = "Please enter a new password"
+                session['error'] = "Please enter a new password"
             else:
                 user.password = sha256_crypt.encrypt(new_password)
-                ERROR = ""
+                session['error'] = ""
         else:
-            ERROR = "Did not update password for user because old password was incorrect"
+            session['error'] = "Did not update password for user because old password was incorrect"
 
     # update pokemon teams
     selected_pokemon = {
@@ -816,7 +801,6 @@ def update_user():
     """
     Update user
     """
-    global ERROR
     private = True if request.form.get("private")=="true" else False
     expand_comments = True if request.form.get("expand")=="true" else False
     compulsory = request.form.get("compulsory")
@@ -824,17 +808,17 @@ def update_user():
     athlete = Athlete.load(session.get("name"))
 
     # update password
-    ERROR = ""
+    session['error'] = ""
     old_password = request.form.get('old_password')
     new_password = request.form.get('new_password')
     if old_password:
         if sha256_crypt.verify(old_password, athlete.password):
             if not new_password:
-                ERROR = "Please enter a new password"
+                session['error'] = "Please enter a new password"
             else:
                 athlete.password = sha256_crypt.encrypt(new_password)
         else:
-            ERROR = "Did not update password for user because old password was incorrect"
+            session['error'] = "Did not update password for user because old password was incorrect"
 
     athlete.private = private
     athlete.compulsory = [skill for skill in compulsory.split()]
