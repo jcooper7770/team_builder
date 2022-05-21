@@ -29,6 +29,7 @@ import datetime
 import json
 import os
 import socket
+import subprocess
 import traceback
 from collections import defaultdict
 from passlib.hash import sha256_crypt
@@ -318,12 +319,14 @@ def trampoline_log():
 
 @app.route("/logger/about")
 def about_trampoline():
-    return render_template("trampoline/about_trampoline.html", user=session.get("name"))
+    commit_hash = subprocess.check_output(["git", "rev-parse", "HEAD"]).decode('ascii').strip()
+    return render_template("trampoline/about_trampoline.html", user=session.get("name"), commit_hash=commit_hash)
 
 
 @app.route("/about")
 def about():
-    return render_template("pokemon/about.html")
+    commit_hash = subprocess.check_output(["git", "rev-parse", "HEAD"]).decode('ascii').strip()
+    return render_template("pokemon/about.html", commit_hash=commit_hash)
 
 
 @app.route("/")
