@@ -30,9 +30,9 @@ from collections import defaultdict
 
 from flask import session
 
-from database import get_user, get_users_and_turns, save_athlete,\
+from application.utils.database import get_user, get_users_and_turns, save_athlete,\
     delete_from_db, get_from_db, add_to_db
-from utils import NON_SKILLS
+from application.utils.utils import NON_SKILLS
 
 NUM_FLIPS = {
     1: 0,

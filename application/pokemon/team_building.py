@@ -39,9 +39,9 @@ import traceback
 from datetime import datetime, timedelta
 from collections import defaultdict
 
-from database import create_engine
-from battle_sim import sim_battle
-from utils import CACHE, logger, TableMaker
+from application.pokemon.battle_sim import sim_battle
+from application.utils.database import create_engine
+from application.utils.utils import CACHE, logger, TableMaker
 
 # The number of pokemon to consider
 TOP_TEAM_NUM = None

@@ -37,16 +37,16 @@ from flask import Flask, request, render_template, jsonify, redirect, url_for, s
     session, send_from_directory
 from flask_session import Session
 
-from team_building import MetaTeamDestroyer, PokemonUser, get_counters_for_rating, LEAGUE_RANKINGS, NoPokemonFound, TeamCreater,\
+from application.pokemon.team_building import MetaTeamDestroyer, PokemonUser, get_counters_for_rating, LEAGUE_RANKINGS, NoPokemonFound, TeamCreater,\
      create_table_from_results
-from battle_sim import sim_battle
+from application.pokemon.battle_sim import sim_battle
 
-from trampoline import convert_form_data, get_leaderboards, pretty_print, Practice, current_user, set_current_user,\
+from application.trampoline.trampoline import convert_form_data, get_leaderboards, pretty_print, Practice, current_user, set_current_user,\
      current_event, set_current_event, set_current_athlete,\
      ALL_SKILLS, get_leaderboards, Athlete, get_user_turns, get_turn_dds
-from database import create_engine, set_table_name, insert_goal_to_db, get_user_goals, complete_goal,\
+from application.utils.database import create_engine, set_table_name, insert_goal_to_db, get_user_goals, complete_goal,\
     delete_goal_from_db, get_user, get_simmed_battle, add_simmed_battle
-from utils import *
+from application.utils.utils import *
 
 
 app = Flask(__name__, static_url_path="", static_folder="static")
@@ -303,7 +303,7 @@ def trampoline_log():
     body = "".join(html) if all_practice_tables else ""
     logging.info(f"error: {ERROR}")
     return render_template(
-        "trampoline.html",
+        "trampoline/trampoline.html",
         body=body, username=username,
         event=event,
         routine_text=request.args.get('routine', ''),
@@ -318,12 +318,12 @@ def trampoline_log():
 
 @app.route("/logger/about")
 def about_trampoline():
-    return render_template("about_trampoline.html", user=session.get("name"))
+    return render_template("trampoline/about_trampoline.html", user=session.get("name"))
 
 
 @app.route("/about")
 def about():
-    return render_template("about.html")
+    return render_template("pokemon/about.html")
 
 
 @app.route("/")
@@ -384,7 +384,7 @@ def run():
     #html.append("</div>")
 
     return render_template(
-        "index.html",
+        "pokemon/index.html",
         body="".join(html),
         leagues=sorted(LEAGUE_RANKINGS.keys()),
         current_league=chosen_league,
@@ -474,7 +474,7 @@ def pokemon_sign_up():
         user = PokemonUser(username, hashed_password, "GL", default_teams)
         user.save()
         return redirect(url_for('pokemon_login'))
-    return render_template("pokemon_sign_up.html", error_text=ERROR, user="")
+    return render_template("pokemon/sign_up.html", error_text=ERROR, user="")
 
 
 @app.route("/sign_up", methods=["GET", "POST"])
@@ -513,7 +513,7 @@ def sign_up():
         athlete = Athlete(username, private, password=hashed_password)
         athlete.save()
         return redirect(url_for('login'))
-    return render_template("sign_up.html", error_text=ERROR, user="")
+    return render_template("trampoline/sign_up.html", error_text=ERROR, user="")
 
 
 @app.route("/pokemon/login", methods=["GET", "POST"])
@@ -550,7 +550,7 @@ def pokemon_login():
             return redirect(url_for('pokemon_login'))
         session["name"] = username
         return redirect(url_for('run'))
-    return render_template("pokemon_login.html", user=session.get("name"), error_text=ERROR)
+    return render_template("pokemon/login.html", user=session.get("name"), error_text=ERROR)
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -584,7 +584,7 @@ def login():
             set_current_user(username)
             set_current_athlete(username)
         return redirect(url_for('trampoline_log'))
-    return render_template("login.html", user=session.get("name"), error_text=ERROR)
+    return render_template("trampoline/login.html", user=session.get("name"), error_text=ERROR)
 
 
 @app.route("/pokemon/logout", methods=["GET"])
@@ -639,7 +639,7 @@ def landing_page():
     leaderboard = get_leaderboards()
     if not leaderboard["DD"]:
         leaderboard = mock_leaderboard
-    return render_template("landing_page.html", user=session.get("name"), leaderboard=leaderboard)
+    return render_template("trampoline/landing_page.html", user=session.get("name"), leaderboard=leaderboard)
 
 @app.route("/pokemon/user")
 def pokemon_user_profile():
@@ -662,7 +662,7 @@ def pokemon_user_profile():
     all_pokemon = sorted(all_pokemon)
 
     return render_template(
-        "pokemon_user_profile.html",
+        "pokemon/user_profile.html",
         user=username, userObj=user,
         leagues=sorted(LEAGUE_RANKINGS.keys()),
         all_pokemon=all_pokemon,
@@ -746,7 +746,7 @@ def user_profile():
     datapts['turns_per_practice'] = [{'x': date, 'y': turns} for date, turns in sorted(turns_per_practice.items(), key=lambda x: x[0])]
 
     return render_template(
-        "user_profile.html",
+        "trampoline/user_profile.html",
         user=current_user,
         user_data=user_data,
         datapts=datapts,

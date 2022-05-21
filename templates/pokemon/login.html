@@ -1,15 +1,16 @@
-{% extends "pokemon_base.html" %}
+{% extends "pokemon/base.html" %}
 
 {% block content %}
 <br><br>
 <div class="container">
   <div class="card border-primary">
     <div class="card-header text-center">
-      <h2>Sign-Up</h2>
+      <h2>Login</h2>
     </div>
     <div class="row card-body">
       <div class="col-sm">
-        <form method="POST" action="{{ url_for('pokemon_sign_up') }}" id="sign_up">
+
+        <form method="POST" action="{{ url_for('pokemon_login') }}" id="login">
 
           <!-- Username -->
           <div class="form-group row">
@@ -31,22 +32,13 @@
             </div>
           </div>
 
-          <!-- Confirm password-->
-          <div class="form-group row">
-            <div class="col-sm-1">
-              <label for="password">Confirm Password: </label>
-            </div>
-            <div class="col-sm-4">
-              <input class="form-control" type="password" id="confirm" name="confirm" placeholder="Confirm Password" >
-            </div>
-          </div>
-
           <!-- Submit and sign-up -->
           <div class="form-group row">
-            <div class="col-sm-2">
-              <button type="submit" class="btn btn-primary">Sign-Up</button>
+            <div class="col-sm-1">
             </div>
-            <div class="col-sm-2">
+            <div class="col-sm-6">
+              <button type="submit" class="btn btn-primary float-left">Login</button>
+              <a class="btn btn-primary float-left mx-2" href="/pokemon/sign_up">Sign-Up</a>
             </div>
           </div>
         </form>
