@@ -1,15 +1,8 @@
 {% extends "trampoline/base.html" %}
 
 {% block content %}
-<!--
-{% if error_text %}
-<p style='background-color:yellow;text-align:center' id="error">
-  <b>{{error_text}}</b>
-  <a id="close_error" href="#"><span class="fa fa-remove float-right" aria-hidden='true'></span></a>
-</p>
-{% endif %}
--->
 <br>
+{% block logging %}
 <div class="form-group" align="center">
   <table align="center">
     <tr>
@@ -61,28 +54,6 @@
             </div>
           </div>
           <!-- button skills -->
-          <!--
-{% for flips, skills in all_skills.items() %}
-  <p>{{flips}}</p>
-  {% for skill in skills %}
-    {% for pos in ['t', 'p', 's'] %}
-      <button id="skill{{skill}}{{pos}}" name="skill{{skill}}{{pos}}" class="btn btn-success btn-sm">{{skill}}{{pos | replace("t", "o") | replace("p", "<") | replace("s", "/")}}</button>
-    {% endfor %}
-  {% endfor %}
-  <br>
-{% endfor %}
--->
-          <!--
-{% for flips, skills in all_skills.items() %}
-  <select name="{{flips}}_skills" id="{{flips}}_skills">
-  {% for skill in skills %}
-    {% for pos in ['t', 'p', 's'] %}
-      <option id="skill{{skill}}{{pos}}" value="skill{{skill}}{{pos}}">{{skill}}{{pos | replace("t", "o") | replace("p", "<") | replace("s", "/")}}</option>
-    {% endfor %}
-  {% endfor %}
-</select>
-{% endfor %}
--->
           <div class="form-row">
             <div class="col-sm-9">
               {% for flips, skills in all_skills.items() %}
@@ -119,22 +90,11 @@
 
           <button type="submit" class="btn btn-primary">Submit</button>
         </form>
+
+      </td>
+    </tr>
+  </table>
 </div>
-
-<!--- Deleting past data --->
-<!--
-<form method="post" id="clear-form" style='text-align:left;'>
-<button type="submit" id="delete-button" class="btn btn-danger">Delete Historical Data</button>
-<button id="delete-day-button" class="btn btn-danger">Delete Today's Data</button>
-</form>
--->
-
-
-
-</td>
-</tr>
-</table>
-
 
 
 
@@ -190,28 +150,53 @@
     </table>
   </form>
 </div>
+{% endblock %}
 
 <br><br>
-<div class="row header">
-  <div class="col-sm-4 float-left">
-    <form class="form-inline my-2" action="{{url_for('search_skills')}}" method="POST">
-      <input class="form-control mr-sm-2 mr-auto" type="text" name="practice_skills" id="practice_skills" placeholder="Input skills/combos"{% if search_skills %} value="{{search_skills}}"{% endif %}>
-      <button class="btn btn-secondary" type="submit">Search for skills</button>
-    </form>
+<!--Navbar-->
+<!-- https://mdbootstrap.com/docs/b4/jquery/navigation/hamburger-menu/ -->
+<nav class="navbar navbar-dark bg-dark navbar-1 white">
+
+  <!-- Navbar brand -->
+  <a class="navbar-brand" href="#">Filter</a>
+
+  <!-- Collapse button -->
+  <button class="navbar-toggler mr-auto" type="button" data-toggle="collapse" data-target="#navbarSupportedContent15"
+    aria-controls="navbarSupportedContent15" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+
+  <ul class="nav navbar-nav mx-auto abs-center-x">
+    <li class="nav-item"><a class="navbar-brand disabled" href="#">Athlete Practices</a></li>
+  </ul>
+  <ul class="nav navbar-nav ml-auto mr-sm-3"></ul>
+
+  <!-- Collapsible content -->
+  <div class="collapse navbar-collapse" id="navbarSupportedContent15">
+
+    <!-- Links -->
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item">
+        <form class="form-inline my-2" action="{{url_for('search_skills')}}" method="POST">
+          <input class="form-control mr-sm-2 mr-auto" type="text" name="practice_skills" id="practice_skills" placeholder="Input skills/combos"{% if search_skills %} value="{{search_skills}}"{% endif %}>
+          <button class="btn btn-secondary" type="submit">Search for skills</button>
+        </form>
+      </li>
+      <li class="nav-item">
+        <form class="form-inline my-2" action="{{url_for('search_date')}}" method="POST">
+          <input class="form-control mr-sm-2 mr-auto" type="date" name="practice_date" id="practice_date">
+          <button class="btn btn-secondary" type="submit">Search Practice</button>
+        </form>
+      </li>
+    </ul>
+    <!-- Links -->
+
   </div>
-  <div class="col-sm-4">
-    <h1 style='text-align:center;' class="header" >Previous Practices</h1>
-  </div>
-  <div class="col-sm-4 float-right">
-    <form class="form-inline my-2" action="{{url_for('search_date')}}" method="POST">
-      <input class="form-control mr-sm-2 ml-auto" type="date" name="practice_date" id="practice_date">
-      <button class="btn btn-secondary" type="submit">Search Practice</button>
-    </form>
-  </div>
-</div>
+  <!-- Collapsible content -->
+
+</nav>
+<!--/.Navbar-->
+
 {{body|safe}}
 <br>
-
 <br><br><br>
 
 <!-- Index for tables -->
@@ -237,6 +222,8 @@
 <script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
   crossorigin="anonymous"></script>
 
+{% block javascript %}
+{% endblock %}
 <script type="text/javascript">
   $(document).ready(function() {
     // Set logger date to current local date if a search date isn't chosen
@@ -351,33 +338,6 @@
         }
       });
     }
-  });
-  $("#close_error").click(function (e) {
-    var errorText = document.getElementById("error");
-    errorText.opacity = 1;
-    //(function fade(){(errorText.opacity-=.1)<0?errorText.display="none":setTimeout(fade,40)})();
-    errorText.style.transition = '1s';
-    errorText.style.opacity = 0;
-  });
-  $("#delete-button").click(function (e) {
-    e.preventDefault();
-    $.ajax({
-      type: 'GET',
-      url: "/logger/_clear",
-      success: function (data) {
-        alert("Deleted data");
-      }
-    });
-  });
-
-  $("#delete-day-button").click(function (e) {
-    $.ajax({
-      type: 'GET',
-      url: "/logger/_clearDay",
-      success: function (data) {
-        alert("Deleted data");
-      }
-    });
   });
 </script>
 
