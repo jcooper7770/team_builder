@@ -89,5 +89,16 @@ $('#athletes_before').change(function(e){
   });
 
 })
+$('#athletes_after').change(function(e){
+  $('#athletes_after').children().each(function(){
+    if (this.selected){
+      select = document.getElementById("athletes_before")
+      this.selected = false;
+      select.appendChild(this);
+    }
+  });
+
+})
+
 </script>
 {% endblock %}
