@@ -1,0 +1,109 @@
+{% extends "trampoline/base.html" %}
+
+{% block content %}
+<br>
+<div class="form-group" align="center">
+  <table align="center">
+    <tr>
+      <td>
+        <form action="{{ url_for('trampoline_log') }}" method="post" id="logger" name="logger" style="text-align:left;">
+
+          <!-- Username -->
+          <div class="form-row">
+            <div class="col-sm-3"><label for="name">Athlete:</label></div>
+            <div class="col">
+              <select id="athlete">
+                <option value="">All athletes</option>
+                {% for athlete in athletes %}
+                <option value="{{athlete}}"{% if athlete == current_athlete %} selected{% endif %}>{{athlete}}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+        </form>
+</div>
+
+</td>
+</tr>
+</table>
+
+
+<br><br>
+<div class="row header">
+  <div class="col-sm-4 float-left">
+    <form class="form-inline my-2" action="{{url_for('search_skills')}}" method="POST">
+      <input class="form-control mr-sm-2 mr-auto" type="text" name="practice_skills" id="practice_skills" placeholder="Input skills/combos"{% if search_skills %} value="{{search_skills}}"{% endif %}>
+      <button class="btn btn-secondary" type="submit">Search for skills</button>
+    </form>
+  </div>
+  <div class="col-sm-4">
+    <h1 style='text-align:center;' class="header" >Athlete Practices</h1>
+  </div>
+  <div class="col-sm-4 float-right">
+    <form class="form-inline my-2" action="{{url_for('search_date')}}" method="POST">
+      <input class="form-control mr-sm-2 ml-auto" type="date" name="practice_date" id="practice_date">
+      <button class="btn btn-secondary" type="submit">Search Practice</button>
+    </form>
+  </div>
+</div>
+{{body|safe}}
+<br>
+
+<br><br><br>
+
+<!-- Index for tables -->
+<div class="container">
+  <table align='center' border=1 style='background-color:#FFFFFF;'>
+    <tr>
+      <th align='center' colspan=9>Index</th>
+    </tr>
+    <tr>
+      <td>Skill 1</td>
+      <td>Skill 2</td>
+      <td></td>
+      <td># skills in this turn</td>
+      <td># flips in this turn</td>
+      <td># total skills in practice</td>
+      <td># total flips in practice</td>
+      <td>DoD for turn</td>
+      <td>total DoD for practice</td>
+    </tr>
+  </table>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
+  crossorigin="anonymous"></script>
+
+<script type="text/javascript">
+  $(document).ready(function() {
+    // Set logger date to current local date if a search date isn't chosen
+    {% if search_date %}
+    document.getElementById("practice_date").value = "{{search_date}}";
+    {% endif %}
+  });
+  // unhide the hidden notes by clicking the comment button
+  $("[id^=unhide-note").click(function(e){
+    var comment = $(this).siblings('span')[0];
+    if (comment.style.display === "none") {
+      comment.style.display = "inline";
+    } else {
+      comment.style.display = "none";
+    }
+  });
+  $("[id^=remove_]").click(function (e) {
+    alert("Coach cannot remove athlete's data")
+  });
+  $("#close_error").click(function (e) {
+    var errorText = document.getElementById("error");
+    errorText.opacity = 1;
+    //(function fade(){(errorText.opacity-=.1)<0?errorText.display="none":setTimeout(fade,40)})();
+    errorText.style.transition = '1s';
+    errorText.style.opacity = 0;
+  });
+  $('#athlete').change(function(e) {
+    var athlete = $(this).val();
+    location.href = "?athlete="+athlete
+  });
+</script>
+
+{% endblock %}

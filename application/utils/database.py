@@ -103,7 +103,9 @@ def get_user(user):
         "compulsory": user[2],
         "optional": user[3],
         "password": user[4],
-        "expand_comments": user[5]
+        "expand_comments": user[5],
+        "is_coach": user[6],
+        "athletes": json.loads(user[7])
     }
 
 
@@ -264,7 +266,9 @@ def save_athlete(athlete):
             compulsory=" ".join(athlete.compulsory) if isinstance(athlete.compulsory, list) else athlete.compulsory,
             optional=" ".join(athlete.optional) if isinstance(athlete.optional, list) else athlete.optional,
             password=athlete.password,
-            expand_comments=athlete.expand_comments
+            expand_comments=athlete.expand_comments,
+            is_coach=athlete.is_coach,
+            athletes=json.dumps(athlete.athletes)
         )
         engine.execute(ins)
     else:
@@ -274,7 +278,9 @@ def save_athlete(athlete):
             compulsory=" ".join(athlete.compulsory) if isinstance(athlete.compulsory, list) else athlete.compulsory,
             optional=" ".join(athlete.optional) if isinstance(athlete.optional, list) else athlete.optional,
             password=athlete.password,
-            expand_comments=athlete.expand_comments
+            expand_comments=athlete.expand_comments,
+            is_coach=athlete.is_coach,
+            athletes=json.dumps(athlete.athletes)
         )
         engine.execute(update)
     
@@ -283,20 +289,22 @@ def save_athlete(athlete):
     engine.dispose()
 
 
-def get_users_and_turns():
+def get_users_and_turns(only_users=False):
     """
     Returns all user and turn data from the db
     """
     engine = create_engine()
-    result = engine.execute(f"SELECT * from `{TABLE_NAME}`")
+    all_turns = []
+    if not only_users:
+        result = engine.execute(f"SELECT * from `{TABLE_NAME}`")
+        all_turns = [res for res in result]
+        result.close()
     user_result = engine.execute("SELECT * from `users`")
     conn = engine.connect()
-    all_turns = [res for res in result]
     user_data = {
-        user[0].lower(): {"private": user[1]}
+        user[0].lower(): {"private": user[1], "is_coach": user[6]}
         for user in user_result
     }
-    result.close()
     user_result.close()
     conn.close()
     engine.dispose()

@@ -45,7 +45,7 @@ from application.pokemon.battle_sim import sim_battle
 from application.trampoline.trampoline import convert_form_data, get_leaderboards, pretty_print, Practice, current_user, set_current_user,\
      current_event, set_current_event, set_current_athlete,\
      ALL_SKILLS, get_leaderboards, Athlete, get_user_turns, get_turn_dds
-from application.utils.database import create_engine, set_table_name, insert_goal_to_db, get_user_goals, complete_goal,\
+from application.utils.database import create_engine, get_users_and_turns, set_table_name, insert_goal_to_db, get_user_goals, complete_goal,\
     delete_goal_from_db, get_user, get_simmed_battle, add_simmed_battle
 from application.utils.utils import *
 
@@ -252,6 +252,62 @@ def _save_trampoline_data(request):
                 routine_file.write(new_routines)
 
 
+@app.route("/logger/coach/home", methods=['GET'])
+def coach_home():
+    """
+    Home for coaches
+    """
+    coach = Athlete.load(session.get('name'))
+    #current_athlete = request.args.get('athlete') or session.get('current_athlete', '')
+    current_athlete = request.args.get('athlete')
+    session["current_athlete"] = current_athlete
+
+    body = ""
+    all_athletes = [current_athlete] if current_athlete else coach.athletes
+    print(f"\n\n --- {all_athletes}")
+    practice_tables = []
+    practices = []
+    for athlete in all_athletes:
+        # Get data from database
+        user_practices = Practice.load_from_db(athlete, date=session.get("search_date"), skills=session.get("search_skills", ""))
+        for practice in user_practices:
+            practices.append({'athlete': athlete, 'practice': practice})
+    
+    # sort all practices to show them in order
+    practices.sort(key=lambda p: p['practice'].date, reverse=True)
+
+    for practice in practices:
+        # Add the turns into a table for that practice
+        title_date = practice['practice'].date.strftime("%A %m/%d/%Y")
+        title = f"{practice['athlete']}: {title_date} ({practice['practice'].event})"
+        practice_table = skills_table(practice['practice'].turns, title=title, expand_comments=False)
+        practice_tables.append(practice_table)
+
+    all_practice_tables = "<br><br>".join(practice_tables)
+
+    html = [
+        # Div for practices so they are scrollable
+        "<div id='practices' class='practices'><br><br>",
+        all_practice_tables,
+        "</div>"
+    ]
+    body = "".join(html) if all_practice_tables else ""
+
+    logging.info(f"error: {session.get('error', '')}")
+
+    return render_template(
+        "trampoline/coach_home.html",
+        body=body,
+        athletes=coach.athletes,
+        current_athlete=current_athlete,
+        user=session.get('name'),
+        goals=get_user_goals(current_user()),
+        error_text=session.get('error'),
+        search_date=session.get("search_date").strftime("%Y-%m-%d") if session.get("search_date") else None,
+        search_skills=session.get("search_skills", "")
+    )
+
+
 @app.route("/logger", methods=['GET', 'POST'])
 def trampoline_log():
     # POST/Redirect/GET to avoid resubmitting form on refresh
@@ -273,6 +329,10 @@ def trampoline_log():
         user = get_user(session.get('name'))
     except:
         return redirect(url_for('logout'))
+    
+    # coaches go to coach home instead
+    if user["is_coach"]:
+        return redirect(url_for('coach_home'))
 
     username, event = current_user(), current_event()
 
@@ -486,6 +546,7 @@ def sign_up():
         password = request.form.get("password", "")
         confirm = request.form.get("confirm", "")
         private = True if request.form.get("private")=="true" else False
+        is_coach = True if request.form.get("user_type") == "coach" else False
 
         if not username:
             session["error"] = "Please enter a username"
@@ -507,7 +568,7 @@ def sign_up():
         # Create the user and go to login page
 
         hashed_password = sha256_crypt.encrypt(password)
-        athlete = Athlete(username, private, password=hashed_password)
+        athlete = Athlete(username, private, password=hashed_password, is_coach=is_coach)
         athlete.save()
         return redirect(url_for('login'))
     return render_template("trampoline/sign_up.html", error_text=session.get('error'), user="")
@@ -599,6 +660,7 @@ def logout():
     session["search_skills"] = ""
     session["search_date"] = None
     session["error"] = ""
+    session["current_athlete"] = ""
     return redirect(url_for('login'))
 
 
@@ -629,6 +691,28 @@ def landing_page():
     if not leaderboard["DD"]:
         leaderboard = mock_leaderboard
     return render_template("trampoline/landing_page.html", user=session.get("name"), leaderboard=leaderboard)
+
+
+@app.route("/logger/coach/settings", methods=["GET", "POST"])
+def coach_settings():
+    """
+    Coach settings
+    """
+    if request.method == "GET":
+        users, _ = get_users_and_turns(only_users=True)
+        current_user = Athlete.load(session.get('name'))
+        return render_template(
+            "trampoline/coach_settings.html",
+            users=users, user=session.get('name'),
+            athletes=current_user.athletes
+        )
+    if request.method == "POST":
+        athletes = request.form.getlist("coach_athletes")
+        current_user = Athlete.load(session.get('name'))
+        current_user.athletes = sorted(athletes)
+        current_user.save()
+        return redirect(url_for('coach_settings'))
+
 
 @app.route("/pokemon/user")
 def pokemon_user_profile():
@@ -680,6 +764,9 @@ def user_profile():
     except Exception as exc:
         logger.error(f"Exception: {exc}")
         user_data = {}
+
+    if user_data["is_coach"]:
+        return redirect(url_for("coach_settings"))
 
     event_turns, _ = get_turn_dds()
     datapts = {}
