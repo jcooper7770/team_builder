@@ -40,6 +40,16 @@
                   {% endfor %}
                 </select>
               </div>
+              <div class="row">
+              Athletes:
+              </div>
+              <div class="row">
+                <ul id="athlete-list">
+                  {% for athlete in athletes %}
+                  <li>{{athlete}}</li>
+                  {% endfor %}
+                </ul>
+              </div>
             </div>
           </div>
 
@@ -85,6 +95,12 @@ $('#athletes_before').change(function(e){
       select = document.getElementById("athletes_after")
       this.selected = false;
       select.appendChild(this);
+
+      // Add to list
+      var list = document.getElementById('athlete-list');
+      var athlete_name = document.createElement('li')
+      athlete_name.innerText = this.value;
+      list.appendChild(athlete_name);
     }
   });
 
@@ -94,7 +110,16 @@ $('#athletes_after').change(function(e){
     if (this.selected){
       select = document.getElementById("athletes_before")
       this.selected = false;
+      var athlete_name = this.value;
       select.appendChild(this);
+
+      // Remove from list
+      $('#athlete-list').children().each(function(){
+        if(this.innerText == athlete_name){
+          this.remove();
+        }
+      });
+
     }
   });
 
