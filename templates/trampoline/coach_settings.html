@@ -64,9 +64,11 @@ $("[id^=option_").click(function(e){
   
   if (option_element.parentElement.id == "athletes_before") {
     select = document.getElementById("athletes_after")
+    option_element.selected = false;
     select.appendChild(option_element);
   } else {
     select = document.getElementById("athletes_before")
+    option_element.selected = false;
     select.appendChild(option_element);
   }
 });
@@ -76,6 +78,16 @@ $('#submit').click(function(e){
   $('#athletes_after').children().each(function(){
     this.selected = true;
   }); 
+})
+$('#athletes_before').change(function(e){
+  $('#athletes_before').children().each(function(){
+    if (this.selected){
+      select = document.getElementById("athletes_after")
+      this.selected = false;
+      select.appendChild(this);
+    }
+  });
+
 })
 </script>
 {% endblock %}
