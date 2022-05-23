@@ -39,7 +39,7 @@ class TableMaker:
             f"border='{self.border}'",
             f"align='{self.align}'",
             #f"style='background-color:{self.bgcolor};'",
-            'class="table table-striped"'
+            'class="table table-striped table-responsive-lg"'
         ]
         if self.width:
             options.append(f"width='{self.width}'")
@@ -140,8 +140,10 @@ def skills_table(skills, title="Routines", expand_comments=False):
 
         # total skills
         num_skills = len([skill for skill in turn.skills if skill.shorthand not in NON_SKILLS])
+        #skills_table.add_cell(num_skills, colspan="1 style=\"border-left: 1px solid black;\"")
         skills_table.add_cell(num_skills)
         total_skills += num_skills
+        #skills_table.add_cell(total_skills, colspan="1 style=\"border-left: 1px solid black;\"")
         skills_table.add_cell(total_skills)
 
         # total flips
