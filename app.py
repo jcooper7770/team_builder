@@ -308,6 +308,62 @@ def coach_home():
     )
 
 
+
+@app.route("/logger/<username>/practices", methods=['GET'])
+def trampoline_user_practices(username):
+    """
+    Return user practices
+    """
+    user = None
+    try:
+        user = get_user(username)
+    except:
+        body = f"User {username} does not exist"
+        return render_template("trampoline/user_practices.html", body=body)
+
+    start_date, end_date = (None, None)
+    start = request.args.get('start', '') 
+    if start:
+        try:
+            start_date = datetime.datetime.strptime(start, "%Y-%m-%d")
+        except:
+            body = f"start date '{start}' is not a valid date in form of 'YYYY-mm-dd'"
+            return render_template("trampoline/user_practices.html", body=body)
+    
+    end = request.args.get('end', '')
+    if end:
+        try:
+            end_date = datetime.datetime.strptime(end, "%Y-%m-%d")
+        except:
+            body = f"end date '{end}' is not a valid date in form of 'YYYY-mm-dd'"
+            return render_template("trampoline/user_practices.html", body=body)
+
+    practice_tables = []
+    user_practices = Practice.load_from_db(username, date=None, skills=session.get("search_skills", ""))
+    for practice in user_practices:
+        if start_date and practice.date < start_date:
+                continue
+        if end_date and practice.date > end_date:
+            continue
+
+        # Add the turns into a table for that practice
+        title_date = practice.date.strftime("%A %m/%d/%Y")
+        title = f"{title_date} ({practice.event})"
+        practice_table = skills_table(practice.turns, title=title, expand_comments=user.get("expand_comments", False))
+        practice_tables.append(practice_table)
+
+    all_practice_tables = "<br><br>".join(practice_tables)
+   
+    html = [
+        # Div for practices so they are scrollable
+        "<div id='practices' class='practices'><br><br>",
+        all_practice_tables,
+        "</div>"
+    ]
+    body = "".join(html) if all_practice_tables else ""
+    return render_template("trampoline/user_practices.html", body=body)
+
+
 @app.route("/logger", methods=['GET', 'POST'])
 def trampoline_log():
     # POST/Redirect/GET to avoid resubmitting form on refresh

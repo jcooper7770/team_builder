@@ -1,0 +1,65 @@
+{% extends "trampoline/base.html" %}
+
+{% block content %}
+<br>
+{% block logging %}
+{% endblock %}
+
+<br><br>
+<!--Navbar-->
+<!-- https://mdbootstrap.com/docs/b4/jquery/navigation/hamburger-menu/ -->
+<nav class="navbar navbar-dark bg-dark navbar-1 white">
+
+  <ul class="nav navbar-nav mx-auto abs-center-x">
+    <li class="nav-item"><a class="navbar-brand disabled" href="#">Athlete Practices</a></li>
+  </ul>
+  <ul class="nav navbar-nav ml-auto mr-sm-3"></ul>
+
+</nav>
+<!--/.Navbar-->
+
+{{body|safe}}
+<br>
+<br><br><br>
+
+<!-- Index for tables -->
+<div class="container">
+  <table align='center' border=1 style='background-color:#FFFFFF;'>
+    <tr>
+      <th align='center' colspan=9>Index</th>
+    </tr>
+    <tr>
+      <td>Skill 1</td>
+      <td>Skill 2</td>
+      <td></td>
+      <td># skills in this turn</td>
+      <td># flips in this turn</td>
+      <td># total skills in practice</td>
+      <td># total flips in practice</td>
+      <td>DoD for turn</td>
+      <td>total DoD for practice</td>
+    </tr>
+  </table>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
+  crossorigin="anonymous"></script>
+
+{% block javascript %}
+{% endblock %}
+<script type="text/javascript">
+  // unhide the hidden notes by clicking the comment button
+  $("[id^=unhide-note").click(function(e){
+    var comment = $(this).siblings('span')[0];
+    if (comment.style.display === "none") {
+      comment.style.display = "inline";
+    } else {
+      comment.style.display = "none";
+    }
+  });
+  $("[id^=remove_]").click(function (e) {
+    alert("Cannot delete practice from user practice page");
+  });
+</script>
+
+{% endblock %}
