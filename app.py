@@ -943,10 +943,16 @@ def export_user_data():
     #csv_file_path = os.path.join(export_dir, f"{session.get('name')}_turns.csv")
     csv_file_path = os.path.join(export_dir, file_name)
     with open(csv_file_path, 'w') as turns_file:
-        turns_file.write("turn number, skills, date, event\n")
+        turns_file.write("turn number, skills, date, event, notes\n")
         for turn in user_turns:
             turn_date = str(turn[2]).split()[0]
-            line = f"{turn[0]}, {turn[1]}, {turn_date}, {turn[4]}\n"
+            turn_skills = turn[1]
+            notes = turn[5].lstrip('- ').lstrip('-')
+            # If the turn is only a note then turn it into the turn
+            if not turn_skills and notes:
+                line = f"{turn[0]}, {notes}, {turn_date}, {turn[4]}, \n"
+            else:
+                line = f"{turn[0]}, {turn_skills}, {turn_date}, {turn[4]}, {turn[5]}\n"
             turns_file.write(line)
     # TODO: figure out how to download the saved csv file, then delete it
     if request.method == "GET":
