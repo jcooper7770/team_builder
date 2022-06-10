@@ -294,12 +294,15 @@ class MetaTeamDestroyer:
         # Round the rating if one is provided
         if rating:
             rating = int(round(rating/1000., 1)*1000)
+            print(f"rating: {rating}")
 
-
+        self.all_ratings = set(record.get('rating') for record in self.latest_info) 
+        print(f"\n\n--- all ratings: {self.all_ratings}")
         # Filter out values based on date and rating
         temp_latest_info = []
         if days_back or rating:
             for record in self.latest_info:
+
                 if days_back:
                     if datetime.fromtimestamp(record.get('time')) < datetime.now() - timedelta(days=days_back):
                         continue
@@ -309,7 +312,12 @@ class MetaTeamDestroyer:
                 temp_latest_info.append(record)
             self.latest_info = temp_latest_info
 
+            print(f"\n\n!!! rating: {rating} -  all ratings: {self.all_ratings}") 
+            if rating and rating not in self.all_ratings:
+                raise NoPokemonFound(f"Rating '{rating}' does not exist. Rating options are: {self.all_ratings}")
+
         if len(self.latest_info) == 0:
+            print("!!!!")
             raise NoPokemonFound(f"Did not find {league} data last {days_back} days at {rating or 'all'} rating")           
 
 

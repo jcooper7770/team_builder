@@ -477,6 +477,7 @@ def run():
             results, team_maker = get_counters_for_rating(None, chosen_league, days_back=None)
     else:
         results, team_maker, num_days, rating = CACHE.get('results').get(chosen_league), CACHE.get('team_maker').get(chosen_league), CACHE.get("num_days"), CACHE.get("rating")
+        print("Did not refresh data because options are the same")
     CACHE['results'][chosen_league] = results
     CACHE['team_maker'][chosen_league] = team_maker
     CACHE['num_days'] = num_days
@@ -512,6 +513,8 @@ def run():
         error_text=error_text,
         result_data=team_maker.result_data,
         user=session.get("name", ""),
+        ratings=team_maker.all_ratings,
+        current_rating=rating,
     )
 
 @app.template_filter()

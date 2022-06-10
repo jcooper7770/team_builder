@@ -50,7 +50,12 @@
       <tr>
         <td>Rating:</td>
         <td>
-          <input type="text" id="rating" value="{{rating}}" name="rating" class="form-control" />
+          <select id="rating" name="rating">
+            <option value="None">None</option>
+            {% for rating in ratings %}
+            <option value="{{rating}}"{% if rating == current_rating %} selected{% endif %}>{{rating}}</option>
+            {% endfor %}
+          </select>
         </td>
       </tr>
       <tr>
