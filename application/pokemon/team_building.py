@@ -69,7 +69,8 @@ LEAGUE_RANKINGS = {
     "Sinnoh": "https://vps.gobattlelog.com/data/overall/rankings-1500-sinnoh.json?v=1.25.35",
     "Love": "https://vps.gobattlelog.com/data/overall/rankings-1500-love.json?v=1.25.35",
     "Johto": "https://vps.gobattlelog.com/data/overall/rankings-1500-johto.json?v=1.25.35",
-    "Flying": "https://vps.gobattlelog.com/data/overall/rankings-1500-flying.json?v=1.25.35"
+    "Flying": "https://vps.gobattlelog.com/data/overall/rankings-1500-flying.json?v=1.25.35",
+    "GoFestCatchCup": "https://vps.gobattlelog.com/data/overall/rankings-1500.json?v=1.25.35"
 }
 LEAGUE_DATA = {
     "ULP": "https://vps.gobattlelog.com/records/ultra-premier/latest.json?ts=449983.3",
@@ -93,7 +94,8 @@ LEAGUE_DATA = {
     "Sinnoh": "https://vps.gobattlelog.com/records/great-sinnoh/latest.json?ts=451466.3",
     "Love": "https://vps.gobattlelog.com/records/great-love/latest.json?ts=451466.3",
     "Johto": "https://vps.gobattlelog.com/records/great-johto/latest.json?ts=451466.3",
-    "Flying": "https://vps.gobattlelog.com/records/great-flying/latest.json?ts=451466.3"
+    "Flying": "https://vps.gobattlelog.com/records/great-flying/latest.json?ts=451466.3",
+    "GoFestCatchCup": "https://vps.gobattlelog.com/records/great-catch0622/latest.json?ts=451466.3"
 }
 LEAGUE_VALUE = {
     'GL': '1500',
@@ -116,7 +118,8 @@ LEAGUE_VALUE = {
     "Love": '1500',
     "Johto": '1500',
     "Flying": '1500',
-    'Little': '500'
+    'Little': '500',
+    'GoFestCatchCup': '1500',
 }
 CUP_VALUE = {
     'MLC': 'classic',
