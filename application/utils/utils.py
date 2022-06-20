@@ -43,6 +43,8 @@ class TableMaker:
         ]
         if self.width:
             options.append(f"width='{self.width}'")
+            # This is the correct way to do it but this breaks the home page
+            #options.append(f"style='width:{self.width}'")
         options_str = " ".join(options)
         self.table.append('<div class="container">')
         self.table.append(f"<table {options_str}>")

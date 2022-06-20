@@ -622,6 +622,7 @@ def convert_form_data(form_data, logger=print, event=EVENT, notes=None, get_athl
         routine = Routine([], event=event)
         for skill_num, skill in enumerate(turn):
             # Catch repeat skills with skill x#
+            skill = skill.replace('\\', '/')
             repeats = re.findall("x([0-9]*)", skill)
             if repeats:
                 for _ in range(int(repeats[0]) - 1):
@@ -661,6 +662,7 @@ def pretty_print(routine, logger=print):
 def get_user_turns(user, from_date="", to_date=""):
     """
     Returns all turns for the given user in order of date
+    [(skill_num, skills, date, user, event, note)]
     """
     _, all_turns = get_users_and_turns()
     if not all_turns:
@@ -669,7 +671,7 @@ def get_user_turns(user, from_date="", to_date=""):
             [skill_num, '801<', str(datetime.datetime.now()), user, random.choice(["trampoline", "dmt"])]
             for skill_num in range(10)
         ]
-    user_turns = [turn for turn in all_turns if turn[3] == user]
+    user_turns = [turn for turn in all_turns if turn[3].lower() == user]
     if from_date:
         from_date = from_date.replace('/', '-')
         try:

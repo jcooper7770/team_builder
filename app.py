@@ -802,6 +802,86 @@ def pokemon_user_profile():
         )
 
 
+@app.route("/logger/user/statistics")
+def user_stats():
+    """
+    User statistics
+    """
+    username = session.get('name')
+    if not username:
+        return redirect(url_for('login'))
+    body = ""
+    # Get user data
+    user_turns = get_user_turns(username)
+    print(f"user turns: {len(user_turns)}")
+
+    # Collect all skills
+    skill_counts = {'all': defaultdict(int), 'dmt': defaultdict(int), 'trampoline': defaultdict(int)}
+    all_skills = defaultdict(lambda: {'all': 0, 'trampoline': 0, 'dmt': 0})
+    for turn in user_turns:
+        skills = turn[1]
+        event = turn[4]
+        if skills.startswith('-'):
+            continue
+        routines = convert_form_data(skills, event=event, logger=None, get_athlete=False)
+        if not routines:
+            continue
+
+        routines = routines[0]
+        #for skill in skills.split():
+        for s in routines.skills:
+            skill = s.shorthand
+            if skill in ["...", 'X']:
+                continue
+            skill_counts['all'][skill] += 1
+            skill_counts[event][skill] += 1
+
+            all_skills[skill][event] += 1
+            all_skills[skill]['all'] += 1
+
+    # print the tables
+    tables = ["<div class='container'><h1><u>User Statistics</u></h1></div>"]
+    print(all_skills.keys())
+    '''
+    for event in sorted(skill_counts.keys()):
+        event_skill_counts = skill_counts[event]
+        table = TableMaker(border=1, align="center", width="30%")
+        table.new_header(f"{event.capitalize()} skills", colspan=2)
+
+        for skill in sorted(event_skill_counts.keys(), key=lambda x: int(x[:-1])):
+            table.new_row()
+            table.add_cell(skill)
+            table.add_cell(event_skill_counts[skill])
+            table.end_row()
+        table.end_table()
+        tables.append(table.render())
+    '''
+    table = TableMaker(border=1, align='center')
+    table.new_header("Skill Counts", colspan=4)
+    table.new_row()
+    table.add_cell("<b>Skill</b>")
+    table.add_cell("<b>Trampoline</b>")
+    table.add_cell("<b>Dmt</b>")
+    table.add_cell("<b>Total</b>")
+    table.end_row()
+    for skill in sorted(all_skills, key=lambda x: int(x[:-1])):
+        event_skills = all_skills[skill]
+        table.new_row()
+        table.add_cell(skill)
+        table.add_cell(event_skills['trampoline'])
+        table.add_cell(event_skills['dmt'])
+        table.add_cell(event_skills['all'])
+        table.end_row()
+    table.end_table()
+    tables.append(table.render())
+
+    body = '<br>'.join(tables)
+    return render_template(
+        "trampoline/empty.html",
+        body=body,
+        user=session.get('name')
+    )
+
 @app.route("/logger/user")
 def user_profile():
     """
