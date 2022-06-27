@@ -48,11 +48,27 @@
   <div class="card border-primary">
     <div class="card-header text-center"><h2>Skill Statistics</h2></div>
     <div class="card-body px-0 py-0">
-      {{body|safe}}
+      <table border=1 class="table table-striped my-0">
+        <tr>
+          <th style="position: sticky; top:0; background: gray;">Skill</th>
+          <th style="position: sticky; top:0; background: gray;">Trampoline</th>
+          <th style="position: sticky; top:0; background: gray;">Dmt</th>
+          <th style="position: sticky; top:0; background: gray;">Total</th>
+        </tr>
+        {% for skill, skill_stats in all_skills.items() %}
+        <tr>
+          <td>{{skill}}</td>
+          <td>{{skill_stats['trampoline']}}</td>
+          <td>{{skill_stats['dmt']}}</td>
+          <td>{{skill_stats['all']}}</td>
+        </tr>
+        {% endfor %}
+      </table>
     </div>
   </div>
 </div>
 <br>
+
 
 <script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
   crossorigin="anonymous"></script>

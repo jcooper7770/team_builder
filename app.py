@@ -31,7 +31,7 @@ import os
 import socket
 import subprocess
 import traceback
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 from passlib.hash import sha256_crypt
 
 from flask import Flask, request, render_template, jsonify, redirect, url_for, send_file,\
@@ -842,7 +842,12 @@ def user_stats():
     # print the tables
     tables = []
     
-    print(all_skills.keys())
+    all_skills_ordered = OrderedDict()
+    for key in sorted(all_skills.keys(), key=lambda x: int(x[:-1])):
+        all_skills_ordered[key] = all_skills[key]
+    print(all_skills_ordered)
+
+    '''    
     table = TableMaker(border=1, align='center')
     # stat headers
     table.new_header("Skill Counts", colspan=4)
@@ -853,7 +858,8 @@ def user_stats():
     table.add_cell("<b>Total</b>")
     table.end_row()
     # stat rows per skill
-    for skill in sorted(all_skills, key=lambda x: int(x[:-1])):
+    #for skill in sorted(all_skills, key=lambda x: int(x[:-1])):
+    for skill in all_skills_ordered:
         event_skills = all_skills[skill]
         table.new_row()
         table.add_cell(skill)
@@ -868,7 +874,8 @@ def user_stats():
     tables.append(table.render().replace("table-responsive-lg", "my-0").replace("container", "table-responsive"))
 
     body = '<br>'.join(tables)
-    
+    '''
+    body = ""
     # User charts
     start_date = request.args.get('chart_start')
     if start_date:
@@ -950,7 +957,8 @@ def user_stats():
         datapts=datapts,
         chart_start=request.args.get('chart_start', ""),
         chart_end=request.args.get('chart_end', ""),
-        error_text=session.get('error')
+        error_text=session.get('error'),
+        all_skills = all_skills_ordered
     )
 
 @app.route("/logger/user")
