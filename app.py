@@ -840,23 +840,11 @@ def user_stats():
             all_skills[skill]['all'] += 1
 
     # print the tables
-    tables = ["<div class='container'><h1><u>User Statistics</u></h1></div>"]
+    tables = []
+    
     print(all_skills.keys())
-    '''
-    for event in sorted(skill_counts.keys()):
-        event_skill_counts = skill_counts[event]
-        table = TableMaker(border=1, align="center", width="30%")
-        table.new_header(f"{event.capitalize()} skills", colspan=2)
-
-        for skill in sorted(event_skill_counts.keys(), key=lambda x: int(x[:-1])):
-            table.new_row()
-            table.add_cell(skill)
-            table.add_cell(event_skill_counts[skill])
-            table.end_row()
-        table.end_table()
-        tables.append(table.render())
-    '''
     table = TableMaker(border=1, align='center')
+    # stat headers
     table.new_header("Skill Counts", colspan=4)
     table.new_row()
     table.add_cell("<b>Skill</b>")
@@ -864,6 +852,7 @@ def user_stats():
     table.add_cell("<b>Dmt</b>")
     table.add_cell("<b>Total</b>")
     table.end_row()
+    # stat rows per skill
     for skill in sorted(all_skills, key=lambda x: int(x[:-1])):
         event_skills = all_skills[skill]
         table.new_row()
@@ -873,20 +862,14 @@ def user_stats():
         table.add_cell(event_skills['all'])
         table.end_row()
     table.end_table()
-    tables.append(table.render())
+
+    # Put the skill count table into a card by moving the 'table-responsive'
+    #  class out into it's own div
+    tables.append(table.render().replace("table-responsive-lg", "my-0").replace("container", "table-responsive"))
 
     body = '<br>'.join(tables)
-    return render_template(
-        "trampoline/empty.html",
-        body=body,
-        user=session.get('name')
-    )
-
-@app.route("/logger/user")
-def user_profile():
-    """
-    User profile
-    """
+    
+    # User charts
     start_date = request.args.get('chart_start')
     if start_date:
         start_date = datetime.datetime.strptime(start_date, "%m/%d/%Y")
@@ -961,12 +944,37 @@ def user_profile():
     datapts['turns_per_practice'] = [{'x': date, 'y': turns} for date, turns in sorted(turns_per_practice.items(), key=lambda x: x[0])]
 
     return render_template(
-        "trampoline/user_profile.html",
-        user=current_user,
-        user_data=user_data,
+        "trampoline/user_statistics.html",
+        body=body,
+        user=session.get('name'),
         datapts=datapts,
         chart_start=request.args.get('chart_start', ""),
         chart_end=request.args.get('chart_end', ""),
+        error_text=session.get('error')
+    )
+
+@app.route("/logger/user")
+def user_profile():
+    """
+    User profile
+    """
+    current_user = session.get('name')
+    if not session.get("name"):
+        return redirect(url_for('login'))
+    # get user from db
+    try:
+        user_data = get_user(current_user)
+    except Exception as exc:
+        logger.error(f"Exception: {exc}")
+        user_data = {}
+
+    if user_data["is_coach"]:
+        return redirect(url_for("coach_settings"))
+
+    return render_template(
+        "trampoline/user_profile.html",
+        user=current_user,
+        user_data=user_data,
         error_text=session.get('error')
     )
 
