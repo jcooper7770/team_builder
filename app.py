@@ -471,10 +471,12 @@ def run():
     # Data tables from cache
     if get_new_data(chosen_league, num_days, rating):
         try:
-            results, team_maker = get_counters_for_rating(rating, chosen_league, days_back=num_days)
+            results, team_maker, data_error = get_counters_for_rating(rating, chosen_league, days_back=num_days)
         except NoPokemonFound as exc:
             error_text = f"ERROR: Could not get data because: {str(exc)}. Using all data instead"
             results, team_maker = get_counters_for_rating(None, chosen_league, days_back=None)
+        if data_error:
+            error_text = f"ERROR: could not get data because: {data_error}. Using all data instead"
     else:
         results, team_maker, num_days, rating = CACHE.get('results').get(chosen_league), CACHE.get('team_maker').get(chosen_league), CACHE.get("num_days"), CACHE.get("rating")
         print("Did not refresh data because options are the same")
@@ -847,34 +849,6 @@ def user_stats():
         all_skills_ordered[key] = all_skills[key]
     print(all_skills_ordered)
 
-    '''    
-    table = TableMaker(border=1, align='center')
-    # stat headers
-    table.new_header("Skill Counts", colspan=4)
-    table.new_row()
-    table.add_cell("<b>Skill</b>")
-    table.add_cell("<b>Trampoline</b>")
-    table.add_cell("<b>Dmt</b>")
-    table.add_cell("<b>Total</b>")
-    table.end_row()
-    # stat rows per skill
-    #for skill in sorted(all_skills, key=lambda x: int(x[:-1])):
-    for skill in all_skills_ordered:
-        event_skills = all_skills[skill]
-        table.new_row()
-        table.add_cell(skill)
-        table.add_cell(event_skills['trampoline'])
-        table.add_cell(event_skills['dmt'])
-        table.add_cell(event_skills['all'])
-        table.end_row()
-    table.end_table()
-
-    # Put the skill count table into a card by moving the 'table-responsive'
-    #  class out into it's own div
-    tables.append(table.render().replace("table-responsive-lg", "my-0").replace("container", "table-responsive"))
-
-    body = '<br>'.join(tables)
-    '''
     body = ""
     # User charts
     start_date = request.args.get('chart_start')

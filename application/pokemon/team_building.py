@@ -305,9 +305,22 @@ class MetaTeamDestroyer:
 
         self.all_ratings = set(record.get('rating') for record in self.latest_info) 
         print(f"\n\n--- all ratings: {self.all_ratings}")
+    
         # Filter out values based on date and rating
+        #self.filter_data(rating, days_back, league)
+
+        # start calculating the anti-meta pokemon
+        #self.setup(rating)
+
+    def filter_data(self, rating, days_back, league):
+        """
+        Filter the data based on the rating and days back chosen
+        """
         temp_latest_info = []
         if days_back or rating:
+            print(f"\n\n!!! rating: {rating} -  all ratings: {self.all_ratings}") 
+            if rating and rating not in self.all_ratings:
+                raise NoPokemonFound(f"Rating '{rating}' does not exist. Rating options are: {self.all_ratings}")
             for record in self.latest_info:
 
                 if days_back:
@@ -317,17 +330,20 @@ class MetaTeamDestroyer:
                     if record.get('rating') != rating:
                         continue
                 temp_latest_info.append(record)
-            self.latest_info = temp_latest_info
+            #self.latest_info = temp_latest_info
 
-            print(f"\n\n!!! rating: {rating} -  all ratings: {self.all_ratings}") 
-            if rating and rating not in self.all_ratings:
-                raise NoPokemonFound(f"Rating '{rating}' does not exist. Rating options are: {self.all_ratings}")
+        else:
+            temp_latest_info = self.latest_info
 
-        if len(self.latest_info) == 0:
+        if len(temp_latest_info) == 0:
             print("!!!!")
-            raise NoPokemonFound(f"Did not find {league} data last {days_back} days at {rating or 'all'} rating")           
+            raise NoPokemonFound(f"Did not find {league} data last {days_back} days at {rating or 'all'} rating")
+        self.latest_info = temp_latest_info
 
-
+    def setup(self, rating):
+        """
+        Setup the anti-meta data
+        """
         # Create common leads and backlines lists
         leads = defaultdict(int)
         safeswaps = defaultdict(int)
@@ -386,11 +402,12 @@ class MetaTeamDestroyer:
         results = [result for result in query_results]
         
         # then check if data is old
+        latest_info, last_fetched_date = "{}", None
         if results:
             league_data = results[0]
             last_fetched_date = league_data[2]
+            latest_info = json.loads(league_data[1])
             if last_fetched_date == datetime.today().date():
-                latest_info = json.loads(league_data[1])
                 #print(f"results: {results}\n\n")
                 #print(f"info: {latest_info}")
                 return json.loads(latest_info)
@@ -414,7 +431,11 @@ class MetaTeamDestroyer:
             json.dump(latest_info, open(f"data/latest_{league}.json", 'w'))
         except Exception as exc:
             print(f"Failed to load latest {league} data because: {exc}")
-            latest_info = json.load(open(f"data/latest_{league}.json"))
+            try:
+                latest_info = json.load(open(f"data/latest_{league}.json"))
+            except FileNotFoundError:
+                print(f"Failed to find data/latest_{league}.json file. Using stale data from {last_fetched_date}")
+                return json.loads(latest_info)
 
         update = table.update().where(table.c.league==league).values(
             league=league,
@@ -730,8 +751,17 @@ def get_counters_for_rating(rating, league="ULP", days_back=None):
     """ Prints the lead, safe swap, and back line counters at the given rating """
     if league not in LEAGUE_RANKINGS:
         return f"Did not find league '{league}'"
+    error = ""
 
     team_maker = MetaTeamDestroyer(rating=rating, league=league, days_back=days_back)
+    try:
+        team_maker.filter_data(rating, days_back, league)
+        team_maker.setup(rating)
+    except NoPokemonFound as exc:
+        team_maker.filter_data(None, None, league)
+        team_maker.setup(None)
+        error = str(exc)
+
     #creator = TeamCreater(team_maker)
     #creator.get_weaknesses('bulbasaur')
     #creator.get_weaknesses('swampert')
@@ -769,7 +799,7 @@ def get_counters_for_rating(rating, league="ULP", days_back=None):
         "good_backs": back_counters,
         "meta_backs": team_maker.backs_list
     }
-    return f"Recommended Leads\n{lead_counter_text}\nMeta leads\n{lead_text}\n\nRecommended Safe swaps\n{ss_counter_text}\nMeta Safe swaps\n{ss_text}\n\nRecommended Back\n{back_counter_text}\nMeta back\n{back_text}", team_maker
+    return f"Recommended Leads\n{lead_counter_text}\nMeta leads\n{lead_text}\n\nRecommended Safe swaps\n{ss_counter_text}\nMeta Safe swaps\n{ss_text}\n\nRecommended Back\n{back_counter_text}\nMeta back\n{back_text}", team_maker, error
 
 
 
@@ -847,7 +877,7 @@ def create_table_from_results(results, pokemon=None, width=None, tc=None, toolti
     return table.render()
 
 if __name__ == "__main__":
-    results, team_maker = get_counters_for_rating(rating=None, league="MLC", days_back=1)
+    results, team_maker, error = get_counters_for_rating(rating=None, league="MLC", days_back=1)
     print(results)
 
     #print(team_maker.build_team_from_pokemon("zapdos_shadow"))
