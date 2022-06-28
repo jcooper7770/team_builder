@@ -825,6 +825,7 @@ def user_stats():
     # Collect all skills
     skill_counts = {'all': defaultdict(int), 'dmt': defaultdict(int), 'trampoline': defaultdict(int)}
     all_skills = defaultdict(lambda: {'all': 0, 'trampoline': 0, 'dmt': 0})
+    dmt_passes = defaultdict(lambda: {'all': 0, 'trampoline': 0, 'dmt': 0})
     for turn in user_turns:
         skills = turn[1]
         event = turn[4]
@@ -845,13 +846,26 @@ def user_stats():
 
             all_skills[skill][event] += 1
             all_skills[skill]['all'] += 1
+        
+        # add double mini passes
+        if event == "dmt" and len(routines.skills) == 2:
+            dmt_skills = [s.shorthand for s in routines.skills]
+            if 'X' in dmt_skills:
+                continue
+            dmt_pass = ' '.join(dmt_skills)
+            dmt_passes[dmt_pass]['dmt'] += 1
+            dmt_passes[dmt_pass]['all'] += 1
 
+    print(f"---- dmt passes: {dmt_passes}") 
     # print the tables
     tables = []
     
     all_skills_ordered = OrderedDict()
     for key in sorted(all_skills.keys(), key=lambda x: int(x[:-1])):
         all_skills_ordered[key] = all_skills[key]
+    # add dmt passes
+    for key in sorted(dmt_passes.keys(), key=lambda x: (x.split()[0][:-1], x.split()[1][:-1])):
+        all_skills_ordered[key] = dmt_passes[key]
     print(all_skills_ordered)
 
     body = ""
