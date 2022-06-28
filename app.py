@@ -384,6 +384,7 @@ def trampoline_log():
     try:
         user = get_user(session.get('name'))
     except:
+        session["previous_page"] = "trampoline_log"
         return redirect(url_for('logout'))
     
     # coaches go to coach home instead
@@ -631,6 +632,7 @@ def sign_up():
         hashed_password = sha256_crypt.encrypt(password)
         athlete = Athlete(username, private, password=hashed_password, is_coach=is_coach)
         athlete.save()
+        session["previous_page"] = "trampoline_log"
         return redirect(url_for('login'))
     return render_template("trampoline/sign_up.html", error_text=session.get('error'), user="")
 
@@ -694,7 +696,8 @@ def login():
         if session.get('name'):
             set_current_user(username)
             set_current_athlete(username)
-        return redirect(url_for('trampoline_log'))
+        #return redirect(url_for('trampoline_log'))
+        return redirect(url_for(session.get('previous_page', 'trampoline_log')))
     return render_template("trampoline/login.html", user=session.get("name"), error_text=session.get('error'))
 
 
@@ -722,6 +725,7 @@ def logout():
     session["search_date"] = None
     session["error"] = ""
     session["current_athlete"] = ""
+    session["previous_page"] = "trampoline_log"
     return redirect(url_for('login'))
 
 
@@ -811,6 +815,7 @@ def user_stats():
     """
     username = session.get('name')
     if not username:
+        session["previous_page"] = "user_stats"
         return redirect(url_for('login'))
     body = ""
     # Get user data
@@ -860,6 +865,7 @@ def user_stats():
 
     current_user = session.get('name')
     if not session.get("name"):
+        session["previous_page"] = "user_stats"
         return redirect(url_for('login'))
     # get user from db
     try:
@@ -942,6 +948,7 @@ def user_profile():
     """
     current_user = session.get('name')
     if not session.get("name"):
+        session["previous_page"] = "user_profile"
         return redirect(url_for('login'))
     # get user from db
     try:
