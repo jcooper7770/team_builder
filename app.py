@@ -823,7 +823,6 @@ def user_stats():
     print(f"user turns: {len(user_turns)}")
 
     # Collect all skills
-    skill_counts = {'all': defaultdict(int), 'dmt': defaultdict(int), 'trampoline': defaultdict(int)}
     all_skills = defaultdict(lambda: {'all': 0, 'trampoline': 0, 'dmt': 0})
     dmt_passes = defaultdict(lambda: {'all': 0, 'trampoline': 0, 'dmt': 0})
     for turn in user_turns:
@@ -836,13 +835,10 @@ def user_stats():
             continue
 
         routines = routines[0]
-        #for skill in skills.split():
         for s in routines.skills:
             skill = s.shorthand
             if skill in ["...", 'X']:
                 continue
-            skill_counts['all'][skill] += 1
-            skill_counts[event][skill] += 1
 
             all_skills[skill][event] += 1
             all_skills[skill]['all'] += 1
@@ -864,8 +860,10 @@ def user_stats():
     for key in sorted(all_skills.keys(), key=lambda x: int(x[:-1])):
         all_skills_ordered[key] = all_skills[key]
     # add dmt passes
+    dmt_passes_ordered = OrderedDict()
     for key in sorted(dmt_passes.keys(), key=lambda x: (x.split()[0][:-1], x.split()[1][:-1])):
-        all_skills_ordered[key] = dmt_passes[key]
+        #all_skills_ordered[key] = dmt_passes[key]
+        dmt_passes_ordered[key] = dmt_passes[key]
     print(all_skills_ordered)
 
     body = ""
@@ -952,7 +950,8 @@ def user_stats():
         chart_start=request.args.get('chart_start', ""),
         chart_end=request.args.get('chart_end', ""),
         error_text=session.get('error'),
-        all_skills = all_skills_ordered
+        all_skills=all_skills_ordered,
+        dmt_passes=dmt_passes_ordered
     )
 
 @app.route("/logger/user")
