@@ -48,21 +48,25 @@
   <div class="card border-primary">
     <div class="card-header text-center"><h2>Skill Statistics</h2></div>
     <div class="card-body px-0 py-0">
-      <table border=1 class="table table-striped my-0">
-        <tr>
-          <th style="position: sticky; top:0; background: gray;">Skill</th>
-          <th style="position: sticky; top:0; background: gray;">Trampoline</th>
-          <th style="position: sticky; top:0; background: gray;">Dmt</th>
-          <th style="position: sticky; top:0; background: gray;">Total</th>
-        </tr>
-        {% for skill, skill_stats in all_skills.items() %}
-        <tr>
-          <td>{{skill}}</td>
-          <td>{{skill_stats['trampoline']}}</td>
-          <td>{{skill_stats['dmt']}}</td>
-          <td>{{skill_stats['all']}}</td>
-        </tr>
-        {% endfor %}
+      <table border=1 class="table table-striped my-0" id="skill_table">
+        <thead>
+          <tr>
+            <th style="position: sticky; top:0; background: gray;" id="col_skill">Skill</th>
+            <th style="position: sticky; top:0; background: gray;" id="col_tramp">Trampoline</th>
+            <th style="position: sticky; top:0; background: gray;" id="col_dmt">Dmt</th>
+            <th style="position: sticky; top:0; background: gray;" id="col_total">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for skill, skill_stats in all_skills.items() %}
+          <tr>
+            <td>{{skill}}</td>
+            <td>{{skill_stats['trampoline']}}</td>
+            <td>{{skill_stats['dmt']}}</td>
+            <td>{{skill_stats['all']}}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
       </table>
     </div>
   </div>
@@ -73,17 +77,21 @@
   <div class="card border-primary">
     <div class="card-header text-center"><h2>Pass Statistics</h2></div>
     <div class="card-body px-0 py-0">
-      <table border=1 class="table table-striped my-0">
-        <tr>
-          <th style="position: sticky; top:0; background: gray;">Pass</th>
-          <th style="position: sticky; top:0; background: gray;">Total</th>
-        </tr>
-        {% for pass, pass_stats in dmt_passes.items() %}
-        <tr>
-          <td>{{pass}}</td>
-          <td>{{pass_stats['dmt']}}</td>
-        </tr>
-        {% endfor %}
+      <table border=1 class="table table-striped my-0" id="pass_table">
+        <thead>
+          <tr>
+            <th style="position: sticky; top:0; background: gray;" id="col_skill">Pass</th>
+            <th style="position: sticky; top:0; background: gray;" id="col_total">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for pass, pass_stats in dmt_passes.items() %}
+          <tr>
+            <td>{{pass}}</td>
+            <td>{{pass_stats['dmt']}}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
       </table>
     </div>
   </div>
@@ -217,5 +225,56 @@
   chartMap.set('{{event}}', myChart{{event}});
   {% endfor %}
 
+
+// table sorting
+function sortTable(f,n,t){
+  var s = '#'+ t +' tbody  tr';
+  var rows = $(s).get();
+
+  rows.sort(function(a, b) {
+
+    var A = getVal(a);
+    var B = getVal(b);
+
+    if(A < B) {
+      return -1*f;
+    }
+    if(A > B) {
+      return 1*f;
+    }
+    return 0;
+  });
+
+  function getVal(elm){
+    var v = $(elm).children('td').eq(n).text().toUpperCase();
+    if($.isNumeric(v)){
+      v = parseInt(v,10);
+    }
+    return v;
+  }
+
+  $.each(rows, function(index, row) {
+    $('#'+t).children('tbody').append(row);
+  });
+}
+var f_sl = 1;
+var f_nm = 1;
+// highlight header on hover
+$("[id^=col]").mouseover(function(){
+  $(this).css({"background-color": "lightgray", "cursor": "pointer"});
+});
+$("[id^=col]").mouseout(function(){
+  $(this).css({"background-color": "gray", "cursor": "pointer"});
+});
+// sort column on click
+$("[id^=col]").click(function(){
+    f_sl *= -1;
+    table = $(this).closest("table")[0].id;
+    console.log(table);
+    console.log(f_sl)
+    var n = $(this).prevAll().length;
+    console.log(n);
+    sortTable(f_sl,n, table);
+});
 </script>
 {% endblock %}
