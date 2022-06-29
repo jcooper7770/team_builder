@@ -504,7 +504,7 @@ def run():
 
     return render_template(
         "pokemon/index.html",
-        body="".join(html),
+        body="".join(html).replace(" table-responsive-lg", ""),
         leagues=sorted(LEAGUE_RANKINGS.keys()),
         current_league=chosen_league,
         all_pokemon=sorted(team_maker.all_pokemon, key=lambda x: x.get('speciesId')),
