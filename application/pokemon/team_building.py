@@ -34,6 +34,7 @@ import sqlalchemy
 
 import json
 import random
+import re
 import requests
 import traceback
 from datetime import datetime, timedelta
@@ -270,6 +271,24 @@ class MetaTeamDestroyer:
         """
         print("------ Initializing the data -------")
 
+        '''
+        # Initiate all the rankings and league data
+        league_rankings = {}
+        league_data = {}
+        resp = requests.get("https://vps.gobattlelog.com/data/overall/")
+        rankings = re.findall(r"href=\"rankings-([0-9]*-?[a-z]*).json\"", resp.text)
+        for ranking in rankings:
+            ranking_name = ranking.replace('1500', 'great').replace('2500', 'ultra').replace('10000', 'master').replace('500', 'little')
+            league_rankings[ranking_name] = f"https://vps.gobattlelog.com/data/overall/rankings-{ranking}.json?v=1.25.35"
+            league_data[ranking_name] = f"https://vps.gobattlelog.com/records/{ranking_name}/latest.json?ts=451466.3"
+        global LEAGUE_RANKINGS, LEAGUE_DATA
+        LEAGUE_RANKINGS = league_rankings
+        LEAGUE_DATA = league_data
+        print(f"{league_data}\n{league_rankings}")
+        '''
+
+        # initiate the league data
+
         # Initialize all of the data
         rankings_url = LEAGUE_RANKINGS.get(league)
         latest_url = LEAGUE_DATA.get(league)
@@ -278,7 +297,13 @@ class MetaTeamDestroyer:
         # Get the latest-large data
         latest_url = latest_url.replace('latest', 'latest-large')
         self.league = league
-        self.league_cp = LEAGUE_VALUE[league]
+        if league in LEAGUE_VALUE:
+            self.league_cp = LEAGUE_VALUE[league]
+        elif '-' in league:
+            league_cps = {'great': '1500', 'ultra': '2500', 'master': '10000'}
+            self.league_cp = league_cps.get(league.split('-')[0], '1500')
+        else:
+            self.league_cp = '1500'
 
 
         # Fetch data from db
@@ -627,7 +652,14 @@ class MetaTeamDestroyer:
         print(f"Random chosen strong pokemon: {random_strong_pokemon}")
 
         return self.team_results([random_weak_pokemon, pokemon, random_strong_pokemon], pokemon)
-        
+
+    @staticmethod
+    def get_leagues():
+        """
+        Returns all of the leagues
+        """
+        return LEAGUE_RANKINGS.keys()
+
     def team_results(self, pokemon_team, chosen_pokemon):
         """
         Returns the results of the pokemon team created
@@ -638,7 +670,8 @@ class MetaTeamDestroyer:
         results = f"Team for {chosen_pokemon}"
         #pvpoke_link = f"https://pvpoke.com/team-builder/all/{LEAGUE_VALUE[self.league]}/{pokemon_team[0]}-m-{team_ivs[0]}%2C{pokemon_team[1]}-m-{team_ivs[1]}%2C{pokemon_team[2]}-m-{team_ivs[2]}"
         cup = CUP_VALUE.get(self.league, 'all')
-        pvpoke_link = f"https://pvpoke.com/team-builder/{cup}/{LEAGUE_VALUE[self.league]}/{pokemon_team[0]}-m-0-1-2%2C{pokemon_team[1]}-m-0-1-2%2C{pokemon_team[2]}-m-0-1-2"
+        #pvpoke_link = f"https://pvpoke.com/team-builder/{cup}/{LEAGUE_VALUE[self.league]}/{pokemon_team[0]}-m-0-1-2%2C{pokemon_team[1]}-m-0-1-2%2C{pokemon_team[2]}-m-0-1-2"
+        pvpoke_link = f"https://pvpoke.com/team-builder/{cup}/{self.league_cp}/{pokemon_team[0]}-m-0-1-2%2C{pokemon_team[1]}-m-0-1-2%2C{pokemon_team[2]}-m-0-1-2"
         results = f"{results} (<a href='{pvpoke_link}' target='_blank'>See team in pvpoke</a>)"
         results = f"{results}\n<b>Pokemon</b>\t<b>Fast Move</b>\t<b>Charge Moves</b>"
         team_ivs = []
@@ -729,7 +762,10 @@ def pretty_print_counters(counter_list, min_counters=None, use_percent=True):
 def get_counters_for_rating(rating, league="ULP", days_back=None):
     """ Prints the lead, safe swap, and back line counters at the given rating """
     if league not in LEAGUE_RANKINGS:
-        return f"Did not find league '{league}'"
+        #return f"Did not find league '{league}'", None
+        league = "GL"
+        print(f"Could not find league '{league}'")
+        return f"Did not find league '{league}'", MetaTeamDestroyer(rating=rating, league="1500", days_back=days_back)
 
     team_maker = MetaTeamDestroyer(rating=rating, league=league, days_back=days_back)
     #creator = TeamCreater(team_maker)

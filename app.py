@@ -502,7 +502,8 @@ def run():
     return render_template(
         "pokemon/index.html",
         body="".join(html),
-        leagues=sorted(LEAGUE_RANKINGS.keys()),
+        #leagues=sorted(LEAGUE_RANKINGS.keys()),
+        leagues=sorted(team_maker.get_leagues()),
         current_league=chosen_league,
         all_pokemon=sorted(team_maker.all_pokemon, key=lambda x: x.get('speciesId')),
         chosen_position=chosen_position,
@@ -513,7 +514,7 @@ def run():
         error_text=error_text,
         result_data=team_maker.result_data,
         user=session.get("name", ""),
-        ratings=team_maker.all_ratings,
+        ratings=sorted(team_maker.all_ratings),
         current_rating=rating,
     )
 

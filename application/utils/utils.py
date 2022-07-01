@@ -133,6 +133,10 @@ def skills_table(skills, title="Routines", expand_comments=False):
         # Skills
         for skill in turn.skills:
             skills_table.add_cell(skill.shorthand)
+        
+        # put all skills in a single cell instead?
+        #skills_table.add_cell(" ".join([skill.shorthand for skill in turn.skills]))
+
         # metrics
         skills_table.add_cell("")
         for _ in range(most_cols - len(turn.skills)):
