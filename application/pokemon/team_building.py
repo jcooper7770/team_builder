@@ -71,7 +71,8 @@ LEAGUE_RANKINGS = {
     "Johto": "https://vps.gobattlelog.com/data/overall/rankings-1500-johto.json?v=1.25.35",
     "Flying": "https://vps.gobattlelog.com/data/overall/rankings-1500-flying.json?v=1.25.35",
     "GoFestCatchCup": "https://vps.gobattlelog.com/data/overall/rankings-1500.json?v=1.25.35",
-    "Fossil": "https://vps.gobattlelog.com/data/overall/rankings-1500-fossil.json?v=1.25.35"
+    "Fossil": "https://vps.gobattlelog.com/data/overall/rankings-1500-fossil.json?v=1.25.35",
+    "Hisui": "https://vps.gobattlelog.com/data/overall/rankings-1500-hisui.json?v=1.25.35"
 }
 LEAGUE_DATA = {
     "ULP": "https://vps.gobattlelog.com/records/ultra-premier/latest.json?ts=449983.3",
@@ -97,7 +98,8 @@ LEAGUE_DATA = {
     "Johto": "https://vps.gobattlelog.com/records/great-johto/latest.json?ts=451466.3",
     "Flying": "https://vps.gobattlelog.com/records/great-flying/latest.json?ts=451466.3",
     "GoFestCatchCup": "https://vps.gobattlelog.com/records/great-catch0622/latest.json?ts=451466.3",
-    "Fossil": "https://vps.gobattlelog.com/records/great-fossil/latest.json?ts=451466.3"
+    "Fossil": "https://vps.gobattlelog.com/records/great-fossil/latest.json?ts=451466.3",
+    "Hisui": "https://vps.gobattlelog.com/records/great-hisui/latest.json?ts=451466.3"
 }
 LEAGUE_VALUE = {
     'GL': '1500',
@@ -122,7 +124,8 @@ LEAGUE_VALUE = {
     "Flying": '1500',
     'Little': '500',
     'GoFestCatchCup': '1500',
-    'Fossil': '1500'
+    'Fossil': '1500',
+    'Hisui': '1500'
 }
 CUP_VALUE = {
     'MLC': 'classic',
@@ -139,7 +142,8 @@ CUP_VALUE = {
     'Flying': 'flying',
     'Little': 'little',
     'Retro': 'retro',
-    'Fossil': 'fossil'
+    'Fossil': 'fossil',
+    "Hisui": "hisui"
 }
 
 # https://gamepress.gg/pokemongo/cp-multiplier
