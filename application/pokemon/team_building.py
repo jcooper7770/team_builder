@@ -352,18 +352,34 @@ class MetaTeamDestroyer:
         leads = defaultdict(int)
         safeswaps = defaultdict(int)
         backs = defaultdict(int)
+        pokemon_win_rates = {'lead': defaultdict(list), 'ss': defaultdict(list), 'back': defaultdict(list)}
         for record in self.latest_info:
             if rating and record.get("rating") != rating:
                 continue
             team = record.get("oppo_team")
             pokemon = team.split('/')
-            leads[pokemon[0].split(':')[0]] += 1
-            safeswaps[pokemon[1].split(':')[0]] += 1
-            backs[pokemon[2].split(':')[0]] += 1
+            opp_lead = pokemon[0].split(':')[0]
+            opp_ss = pokemon[1].split(':')[0]
+            opp_back = pokemon[2].split(':')[0]
+            leads[opp_lead] += 1
+            safeswaps[opp_ss] += 1
+            backs[opp_back] += 1
+            # think about adding in the record['team'] also
+            # add in pokemon win rates
+            win = record.get('result') == "L"
+            pokemon_win_rates['lead'][opp_lead].append(win)
+            pokemon_win_rates['ss'][opp_ss].append(win)
+            pokemon_win_rates['back'][opp_back].append(win)
 
         self.leads_list = sorted(list(leads.items()), key=lambda x: x[1], reverse=True)
         self.safeswaps_list = sorted(list(safeswaps.items()), key=lambda x: x[1], reverse=True)
         self.backs_list = sorted(list(backs.items()), key=lambda x: x[1], reverse=True)
+
+        # Record pokemon win rates in each position
+        self.pokemon_win_rates = {'leads': {}, 'ss': {}, 'back': {}}
+        self.pokemon_win_rates['leads'] = {p: f'{wins.count(True)}/{len(wins)} || {100*wins.count(True)/len(wins):.2f}%' for p, wins in pokemon_win_rates['lead'].items()}
+        self.pokemon_win_rates['ss'] = {p: f'{wins.count(True)}/{len(wins)} || {100*wins.count(True)/len(wins):.2f}%' for p, wins in pokemon_win_rates['ss'].items()}
+        self.pokemon_win_rates['back'] = {p: f'{wins.count(True)}/{len(wins)} || {100*wins.count(True)/len(wins):.2f}%' for p, wins in pokemon_win_rates['back'].items()}
 
         # Remove pokemon not in the top TOP_PERCENT from the leads
         if TOP_PERCENT:

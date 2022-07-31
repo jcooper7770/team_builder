@@ -515,6 +515,7 @@ def run():
         current_pokemon=chosen_pokemon,
         error_text=error_text,
         result_data=team_maker.result_data,
+        poke_win_rates=team_maker.pokemon_win_rates,
         n_teams=sum([p[1] for p in team_maker.result_data['meta_leads']]),
         user=session.get("name", ""),
         ratings=sorted(team_maker.all_ratings),

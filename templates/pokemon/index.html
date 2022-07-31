@@ -107,21 +107,27 @@
                   <b>Leads reported on GoBattleLog</b>
                   <br>
                   <p>The number of times the pokemon is reported as first on a team by trainers using GoBattleLog.</p>
+                  <p>In parentethese is the pokemon's actual win rate in the lead.</p>
                 </td>
                 <td>
                   <b>Leads that beat the meta leads</b>
                   <br>
                   <p>Weighted percent of the leads (on the left) that the pokemon beats (using a 1-1 shield scenario).</p>
+                  <p>In parentethese is the pokemon's actual win rate in the lead.</p>
                 </td>
               </tr>
               <tr>
                 <td>
                   <div class="data" style="height:400px;">
                     <table>
+                      <tr style="border:none;">
+                        <td style="border:none;padding-top:1px;padding-bottom:0px"><b><u>Pokemon</u></b></td>
+                        <td style="border:none;padding-top:1px;padding-bottom:0px"><b><u># Reports</u></b></td>
+                      </tr>
                     {% for lead in result_data.meta_leads %}
                       <tr style="border:none;">
                         <td style="border:none;padding-top:1px;padding-bottom:0px;overflow: visible;">
-                          {{ lead[0] | pokemonColor(current_pokemon, current_league) | safe }}
+                          {{ lead[0] | pokemonColor(current_pokemon, current_league) | safe }} ({{poke_win_rates['leads'][lead[0]]}})
                           <!--{{ lead[0] }}-->
                         </td>
                         <td style="border:none;padding-top:1px;padding-bottom:0px">
@@ -135,11 +141,15 @@
                 <td>
                   <div class="data" style="height:400px;">
                     <table border="0">
+                      <tr style="border:none;">
+                        <td style="border:none;padding-top:1px;padding-bottom:0px"><b><u>Pokemon</u></b></td>
+                        <td style="border:none;padding-top:1px;padding-bottom:0px"><b><u>Predicted win rate</u></b></td>
+                      </tr>
                     {% for lead in result_data.good_leads %}
                       {% if lead[1] >= 15 %}
                       <tr border="0">
                         <td style="border:none;padding-top:1px;padding-bottom:0px">
-                          {{ lead[0] | pokemonColor(current_pokemon, current_league) | safe }}
+                          {{ lead[0] | pokemonColor(current_pokemon, current_league) | safe }} ({{poke_win_rates['leads'][lead[0]]}})
                           <!--{{ lead[0] }}-->
                         </td>
                         <td style="border:none;padding-top:1px;padding-bottom:0px">
@@ -168,21 +178,27 @@
                   <b>Second pokemon reported on GoBattleLog</b>
                   <br>
                   <p>The number of times the pokemon is reported as the second pokemon on a team by trainers using GoBattleLog.</p>
+                  <p>In parentethese is the pokemon's actual win rate in the second position.</p>
                 </td>
                 <td>
                   <b>Second pokemon that beat the meta second pokemon</b>
                   <br>
                   <p>Weighted percent of the second pokemon (on the left) that the pokemon beats (using a 1-1 shield scenario).</p>
+                  <p>In parentethese is the pokemon's actual win rate in the second position.</p>
                 </td>
               </tr>
               <tr>
                 <td>
                   <div class="data" style="height:400px;">
                     <table>
+                      <tr style="border:none;">
+                        <td style="border:none;padding-top:1px;padding-bottom:0px"><b><u>Pokemon</u></b></td>
+                        <td style="border:none;padding-top:1px;padding-bottom:0px"><b><u># Reports</u></b></td>
+                      </tr>
                     {% for ss in result_data.meta_ss %}
                       <tr style="border:none;">
                         <td style="border:none;padding-top:1px;padding-bottom:0px">
-                          {{ ss[0] }}
+                          {{ ss[0] }} ({{poke_win_rates['ss'][ss[0]]}})
                         </td>
                         <td style="border:none;padding-top:1px;padding-bottom:0px">
                           {{ ss[1] }}
@@ -195,11 +211,15 @@
                 <td>
                   <div class="data" style="height:400px;">
                     <table border="0">
+                      <tr style="border:none;">
+                        <td style="border:none;padding-top:1px;padding-bottom:0px"><b><u>Pokemon</u></b></td>
+                        <td style="border:none;padding-top:1px;padding-bottom:0px"><b><u>Predicted win rate</u></b></td>
+                      </tr>
                     {% for ss in result_data.good_ss %}
                       {% if ss[1] >= 15 %}
                       <tr border="0">
                         <td style="border:none;padding-top:1px;padding-bottom:0px">
-                          {{ ss[0] }}
+                          {{ ss[0] }} ({{poke_win_rates['ss'][ss[0]]}})
                         </td>
                         <td style="border:none;padding-top:1px;padding-bottom:0px">
                           {{ "%.2f" | format(ss[1]) }}%
@@ -227,21 +247,27 @@
                   <b>Third pokemon reported on GoBattleLog</b>
                   <br>
                   <p>The number of times the pokemon is reported as last on a team by trainers using GoBattleLog.</p>
+                  <p>In parentethese is the pokemon's actual win rate in the third position.</p>
                 </td>
                 <td>
                   <b>Third pokemon that beat the meta third pokemon</b>
                   <br>
                   <p>Weighted percent of the third pokemon (on the left) that the pokemon beats (using a 1-1 shield scenario).</p>
+                  <p>In parentethese is the pokemon's actual win rate in the third position.</p>
                 </td>
               </tr>
               <tr>
                 <td>
                   <div class="data" style="height:400px;">
                     <table>
+                      <tr style="border:none;">
+                        <td style="border:none;padding-top:1px;padding-bottom:0px"><b><u>Pokemon</u></b></td>
+                        <td style="border:none;padding-top:1px;padding-bottom:0px"><b><u># Reports</u></b></td>
+                      </tr>
                     {% for back in result_data.meta_backs %}
                       <tr style="border:none;">
                         <td style="border:none;padding-top:1px;padding-bottom:0px">
-                          {{ back[0] }}
+                          {{ back[0] }} ({{ poke_win_rates['back'][back[0]]}})
                         </td>
                         <td style="border:none;padding-top:1px;padding-bottom:0px">
                           {{ back[1] }}
@@ -254,11 +280,15 @@
                 <td>
                   <div class="data" style="height:400px;">
                     <table border="0">
+                      <tr style="border:none;">
+                        <td style="border:none;padding-top:1px;padding-bottom:0px"><b><u>Pokemon</u></b></td>
+                        <td style="border:none;padding-top:1px;padding-bottom:0px"><b><u>Predicted win rate</u></b></td>
+                      </tr>
                     {% for back in result_data.good_backs %}
                       {% if back[1] >= 15 %}
                       <tr border="0">
                         <td style="border:none;padding-top:1px;padding-bottom:0px">
-                          {{ back[0] }}
+                          {{ back[0] }} ({{ poke_win_rates['back'][back[0]]}})
                         </td>
                         <td style="border:none;padding-top:1px;padding-bottom:0px">
                           {{ "%.2f" | format(back[1]) }}%
