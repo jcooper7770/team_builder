@@ -30,6 +30,7 @@
   - [DONE] Fetch data daily instead of every time refreshed and save to DB
 """
 
+from typing import OrderedDict
 import sqlalchemy
 
 import json
@@ -353,6 +354,7 @@ class MetaTeamDestroyer:
         safeswaps = defaultdict(int)
         backs = defaultdict(int)
         pokemon_win_rates = {'lead': defaultdict(list), 'ss': defaultdict(list), 'back': defaultdict(list)}
+        pokemon_teams = defaultdict(list)
         for record in self.latest_info:
             if rating and record.get("rating") != rating:
                 continue
@@ -371,6 +373,10 @@ class MetaTeamDestroyer:
             pokemon_win_rates['ss'][opp_ss].append(win)
             pokemon_win_rates['back'][opp_back].append(win)
 
+            # Record team win
+            pokemon_teams[f'{opp_lead}-{opp_ss}-{opp_back}'].append(win)
+
+        print(f"----------\n\nteams: {pokemon_teams}")
         self.leads_list = sorted(list(leads.items()), key=lambda x: x[1], reverse=True)
         self.safeswaps_list = sorted(list(safeswaps.items()), key=lambda x: x[1], reverse=True)
         self.backs_list = sorted(list(backs.items()), key=lambda x: x[1], reverse=True)
@@ -380,6 +386,13 @@ class MetaTeamDestroyer:
         self.pokemon_win_rates['leads'] = {p: f'{wins.count(True)}/{len(wins)} || {100*wins.count(True)/len(wins):.2f}%' for p, wins in pokemon_win_rates['lead'].items()}
         self.pokemon_win_rates['ss'] = {p: f'{wins.count(True)}/{len(wins)} || {100*wins.count(True)/len(wins):.2f}%' for p, wins in pokemon_win_rates['ss'].items()}
         self.pokemon_win_rates['back'] = {p: f'{wins.count(True)}/{len(wins)} || {100*wins.count(True)/len(wins):.2f}%' for p, wins in pokemon_win_rates['back'].items()}
+
+        # Record top 10 used team win rates
+        self.pokemon_teams = OrderedDict()
+        sorted_teams = sorted(pokemon_teams.items(), key=lambda x: [len(x[1]), x[1].count(True)], reverse=True) # sort based on # games
+        num_teams = min(10, len(sorted_teams))
+        for team, wins in sorted_teams[:num_teams]:
+            self.pokemon_teams[team] = f'{wins.count(True)}/{len(wins)} || {100*wins.count(True)/len(wins):.2f}%'
 
         # Remove pokemon not in the top TOP_PERCENT from the leads
         if TOP_PERCENT:

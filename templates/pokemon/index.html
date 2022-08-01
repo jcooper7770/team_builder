@@ -307,6 +307,21 @@
     </div>
   </div>
   <br><br>
+
+  <table class="table table-striped" border="1">
+    <thead class="thead-dark bg-dark text-white">
+      <tr><td colspan=2 align="center">Top 10 Used Teams</td></tr>
+      <th>Team</th><th>Win Rate</th>
+    </thead>
+    <tbody>
+      {% for team, wr in team_win_rates.items() %}
+      <tr>
+        <td>{{ team }}</td><td>{{ wr }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <br><br>
 </div>
 
 <script src="https://code.jquery.com/jquery-3.5.1.js"
