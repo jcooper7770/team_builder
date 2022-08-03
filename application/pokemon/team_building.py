@@ -374,7 +374,11 @@ class MetaTeamDestroyer:
             pokemon_win_rates['back'][opp_back].append(win)
 
             # Record team win
-            pokemon_teams[f'{opp_lead}-{opp_ss}-{opp_back}'].append(win)
+            backline = sorted([opp_ss, opp_back])
+            opp_team = [opp_lead, backline[0], backline[1]]
+            team_str = '-'.join(opp_team)
+            #pokemon_teams[f'{opp_lead}-{opp_ss}-{opp_back}'].append(win)
+            pokemon_teams[team_str].append(win)
 
         print(f"----------\n\nteams: {pokemon_teams}")
         self.leads_list = sorted(list(leads.items()), key=lambda x: x[1], reverse=True)
