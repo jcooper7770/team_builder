@@ -74,7 +74,8 @@ LEAGUE_RANKINGS = {
     "GoFestCatchCup": "https://vps.gobattlelog.com/data/overall/rankings-1500.json?v=1.25.35",
     "Fossil": "https://vps.gobattlelog.com/data/overall/rankings-1500-fossil.json?v=1.25.35",
     "Hisui": "https://vps.gobattlelog.com/data/overall/rankings-1500-hisui.json?v=1.25.35",
-    "Summer": "https://vps.gobattlelog.com/data/overall/rankings-1500-summer.json?v=1.25.35"
+    "Summer": "https://vps.gobattlelog.com/data/overall/rankings-1500-summer.json?v=1.25.35",
+    "Fighting": "https://vps.gobattlelog.com/data/overall/rankings-1500-fighting.json?v=1.25.35"
 }
 LEAGUE_DATA = {
     "ULP": "https://vps.gobattlelog.com/records/ultra-premier/latest.json?ts=449983.3",
@@ -102,7 +103,8 @@ LEAGUE_DATA = {
     "GoFestCatchCup": "https://vps.gobattlelog.com/records/great-catch0622/latest.json?ts=451466.3",
     "Fossil": "https://vps.gobattlelog.com/records/great-fossil/latest.json?ts=451466.3",
     "Hisui": "https://vps.gobattlelog.com/records/great-hisui/latest.json?ts=451466.3",
-    "Summer": "https://vps.gobattlelog.com/records/great-summer/latest.json?ts=451466.3"
+    "Summer": "https://vps.gobattlelog.com/records/great-summer/latest.json?ts=451466.3",
+    "Fighting": "https://vps.gobattlelog.com/records/great-fighting/latest.json?ts=451466.3"
 }
 LEAGUE_VALUE = {
     'GL': '1500',
@@ -129,7 +131,8 @@ LEAGUE_VALUE = {
     'GoFestCatchCup': '1500',
     'Fossil': '1500',
     'Hisui': '1500',
-    'Summer': '1500'
+    'Summer': '1500',
+    'Fighting': '1500'
 }
 CUP_VALUE = {
     'MLC': 'classic',
@@ -148,7 +151,8 @@ CUP_VALUE = {
     'Retro': 'retro',
     'Fossil': 'fossil',
     "Hisui": "hisui",
-    'Summer': 'summer'
+    'Summer': 'summer',
+    'Fighting': 'fighting'
 }
 
 # https://gamepress.gg/pokemongo/cp-multiplier
@@ -761,7 +765,12 @@ class MetaTeamDestroyer:
         counter_counters = [c for c in counter_counters if pokemon_keyword not in c]
 
         # Choose the third pokemon
-        back_pokemon2 = self.choose_weighted_pokemon(counter_counters)[0]
+        if counter_counters:
+            back_pokemon2 = self.choose_weighted_pokemon(counter_counters)[0]
+        else:
+            print("No counters left. Choosing random pokemon")
+            bp2 = random.choice(self.all_pokemon)
+            back_pokemon2 = bp2.get("speciesId")
 
         back_pokemon = sorted([back_pokemon1, back_pokemon2])
         pokemon_team = [pokemon]
