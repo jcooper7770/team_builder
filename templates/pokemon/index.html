@@ -25,6 +25,8 @@
           <option value="{{league}}" id="option_{{league}}"{% if current_league==league %} selected{% endif %}>{{league}}</option>
         {% endfor %}
         </select>
+        <button class="btn btn-secondary" id="refresh-league-data">Refresh League Data</button>
+        Last refreshed: {{ last_refreshed }}
         </td>
       </tr>
       <tr>
@@ -340,6 +342,40 @@ $("a.tooltip1").hover(function() {
   $(this).removeClass("hover");
   $(this).parent().parent().parent().parent().parent().css("overflow-y", "auto");
   $(this).parent().parent().parent().parent().parent().css("overflow-x", "auto");
+});
+
+// Pull new data from gobattlelog for the league and refresh
+$("#refresh-league-data").click(function (e){
+  // Get current league
+  var league = $("#league_picker").val();
+  alert("Refreshing data for: " + league);
+  // POST to refresh data
+  $.post("/data/refresh", {
+    league: league
+  },
+  function(data, status){
+    /*
+    if(data == "success"){
+     alert("data refreshed!") 
+    }
+    alert("Data: " + data +"\nStatus: " + status);
+    */
+  });
+  location.reload();
+
+  /*
+  // GET?
+  $.ajax({
+    type: 'GET',
+    url: "/data/refresh/" + league,
+    success: function (data) {
+      location.reload();
+    }
+  });
+  */
+
+
+  // Refresh page
 });
 
 // Refreshes once a new league is chosen

@@ -37,7 +37,7 @@ import json
 import random
 import requests
 import traceback
-from datetime import datetime, timedelta
+from datetime import datetime, date, timedelta
 from collections import defaultdict
 
 from application.pokemon.battle_sim import sim_battle
@@ -49,6 +49,7 @@ TOP_TEAM_NUM = None
 MIN_COUNTERS = 25
 TOP_PERCENT = 1
 REQUEST_TIMEOUT = 180
+REFRESH_DATA = False
 
 LEAGUE_RANKINGS = {
     "ULP": "https://vps.gobattlelog.com/data/overall/rankings-2500-premier.json?v=1.25.10",
@@ -171,6 +172,21 @@ HIGH_MULTIPLIERS = {
     51: 0.84529999
 }
 
+def set_refresh(refresh):
+    """
+    Change global refresh to refresh current data
+    """
+    global REFRESH_DATA
+    REFRESH_DATA = refresh
+
+
+def get_refresh():
+    """
+    Returns REFRESH_DATA var
+    """
+    return REFRESH_DATA
+
+
 class NoPokemonFound(Exception):
     pass
 
@@ -292,7 +308,7 @@ class MetaTeamDestroyer:
         latest_url = latest_url.replace('latest', 'latest-large')
         self.league = league
         self.league_cp = LEAGUE_VALUE[league]
-
+        self.last_fetched = {}
 
         # Fetch data from db
         self.all_pokemon = self.get_league_data_from_db(f"all_pokemon_{league}", url=rankings_url)
@@ -438,6 +454,9 @@ class MetaTeamDestroyer:
         """
         Returns the league data from the db
         """
+        global REFRESH_DATA
+        logger.info(f"refresh data: {REFRESH_DATA}")
+    
         fetch_new = False
         # first check if in db andf if data is older than today
         engine = create_engine()
@@ -452,9 +471,19 @@ class MetaTeamDestroyer:
             league_data = results[0]
             last_fetched_date = league_data[2]
             latest_info = json.loads(league_data[1])
-            if last_fetched_date == datetime.today().date():
+
+            same_date = True
+            if isinstance(last_fetched_date, date):
+                same_date = last_fetched_date == datetime.today().date()
+            elif isinstance(last_fetched_date, datetime):
+                same_date = last_fetched_date.date() == datetime.today.date()
+            
+            #if not REFRESH_DATA and last_fetched_date.date() == datetime.today().date():
+            if not REFRESH_DATA and same_date:
                 #print(f"results: {results}\n\n")
                 #print(f"info: {latest_info}")
+                self.last_fetched[league] = last_fetched_date
+                logger.info(f"Using data refreshed at: {self.last_fetched}")
                 return json.loads(latest_info)
         else:
             ins = table.insert().values(
@@ -471,6 +500,11 @@ class MetaTeamDestroyer:
             latest_url = latest_url.replace('latest', 'latest-large')
             url = latest_url
 
+        # Set refresh back to False
+        #  because at this point we know we have to refresh
+        set_refresh(False)
+        logger.info("Getting new data")
+
         try:
             latest_info = requests.get(url, timeout=REQUEST_TIMEOUT).json()
             json.dump(latest_info, open(f"data/latest_{league}.json", 'w'))
@@ -482,10 +516,13 @@ class MetaTeamDestroyer:
                 print(f"Failed to find data/latest_{league}.json file. Using stale data from {last_fetched_date}")
                 return json.loads(latest_info)
 
+        current_date = datetime.now()
+        self.last_fetched[league] = current_date
         update = table.update().where(table.c.league==league).values(
             league=league,
             data=json.dumps(latest_info),
-            last_fetched_date=datetime.today()
+            #last_fetched_date=current_date.date()
+            last_fetched_date=current_date
         )
         engine.execute(update)
         return latest_info

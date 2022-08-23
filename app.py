@@ -39,7 +39,7 @@ from flask import Flask, request, render_template, jsonify, redirect, url_for, s
 from flask_session import Session
 
 from application.pokemon.team_building import MetaTeamDestroyer, PokemonUser, get_counters_for_rating, LEAGUE_RANKINGS, NoPokemonFound, TeamCreater,\
-     create_table_from_results
+     create_table_from_results, set_refresh, get_refresh
 from application.pokemon.battle_sim import sim_battle
 
 from application.trampoline.trampoline import convert_form_data, get_leaderboards, pretty_print, Practice, current_user, set_current_user,\
@@ -94,6 +94,17 @@ def get_new_data(league, num_days, rating):
     return diff_league or diff_days or diff_rating
 
 
+@app.route("/data/refresh", methods=["POST"])
+def refresh_pokemon_data():
+    """
+    Refreshes the league data
+    """
+    data = request.get_json()
+    logger.info(f"\n\n\nRefreshing data for {data}")
+    set_refresh(True)
+    #return jsonify(status="success")
+    return "success"
+
 @app.route("/logger/_clear")
 def clear_history():
     """
@@ -106,7 +117,7 @@ def clear_history():
     else:
         logger.info("did not delete")
         return jsonify(status="fail")
-        
+
 
 @app.route("/logger/_clearDay")
 def clear_day():
@@ -470,7 +481,7 @@ def run():
 
     print("----- Refreshed -----")
     # Data tables from cache
-    if get_new_data(chosen_league, num_days, rating):
+    if get_refresh() or get_new_data(chosen_league, num_days, rating):
         try:
             results, team_maker, data_error = get_counters_for_rating(rating, chosen_league, days_back=num_days)
         except NoPokemonFound as exc:
@@ -521,6 +532,7 @@ def run():
         user=session.get("name", ""),
         ratings=sorted(team_maker.all_ratings),
         current_rating=rating,
+        last_refreshed=team_maker.last_fetched.get(f"all_pokemon_{chosen_league}", "")
     )
 
 @app.template_filter()
