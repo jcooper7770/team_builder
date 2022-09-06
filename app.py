@@ -47,7 +47,7 @@ from application.trampoline.trampoline import convert_form_data, get_leaderboard
      current_event, set_current_event, set_current_athlete,\
      ALL_SKILLS, get_leaderboards, Athlete, get_user_turns, get_turn_dds
 from application.utils.database import create_engine, get_users_and_turns, set_table_name, insert_goal_to_db, get_user_goals, complete_goal,\
-    delete_goal_from_db, get_user, get_simmed_battle, add_simmed_battle
+    delete_goal_from_db, get_user, get_simmed_battle, add_simmed_battle, add_airtime_to_db, get_user_airtimes, delete_airtime_from_db
 from application.utils.utils import *
 
 
@@ -230,7 +230,29 @@ def _save_trampoline_data(request):
             except:
                 pass
 
+    # Save airtime
+    airtime = request.form.get("airtime_form")
+    all_airtimes = get_user_airtimes(current_user())
+    if airtime:
+        airtime_str = request.form.get('airtime_string')
+        try:
+            airtime_str = f"{float(airtime_str):.2f}"
+        except:
+            pass
+        # add in date field
+        form_date_str = request.form.get('airtime-date', str(datetime.date.today()))
+        form_date = datetime.datetime.strptime(form_date_str, "%Y-%m-%d")
+        add_airtime_to_db(current_user(), airtime_str, form_date)
 
+        # remove deleted airtimes
+        for key in request.form.keys():
+            if key in ["airtime_string", "airtime_form"]:
+                continue
+            if key.startswith("delete"):
+                deleted_airtime_num = int(key[6:])
+                delete_airtime_from_db(current_user(), all_airtimes[deleted_airtime_num])
+                continue
+   
     # Save the current practice
     form_date_str = request.form.get('date', str(datetime.date.today()))
     form_date = datetime.datetime.strptime(form_date_str, "%Y-%m-%d")
@@ -435,6 +457,7 @@ def trampoline_log():
         routine_text=request.args.get('routine', ''),
         user=session.get('name'),
         goals=get_user_goals(current_user()),
+        airtimes=get_user_airtimes(current_user()),
         all_skills=ALL_SKILLS,
         error_text=session.get('error'),
         search_date=session.get("search_date").strftime("%Y-%m-%d") if session.get("search_date") else None,
@@ -843,6 +866,7 @@ def user_stats():
     body = ""
     # Get user data
     user_turns = get_user_turns(username)
+    airtimes = get_user_airtimes(username)
     print(f"user turns: {len(user_turns)}")
 
     # Collect all skills
@@ -965,6 +989,8 @@ def user_stats():
     datapts['trampoline_flips_per_turn'] = [{'x': date, 'y': sum(flips)/len(flips)} for date, flips in flips_per_turn['trampoline'].items()]
     datapts['turns_per_practice'] = [{'x': date, 'y': turns} for date, turns in sorted(turns_per_practice.items(), key=lambda x: x[0])]
 
+    # airtimes data
+    datapts['airtimes'] = [{'x': airtime['date'], 'y': float(airtime['airtime'])} for airtime in airtimes if airtime['airtime']]
     return render_template(
         "trampoline/user_statistics.html",
         body=body,

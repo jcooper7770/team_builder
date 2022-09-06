@@ -139,6 +139,47 @@ def add_to_db(turns, user, event, practice_date, table=None):
             engine.execute(ins)
 
 
+def add_airtime_to_db(user, airtime, date_str):
+    """
+    Add goal to db for user
+    """
+    engine = create_engine()
+    metadata = sqlalchemy.MetaData()
+    try:
+        table = sqlalchemy.Table("airtimes", metadata, autoload=True, autoload_with=engine)
+    except:
+        table = MockTable()
+    ins = table.insert().values(
+        user=user,
+        airtime=airtime,
+        date=date_str
+    )
+    engine.execute(ins)
+
+def get_user_airtimes(user):
+    """
+    Returns the airtimes for the user
+    """
+    engine = create_engine()
+    result = engine.execute(f'SELECT * from `airtimes` WHERE airtimes.user="{user}";')
+
+    airtimes = [airtime for airtime in result]
+    print(f"Returned {result.rowcount} airtimes")
+    result.close()
+    return sorted(airtimes, key=lambda x: x[2], reverse=True)
+
+
+def delete_airtime_from_db(user, airtime):
+    """
+    Deletes the airtime
+    """
+    metadata = sqlalchemy.MetaData()
+    table = sqlalchemy.Table("airtimes", metadata, autoload=True, autoload_with=ENGINE)
+    delete = table.delete().where(table.c.user==user).where(table.c.airtime==airtime['airtime']).where(table.c.date==airtime['date'])
+    # Figure out why it is not deleting the entire row in db but just the airtime value
+    ENGINE.execute(delete)
+
+
 def insert_goal_to_db(user, goal):
     """
     Add goal to db for user

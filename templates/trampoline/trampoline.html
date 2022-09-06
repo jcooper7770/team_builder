@@ -150,6 +150,49 @@
     </table>
   </form>
 </div>
+
+<br><br>
+<div class="container">
+  <form action="{{ url_for('trampoline_log') }}" method="post" id="airtime" style="text-align:left;">
+    <input type="hidden" name="airtime_form" id="airtime_form" value="airtime_form" \>
+    <table align="center" width="30%" border=1 class="table table-striped">
+      <thead class="thead-dark">
+        <th colspan=3>Airtimes</th>
+      </thead>
+      <tbody>
+        <tr>
+          <td colspan=3>
+
+            <div class="form-inline">
+              <input type="text" name="airtime_string" id="airtime_string" placeholder="Write airtime here" style="width:70%;"
+                class="form-control mr-1" \>
+                <!-- add date picker field -->
+              <input type="date" name="airtime-date" class="form-control" id="airtime-date" \>
+              <button type="submit" class="btn btn-primary" style="display:inline-block">Submit Airtime</button>
+            </div>
+
+          </td>
+        </tr>
+
+        {% for airtime in airtimes %}
+        {% if airtime.airtime %}
+        <tr>
+          <td width="20%">{{ airtime.date}}</td>
+          <td>{{ airtime.airtime }}</td>
+          <td width="5%">
+            <button type="submit" id="delete{{ loop.index0 }}" name="delete{{ loop.index0 }}" class="btn">
+              <span class="fa fa-remove" aria-hidden='true'></span>
+            </button>
+          </td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+
+      </tbody>
+    </table>
+  </form>
+</div>
+
 {% endblock %}
 
 <br><br>
@@ -231,8 +274,10 @@
     var date = new Date();
     date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
     document.getElementById("logger-date").value = date.toJSON().slice(0,10);
+    document.getElementById("airtime-date").value = date.toJSON().slice(0,10);
     {% else %}
     document.getElementById("logger-date").value = "{{search_date}}";
+    document.getElementById("airtime-date").value = "{{search_date}}";
     document.getElementById("practice_date").value = "{{search_date}}";
     {% endif %}
   });
