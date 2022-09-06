@@ -41,6 +41,7 @@ from flask_session import Session
 from application.pokemon.team_building import MetaTeamDestroyer, PokemonUser, get_counters_for_rating, LEAGUE_RANKINGS, NoPokemonFound, TeamCreater,\
      create_table_from_results, set_refresh, get_refresh
 from application.pokemon.battle_sim import sim_battle
+from application.pokemon.move_counts import get_move_counts
 
 from application.trampoline.trampoline import convert_form_data, get_leaderboards, pretty_print, Practice, current_user, set_current_user,\
      current_event, set_current_event, set_current_athlete,\
@@ -452,6 +453,13 @@ def about():
     commit_hash = subprocess.check_output(["git", "rev-parse", "HEAD"]).decode('ascii').strip()
     return render_template("pokemon/about.html", commit_hash=commit_hash)
 
+
+@app.route("/move_counts")
+def move_counts():
+    chosen_pokemon = request.args.get('chosen_pokemon', None)
+    n_moves = int(request.args.get('n_moves', 5))
+    moves = get_move_counts(None, chosen_pokemon=chosen_pokemon, n_moves=n_moves)
+    return render_template("pokemon/move_counts.html", moves=moves)
 
 @app.route("/")
 def run():

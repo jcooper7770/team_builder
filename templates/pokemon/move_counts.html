@@ -1,0 +1,81 @@
+{% extends "pokemon/base.html" %}
+
+{% block content %}
+<div class="container">
+  <form action="/move_counts">
+    <table>
+      <tr>
+        <td>
+          <label>Filter Pokemon:</label>
+        </td>
+        <td>
+          <input type="text" name="chosen_pokemon" onkeyup="filterPokemon()" class="form-control">
+        </td>
+      </tr>
+    </table>
+    <!--<button type="submit">Go</button>-->
+  </form>
+
+  {% for pokemon in moves.keys() %}
+  <table border="1" id="{{pokemon}}_table" name="pokemon" class="table table-striped">
+    <thead class="thead-dark bg-dark text-white">
+    <tr>
+      <th colspan="2">{{ pokemon }}</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for counts in moves[pokemon].items() %}
+    <tr>
+      <td>{{counts[0]}}</td>
+      <td>{{counts[1]}}</td>
+    </tr>
+    </tbody>
+    {% endfor %}
+  </table>
+  {% endfor %}
+</div>
+
+
+<script type="text/javascript">
+  function filterPokemon() {
+    var input = document.getElementsByName("chosen_pokemon")[0].value.toUpperCase();
+
+    // remove new lines
+    new_lines = document.getElementsByTagName("br");
+    for(i = 0; i<new_lines.length; i++){
+      line = new_lines[i];
+      if(line.previousSibling.tagName == "TABLE"){
+        line.remove();
+      }
+    }
+
+    new_lines = document.querySelectorAll('[table_sep="true"]');
+    for(i=0;i<new_lines.length; i++){
+      line = new_lines[i];
+      line.remove();
+    }
+
+    all_tables = document.getElementsByName("pokemon");
+    for (i = 0; i < all_tables.length; i++){
+      table = all_tables[i];
+      if(table.id.toUpperCase().indexOf(input) > -1){
+        all_tables[i].style.display = "";
+        //all_tables[i].appendChild(document.createElement("br"));
+        //all_tables[i].parentNode.insertBefore(document.createElement("br"), all_tables[i].nextSibling);
+        new_line = document.createElement("br");
+        new_line.setAttribute("table_sep", "true");
+        //all_tables[i].parentNode.insertBefore(document.createElement("br"), all_tables[i]);
+        all_tables[i].parentNode.insertBefore(new_line, all_tables[i]);
+      } else {
+        all_tables[i].style.display = "none";
+        next_sib = all_tables[i].nextSibling;
+        if(next_sib.tagName == "BR"){
+          next_sib.remove();
+        }
+      }
+
+    }
+
+  }
+</script>
+{% endblock %}
