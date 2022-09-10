@@ -4,7 +4,7 @@
 <br>
 {% block logging %}
 <div class="form-group" align="center">
-  <table align="center">
+  <table align="center" width="100%">
     <tr>
       <td>
         <form action="{{ url_for('trampoline_log') }}" method="post" id="logger" name="logger" style="text-align:left;">
@@ -15,9 +15,9 @@
             <div class="col">
               {% if user == "" %}
               <input type="text" id="name" name="name" placeholder="new username" value="{{username}}"
-                class="form-control"><br>
+                class="form-control" style="width:90%"><br>
               {% else %}
-              <input type="text" id="name" name="name" placeholder="new username" value="{{user}}" class="form-control"
+              <input type="text" id="name" name="name" placeholder="new username" value="{{user}}" class="form-control" style="width:90%"
                 disabled>
               {% endif %}
             </div>
@@ -29,7 +29,7 @@
               Date:
             </div>
             <div class="col-sm">
-              <input type="date" name="date" class="form-control" id="logger-date" \>
+              <input type="date" name="date" class="form-control" id="logger-date" style="width:90%" \>
             </div>
           </div>
 
@@ -48,14 +48,16 @@
 
           <!-- Skills to be logged -->
           <div class="form-row">
+            <div class="col-sm-3">Skills:</div>
             <div class="col">
-              <textarea id="log" name="log" rows="5" cols="50" form="logger"
+              <textarea id="log" name="log" rows="5" style="width:90%" form="logger"
                 placeholder="Input your routines here">{{routine_text}}</textarea>
             </div>
           </div>
           <!-- button skills -->
           <div class="form-row">
-            <div class="col-sm-9">
+            <div class="col-sm-3"></div>
+            <div class="col-sm-5" style="width:90%">
               {% for flips, skills in all_skills.items() %}
               <div class="dropdown" style="display:inline-block">
                 <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton"
@@ -83,7 +85,7 @@
           <!-- Notes -->
           <div class="form-row">
             <div class="col-sm-3"><label for="notes">Notes:</label></div>
-            <div class="col"><input type="text" id="notes" name="notes" placeholder="Enter notes" value=""
+            <div class="col"><input type="text" id="notes" name="notes" placeholder="Enter notes" value="" style="width:90%"
                 class="form-control"></div>
           </div>
 
@@ -106,9 +108,14 @@
     <input type="hidden" name="goals_form" id="goals_form" value="goals_form" \>
     <table align="center" width="30%" border=1 class="table table-striped">
       <thead class="thead-dark">
-        <th colspan=3>Goals</th>
+        <th colspan=3>
+          Goals
+          <button type="button" class="btn float-right">
+            <span class="fa fa-window-minimize" id="minimize_goals"></span>
+          </button>
+        </th>
       </thead>
-      <tbody>
+      <tbody id="goals_body">
         <tr>
           <td colspan=3>
 
@@ -120,31 +127,38 @@
 
           </td>
         </tr>
-
-        {% for goal in goals %}
         <tr>
-          <td width="5%">
-            {% if goal.done %}
-            <input type="checkbox" id="{{ loop.index0 }}" name="{{ loop.index0 }}" checked \>
-            {% else %}
-            <input type="checkbox" id="{{ loop.index0 }}" name="{{ loop.index0 }}" \>
-            {% endif %}
-          </td>
           <td>
-            {% if goal.done %}
-            <!--<strike>{{ goal.goal }}</strike>-->
-            <span style="color:red">[DONE]</span> {{ goal.goal }}
-            {% else %}
-            {{ goal.goal }}
-            {% endif %}
-          </td>
-          <td width="5%">
-            <button type="submit" id="delete{{ loop.index0 }}" name="delete{{ loop.index0 }}" class="btn">
-              <span class="fa fa-remove" aria-hidden='true'></span>
-            </button>
+            <div style="height: 300px; overflow-y: auto">
+              <table border="1">
+                {% for goal in goals %}
+                <tr>
+                  <td width="5%">
+                    {% if goal.done %}
+                    <input type="checkbox" id="{{ loop.index0 }}" name="{{ loop.index0 }}" checked \>
+                    {% else %}
+                    <input type="checkbox" id="{{ loop.index0 }}" name="{{ loop.index0 }}" \>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if goal.done %}
+                    <!--<strike>{{ goal.goal }}</strike>-->
+                    <span style="color:red">[DONE]</span> {{ goal.goal }}
+                    {% else %}
+                    {{ goal.goal }}
+                    {% endif %}
+                  </td>
+                  <td width="5%">
+                    <button type="submit" id="delete{{ loop.index0 }}" name="delete{{ loop.index0 }}" class="btn">
+                      <span class="fa fa-remove" aria-hidden='true'></span>
+                    </button>
+                  </td>
+                </tr>
+                {% endfor %}
+              </table>
+            </div>
           </td>
         </tr>
-        {% endfor %}
 
       </tbody>
     </table>
@@ -152,14 +166,20 @@
 </div>
 
 <br><br>
+<!-- Airtimes -->
 <div class="container">
   <form action="{{ url_for('trampoline_log') }}" method="post" id="airtime" style="text-align:left;">
     <input type="hidden" name="airtime_form" id="airtime_form" value="airtime_form" \>
     <table align="center" width="30%" border=1 class="table table-striped">
       <thead class="thead-dark">
-        <th colspan=3>Airtimes</th>
+        <th colspan=3>
+          Airtimes
+          <button type="button" class="btn float-right">
+            <span class="fa fa-window-minimize" id="minimize_airtimes"></span>
+          </button>
+        </th>
       </thead>
-      <tbody>
+      <tbody style="height:100px; overflow-y:auto;" id="airtimes_body">
         <tr>
           <td colspan=3>
 
@@ -173,21 +193,27 @@
 
           </td>
         </tr>
-
-        {% for airtime in airtimes %}
-        {% if airtime.airtime %}
         <tr>
-          <td width="20%">{{ airtime.date}}</td>
-          <td>{{ airtime.airtime }}</td>
-          <td width="5%">
-            <button type="submit" id="delete{{ loop.index0 }}" name="delete{{ loop.index0 }}" class="btn">
-              <span class="fa fa-remove" aria-hidden='true'></span>
-            </button>
+          <td>
+            <div style="height: 300px; overflow-y: auto">
+              <table border="1">
+                {% for airtime in airtimes %}
+                {% if airtime.airtime %}
+                <tr>
+                  <td width="20%">{{ airtime.date}}</td>
+                  <td>{{ airtime.airtime }}</td>
+                  <td width="5%">
+                    <button type="submit" id="delete{{ loop.index0 }}" name="delete{{ loop.index0 }}" class="btn">
+                      <span class="fa fa-remove" aria-hidden='true'></span>
+                    </button>
+                  </td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+              </table>
+            </div>
           </td>
         </tr>
-        {% endif %}
-        {% endfor %}
-
       </tbody>
     </table>
   </form>
@@ -368,6 +394,16 @@
       $('#log').val(skills + '\n');
     }
     $('#log').focus();
+  });
+  $("[id^=minimize_]").click(function(e){
+    var section_to_minimize = event.target.id.split("_")[1];
+    var minimize_id = section_to_minimize + "_body";
+    var x = document.getElementById(minimize_id);
+    if (x.style.display === "none") {
+      x.style.display = "";
+    } else {
+      x.style.display = "none";
+    }
   });
   $("[id^=remove_]").click(function (e) {
     e.preventDefault();
