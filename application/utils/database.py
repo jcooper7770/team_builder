@@ -235,13 +235,16 @@ def delete_goal_from_db(user, goal):
     ENGINE.execute(delete)
 
 
-def get_from_db(table_name=None, user="test", date=None, skills=None):
+def get_from_db(table_name=None, user="test", date=None, skills=None, date2=None):
     table_name = table_name or TABLE_NAME
     engine = create_engine(table_name)
 
     where_clause = [f'LOWER({table_name}.user)="{user}"']
+
+    if not date2:
+        date2 = date
     if date:
-        where_clause.append(f'{table_name}.date="{date}"')
+        where_clause.append(f'{table_name}.date BETWEEN "{date}" AND "{date2}"')
     if skills:
         where_clause.append(f'{table_name}.turn LIKE "%%{skills}%%"')
     query_base = f'SELECT * from `{table_name}`'

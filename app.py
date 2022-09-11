@@ -303,7 +303,7 @@ def coach_home():
     practices = []
     for athlete in all_athletes:
         # Get data from database
-        user_practices = Practice.load_from_db(athlete, date=session.get("search_date"), skills=session.get("search_skills", ""))
+        user_practices = Practice.load_from_db(athlete, date=session.get("search_date"), skills=session.get("search_skills", ""), date2=session.get("search_date2", None))
         for practice in user_practices:
             practices.append({'athlete': athlete, 'practice': practice})
     
