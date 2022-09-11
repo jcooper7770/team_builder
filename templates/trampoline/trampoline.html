@@ -236,35 +236,43 @@
   <ul class="nav navbar-nav mx-auto abs-center-x">
     <li class="nav-item"><a class="navbar-brand">Athlete Practices</a></li>
   </ul>
-  <ul class="nav navbar-nav ml-auto mr-sm-3"></ul>
+  <ul class="nav navbar-nav ml-auto">
+    <li class="nav-item">
+      <button type="button" class="btn float-right">
+        <span class="fa fa-window-maximize" id="minimize_practices"></span>
+      </button>
+    </li>
+  </ul>
 
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent15">
+
+      <!-- Links -->
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <form class="form-inline my-2" action="{{url_for('search_skills')}}" method="POST">
+            <input class="form-control mr-sm-2 mr-auto" type="text" name="practice_skills" id="practice_skills" placeholder="Input skills/combos"{% if search_skills %} value="{{search_skills}}"{% endif %}>
+            <button class="btn btn-secondary" type="submit">Search for skills</button>
+          </form>
+        </li>
+        <li class="nav-item">
+          <form class="form-inline my-2" action="{{url_for('search_date')}}" method="POST">
+            <input class="form-control mr-sm-2 mr-auto" type="date" name="practice_date" id="practice_date">
+            <button class="btn btn-secondary" type="submit">Search Practice</button>
+          </form>
+        </li>
+      </ul>
+      <!-- Links -->
+
+    </div>
   <!-- Collapsible content -->
-  <div class="collapse navbar-collapse" id="navbarSupportedContent15">
-
-    <!-- Links -->
-    <ul class="navbar-nav mr-auto">
-      <li class="nav-item">
-        <form class="form-inline my-2" action="{{url_for('search_skills')}}" method="POST">
-          <input class="form-control mr-sm-2 mr-auto" type="text" name="practice_skills" id="practice_skills" placeholder="Input skills/combos"{% if search_skills %} value="{{search_skills}}"{% endif %}>
-          <button class="btn btn-secondary" type="submit">Search for skills</button>
-        </form>
-      </li>
-      <li class="nav-item">
-        <form class="form-inline my-2" action="{{url_for('search_date')}}" method="POST">
-          <input class="form-control mr-sm-2 mr-auto" type="date" name="practice_date" id="practice_date">
-          <button class="btn btn-secondary" type="submit">Search Practice</button>
-        </form>
-      </li>
-    </ul>
-    <!-- Links -->
-
-  </div>
-  <!-- Collapsible content -->
+  </ul>
 
 </nav>
 <!--/.Navbar-->
-
+<div id="practices_body" style="display:none;">
 {{body|safe}}
+</div>
 <br>
 <br><br><br>
 
@@ -403,6 +411,12 @@
       x.style.display = "";
     } else {
       x.style.display = "none";
+    }
+    var button = document.getElementById(e.target.id);
+    if (button.className == "fa fa-window-minimize") {
+      button.className = "fa fa-window-maximize";
+    } else {
+      button.className = "fa fa-window-minimize";
     }
   });
   $("[id^=remove_]").click(function (e) {
