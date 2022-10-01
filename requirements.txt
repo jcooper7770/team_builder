@@ -5,3 +5,6 @@ requests
 SQLAlchemy
 pymysql
 passlib
+Pillow
+# had to run "pip3 install --upgrade pip setuptools wheel" before
+#opencv-contrib-python
