@@ -411,6 +411,8 @@ class MetaTeamDestroyer:
 
         # Record pokemon win rates in each position
         self.pokemon_win_rates = {'leads': {}, 'ss': {}, 'back': {}}
+        # square the numbers so they have more effects on the outcome
+        #self.pokemon_win_rates['leads'] = {p: f'{wins.count(True)**2}/{len(wins)} || {100*wins.count(True)/len(wins):.2f}%' for p, wins in pokemon_win_rates['lead'].items()}
         self.pokemon_win_rates['leads'] = {p: f'{wins.count(True)}/{len(wins)} || {100*wins.count(True)/len(wins):.2f}%' for p, wins in pokemon_win_rates['lead'].items()}
         self.pokemon_win_rates['ss'] = {p: f'{wins.count(True)}/{len(wins)} || {100*wins.count(True)/len(wins):.2f}%' for p, wins in pokemon_win_rates['ss'].items()}
         self.pokemon_win_rates['back'] = {p: f'{wins.count(True)}/{len(wins)} || {100*wins.count(True)/len(wins):.2f}%' for p, wins in pokemon_win_rates['back'].items()}
@@ -524,7 +526,10 @@ class MetaTeamDestroyer:
             #last_fetched_date=current_date.date()
             last_fetched_date=current_date
         )
-        engine.execute(update)
+        try:
+            engine.execute(update)
+        except:
+            print(f"Failed to update latest info for: {league}")
         return latest_info
 
 
@@ -579,25 +584,52 @@ class MetaTeamDestroyer:
         # counter_leads = [['mon1', 'mon2' ..], ...]
         counter_leads = []
         total_reported_pokemon = 0
+        recommended_mons = defaultdict(int)
+        total_squared_mons = 0
+        exponent = 1
         for lead in pokemon_list:
             #counters = list(self.get_counters(lead[0]))
             
             #counters = self.get_counters(lead[0])
-            counters = list(self.get_counters(lead[0])) * lead[1]
+            #counters = list(self.get_counters(lead[0])) * (lead[1] ** 2)
+            counters_to_pokemon = list(self.get_counters(lead[0]))
+
+            '''
+            counters = counters_to_pokemon * lead[1]
+            #counters = list(self.get_counters(lead[0])) * lead[1]
             counter_leads.append(counters)
 
-            total_reported_pokemon += lead[1]
+            # Square value to give them more weight if higher number
+            #total_reported_pokemon += lead[1] ** 2
+            total_reported_pokemon += lead[1] 
+            '''
 
+            # squared weights
+            total_squared_mons += lead[1]** exponent
+            for counter in counters_to_pokemon:
+                recommended_mons[counter] += lead[1] ** exponent
+
+        #print("recommended: ", recommended_mons)
+        #print(total_squared_mons)
+        '''
         # Get the most common pokemon from the counters
         counter_counts = defaultdict(int)
         for counters in counter_leads:
             for counter in counters:
                 counter_counts[counter] += 1
+        '''
+                
 
         # Convert counts to percents
-        for count in counter_counts:
+        #total_squared_mons = sum(count ** 2 for count in counter_counts.values())
+        #for count in counter_counts:
+        counter_counts = defaultdict(int)
+        for count, number_of_recs in recommended_mons.items():
             #counter_counts[count] = 100.*counter_counts[count] / float(len(pokemon_list))
-            counter_counts[count] = 100.*counter_counts[count] / float(total_reported_pokemon)
+            #counter_counts[count] = 100.*counter_counts[count] / float(total_reported_pokemon)
+            #counter_counts[count] = 100.*((counter_counts[count] ** 2) / float(total_squared_mons))
+            counter_counts[count] = 100.*(number_of_recs / float(total_squared_mons))
+            #print(count, counter_counts[count])
 
         # Get the counters in the form of
         #  [('p1', #,), ('p2', #), ...]

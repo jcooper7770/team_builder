@@ -41,7 +41,7 @@ from flask_session import Session
 from application.pokemon.team_building import MetaTeamDestroyer, PokemonUser, get_counters_for_rating, LEAGUE_RANKINGS, NoPokemonFound, TeamCreater,\
      create_table_from_results, set_refresh, get_refresh
 from application.pokemon.battle_sim import sim_battle
-from application.pokemon.move_counts import get_move_counts
+from application.pokemon.move_counts import get_move_counts, make_image
 
 from application.trampoline.trampoline import convert_form_data, get_leaderboards, pretty_print, Practice, current_user, set_current_user,\
      current_event, set_current_event, set_current_athlete,\
@@ -475,6 +475,22 @@ def about_trampoline():
 def about():
     commit_hash = subprocess.check_output(["git", "rev-parse", "HEAD"]).decode('ascii').strip()
     return render_template("pokemon/about.html", commit_hash=commit_hash)
+
+
+@app.route("/move_image", methods=["GET", "POST"])
+def move_count_image():
+    pokemon_list = request.args.get("pokemon", "").split(",")
+    num_cols = request.args.get("cols", 5)
+    '''
+    data = request.json
+    print(data)
+    pokemon_list = data.get("pokemon")
+    num_cols = data.get("cols", 5)
+    '''
+    make_image(list(set(pokemon_list)), number_per_row=num_cols)
+    export_image = os.path.join(app.root_path, "image.png")
+    return send_file(export_image, as_attachment=True, cache_timeout=0)
+    #return json.dumps({"status": "OK"})
 
 
 @app.route("/move_counts")

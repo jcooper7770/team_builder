@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="container">
-  <form action="/move_counts">
+  <!--<form action="/move_counts">-->
     <table>
       <tr>
         <td>
@@ -11,13 +11,15 @@
         <td>
           <input type="text" name="chosen_pokemon" onkeyup="filterPokemon()" class="form-control">
         </td>
+        <td>
+          <button type="submit" onclick="downloadData()">Download move counts</button>
+        </td>
       </tr>
     </table>
-    <!--<button type="submit">Go</button>-->
-  </form>
 
+  <div class="grid-container" style="display: grid; grid-template-columns: 50% 50%;" id="table-grid">
   {% for pokemon in moves.keys() %}
-  <table border="1" id="{{pokemon}}_table" name="pokemon" class="table table-striped">
+  <table border="1" id="{{pokemon}}_table" name="pokemon" class="table table-striped" style="width: 90%; height: 1%">
     <thead class="thead-dark bg-dark text-white">
     <tr>
       <th colspan="2">{{ pokemon }}</th>
@@ -33,12 +35,41 @@
     {% endfor %}
   </table>
   {% endfor %}
+  </div>
 </div>
 
 
 <script type="text/javascript">
+
+  /*
+  Download the move counts image
+  */
+  function downloadData() {
+    var inputs = document.getElementsByName("chosen_pokemon")[0].value.toUpperCase().split(",");
+    var all_tables = document.getElementsByName("pokemon");
+    var all_pokemon = [];
+    for(var i in all_tables) {
+      var table = all_tables[i];
+      if (table.id == undefined) {
+        continue;
+      }
+      for (var input in inputs){
+        if(table.id.toUpperCase().indexOf(inputs[input]) > -1){
+          var pokemon_name = table.id.slice(0, -6);
+          all_pokemon.push(pokemon_name)
+        }
+      } 
+    }
+    var url = "/move_image?pokemon=" + all_pokemon.join(',');
+    location.href = encodeURI(url);
+
+  }
+
+  /*
+  Filter the pokemon tables based on the input
+  */
   function filterPokemon() {
-    var input = document.getElementsByName("chosen_pokemon")[0].value.toUpperCase();
+    var inputs = document.getElementsByName("chosen_pokemon")[0].value.toUpperCase().split(",");
 
     // remove new lines
     new_lines = document.getElementsByTagName("br");
@@ -58,22 +89,18 @@
     all_tables = document.getElementsByName("pokemon");
     for (i = 0; i < all_tables.length; i++){
       table = all_tables[i];
-      if(table.id.toUpperCase().indexOf(input) > -1){
-        all_tables[i].style.display = "";
-        //all_tables[i].appendChild(document.createElement("br"));
-        //all_tables[i].parentNode.insertBefore(document.createElement("br"), all_tables[i].nextSibling);
-        new_line = document.createElement("br");
-        new_line.setAttribute("table_sep", "true");
-        //all_tables[i].parentNode.insertBefore(document.createElement("br"), all_tables[i]);
-        all_tables[i].parentNode.insertBefore(new_line, all_tables[i]);
-      } else {
-        all_tables[i].style.display = "none";
-        next_sib = all_tables[i].nextSibling;
-        if(next_sib.tagName == "BR"){
-          next_sib.remove();
+      for (var input in inputs){
+        if(table.id.toUpperCase().indexOf(inputs[input]) > -1){
+          all_tables[i].style.display = "";
+          break;
+        } else {
+          all_tables[i].style.display = "none";
+          next_sib = all_tables[i].nextSibling;
+          if(next_sib.tagName == "BR"){
+            next_sib.remove();
+          }
         }
-      }
-
+      };
     }
 
   }

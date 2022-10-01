@@ -6,6 +6,9 @@ exported_data/
 athletes/
 flask_session/
 
+# ignore pokemon images
+pokemon_images/*
+
 # Ignore python compiled files
 *.pyc
 
