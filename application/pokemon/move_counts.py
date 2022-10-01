@@ -151,9 +151,9 @@ def make_image(pokemon_list, number_per_row=5):
     image_url = "https://img.pokemondb.net/sprites/home/normal/{pokemon}.png"
     image_url = "https://img.pokemondb.net/sprites/go/normal/{pokemon}.png"
     blank_img = Image.new("RGB", (1000, 1000), (255, 255, 255))
-    image_font = ImageFont.truetype("arialbd.ttf", 11)
-    cm_image_font = ImageFont.truetype("arialbd.ttf", 8)
-    count_image_font = ImageFont.truetype("arialbd.ttf", 27)
+    image_font = ImageFont.truetype("static/arialbd.ttf", 11)
+    cm_image_font = ImageFont.truetype("static/arialbd.ttf", 8)
+    count_image_font = ImageFont.truetype("static/arialbd.ttf", 27)
     for poke_num, pokemon in enumerate(["logo"] + sorted(pokemon_list)):
         pokemon = pokemon.lower()
         url = image_url.format(pokemon=pokemon.replace("_", "-"))
