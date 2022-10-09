@@ -2,8 +2,10 @@
 Move counts table for all pokemon
 
 TODO:
- - pick only meta relevant pokemon
- - pick only meta relevant moves
+ - [DONE] pick only meta relevant pokemon
+ - [DONE] pick only meta relevant moves
+
+  $ python -m application.pokemon.move_counts
 """
 
 from dataclasses import dataclass
@@ -91,22 +93,21 @@ def get_move_counts(game_master, chosen_pokemon=None, n_moves=5):
     return counts
 
 
-def get_counts(energy, energy_gain, n_moves=5):
+def get_counts(charge_move_energy, fast_move_energy, n_moves=5):
     """
-    Returns the move counts given the energy gain
+    Returns the move counts given the fast move energy
     """
-    # first N moves
     counts = []
-    total_energy = energy * n_moves
-    energy_remaining = 0
+    total_energy = 0
+    left_over_energy =  0
     for _ in range(n_moves):
-        count = (energy - energy_remaining) // energy_gain
-        if energy % energy_gain:
-            count = count + 1
+        total_energy = left_over_energy
+        count = 0
+        while total_energy < charge_move_energy:
+            total_energy += fast_move_energy
+            count += 1
+        left_over_energy = total_energy - charge_move_energy
         counts.append(count)
-
-        total_energy = (energy_gain * count) + energy_remaining
-        energy_remaining = total_energy - energy
     return counts
 
 
@@ -147,8 +148,6 @@ def make_image(pokemon_list, number_per_row=5):
     counts = get_move_counts(None)
     rankings = get_gl_rankings()
     print(rankings)
-    #image_url = "https://img.pokemondb.net/sprites/black-white/normal/{pokemon}.png"
-    image_url = "https://img.pokemondb.net/sprites/home/normal/{pokemon}.png"
     image_url = "https://img.pokemondb.net/sprites/go/normal/{pokemon}.png"
     blank_img = Image.new("RGB", (1000, 1000), (255, 255, 255))
     image_font = ImageFont.truetype("static/arialbd.ttf", 11)
@@ -156,6 +155,8 @@ def make_image(pokemon_list, number_per_row=5):
     count_image_font = ImageFont.truetype("static/arialbd.ttf", 27)
     row, col = -1, -1
     for poke_num, pokemon in enumerate(["logo"] + sorted(pokemon_list)):
+        if pokemon == '?':
+            continue
         pokemon = pokemon.lower()
         if pokemon.endswith('_shadow'):
             pokemon = pokemon[:-7]
@@ -166,8 +167,6 @@ def make_image(pokemon_list, number_per_row=5):
         if col % number_per_row == 0:
             row += 1
             col = 0
-        #row = poke_num // number_per_row
-        #col = poke_num - row * number_per_row
         print(f"row: {row}, col: {col}")
 
         if not os.path.exists("pokemon_images"):
@@ -182,19 +181,6 @@ def make_image(pokemon_list, number_per_row=5):
             with open(f"pokemon_images/{pokemon}.png", 'wb') as handler:
                 handler.write(img_data)
 
-            '''
-            # change images to have white background
-            img2 = Image.open(pokemon_image)
-            img2copy = img2.copy()
-            pokemon_colored = img2copy.convert("RGBA")
-            pix_data = pokemon_colored.load()
-            for y in range(pokemon_colored.size[1]):
-                for x in range(pokemon_colored.size[0]):
-                    if pix_data[x, y] == (0, 0, 0, 255):
-                        pokemon_colored.putpixel((x, y), (255, 255, 255, 255))
-            pokemon_colored.save(pokemon_image)
-            '''
-        
         # Paste image in canvas
         try:
             img2 = Image.open(pokemon_image)
@@ -215,17 +201,19 @@ def make_image(pokemon_list, number_per_row=5):
             continue
 
         # add move count text for pokemon
-        move_text = ""
         moves = []
         pokemon_ranking = rankings.get(pokemon, {})
         pokemon_moveset = {'fast': '', 'charge': []}
+        # get three most common charge moves
+        ranked_moves = [move['moveId'] for move in sorted(pokemon_ranking['moves']['chargedMoves'], key=lambda x:x['uses'], reverse=True)]
+        most_used_charges = ranked_moves[:3] if len(ranked_moves) >= 3 else ranked_moves
         for move, count in counts.get(pokemon, {}).items():
             fast_move = move.split('-')[0].split()[0]
             charge_move = move.split('-')[1].split()[0]
             if pokemon_ranking and pokemon_ranking.get('moveset', []):
                 if not pokemon_ranking.get('moveset')[0].lower() == fast_move:
                     continue
-                if not charge_move in [move.lower() for move in pokemon_ranking.get('moveset')][1:]:
+                if not charge_move.upper() in most_used_charges:
                     continue
             short_fast_move = ''.join(f"{word[0].upper()}{word[1].lower()}" for word in fast_move.split("_"))
             short_charge = ''.join(f"{word[0].upper()}{word[1].lower()}" if len(word)>1 else f"{word[0].upper}" for word in charge_move.split('_'))
@@ -234,60 +222,83 @@ def make_image(pokemon_list, number_per_row=5):
 
             pokemon_moveset['fast'] = ' '.join(fast_move.upper().split('_'))
             pokemon_moveset['charge'].append({'move': ' '.join(charge_move.upper().split("_")), 'count': short_count})
-        move_text = "\n".join(moves)
 
-        #move_text = "\n".join(f"{move}:\n   {counts}" for move, counts in counts.get(pokemon, {}).items())
         imgText = ImageDraw.Draw(blank_img)
-        '''
-        imgText.text(
-            ((2*col + 1)*100, row*100 + 30),
-            move_text,
-            fill=(100,0,0),
-            font=image_font
-        )
-        '''
-
-        imgText.text(
+        if len(pokemon_moveset['charge']) == 3:
+            charge_xpos = (2*col + 1)*100 + 25
+        else:
+            charge_xpos = (2*col + 1)*100 + 10
+ 
+        # Draw fast move
+        draw_text(
+            imgText,
             ((2*col + 1)*100 +50, row*100 + 10),
             pokemon_moveset['fast'],
-            fill=(100,0,0),
-            font=image_font,
-            anchor="ms"
+            font=image_font
         )
         print(pokemon, pokemon_moveset)
-        imgText.text(
+
+        # Draw charge moves
+        draw_text(
+            imgText,
             ((2*col + 1)*100 + 50, row*100 + 20),
             pokemon_moveset['charge'][0]['move'],
-            fill=(100,0,0),
-            font=cm_image_font,
-            anchor="ms"
+            font=cm_image_font
         )
-        imgText.text(
+        draw_text(
+            imgText,
             ((2*col + 1)*100 + 50, row*100 + 45),
             pokemon_moveset['charge'][0]['count'],
-            fill=(100,0,0),
-            font=count_image_font,
-            anchor="ms"
+            font=count_image_font
         )
-        imgText.text(
-            ((2*col + 1)*100 + 50, row*100 + 65),
+        draw_text(
+            imgText,
+            (charge_xpos + 40, row*100 + 60),
             pokemon_moveset['charge'][1]['move'],
-            fill=(100,0,0),
-            font=cm_image_font,
-            anchor="ms"
+            font=cm_image_font
         )
-        imgText.text(
-            ((2*col + 1)*100 + 50, row*100 + 90),
+        draw_text(
+            imgText,
+            (charge_xpos + 40, row*100 + 85),
             pokemon_moveset['charge'][1]['count'],
-            fill=(100,0,0),
-            font=count_image_font,
-            anchor="ms"
+            font=count_image_font
         )
-
-
-
+       
+        if len(pokemon_moveset['charge']) == 3:
+            draw_text(
+                imgText,
+                (charge_xpos - 25, row*100 + 95),
+                pokemon_moveset['charge'][2]['move'],
+                font=cm_image_font,
+            )
+            draw_text(
+                imgText,
+                (charge_xpos - 25, row*100 + 85),
+                pokemon_moveset['charge'][2]['count'],
+                font=count_image_font,
+            )
 
     blank_img.save("image.png")
+
+
+def draw_text(imgText, position, text, font):
+    """
+    Draws text with gray background
+    """
+    bbox = imgText.textbbox(
+        position,
+        f"{text}",
+        font=font,
+        anchor='ms'
+    )
+    imgText.rectangle(bbox, fill=(128, 128, 128, 25))
+    imgText.text(
+        position,
+        text,
+        font=font,
+        fill=(0, 0, 0),
+        anchor='ms'
+    )
 
 if __name__ == '__main__':
     pokemon_list = ["bulbasaur", "venusaur", "charizard", "rapidash", "raichu", "walrein", "magnezone", "swampert", "pikachu"]
