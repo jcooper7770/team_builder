@@ -154,11 +154,20 @@ def make_image(pokemon_list, number_per_row=5):
     image_font = ImageFont.truetype("static/arialbd.ttf", 11)
     cm_image_font = ImageFont.truetype("static/arialbd.ttf", 8)
     count_image_font = ImageFont.truetype("static/arialbd.ttf", 27)
+    row, col = -1, -1
     for poke_num, pokemon in enumerate(["logo"] + sorted(pokemon_list)):
         pokemon = pokemon.lower()
+        if pokemon.endswith('_shadow'):
+            pokemon = pokemon[:-7]
+            if pokemon in pokemon_list:
+                continue
         url = image_url.format(pokemon=pokemon.replace("_", "-"))
-        row = poke_num // number_per_row
-        col = poke_num - row * number_per_row
+        col += 1
+        if col % number_per_row == 0:
+            row += 1
+            col = 0
+        #row = poke_num // number_per_row
+        #col = poke_num - row * number_per_row
         print(f"row: {row}, col: {col}")
 
         if not os.path.exists("pokemon_images"):
@@ -245,6 +254,7 @@ def make_image(pokemon_list, number_per_row=5):
             font=image_font,
             anchor="ms"
         )
+        print(pokemon, pokemon_moveset)
         imgText.text(
             ((2*col + 1)*100 + 50, row*100 + 20),
             pokemon_moveset['charge'][0]['move'],
