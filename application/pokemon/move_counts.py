@@ -72,8 +72,8 @@ def get_move_counts(game_master, chosen_pokemon=None, n_moves=5):
             charge_moves.append("RETURN")
         for fast_move in pokemon.get('fastMoves', []):
             # Skip hidden power moves
-            if "HIDDEN_POWER" in fast_move:
-                continue
+            #if "HIDDEN_POWER" in fast_move:
+            #    continue
             move = moves[fast_move.lower()]
             if not move:
                 print(f"Missing {fast_move}")
@@ -223,16 +223,16 @@ def make_image(pokemon_list, number_per_row=5):
             pokemon_moveset['fast'] = ' '.join(fast_move.upper().split('_'))
             pokemon_moveset['charge'].append({'move': ' '.join(charge_move.upper().split("_")), 'count': short_count})
 
+        if not pokemon_moveset['charge']:
+            pokemon_moveset['charge'] = [{'move': '???', 'count': '?'}, {'move': '???', 'count': '?'}]
+
         imgText = ImageDraw.Draw(blank_img)
-        if len(pokemon_moveset['charge']) == 3:
-            charge_xpos = (2*col + 1)*100 + 25
-        else:
-            charge_xpos = (2*col + 1)*100 + 10
+        charge_xpos = (2*col + 1)*100 + 32
  
         # Draw fast move
         draw_text(
             imgText,
-            ((2*col + 1)*100 +50, row*100 + 10),
+            (charge_xpos, row*100 + 10),
             pokemon_moveset['fast'],
             font=image_font
         )
@@ -241,25 +241,27 @@ def make_image(pokemon_list, number_per_row=5):
         # Draw charge moves
         draw_text(
             imgText,
-            ((2*col + 1)*100 + 50, row*100 + 20),
+            (charge_xpos, row*100 + 20),
             pokemon_moveset['charge'][0]['move'],
             font=cm_image_font
         )
         draw_text(
             imgText,
-            ((2*col + 1)*100 + 50, row*100 + 45),
+            (charge_xpos, row*100 + 45),
             pokemon_moveset['charge'][0]['count'],
             font=count_image_font
         )
+
+        # second charge move
         draw_text(
             imgText,
-            (charge_xpos + 40, row*100 + 60),
+            (charge_xpos + 33 if len(pokemon_moveset['charge'])==3 else charge_xpos, row*100 + 60),
             pokemon_moveset['charge'][1]['move'],
             font=cm_image_font
         )
         draw_text(
             imgText,
-            (charge_xpos + 40, row*100 + 85),
+            (charge_xpos + 33 if len(pokemon_moveset['charge'])==3 else charge_xpos, row*100 + 85),
             pokemon_moveset['charge'][1]['count'],
             font=count_image_font
         )
@@ -267,13 +269,13 @@ def make_image(pokemon_list, number_per_row=5):
         if len(pokemon_moveset['charge']) == 3:
             draw_text(
                 imgText,
-                (charge_xpos - 25, row*100 + 95),
+                (charge_xpos - 33, row*100 + 95),
                 pokemon_moveset['charge'][2]['move'],
                 font=cm_image_font,
             )
             draw_text(
                 imgText,
-                (charge_xpos - 25, row*100 + 85),
+                (charge_xpos - 33, row*100 + 85),
                 pokemon_moveset['charge'][2]['count'],
                 font=count_image_font,
             )
