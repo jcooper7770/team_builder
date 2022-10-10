@@ -350,6 +350,8 @@ def trampoline_user_practices(username):
     Return user practices
     """
     user = None
+    if username == "_current_":
+        username = session.get('name')
     try:
         user = get_user(username)
     except:
