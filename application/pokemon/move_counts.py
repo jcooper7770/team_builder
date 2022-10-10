@@ -11,6 +11,7 @@ TODO:
 from dataclasses import dataclass
 import json
 import os.path
+import logging
 
 import sqlalchemy
 from PIL import Image, ImageDraw, ImageFont
@@ -18,6 +19,7 @@ from PIL import Image, ImageDraw, ImageFont
 from application.utils.database import create_engine
 #from ..utils.database import create_engine
 
+logging.getLogger("PIL.PngImagePlugin").setLevel(logging.CRITICAL + 1)
 
 def get_moves(game_master):
     """
@@ -53,7 +55,6 @@ def get_move_counts(game_master, chosen_pokemon=None, n_moves=5):
         game_master = get_game_master()
     counts = {}
     moves = get_moves(game_master)
-    print(moves)
     for pokemon in game_master.get("pokemon", []):
         species_id = pokemon.get('speciesId')
         if chosen_pokemon and chosen_pokemon not in species_id:
@@ -147,7 +148,6 @@ def make_image(pokemon_list, number_per_row=5):
     import requests
     counts = get_move_counts(None)
     rankings = get_gl_rankings()
-    print(rankings)
     image_url = "https://img.pokemondb.net/sprites/go/normal/{pokemon}.png"
     blank_img = Image.new("RGB", (1000, 1000), (255, 255, 255))
     image_font = ImageFont.truetype("static/arialbd.ttf", 11)
@@ -189,6 +189,16 @@ def make_image(pokemon_list, number_per_row=5):
             blank_img.paste(img2copy, (2*col*100, row*100), img2copy.convert("RGBA"))
         except Exception as error:
             print(f"Cannot add image for {pokemon} because:  {error}")
+        
+        if pokemon != "logo":
+            pokemonText = ImageDraw.Draw(blank_img)
+            draw_text(
+                pokemonText,
+                (2*col*100, row*100+10),
+                pokemon,
+                font=image_font,
+                anchor="ls"
+            )
 
         rectangle = ImageDraw.Draw(blank_img)
         rectangle.rectangle(
@@ -283,7 +293,7 @@ def make_image(pokemon_list, number_per_row=5):
     blank_img.save("image.png")
 
 
-def draw_text(imgText, position, text, font):
+def draw_text(imgText, position, text, font, anchor="ms"):
     """
     Draws text with gray background
     """
@@ -291,7 +301,7 @@ def draw_text(imgText, position, text, font):
         position,
         f"{text}",
         font=font,
-        anchor='ms'
+        anchor=anchor
     )
     imgText.rectangle(bbox, fill=(128, 128, 128, 25))
     imgText.text(
@@ -299,7 +309,7 @@ def draw_text(imgText, position, text, font):
         text,
         font=font,
         fill=(0, 0, 0),
-        anchor='ms'
+        anchor=anchor
     )
 
 if __name__ == '__main__':
