@@ -256,6 +256,7 @@ def _save_trampoline_data(request):
     # Save the current practice
     form_date_str = request.form.get('date', str(datetime.date.today()))
     form_date = datetime.datetime.strptime(form_date_str, "%Y-%m-%d")
+    session['current_date'] = form_date
     practice = Practice(form_date.date(), routines, event)
     saved_practice = practice.save()
 
@@ -461,6 +462,7 @@ def trampoline_log():
         all_skills=ALL_SKILLS,
         error_text=session.get('error'),
         search_date=session.get("search_date").strftime("%Y-%m-%d") if session.get("search_date") else None,
+        current_date=session.get('current_date').strftime("%Y-%m-%d") if session.get('current_date') else None,
         search_skills=session.get("search_skills", "")
     )
 

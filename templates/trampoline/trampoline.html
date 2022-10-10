@@ -311,10 +311,16 @@
   $(document).ready(function() {
     // Set logger date to current local date if a search date isn't chosen
     {% if not search_date %}
+    {% if not current_date %}
     var date = new Date();
     date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
     document.getElementById("logger-date").value = date.toJSON().slice(0,10);
     document.getElementById("airtime-date").value = date.toJSON().slice(0,10);
+    {% else %}
+    document.getElementById("logger-date").value = "{{current_date}}";
+    document.getElementById("airtime-date").value = "{{current_date}}";
+    document.getElementById("practice_date").value = "{{current_date}}";
+    {% endif %}
     {% else %}
     document.getElementById("logger-date").value = "{{search_date}}";
     document.getElementById("airtime-date").value = "{{search_date}}";
