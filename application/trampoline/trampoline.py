@@ -27,6 +27,7 @@ import random
 import re
 
 from collections import defaultdict
+from typing import OrderedDict
 
 from flask import session
 
@@ -744,23 +745,50 @@ def get_leaderboards():
 
     # Sort the turns and take top for each user
     top_turns = {}
+    user_turns = {}
+    user_flips = {}
     for event in event_turns:
         event_turns[event] = sorted(event_turns[event], key=lambda x:x["dd"], reverse=True)
 
         top_turns[event] = {}
+        user_turns[event] = defaultdict(int)
+        user_flips[event] = defaultdict(int)
         for turn in event_turns[event]:
             user = turn["user"].lower()
-            if user in top_turns[event]:
-                continue
+            #if user in top_turns[event]:
+            #    continue
             # Ignore private users
             if user in user_data and user_data[user]["private"]:
                 continue
 
-            turn_date = turn['date'].date().strftime('%m/%d/%Y')
-            top_turns[event][user] = f"{turn['dd']:.1f} ({turn_date})"
+            user_turns[event][user] += 1
+            user_flips[event][user] += turn['flips']
+            # Only include if there are 10 skills on trampoline or 2-3 skills on double mini
+            turn_skills = turn['turn'].split()
+            if event == 'trampoline' and len(turn_skills) != 10:
+                continue
+            if event == "dmt" and len(turn_skills) not in [2, 3]:
+                continue
 
+            turn_date = turn['date'].date().strftime('%m/%d/%Y')
+            if user not in top_turns[event]:
+                top_turns[event][user] = f"{turn['dd']:.1f} ({turn_date})"
+
+    # Order the user turns by number of turns per event
+    sorted_user_turns = {
+        event: OrderedDict(
+            [(result[0], result[1]) for result in sorted(user_event_turns.items(), key=lambda x: x[1], reverse=True)]
+        )
+        for event, user_event_turns in user_turns.items()
+    }
+    sorted_user_flips = {
+        event: OrderedDict(
+            [(result[0], result[1]) for result in sorted(user_event_flips.items(), key=lambda x: x[1], reverse=True)]
+        )
+        for event, user_event_flips in user_flips.items()
+    }
     # Convert to leaderboard
-    leaderboards = {"DD": top_turns}
+    leaderboards = {"DD": top_turns, "TURNS": sorted_user_turns, "FLIPS": sorted_user_flips}
     print(f"Leaderboard: {leaderboards}")
 
     return leaderboards
