@@ -82,7 +82,8 @@ ALL_SKILLS = {
         "12000", "12001", "12003",
         "12101", "12103",
         "12200", "12222"
-    ]
+    ],
+    "user added": []
 }
 
 TUCK_POS = "o"
@@ -353,6 +354,7 @@ class Skill:
     """
     A skill converted from a string
     """
+    flips_str = {1: 'singles', 2: 'doubles', 3: 'triples'}
     def __init__(self, string, event=EVENT):
         self.flips = 0
         self.twists = []
@@ -361,11 +363,51 @@ class Skill:
         self.event = event
 
         if string not in NON_SKILLS:
-            self.flips = float(string[:-(NUM_FLIPS[len(string[:-1])]+1)])/4.0
+            self.flips = self.get_flips_from_skill(string)
             self.twists = [int(n)/2.0 for n in string[len(str(int(self.flips*4))):-1]]
             self.difficulty = get_skill_difficulty(self) if event != "dmt" else get_dmt_difficulty(self)
         else:
             self.flips, self.twists, self.difficulty = (0, [0], 0)
+        
+        current_skills = ALL_SKILLS.get(self.flips_str.get(self.flips, -1), None)
+        # Add to ALL_SKILLS if matches criteria:
+        #   - at least one flip
+        #   - proper format of a skill (i.e. 40/ not 4/)
+        #   - not already in the list of skills
+        if self.flips and self.shorthand[:-1] not in ALL_SKILLS['user added'] and (not current_skills or self.shorthand[:-1] not in current_skills):
+            #ALL_SKILLS['user added'] = []
+            if self.validate_skill():
+                ALL_SKILLS['user added'].append(self.shorthand[:-1])
+                ALL_SKILLS['user added'] = sorted(ALL_SKILLS['user added'], key=lambda x: (self.get_flips_from_skill(f"{x} "), self.get_twists_from_skill(f"{x} ")))
+
+    def validate_skill(self):
+        """
+        Validate the skill is written properly
+            by checking the the number of characters is correct
+            i.e. '4/' should be '40/'
+        """
+        num_chars = round(self.flips) + len(str(int(self.flips*4)))
+        if len(self.shorthand) < num_chars + 1:
+            return False
+        return True
+
+
+    @staticmethod
+    def get_flips_from_skill(skill):
+        """
+        Returns the number of flips in the skill
+        """
+        flips = float(skill[:-(NUM_FLIPS[len(skill[:-1])]+1)])/4.0
+        return flips
+
+    @staticmethod
+    def get_twists_from_skill(skill, flips=None):
+        """
+        Returns the total number of twists in a skill
+        """
+        flips = flips or float(skill[:-(NUM_FLIPS[len(skill[:-1])]+1)])/4.0
+        twists = [int(n)/2.0 for n in skill[len(str(int(flips*4))):-1]]
+        return sum(twists)
 
     def __str__(self):
         return f"{self.shorthand} - {self.flips} flips - {self.twists} twists - {self.pos} position ({self.difficulty:0.1f})"
