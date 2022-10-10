@@ -695,7 +695,7 @@ def sign_up():
         # Create the user and go to login page
 
         hashed_password = sha256_crypt.encrypt(password)
-        athlete = Athlete(username, private, password=hashed_password, is_coach=is_coach)
+        athlete = Athlete(username, private, password=hashed_password, is_coach=is_coach, first_login=True)
         athlete.save()
         session["previous_page"] = "trampoline_log"
         return redirect(url_for('login'))
@@ -762,6 +762,14 @@ def login():
             set_current_user(username)
             set_current_athlete(username)
         #return redirect(url_for('trampoline_log'))
+        # no longer user's first login
+        athlete = Athlete.load(username)
+        print(str(athlete))
+        if athlete.first_login:
+            athlete.first_login = False
+            athlete.save()
+            print("First login for {username}")
+            return redirect(url_for('about_trampoline'))
         return redirect(url_for(session.get('previous_page', 'trampoline_log')))
     return render_template("trampoline/login.html", user=session.get("name"), error_text=session.get('error'))
 

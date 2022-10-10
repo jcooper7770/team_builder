@@ -48,7 +48,7 @@
 
           <!-- Skills to be logged -->
           <div class="form-row">
-            <div class="col-sm-3">Skills:</div>
+            <div class="col-sm-3">Skills:<br><a href="/logger/about">Click here for help</a></div>
             <div class="col">
               <textarea id="log" name="log" rows="5" style="width:90%" form="logger"
                 placeholder="Input your routines here">{{routine_text}}</textarea>
@@ -57,14 +57,14 @@
           <!-- button skills -->
           <div class="form-row">
             <div class="col-sm-3"></div>
-            <div class="col-sm-5" style="width:90%">
+            <div class="col-sm-5" style="width:90%;">
               {% for flips, skills in all_skills.items() %}
               <div class="dropdown" style="display:inline-block">
                 <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton"
                   data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                   {{flips}}
                 </button>
-                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" style="overflow-y: auto; max-height:200px">
                   {% for skill in skills %}
                   {% for pos in ['t', 'p', 's'] %}
                   <a class="dropdown-item" href="#" id="skill{{skill}}{{pos}}"

@@ -105,7 +105,8 @@ def get_user(user):
         "password": user[4],
         "expand_comments": user[5],
         "is_coach": user[6],
-        "athletes": json.loads(user[7])
+        "athletes": json.loads(user[7]),
+        "first_login": user[8]
     }
 
 
@@ -312,7 +313,8 @@ def save_athlete(athlete):
             password=athlete.password,
             expand_comments=athlete.expand_comments,
             is_coach=athlete.is_coach,
-            athletes=json.dumps(athlete.athletes)
+            athletes=json.dumps(athlete.athletes),
+            first_login=athlete.first_login,
         )
         engine.execute(ins)
     else:
@@ -324,7 +326,8 @@ def save_athlete(athlete):
             password=athlete.password,
             expand_comments=athlete.expand_comments,
             is_coach=athlete.is_coach,
-            athletes=json.dumps(athlete.athletes)
+            athletes=json.dumps(athlete.athletes),
+            first_login=athlete.first_login,
         )
         engine.execute(update)
     

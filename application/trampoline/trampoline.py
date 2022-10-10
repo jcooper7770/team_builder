@@ -106,7 +106,7 @@ class Athlete:
     """
     Information about athlete
     """
-    def __init__(self, name, private=False, compulsory=[], optional=[], dm_prelims1=[], dm_prelims2=[], dm_finals1=[], dm_finals2=[], password="", expand_comments=False, is_coach=False, athletes=[]):
+    def __init__(self, name, private=False, compulsory=[], optional=[], dm_prelims1=[], dm_prelims2=[], dm_finals1=[], dm_finals2=[], password="", expand_comments=False, is_coach=False, athletes=[], first_login=False):
         self.name = name
         self.compulsory = compulsory
         self.optional = optional
@@ -119,6 +119,7 @@ class Athlete:
         self.expand_comments = expand_comments
         self.is_coach = is_coach
         self.athletes = athletes
+        self.first_login = first_login
 
     def set_comp(self, skills):
         """
@@ -154,13 +155,17 @@ class Athlete:
             'password': self.password,
             'expand_comments': self.expand_comments,
             'is_coach': self.is_coach,
-            'athletes': self.athletes
+            'athletes': self.athletes,
+            'first_login': self.first_login
         }
         with open(file_name, 'w') as athlete_file:
             json.dump(athlete_data, athlete_file)
         
         # Save to DB
         save_athlete(self)
+    
+    def __str__(self):
+        return str(self.__dict__)
 
     @classmethod
     def load(self, name):
@@ -173,7 +178,7 @@ class Athlete:
             athlete = Athlete(
                 user['name'], user["private"], user['compulsory'], user['optional'],
                 password=user['password'], expand_comments=user.get('expand_comments', False),
-                is_coach=user["is_coach"], athletes=user["athletes"]
+                is_coach=user["is_coach"], athletes=user["athletes"], first_login=user['first_login']
             )
         except:
             athlete = None
