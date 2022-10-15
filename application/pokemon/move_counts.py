@@ -149,7 +149,9 @@ def make_image(pokemon_list, number_per_row=5):
     counts = get_move_counts(None)
     rankings = get_gl_rankings()
     image_url = "https://img.pokemondb.net/sprites/go/normal/{pokemon}.png"
-    blank_img = Image.new("RGB", (1000, 1000), (255, 255, 255))
+    image_height = ((len(pokemon_list) + 1) // number_per_row) * 100 + 100
+    image_width = number_per_row * 200
+    blank_img = Image.new("RGB", (image_width, image_height), (219, 226, 233))
     image_font = ImageFont.truetype("static/arialbd.ttf", 11)
     cm_image_font = ImageFont.truetype("static/arialbd.ttf", 8)
     count_image_font = ImageFont.truetype("static/arialbd.ttf", 27)
@@ -172,7 +174,7 @@ def make_image(pokemon_list, number_per_row=5):
         if not os.path.exists("pokemon_images"):
             os.mkdir("pokemon_images")
 
-        pokemon_image = f"pokemon_images/{pokemon}.png" if pokemon != "logo" else "static/flippinCoopLogo.png"
+        pokemon_image = f"pokemon_images/{pokemon}.png" if pokemon != "logo" else "static/newFlippinCoopLogo.png"
         img2 = None
 
         # Download image
@@ -222,7 +224,6 @@ def make_image(pokemon_list, number_per_row=5):
             sorted_moves = pokemon_ranking['moves']['chargedMoves']
             for move in sorted_moves:
                 move['uses'] = 0
-        #ranked_moves = [move['moveId'] for move in sorted(pokemon_ranking['moves']['chargedMoves'], key=lambda x:x['uses'], reverse=True)]
         ranked_moves = [move['moveId'] for move in sorted(sorted_moves, key=lambda x:x['uses'], reverse=True)]
         most_used_charges = ranked_moves[:3] if len(ranked_moves) >= 3 else ranked_moves
         for move, count in counts.get(pokemon, {}).items():
