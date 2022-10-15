@@ -214,8 +214,16 @@ def make_image(pokemon_list, number_per_row=5):
         moves = []
         pokemon_ranking = rankings.get(pokemon, {})
         pokemon_moveset = {'fast': '', 'charge': []}
-        # get three most common charge moves
-        ranked_moves = [move['moveId'] for move in sorted(pokemon_ranking['moves']['chargedMoves'], key=lambda x:x['uses'], reverse=True)]
+        # get three most common charge move
+        sorted_moves = [move for move in pokemon_ranking['moves']['chargedMoves'] if move['uses']]
+
+        # Pick the three moves at random if there are no use metrics
+        if not sorted_moves:
+            sorted_moves = pokemon_ranking['moves']['chargedMoves']
+            for move in sorted_moves:
+                move['uses'] = 0
+        #ranked_moves = [move['moveId'] for move in sorted(pokemon_ranking['moves']['chargedMoves'], key=lambda x:x['uses'], reverse=True)]
+        ranked_moves = [move['moveId'] for move in sorted(sorted_moves, key=lambda x:x['uses'], reverse=True)]
         most_used_charges = ranked_moves[:3] if len(ranked_moves) >= 3 else ranked_moves
         for move, count in counts.get(pokemon, {}).items():
             fast_move = move.split('-')[0].split()[0]
