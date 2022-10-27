@@ -77,7 +77,8 @@ LEAGUE_RANKINGS = {
     "Hisui": "https://vps.gobattlelog.com/data/overall/rankings-1500-hisui.json?v=1.25.35",
     "Summer": "https://vps.gobattlelog.com/data/overall/rankings-1500-summer.json?v=1.25.35",
     "Fighting": "https://vps.gobattlelog.com/data/overall/rankings-1500-fighting.json?v=1.25.35",
-    "Evolution": "https://vps.gobattlelog.com/data/overall/rankings-1500-evolution.json?v=1.25.35"
+    "Evolution": "https://vps.gobattlelog.com/data/overall/rankings-1500-evolution.json?v=1.25.35",
+    "ULHalloween": "https://vps.gobattlelog.com/data/overall/rankings-2500-halloween.json?v=1.25.35",
 }
 LEAGUE_DATA = {
     "ULP": "https://vps.gobattlelog.com/records/ultra-premier/latest.json?ts=449983.3",
@@ -107,7 +108,8 @@ LEAGUE_DATA = {
     "Hisui": "https://vps.gobattlelog.com/records/great-hisui/latest.json?ts=451466.3",
     "Summer": "https://vps.gobattlelog.com/records/great-summer/latest.json?ts=451466.3",
     "Fighting": "https://vps.gobattlelog.com/records/great-fighting/latest.json?ts=451466.3",
-    "Evolution": "https://vps.gobattlelog.com/records/great-evolution/latest.json?ts=451466.3"
+    "Evolution": "https://vps.gobattlelog.com/records/great-evolution/latest.json?ts=451466.3",
+    "ULHalloween": "https://vps.gobattlelog.com/records/ultra-halloween/latest.json?ts=451466.3",
 }
 LEAGUE_VALUE = {
     'GL': '1500',
@@ -136,7 +138,8 @@ LEAGUE_VALUE = {
     'Hisui': '1500',
     'Summer': '1500',
     'Fighting': '1500',
-    'Evolution': '1500'
+    'Evolution': '1500',
+    'ULHalloween': '2500'
 }
 CUP_VALUE = {
     'MLC': 'classic',
@@ -157,7 +160,8 @@ CUP_VALUE = {
     "Hisui": "hisui",
     'Summer': 'summer',
     'Fighting': 'fighting',
-    'Evolution': 'evolution'
+    'Evolution': 'evolution',
+    'ULHalloween': 'halloween'
 }
 
 # https://gamepress.gg/pokemongo/cp-multiplier
