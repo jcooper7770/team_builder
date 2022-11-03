@@ -79,6 +79,7 @@ LEAGUE_RANKINGS = {
     "Fighting": "https://vps.gobattlelog.com/data/overall/rankings-1500-fighting.json?v=1.25.35",
     "Evolution": "https://vps.gobattlelog.com/data/overall/rankings-1500-evolution.json?v=1.25.35",
     "ULHalloween": "https://vps.gobattlelog.com/data/overall/rankings-2500-halloween.json?v=1.25.35",
+    "Willpower": "https://vps.gobattlelog.com/data/overall/rankings-1500-willpower.json?v=1.25.35",
 }
 LEAGUE_DATA = {
     "ULP": "https://vps.gobattlelog.com/records/ultra-premier/latest.json?ts=449983.3",
@@ -110,6 +111,7 @@ LEAGUE_DATA = {
     "Fighting": "https://vps.gobattlelog.com/records/great-fighting/latest.json?ts=451466.3",
     "Evolution": "https://vps.gobattlelog.com/records/great-evolution/latest.json?ts=451466.3",
     "ULHalloween": "https://vps.gobattlelog.com/records/ultra-halloween/latest.json?ts=451466.3",
+    "Willpower": "https://vps.gobattlelog.com/records/great-willpower/latest.json?ts=451466.3",
 }
 LEAGUE_VALUE = {
     'GL': '1500',
@@ -139,7 +141,8 @@ LEAGUE_VALUE = {
     'Summer': '1500',
     'Fighting': '1500',
     'Evolution': '1500',
-    'ULHalloween': '2500'
+    'ULHalloween': '2500',
+    'Willpower': '1500,'
 }
 CUP_VALUE = {
     'MLC': 'classic',
@@ -161,7 +164,8 @@ CUP_VALUE = {
     'Summer': 'summer',
     'Fighting': 'fighting',
     'Evolution': 'evolution',
-    'ULHalloween': 'halloween'
+    'ULHalloween': 'halloween',
+    'Willpower': 'willpower'
 }
 
 # https://gamepress.gg/pokemongo/cp-multiplier
