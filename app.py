@@ -38,7 +38,8 @@ from flask import Flask, request, render_template, jsonify, redirect, url_for, s
     session, send_from_directory
 from flask_session import Session
 
-from application.pokemon.team_building import MetaTeamDestroyer, PokemonUser, get_counters_for_rating, LEAGUE_RANKINGS, NoPokemonFound, TeamCreater,\
+from application.pokemon.leagues import LEAGUES_LIST
+from application.pokemon.team_building import MetaTeamDestroyer, PokemonUser, get_counters_for_rating, NoPokemonFound, TeamCreater,\
      create_table_from_results, set_refresh, get_refresh
 from application.pokemon.battle_sim import sim_battle
 from application.pokemon.move_counts import get_move_counts, make_image
@@ -517,7 +518,7 @@ def run():
     global N_TEAMS
     chosen_league = request.args.get("league", None)
     if not chosen_league:
-        if user and user.fav_league in LEAGUE_RANKINGS.keys():
+        if user and user.fav_league in LEAGUES_LIST.league_names:
             chosen_league = user.fav_league
         else:
             chosen_league = "ML"
@@ -567,7 +568,7 @@ def run():
     return render_template(
         "pokemon/index.html",
         body="".join(html).replace(" table-responsive-lg", ""),
-        leagues=sorted(LEAGUE_RANKINGS.keys()),
+        leagues=sorted(LEAGUES_LIST.league_names),
         current_league=chosen_league,
         all_pokemon=sorted(team_maker.all_pokemon, key=lambda x: x.get('speciesId')),
         chosen_position=chosen_position,
@@ -879,7 +880,7 @@ def pokemon_user_profile():
     return render_template(
         "pokemon/user_profile.html",
         user=username, userObj=user,
-        leagues=sorted(LEAGUE_RANKINGS.keys()),
+        leagues=sorted(LEAGUES_LIST.league_names),
         all_pokemon=all_pokemon,
         error_text=session.get('error')
         )

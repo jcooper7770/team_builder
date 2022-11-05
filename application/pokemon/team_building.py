@@ -41,6 +41,7 @@ from datetime import datetime, date, timedelta
 from collections import defaultdict
 
 from application.pokemon.battle_sim import sim_battle
+from application.pokemon.leagues import LEAGUES_LIST
 from application.utils.database import create_engine
 from application.utils.utils import CACHE, logger, TableMaker
 
@@ -50,123 +51,6 @@ MIN_COUNTERS = 25
 TOP_PERCENT = 1
 REQUEST_TIMEOUT = 180
 REFRESH_DATA = False
-
-LEAGUE_RANKINGS = {
-    "ULP": "https://vps.gobattlelog.com/data/overall/rankings-2500-premier.json?v=1.25.10",
-    "ULPC": "https://vps.gobattlelog.com/data/overall/rankings-2500-premierclassic.json?v=1.25.10",
-    "UL": "https://vps.gobattlelog.com/data/overall/rankings-2500.json?v=1.25.10",
-    "ML": "https://vps.gobattlelog.com/data/overall/rankings-10000.json?v=1.25.31",
-    "MLC": "https://vps.gobattlelog.com/data/overall/rankings-10000-classic.json?v=1.25.31",
-    "MLPC": "https://vps.gobattlelog.com/data/overall/rankings-10000-premierclassic.json?v=1.25.31",
-    "Element": "https://vps.gobattlelog.com/data/overall/rankings-500-element.json?v=1.25.31",
-    "Remix": "https://vps.gobattlelog.com/data/overall/rankings-1500-remix.json?v=1.25.35",
-    "Retro": "https://vps.gobattlelog.com/data/overall/rankings-1500-retro.json?v=1.25.35",
-    "ULRemix": "https://vps.gobattlelog.com/data/overall/rankings-2500-remix.json?v=1.25.35",
-    "GL": "https://vps.gobattlelog.com/data/overall/rankings-1500.json?v=1.25.35",
-    "Jungle": "https://vps.gobattlelog.com/data/overall/rankings-500-littlejungle.json?v=1.28.0",
-    "Little": "https://vps.gobattlelog.com/data/overall/rankings-500-little.json?v=1.28.0",
-    "Halloween": "https://vps.gobattlelog.com/data/overall/rankings-1500-halloween.json?v=1.25.35",
-    "Kanto":"https://vps.gobattlelog.com/data/overall/rankings-1500-kanto.json?v=1.25.35",
-    "Holiday":"https://vps.gobattlelog.com/data/overall/rankings-1500-holiday.json?v=1.25.35",
-    "Sinnoh": "https://vps.gobattlelog.com/data/overall/rankings-1500-sinnoh.json?v=1.25.35",
-    "Love": "https://vps.gobattlelog.com/data/overall/rankings-1500-love.json?v=1.25.35",
-    "Johto": "https://vps.gobattlelog.com/data/overall/rankings-1500-johto.json?v=1.25.35",
-    "Flying": "https://vps.gobattlelog.com/data/overall/rankings-1500-flying.json?v=1.25.35",
-    "GoFestCatchCup": "https://vps.gobattlelog.com/data/overall/rankings-1500.json?v=1.25.35",
-    "Fossil": "https://vps.gobattlelog.com/data/overall/rankings-1500-fossil.json?v=1.25.35",
-    "Hisui": "https://vps.gobattlelog.com/data/overall/rankings-1500-hisui.json?v=1.25.35",
-    "Summer": "https://vps.gobattlelog.com/data/overall/rankings-1500-summer.json?v=1.25.35",
-    "Fighting": "https://vps.gobattlelog.com/data/overall/rankings-1500-fighting.json?v=1.25.35",
-    "Evolution": "https://vps.gobattlelog.com/data/overall/rankings-1500-evolution.json?v=1.25.35",
-    "ULHalloween": "https://vps.gobattlelog.com/data/overall/rankings-2500-halloween.json?v=1.25.35",
-    "Willpower": "https://vps.gobattlelog.com/data/overall/rankings-1500-willpower.json?v=1.25.35",
-}
-LEAGUE_DATA = {
-    "ULP": "https://vps.gobattlelog.com/records/ultra-premier/latest.json?ts=449983.3",
-    "ULPC": "https://vps.gobattlelog.com/records/ultra-premierclassic/latest.json?ts=449983.3",
-    #"UL": "https://vps.gobattlelog.com/records/ultra/latest.json?ts=449983.3",
-    "UL": "https://vps.gobattlelog.com/records/ultra/latest.json?ts=452212.3",
-    "GL": "https://vps.gobattlelog.com/records/great/latest.json?ts=450364.2",
-    "Kanto": "https://vps.gobattlelog.com/records/great-kanto/latest.json?ts=450364.2",
-    "ML": "https://vps.gobattlelog.com/records/master/latest.json?ts=451466.3",
-    "MLC": "https://vps.gobattlelog.com/records/master/latest.json?ts=451466.3",
-    "MLPC": "https://vps.gobattlelog.com/records/master-premierclassic/latest.json?ts=451466.3",
-    "Element": "https://vps.gobattlelog.com/records/element/latest.json?ts=451466.3",
-    "Remix": "https://vps.gobattlelog.com/records/great-remix/latest.json?ts=451709.1",
-    "Retro": "https://vps.gobattlelog.com/records/great-retro/latest.json?ts=451709.1",
-    "ULRemix": "https://vps.gobattlelog.com/records/ultra-remix/latest.json?ts=451709.1",
-    "Jungle": "https://vps.gobattlelog.com/records/littlejungle/latest.json?ts=451709.1",
-    "Little": "https://vps.gobattlelog.com/records/little/latest.json?ts=451709.1",
-    "Halloween": "https://vps.gobattlelog.com/records/great-halloween/latest.json?ts=451466.3",
-    "Kanto": "https://vps.gobattlelog.com/records/great-kanto/latest.json?ts=451466.3",
-    "Holiday": "https://vps.gobattlelog.com/records/great-holiday/latest.json?ts=451466.3",
-    "Sinnoh": "https://vps.gobattlelog.com/records/great-sinnoh/latest.json?ts=451466.3",
-    "Love": "https://vps.gobattlelog.com/records/great-love/latest.json?ts=451466.3",
-    "Johto": "https://vps.gobattlelog.com/records/great-johto/latest.json?ts=451466.3",
-    "Flying": "https://vps.gobattlelog.com/records/great-flying/latest.json?ts=451466.3",
-    "GoFestCatchCup": "https://vps.gobattlelog.com/records/great-catch0622/latest.json?ts=451466.3",
-    "Fossil": "https://vps.gobattlelog.com/records/great-fossil/latest.json?ts=451466.3",
-    "Hisui": "https://vps.gobattlelog.com/records/great-hisui/latest.json?ts=451466.3",
-    "Summer": "https://vps.gobattlelog.com/records/great-summer/latest.json?ts=451466.3",
-    "Fighting": "https://vps.gobattlelog.com/records/great-fighting/latest.json?ts=451466.3",
-    "Evolution": "https://vps.gobattlelog.com/records/great-evolution/latest.json?ts=451466.3",
-    "ULHalloween": "https://vps.gobattlelog.com/records/ultra-halloween/latest.json?ts=451466.3",
-    "Willpower": "https://vps.gobattlelog.com/records/great-willpower/latest.json?ts=451466.3",
-}
-LEAGUE_VALUE = {
-    'GL': '1500',
-    'Remix': '1500',
-    'Retro': '1500',
-    'UL': '2500',
-    'ULRemix': '2500',
-    'ULP': '2500',
-    'ULPC': '2500',
-    'ULPC': '2500-40',
-    'MLC': '10000-40',
-    'MLPC': '10000-40',
-    'ML': '10000',
-    'Element': '500',
-    'Jungle': '500',
-    'Halloween': '1500',
-    'Kanto': '1500',
-    'Holiday': '1500',
-    'Sinnoh': '1500',
-    "Love": '1500',
-    "Johto": '1500',
-    "Flying": '1500',
-    'Little': '500',
-    'GoFestCatchCup': '1500',
-    'Fossil': '1500',
-    'Hisui': '1500',
-    'Summer': '1500',
-    'Fighting': '1500',
-    'Evolution': '1500',
-    'ULHalloween': '2500',
-    'Willpower': '1500,'
-}
-CUP_VALUE = {
-    'MLC': 'classic',
-    'ULRemix': 'remix',
-    'Jungle': 'littlejungle',
-    'ULPC': 'premierclassic',
-    'MLPC': 'premierclassic',
-    'Halloween': 'halloween',
-    'Kanto': 'kanto',
-    'Holiday': 'holiday',
-    'Sinnoh': 'sinnoh',
-    'Love': 'love',
-    'Johto': 'johto',
-    'Flying': 'flying',
-    'Little': 'little',
-    'Retro': 'retro',
-    'Fossil': 'fossil',
-    "Hisui": "hisui",
-    'Summer': 'summer',
-    'Fighting': 'fighting',
-    'Evolution': 'evolution',
-    'ULHalloween': 'halloween',
-    'Willpower': 'willpower'
-}
 
 # https://gamepress.gg/pokemongo/cp-multiplier
 HIGH_MULTIPLIERS = {
@@ -312,14 +196,15 @@ class MetaTeamDestroyer:
         print("------ Initializing the data -------")
 
         # Initialize all of the data
-        rankings_url = LEAGUE_RANKINGS.get(league)
-        latest_url = LEAGUE_DATA.get(league)
+        self.league_obj = LEAGUES_LIST[league]
+        rankings_url = self.league_obj.ranking_url
+        latest_url = self.league_obj.data_url
         self.result_data = {}
 
         # Get the latest-large data
         latest_url = latest_url.replace('latest', 'latest-large')
         self.league = league
-        self.league_cp = LEAGUE_VALUE[league]
+        self.league_cp = self.league_obj.league_value
         self.last_fetched = {}
 
         # Fetch data from db
@@ -558,7 +443,8 @@ class MetaTeamDestroyer:
         """
         Get default ivs from the game master for the given pokmeon
         """
-        league_cp = LEAGUE_VALUE.get(league, '1500').split('-')[0]
+        league_value = LEAGUES_LIST[league].league_value or '1500'
+        league_cp = league_value.split('-')[0]
         if league_cp == '10000':
             return '15-15-15'
         for pokemon_info in self.game_master.get('pokemon'):
@@ -784,8 +670,8 @@ class MetaTeamDestroyer:
             return "", []
         results = f"Team for {chosen_pokemon}"
         #pvpoke_link = f"https://pvpoke.com/team-builder/all/{LEAGUE_VALUE[self.league]}/{pokemon_team[0]}-m-{team_ivs[0]}%2C{pokemon_team[1]}-m-{team_ivs[1]}%2C{pokemon_team[2]}-m-{team_ivs[2]}"
-        cup = CUP_VALUE.get(self.league, 'all')
-        pvpoke_link = f"https://pvpoke.com/team-builder/{cup}/{LEAGUE_VALUE[self.league]}/{pokemon_team[0]}-m-0-1-2%2C{pokemon_team[1]}-m-0-1-2%2C{pokemon_team[2]}-m-0-1-2"
+        cup = self.league_obj.cup_value or "all"
+        pvpoke_link = f"https://pvpoke.com/team-builder/{cup}/{self.league_obj.league_value}/{pokemon_team[0]}-m-0-1-2%2C{pokemon_team[1]}-m-0-1-2%2C{pokemon_team[2]}-m-0-1-2"
         results = f"{results} (<a href='{pvpoke_link}' target='_blank'>See team in pvpoke</a>)"
         results = f"{results}\n<b>Pokemon</b>\t<b>Fast Move</b>\t<b>Charge Moves</b>"
         team_ivs = []
@@ -880,7 +766,7 @@ def pretty_print_counters(counter_list, min_counters=None, use_percent=True):
 
 def get_counters_for_rating(rating, league="ULP", days_back=None):
     """ Prints the lead, safe swap, and back line counters at the given rating """
-    if league not in LEAGUE_RANKINGS:
+    if league not in LEAGUES_LIST.league_names:
         return f"Did not find league '{league}'"
     error = ""
 
@@ -971,7 +857,8 @@ def create_table_from_results(results, pokemon=None, width=None, tc=None, toolti
                 if value:
                     # Provide links to battles
                     if pokemon and ':' in value:
-                        league_val = LEAGUE_VALUE.get(CACHE.get('league', ''), '1500')
+                        league_val = LEAGUES_LIST[CACHE.get('league', '')] or '1500'
+                        #league_val = LEAGUE_VALUE.get(CACHE.get('league', ''), '1500')
                         cell_pokemon = value.split(':')[0].strip()
 
                         # make pvpoke link
