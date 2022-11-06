@@ -64,14 +64,14 @@
                   data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                   {{flips}}
                 </button>
-                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" style="overflow-y: auto; max-height:200px">
+                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton" style="overflow-y: auto; max-height:200px; min-width: 90vw;">
                   {% for skill in skills %}
                   {% for pos in ['t', 'p', 's'] %}
                   <a class="dropdown-item" href="#" id="skill{{skill}}{{pos}}"
-                    value="skill{{skill}}{{pos}}">{{skill}}{{pos
+                    value="skill{{skill}}{{pos}}" style="display: inline-block; width: auto; border: 1px solid;" data-keepopenonclick>{{skill}}{{pos
                     | replace("t", "o") | replace("p", "<") | replace("s", "/" )}}</a>
-                      {% endfor %}
-                      {% endfor %}
+                  {% endfor %}
+                  {% endfor %}
                 </div>
               </div>
               {% endfor %}
@@ -427,6 +427,12 @@
     }
 
   }
+  // keep the skill dropdowns open
+  $(function() {
+    $("div.dropdown-menu").on("click", "[data-keepopenonclick]", function(e) {
+        e.stopPropagation();
+    });
+  });
   // unhide the hidden notes by clicking the comment button
   $("[id^=unhide-note").click(function(e){
     var comment = $(this).siblings('span')[0];
