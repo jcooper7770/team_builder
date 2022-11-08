@@ -157,6 +157,11 @@ def make_image(pokemon_list, number_per_row=5):
     count_image_font = ImageFont.truetype("static/arialbd.ttf", 27)
     row, col = -1, -1
     for poke_num, pokemon in enumerate(["logo"] + sorted(pokemon_list)):
+        pokemon_ranking = rankings.get(pokemon, {})
+        if not pokemon_ranking and pokemon != "logo":
+            print(f"Skipping {pokemon} because not in rankings")
+            continue
+
         if pokemon == '?':
             continue
         pokemon = pokemon.lower()
@@ -214,7 +219,6 @@ def make_image(pokemon_list, number_per_row=5):
 
         # add move count text for pokemon
         moves = []
-        pokemon_ranking = rankings.get(pokemon, {})
         pokemon_moveset = {'fast': '', 'charge': []}
         # get three most common charge move
         sorted_moves = [move for move in pokemon_ranking['moves']['chargedMoves'] if move['uses']]

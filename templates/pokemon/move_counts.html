@@ -56,6 +56,9 @@
       for (var input in inputs){
         if(table.id.toUpperCase().indexOf(inputs[input]) > -1){
           var pokemon_name = table.id.slice(0, -6);
+          if(pokemon_name == "pidgeotto" && inputs[input].toLowerCase() == "pidgeot"){
+            continue;
+          }
           all_pokemon.push(pokemon_name)
         }
       } 
