@@ -21,6 +21,15 @@ from application.utils.database import create_engine
 
 logging.getLogger("PIL.PngImagePlugin").setLevel(logging.CRITICAL + 1)
 
+HELP_TEXT = """HELP:
+Fast move on top.
+
+Charge moves:
+5- -> 5/4
+The "-" means that the
+  second move is one less
+twitch.tv/itsflippincoop"""
+
 def get_moves(game_master):
     """
     Get all moves from the game master
@@ -215,6 +224,14 @@ def make_image(pokemon_list, number_per_row=5):
 
         # Skip move text for the logo
         if pokemon == "logo":
+            imgText = ImageDraw.Draw(blank_img)
+            charge_xpos = (2*col + 1)*100 + 50
+            draw_text(
+                imgText,
+                (charge_xpos, row*100 + 10),
+                HELP_TEXT,
+                font=cm_image_font
+            )
             continue
 
         # add move count text for pokemon
