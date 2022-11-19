@@ -12,8 +12,8 @@ from dataclasses import dataclass
 import json
 import os.path
 import logging
+import requests
 
-import sqlalchemy
 from PIL import Image, ImageDraw, ImageFont
 
 from application.utils.database import create_engine
@@ -140,7 +140,7 @@ def get_game_master():
     return game_master
 
 
-def get_gl_rankings():
+def get_all_rankings():
     """
     Get all rankings
     """
@@ -157,9 +157,6 @@ def get_gl_rankings():
     all_rankings = []
 
     # make a single query for all leagues 
-    #leagues = ["GL", "UL", "ML", "Little"]
-    #in_query = ','.join([f'"all_pokemon_{league}"' for league in leagues])
-    #sql_query = f'SELECT * from `pokemon_data` WHERE pokemon_data.league IN ({in_query});'
     sql_query = 'SELECT * from `pokemon_data`;'
     query_results = engine.execute(sql_query)
     results = [result for result in query_results]
@@ -174,13 +171,107 @@ def get_gl_rankings():
     }
 
 
+def generate_move_strings(pokemon, pokemon_ranking, counts):
+    """
+    Generate move strings for image
+    """
+    pokemon_moveset = {'fast': '', 'charge': []}
+    # get three most common charge move
+    sorted_moves = [move for move in pokemon_ranking['moves']['chargedMoves'] if move['uses']]
+
+    # Pick the three moves at random if there are no use metrics
+    if not sorted_moves:
+        sorted_moves = pokemon_ranking['moves']['chargedMoves']
+        for move in sorted_moves:
+            move['uses'] = 0 # set uses to 0 so that all moves are even and chosen at random
+
+    # Sort moves by number of uses in gobattlelog    
+    ranked_moves = [move['moveId'] for move in sorted(sorted_moves, key=lambda x:x['uses'], reverse=True)]
+    most_used_charges = ranked_moves[:3] if len(ranked_moves) >= 3 else ranked_moves
+    for move, count in counts.get(pokemon, {}).items():
+        fast_move = move.split('-')[0].split()[0]
+        charge_move = move.split('-')[1].split()[0]
+        if pokemon_ranking and pokemon_ranking.get('moveset', []):
+            if not pokemon_ranking.get('moveset')[0].lower() == fast_move:
+                continue
+            if not charge_move.upper() in most_used_charges:
+                continue
+        short_count = f"{count[0]}{'-' if count[0]!=count[1] else ''}"
+        pokemon_moveset['fast'] = ' '.join(fast_move.upper().split('_'))
+        pokemon_moveset['charge'].append({'move': ' '.join(charge_move.upper().split("_")), 'count': short_count})
+
+    if not pokemon_moveset['charge']:
+        pokemon_moveset['charge'] = [{'move': '???', 'count': '?'}, {'move': '???', 'count': '?'}]
+
+    return pokemon_moveset
+
+
+def add_counts_to_img(pokemon, pokemon_moveset, blank_img, row, col, fonts):
+    """
+    Adds the move counts text to the image
+    """
+    image_font, cm_image_font, count_image_font = fonts
+    imgText = ImageDraw.Draw(blank_img)
+    charge_xpos = (2*col + 1)*100 + 32
+
+    # Draw fast move
+    draw_text(
+        imgText,
+        (charge_xpos, row*100 + 10),
+        pokemon_moveset['fast'],
+        font=image_font
+    )
+    print(pokemon, pokemon_moveset)
+
+    # Draw charge moves
+    draw_text(
+        imgText,
+        (charge_xpos, row*100 + 20),
+        pokemon_moveset['charge'][0]['move'],
+        font=cm_image_font
+    )
+    draw_text(
+        imgText,
+        (charge_xpos, row*100 + 45),
+        pokemon_moveset['charge'][0]['count'],
+        font=count_image_font
+    )
+
+    # second charge move
+    draw_text(
+        imgText,
+        (charge_xpos + 33 if len(pokemon_moveset['charge'])==3 else charge_xpos, row*100 + 60),
+        pokemon_moveset['charge'][1]['move'],
+        font=cm_image_font
+    )
+    draw_text(
+        imgText,
+        (charge_xpos + 33 if len(pokemon_moveset['charge'])==3 else charge_xpos, row*100 + 85),
+        pokemon_moveset['charge'][1]['count'],
+        font=count_image_font
+    )
+    
+    if len(pokemon_moveset['charge']) == 3:
+        draw_text(
+            imgText,
+            (charge_xpos - 33, row*100 + 95),
+            pokemon_moveset['charge'][2]['move'],
+            font=cm_image_font,
+        )
+        draw_text(
+            imgText,
+            (charge_xpos - 33, row*100 + 85),
+            pokemon_moveset['charge'][2]['count'],
+            font=count_image_font,
+        )
+
+
 def make_image(pokemon_list, number_per_row=5):
     """
     Make a move counts image from the list of pokemon
     """
-    import requests
     counts = get_move_counts(None)
-    rankings = get_gl_rankings()
+    rankings = get_all_rankings()
     image_url = "https://img.pokemondb.net/sprites/go/normal/{pokemon}.png"
     image_height = ((len(pokemon_list) + 1) // number_per_row) * 100 + 100
     image_width = number_per_row * 200
@@ -189,15 +280,19 @@ def make_image(pokemon_list, number_per_row=5):
     cm_image_font = ImageFont.truetype("static/arialbd.ttf", 8)
     count_image_font = ImageFont.truetype("static/arialbd.ttf", 27)
     row, col = -1, -1
-    for poke_num, pokemon in enumerate(["logo"] + sorted(pokemon_list)):
+    for pokemon in ["logo"] + sorted(pokemon_list):
         pokemon_ranking = rankings.get(pokemon, {})
         if not pokemon_ranking and pokemon != "logo":
             print(f"Skipping {pokemon} because not in rankings")
             continue
 
+        # Skip '?'
         if pokemon == '?':
             continue
         pokemon = pokemon.lower()
+
+        # also skip shadow pokemon if it's counterpart is already in the list
+        #  otherwise use the counterpart
         if pokemon.endswith('_shadow'):
             pokemon = pokemon[:-7]
             if pokemon in pokemon_list:
@@ -259,90 +354,8 @@ def make_image(pokemon_list, number_per_row=5):
             continue
 
         # add move count text for pokemon
-        moves = []
-        pokemon_moveset = {'fast': '', 'charge': []}
-        # get three most common charge move
-        sorted_moves = [move for move in pokemon_ranking['moves']['chargedMoves'] if move['uses']]
-
-        # Pick the three moves at random if there are no use metrics
-        if not sorted_moves:
-            sorted_moves = pokemon_ranking['moves']['chargedMoves']
-            for move in sorted_moves:
-                move['uses'] = 0
-        ranked_moves = [move['moveId'] for move in sorted(sorted_moves, key=lambda x:x['uses'], reverse=True)]
-        most_used_charges = ranked_moves[:3] if len(ranked_moves) >= 3 else ranked_moves
-        for move, count in counts.get(pokemon, {}).items():
-            fast_move = move.split('-')[0].split()[0]
-            charge_move = move.split('-')[1].split()[0]
-            if pokemon_ranking and pokemon_ranking.get('moveset', []):
-                if not pokemon_ranking.get('moveset')[0].lower() == fast_move:
-                    continue
-                if not charge_move.upper() in most_used_charges:
-                    continue
-            short_fast_move = ''.join(f"{word[0].upper()}{word[1].lower()}" for word in fast_move.split("_"))
-            short_charge = ''.join(f"{word[0].upper()}{word[1].lower()}" if len(word)>1 else f"{word[0].upper}" for word in charge_move.split('_'))
-            short_count = f"{count[0]}{'-' if count[0]!=count[1] else ''}"
-            moves.append(f"{short_fast_move} - {short_charge}: {short_count}")
-
-            pokemon_moveset['fast'] = ' '.join(fast_move.upper().split('_'))
-            pokemon_moveset['charge'].append({'move': ' '.join(charge_move.upper().split("_")), 'count': short_count})
-
-        if not pokemon_moveset['charge']:
-            pokemon_moveset['charge'] = [{'move': '???', 'count': '?'}, {'move': '???', 'count': '?'}]
-
-        imgText = ImageDraw.Draw(blank_img)
-        charge_xpos = (2*col + 1)*100 + 32
- 
-        # Draw fast move
-        draw_text(
-            imgText,
-            (charge_xpos, row*100 + 10),
-            pokemon_moveset['fast'],
-            font=image_font
-        )
-        print(pokemon, pokemon_moveset)
-
-        # Draw charge moves
-        draw_text(
-            imgText,
-            (charge_xpos, row*100 + 20),
-            pokemon_moveset['charge'][0]['move'],
-            font=cm_image_font
-        )
-        draw_text(
-            imgText,
-            (charge_xpos, row*100 + 45),
-            pokemon_moveset['charge'][0]['count'],
-            font=count_image_font
-        )
-
-        # second charge move
-        draw_text(
-            imgText,
-            (charge_xpos + 33 if len(pokemon_moveset['charge'])==3 else charge_xpos, row*100 + 60),
-            pokemon_moveset['charge'][1]['move'],
-            font=cm_image_font
-        )
-        draw_text(
-            imgText,
-            (charge_xpos + 33 if len(pokemon_moveset['charge'])==3 else charge_xpos, row*100 + 85),
-            pokemon_moveset['charge'][1]['count'],
-            font=count_image_font
-        )
-       
-        if len(pokemon_moveset['charge']) == 3:
-            draw_text(
-                imgText,
-                (charge_xpos - 33, row*100 + 95),
-                pokemon_moveset['charge'][2]['move'],
-                font=cm_image_font,
-            )
-            draw_text(
-                imgText,
-                (charge_xpos - 33, row*100 + 85),
-                pokemon_moveset['charge'][2]['count'],
-                font=count_image_font,
-            )
+        pokemon_moveset = generate_move_strings(pokemon, pokemon_ranking, counts)
+        add_counts_to_img(pokemon, pokemon_moveset, blank_img, row, col, [image_font, cm_image_font, count_image_font])
 
     blank_img.save("image.png")
 
