@@ -393,7 +393,8 @@ class MetaTeamDestroyer:
             engine.execute(ins)
         # if not in db or old data then pull data and push to db
         if not url:
-            latest_url = LEAGUE_DATA.get(league)
+            league_data = LEAGUES_LIST[league]
+            latest_url = league_data.data_url or ""
 
             # Get the latest-large data
             latest_url = latest_url.replace('latest', 'latest-large')

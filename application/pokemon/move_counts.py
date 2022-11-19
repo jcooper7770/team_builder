@@ -30,6 +30,9 @@ The "-" means that the
   second move is one less
 twitch.tv/itsflippincoop"""
 
+ALL_RANKINGS = []
+GAME_MASTER = {}
+
 def get_moves(game_master):
     """
     Get all moves from the game master
@@ -125,28 +128,49 @@ def get_game_master():
     """
     Get game master data from db
     """
+    global GAME_MASTER
+    if GAME_MASTER:
+        return GAME_MASTER
+    
     engine = create_engine()
     query_results = engine.execute('SELECT * from `pokemon_data` WHERE pokemon_data.league="game_master";')
     results = [result for result in query_results]
     game_master = json.loads(json.loads(results[0][1]))
-    #print(game_master)
-    #print(type(game_master))
+    GAME_MASTER = game_master
     return game_master
 
 
 def get_gl_rankings():
     """
-    Get GL rankings
+    Get all rankings
     """
+    # Skip the database queries if all rankings are already saved
+    global ALL_RANKINGS
+    if ALL_RANKINGS:
+        return {
+        pokemon['speciesId']: pokemon
+        for pokemon in ALL_RANKINGS
+    }
+
+    # If no rankings saved yet then query the db once  
     engine = create_engine()
-    query_results = engine.execute('SELECT * from `pokemon_data` WHERE pokemon_data.league="all_pokemon_GL";')
-    query_results2 = engine.execute('SELECT * from `pokemon_data` WHERE pokemon_data.league="all_pokemon_UL";')
+    all_rankings = []
+
+    # make a single query for all leagues 
+    #leagues = ["GL", "UL", "ML", "Little"]
+    #in_query = ','.join([f'"all_pokemon_{league}"' for league in leagues])
+    #sql_query = f'SELECT * from `pokemon_data` WHERE pokemon_data.league IN ({in_query});'
+    sql_query = 'SELECT * from `pokemon_data`;'
+    query_results = engine.execute(sql_query)
     results = [result for result in query_results]
-    results2 = [result for result in query_results2]
-    rankings = json.loads(json.loads(results[0][1])) + json.loads(json.loads(results2[0][1]))
+    for result in results:
+        if not result[0].startswith('all_pokemon_'):
+            continue
+        all_rankings.extend(json.loads(json.loads(result[1])))
+    ALL_RANKINGS = all_rankings
     return {
         pokemon['speciesId']: pokemon
-        for pokemon in rankings
+        for pokemon in all_rankings
     }
 
 
