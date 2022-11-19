@@ -12,6 +12,7 @@ from dataclasses import dataclass
 import json
 import os.path
 import logging
+import re
 import requests
 
 from PIL import Image, ImageDraw, ImageFont
@@ -171,7 +172,7 @@ def get_all_rankings():
     }
 
 
-def generate_move_strings(pokemon, pokemon_ranking, counts):
+def generate_move_strings(pokemon, pokemon_ranking, counts, chosen_fast_move=None):
     """
     Generate move strings for image
     """
@@ -188,12 +189,23 @@ def generate_move_strings(pokemon, pokemon_ranking, counts):
     # Sort moves by number of uses in gobattlelog    
     ranked_moves = [move['moveId'] for move in sorted(sorted_moves, key=lambda x:x['uses'], reverse=True)]
     most_used_charges = ranked_moves[:3] if len(ranked_moves) >= 3 else ranked_moves
+
     for move, count in counts.get(pokemon, {}).items():
+        # move looks like "fast_move (0) [1] - charge move [50]"
         fast_move = move.split('-')[0].split()[0]
         charge_move = move.split('-')[1].split()[0]
-        if pokemon_ranking and pokemon_ranking.get('moveset', []):
+
+        if chosen_fast_move:
+            # if a fast move is chosen for the image
+            if fast_move.upper() != chosen_fast_move.upper():
+                continue
+            if charge_move.upper() not in most_used_charges:
+                continue
+        elif pokemon_ranking and pokemon_ranking.get('moveset', []):
+            # if the fast move is not as recommended
             if not pokemon_ranking.get('moveset')[0].lower() == fast_move:
                 continue
+            # if the charge move is not as recommended
             if not charge_move.upper() in most_used_charges:
                 continue
         short_count = f"{count[0]}{'-' if count[0]!=count[1] else ''}"
@@ -281,6 +293,13 @@ def make_image(pokemon_list, number_per_row=5):
     count_image_font = ImageFont.truetype("static/arialbd.ttf", 27)
     row, col = -1, -1
     for pokemon in ["logo"] + sorted(pokemon_list):
+        # extract pokemon from string if a fast move is chosen
+        chosen_fast_move = None
+        z = re.match(r'(\w*)\((\w*)\)', pokemon)
+        if z:
+            pokemon, chosen_fast_move = z.groups()
+        
+        # Skip the pokemon if its not in the rankings
         pokemon_ranking = rankings.get(pokemon, {})
         if not pokemon_ranking and pokemon != "logo":
             print(f"Skipping {pokemon} because not in rankings")
@@ -354,7 +373,7 @@ def make_image(pokemon_list, number_per_row=5):
             continue
 
         # add move count text for pokemon
-        pokemon_moveset = generate_move_strings(pokemon, pokemon_ranking, counts)
+        pokemon_moveset = generate_move_strings(pokemon, pokemon_ranking, counts, chosen_fast_move=chosen_fast_move)
         add_counts_to_img(pokemon, pokemon_moveset, blank_img, row, col, [image_font, cm_image_font, count_image_font])
 
     blank_img.save("image.png")
@@ -382,12 +401,12 @@ def draw_text(imgText, position, text, font, anchor="ms"):
 if __name__ == '__main__':
     pokemon_list = ["bulbasaur", "venusaur", "charizard", "rapidash", "raichu", "walrein", "magnezone", "swampert", "pikachu"]
     pokemon_list = [
-        "abomasnow", "articuno", "blastoise", "charizard", "clefable", "cresselia",
+        "abomasnow", "articuno(ice_shard)", "blastoise", "charizard", "clefable", "cresselia",
         "drapion", "drifblim", "escavalier", "ferrothorn", "giratina", "gligar",
-        "gyarados", "jellicent", "lapras", "lugia", "machamp", "magnezone", "mandibuzz",
+        "gyarados", "jellicent", "lapras(water_gun)", "lugia", "machamp", "magnezone", "mandibuzz",
         "meganium", "muk", "nidoqueen", "ninetales", "pidgeot", "politoed",
         "poliwrath", "regice", "regirock", "registeel", "scrafty", "skarmory", "snorlax",
-        "steelix", "swampert", "sylveon", "talonflame", "toxicroak", "trevenant",
+        "steelix", "swampert", "sylveon", "talonflame(fire_spin)", "toxicroak", "trevenant",
         "umbreon", "venusaur", "walrein", "zapdos", "obstagoon",
         "miltank", "dubwool"
     ]

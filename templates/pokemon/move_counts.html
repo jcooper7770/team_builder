@@ -15,6 +15,19 @@
           <button type="submit" onclick="downloadData()">Download move counts</button>
         </td>
       </tr>
+      <tr>
+        <td>Filter Tips</td>
+        <td>
+          <ul>
+            <li>
+              Write a list of comma-separated pokemon. <i>i.e. walrein,trev,medi</i>
+            </li>
+            <li>
+              Add fastmove (for the downloaded image) inside ( ). <i>i.e. walrein(waterfall),bulba(tackle),venu</i>
+            </li>
+          </ul>
+        </td>
+      </tr>
     </table>
 
   <div class="grid-container" style="display: grid; grid-template-columns: 50% 50%;" id="table-grid">
@@ -54,11 +67,15 @@
         continue;
       }
       for (var input in inputs){
-        if(table.id.toUpperCase().indexOf(inputs[input]) > -1){
+        // remove move from chosen pokemon if it exists
+        const chosen_pokemon = inputs[input].replace(/(\(\w*\))/i, "");
+        if(table.id.toUpperCase().indexOf(chosen_pokemon) > -1){
           var pokemon_name = table.id.slice(0, -6);
           if(pokemon_name == "pidgeotto" && inputs[input].toLowerCase() == "pidgeot"){
             continue;
           }
+          // add back in the move
+          pokemon_name = pokemon_name + inputs[input].replace(/(\w*)(\(\w*\))?/i, "$2")
           all_pokemon.push(pokemon_name)
         }
       } 
@@ -89,11 +106,16 @@
       line.remove();
     }
 
+    // hide all non-chosen pokemon tables
     all_tables = document.getElementsByName("pokemon");
     for (i = 0; i < all_tables.length; i++){
       table = all_tables[i];
-      for (var input in inputs){
-        if(table.id.toUpperCase().indexOf(inputs[input]) > -1){
+      for (var input in inputs){ // input it the index
+        // remove move from chosen pokemon if it exists
+        const pokemon = inputs[input].replace(/(\(\w*\))/i, "");
+
+        // check if the table has the given pokemon
+        if(table.id.toUpperCase().indexOf(pokemon) > -1){
           all_tables[i].style.display = "";
           break;
         } else {
