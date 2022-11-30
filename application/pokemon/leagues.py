@@ -57,6 +57,7 @@ LEAGUES_LIST = LeagueList([
     League("Evolution", "1500-evolution", "great-evolution"),
     League("Willpower", "1500-willpower", "great-willpower"),
     League("Halloween", "1500-halloween", "great-halloween"),
+    League("CatchS12", "1500", "great-catch1124"),
 
     # Ultra cups
     League("UL", "2500", "ultra"),
