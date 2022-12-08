@@ -1,0 +1,246 @@
+var curr_page = 1;
+var paginated_practices = [];
+$(document).ready(function() {
+    // Set logger date to current local date if a search date isn't chosen
+    {% if not search_date %}
+    {% if not current_date %}
+    var date = new Date();
+    date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+    document.getElementById("logger-date").value = date.toJSON().slice(0,10);
+    document.getElementById("airtime-date").value = date.toJSON().slice(0,10);
+    {% else %}
+    document.getElementById("logger-date").value = "{{current_date}}";
+    document.getElementById("airtime-date").value = "{{current_date}}";
+    document.getElementById("practice_date").value = "{{current_date}}";
+    {% endif %}
+    {% else %}
+    document.getElementById("logger-date").value = "{{search_date}}";
+    document.getElementById("airtime-date").value = "{{search_date}}";
+    document.getElementById("practice_date").value = "{{search_date}}";
+    {% endif %}
+
+    // paginate practices
+    var practices = [];
+    var practices_div = document.getElementById("practices");
+    var nodes = practices_div.childNodes;
+    for (element of nodes){
+        if (element.tagName == "DIV") {
+            practices.push(element);
+        }
+    }
+
+    var page_size = 10;
+    n_pages = Math.floor(practices.length / page_size) + 1;
+    for(i=0; i< n_pages; i++) {
+        var start = i * page_size;
+        var end = (i+1) * page_size;
+        if(end > practices.length) {
+            end = practices.length;
+        }
+        var current_page = practices.slice(start, end);
+        paginated_practices.push(current_page);
+    }
+
+    practices_div.innerHTML = "";
+
+    var page_buttons = document.createElement("div");
+    page_buttons.id = "page_buttons";
+    page_buttons.classList.add("text-center")
+
+    var next_page = document.createElement("button");
+    next_page.innerHTML = "Next >>";
+    next_page.style = "padding:0 10px; curdor: pointer;"
+    next_page.id = "page_next";
+    next_page.onclick = changePage;
+    //practices_div.prepend(next_page);
+    page_buttons.prepend(next_page);
+    for(page=paginated_practices.length; page>0; page--){
+        var new_page = document.createElement("button")
+        new_page.innerHTML = page;
+        new_page.id = "page_"+page;
+        new_page.onclick = changePage;
+        new_page.style = "padding:0 10px; curdor: pointer;"
+        //practices_div.prepend(new_page)
+        page_buttons.prepend(new_page)
+    }
+    var prev_page = document.createElement("button");
+    prev_page.innerHTML = "<< Prev";
+    prev_page.style = "padding:0 10px; curdor: pointer;"
+    prev_page.id = "page_prev";
+    prev_page.onclick = changePage;
+    //practices_div.prepend(prev_page);
+    page_buttons.prepend(prev_page);
+    practices_div.append(page_buttons);
+
+    var practices_page = document.createElement("div");
+    practices_page.id = "practices_page";
+    for(element of paginated_practices[curr_page-1]){
+        practices_page.append(element);
+        practices_page.append(document.createElement("br"));
+        practices_page.append(document.createElement("br"));
+    }
+    practices_div.append(practices_page);
+
+});
+
+// Change the practice page
+const changePage = function() {
+    var page_id = this.id;
+    var page = this.id.split("_")[1];
+    if (page == curr_page){
+        return
+    }
+    if(page == "prev"){
+        if(curr_page > 1) {
+            page = curr_page - 1;
+        } else {
+            return
+        }
+    }
+    if(page == "next"){
+        if(curr_page<paginated_practices.length){
+            page = curr_page + 1;
+        } else {
+            return
+        }
+    }
+    curr_page_id = "page_"+curr_page;
+    document.getElementById(curr_page_id).style.background = "#FFFFFF";
+    
+    curr_page = parseInt(page);
+    curr_page_id = "page_"+curr_page;
+    document.getElementById(curr_page_id).style.background = "#0000FF";
+    var practices_page = document.getElementById("practices_page");
+    practices_page.innerHTML = "";
+    for(element of paginated_practices[curr_page-1]){
+        practices_page.append(element);
+        practices_page.append(document.createElement("br"));
+        practices_page.append(document.createElement("br"));
+    }
+
+}
+// keep the skill dropdowns open
+$(function() {
+    $("div.dropdown-menu").on("click", "[data-keepopenonclick]", function(e) {
+            e.stopPropagation();
+    });
+});
+// unhide the hidden notes by clicking the comment button
+$("[id^=unhide-note").click(function(e){
+    var comment = $(this).siblings('span')[0];
+    if (comment.style.display === "none") {
+        comment.style.display = "inline";
+    } else {
+        comment.style.display = "none";
+    }
+});
+$("[id^=skill]").click(function (e) {
+    e.preventDefault();
+    var skill = event.target.id.slice(5).replace('t', 'o').replace('p', '<').replace('s', '/');
+    var routineText = document.getElementById('log').value;
+    if (routineText != "") {
+        $('#log').val(routineText + ' ' + skill);
+    } else {
+        $('#log').val(skill);
+    }
+});
+function updateNumSkills() {
+    let skills = $("#log").val().trim().split(/[\s]/);
+    let num_skills = skills.length;
+    document.getElementById('num_skills').textContent = "Number of skills: " + num_skills;
+}
+
+$("#log").on('input', function (e) {
+    //updateNumSkills();
+});
+$("[id$=_skills]").change(function (e) {
+    var skill = $(this).val().slice(5).replace('t', 'o').replace('p', '<').replace('s', '/');
+    var routineText = document.getElementById('log').value;
+    if (routineText != "") {
+        $('#log').val(routineText + ' ' + skill);
+    } else {
+        $('#log').val(skill);
+    }
+    //updateNumSkills();
+});
+$('[id^=copy-text]').click(function(e){
+    // Add copy of text to log
+    var tds = e.target.parentNode.parentNode.parentNode.children;
+    var routine = "";
+    for (var i=0; i<tds.length; i++){
+        var td = tds[i];
+        if (td.firstChild == null){
+            break;
+        }    
+        else {
+            if (td.firstChild.tagName == undefined){
+                var doc = new DOMParser().parseFromString(td.innerHTML, "text/html");
+                var elementText = doc.documentElement.textContent;
+                routine = routine + " " + elementText;
+            }
+        }
+    }
+    var skills = document.getElementById('log').value;
+    var newText = "";
+    if (skills != ""){
+        newText = skills + '\n' + routine;
+    } else {
+        newText = routine;
+    }
+    
+    // Remove extra spaces
+    newText = newText.trim().replace('\n ', '\n');
+    $('#log').val(newText);
+});
+$('#repeat-skills').click(function (e) {
+    //var skills = $('log').val();
+    var skills = document.getElementById('log').value;
+    if (skills != "") {
+        if (skills.endsWith('\n')) {
+            var newText = skills + skills;
+        } else {
+            var newText = skills + ' ' + skills;
+        }
+        nextText = newText.trim().replace('\n ', '\n');
+        $('#log').val(newText);
+    }
+    $('#log').focus();
+});
+$('#next-line').click(function(e) {
+    var skills = document.getElementById('log').value;
+    if (skills != "" && !skills.endsWith('\n')) {
+        $('#log').val(skills + '\n');
+    }
+    $('#log').focus();
+});
+$("[id^=minimize_]").click(function(e){
+    var section_to_minimize = event.target.id.split("_")[1];
+    var minimize_id = section_to_minimize + "_body";
+    var x = document.getElementById(minimize_id);
+    if (x.style.display === "none") {
+        x.style.display = "";
+    } else {
+        x.style.display = "none";
+    }
+    var button = document.getElementById(e.target.id);
+    if (button.className == "fa fa-window-minimize") {
+        button.className = "fa fa-window-maximize";
+    } else {
+        button.className = "fa fa-window-minimize";
+    }
+});
+$("[id^=remove_]").click(function (e) {
+    e.preventDefault();
+    var date_to_remove = event.target.id.split("_")[1];
+    var event_to_remove = event.target.id.split("_")[2];
+    let confirmText = "".concat("Are you sure you want to delete ", date_to_remove, " ", event_to_remove, "?");
+    if (confirm(confirmText) == true) {
+        $.ajax({
+            type: 'GET',
+            url: "/logger/delete/" + date_to_remove + "/" + event_to_remove,
+            success: function (data) {
+                location.reload();
+            }
+        });
+    }
+});
