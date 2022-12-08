@@ -447,7 +447,7 @@ def trampoline_log():
             all_turns.append([skill.shorthand for skill in turn.skills])
 
     all_practice_tables = "<br><br>".join(practice_tables)
-    print(f"all_turns: {all_turns}")
+    
     html = [
         #"<h1 style='text-align:center;' class=\"header\">Previous Practices</h1>",
         # Div for practices so they are scrollable

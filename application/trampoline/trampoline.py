@@ -3,6 +3,8 @@ Utilities for trampoline app
 
 TODO:
   - [DONE] incorporate '...' (stop in middle of turn)
+  - [DONE] incorporate '%' and '--' (stop in middle of turn)
+  - [DONE] incorporate '#' (comments)
   - [DONE] add in 'X' for bail during turn
   - [DONE] Log in with different users so multiple people can use the logger
   - [DONE] Add in notes for a practice or a turn
@@ -448,6 +450,9 @@ class Routine():
     def add_skill(self, skill):
         """ Add the given skill(s) to the routine """
         # Skills ending in 'ooo' or 'o</' should be multiple of the same skill
+        if skill in NON_SKILLS:
+            self.skills.append(Skill(skill, event=self.event))
+            return
         no_pos_skill = ''.join(s for s in skill if s.isdigit())
         skill_pos = ''.join(s for s in skill if not s.isdigit())
         new_skills_list = []
@@ -632,12 +637,12 @@ def convert_form_data(form_data, logger=print, event=EVENT, notes=None, get_athl
         if not turn:
             continue
         # notes start with '-'
-        if turn[0] and turn[0][0] == '-':
+        if turn[0] and turn[0][0] in ['-', '#']:
             note_str = ' '.join(turn)
             if skill_turns and skill_turns[-1].skills and not skill_turns[-1].note:
-                skill_turns[-1].note = note_str.strip('-')
+                skill_turns[-1].note = note_str.strip('-').strip('#')
             else:
-                routine = Routine([], event=event, note=note_str.strip('-'))
+                routine = Routine([], event=event, note=note_str.strip('-').strip('#'))
                 skill_turns.append(routine)
             continue
     

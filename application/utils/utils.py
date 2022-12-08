@@ -16,7 +16,7 @@ logger.addHandler(handler) # adds handler to the werkzeug WSGI logger
 
 
 NON_SKILLS = [
-    "X", "..."
+    "X", "...", '--', '%'
 ]
 CACHE = {'results': {}, 'team_maker': {}, 'num_days': 1, 'rating': None}
 
