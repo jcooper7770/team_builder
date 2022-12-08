@@ -34,6 +34,7 @@ from typing import OrderedDict
 import sqlalchemy
 
 import json
+import math
 import random
 import requests
 import traceback
@@ -51,6 +52,7 @@ MIN_COUNTERS = 25
 TOP_PERCENT = 1
 REQUEST_TIMEOUT = 180
 REFRESH_DATA = False
+WEIGHT_NUMBERS = False 
 
 # https://gamepress.gg/pokemongo/cp-multiplier
 HIGH_MULTIPLIERS = {
@@ -81,6 +83,14 @@ def get_refresh():
     Returns REFRESH_DATA var
     """
     return REFRESH_DATA
+
+
+def use_weighted_values(value=True):
+    """
+    Use statistical weights to change the numbers of pokemon
+    """
+    global WEIGHT_NUMBERS
+    WEIGHT_NUMBERS = value
 
 
 class NoPokemonFound(Exception):
@@ -215,6 +225,7 @@ class MetaTeamDestroyer:
         if isinstance(info, str):
             info = json.loads(info)
         self.latest_info = info.get("records")
+        self.all_latest_info = info.get("records") # make a copy for stats weights later
 
         # Sort reports by time and get last X teams
         sorted_latest_info = sorted(self.latest_info, key=lambda x: x.get('time'), reverse=True)
@@ -264,19 +275,22 @@ class MetaTeamDestroyer:
         if len(temp_latest_info) == 0:
             print("!!!!")
             raise NoPokemonFound(f"Did not find {league} data last {days_back} days at {rating or 'all'} rating")
+        self.all_latest_info = [record for record in self.latest_info] # make a copy for stats weights later
         self.latest_info = temp_latest_info
 
-    def setup(self, rating):
+    @staticmethod
+    def calculate_pokemon_numbers(record_data, rating):
         """
-        Setup the anti-meta data
+        Calculate number of each pokemon and win rates
+
+        :return: the number of pokemon in lead/ss/back, win rates, and pokemon teams
         """
-        # Create common leads and backlines lists
         leads = defaultdict(int)
         safeswaps = defaultdict(int)
         backs = defaultdict(int)
         pokemon_win_rates = {'lead': defaultdict(list), 'ss': defaultdict(list), 'back': defaultdict(list)}
         pokemon_teams = defaultdict(list)
-        for record in self.latest_info:
+        for record in record_data:
             if rating and record.get("rating") != rating:
                 continue
             team = record.get("oppo_team")
@@ -300,11 +314,30 @@ class MetaTeamDestroyer:
             team_str = '-'.join(opp_team)
             #pokemon_teams[f'{opp_lead}-{opp_ss}-{opp_back}'].append(win)
             pokemon_teams[team_str].append(win)
+        return (
+            [leads, safeswaps, backs],
+            pokemon_win_rates,
+            pokemon_teams
+        )
+
+    def setup(self, rating):
+        """
+        Setup the anti-meta data
+        """
+        # Create common leads and backlines lists
+        pokemon_counts, pokemon_win_rates, pokemon_teams = self.calculate_pokemon_numbers(self.latest_info, rating)
+        leads, safeswaps, backs = pokemon_counts
 
         print(f"----------\n\nteams: {pokemon_teams}")
         self.leads_list = sorted(list(leads.items()), key=lambda x: x[1], reverse=True)
         self.safeswaps_list = sorted(list(safeswaps.items()), key=lambda x: x[1], reverse=True)
         self.backs_list = sorted(list(backs.items()), key=lambda x: x[1], reverse=True)
+
+        if WEIGHT_NUMBERS:
+            self.leads_list = self.create_real_pokemon_list(self.leads_list, pos='lead')
+            self.safeswaps_list = self.create_real_pokemon_list(self.safeswaps_list, pos='ss')
+            self.backs_list = self.create_real_pokemon_list(self.backs_list, pos='back')
+
 
         # Record pokemon win rates in each position
         self.pokemon_win_rates = {'leads': {}, 'ss': {}, 'back': {}}
@@ -466,6 +499,42 @@ class MetaTeamDestroyer:
         #    simulate_battle(pokemon.get('speciesId'), pokemon_name)
         return self.species_counters_dict[pokemon_name]
 
+    def create_real_pokemon_list(self, pokemon_list, pos='lead'):
+        """
+        Create the real list of pokemon by weighting the current number of each pokemon
+        by the total number of each pokemon from the ENTIRE population
+
+        https://www.thedataschool.co.uk/henry-mak/how-to-weight-survey-data
+
+        i.e. N(3 days) = 5, N(all time) = 900 -> N(weighted) = 9
+
+        :param pokemon_list: a list of pokemon and # reported. i.e. [('p1', #_) ...]
+        :type pokemon_list: list
+
+        :return: New list of same pokemon with new # reported
+        """
+        # Get total number of each pokemon all time
+        all_pokemon_counts, _, _ = self.calculate_pokemon_numbers(self.all_latest_info, None)
+        lead, ss, back = all_pokemon_counts
+        all_count = lead if pos == 'lead' else ss if pos == 'ss' else back
+        sum_all_count = sum(all_count.values())
+        total_in_list = sum([p[1] for p in pokemon_list])
+        weighted_list = []
+        for pokemon, num in pokemon_list:
+            current_percent = num / total_in_list * 100
+            if not all_count.get(pokemon):
+                continue
+            #target_percent = num / all_count[pokemon] * 100
+            target_percent = all_count[pokemon]/sum_all_count * 100
+            weight = target_percent / current_percent
+            new_num = math.ceil(weight * num)
+            print(pokemon, f"\n\tbefore: {num} - new: {new_num}\n\tcurrent % of data: {current_percent} - overall % of data: {target_percent} - weighted percent: {weight}")
+            #print(pokemon, num, new_num, current_percent, target_percent, weight)
+            weighted_list.append((pokemon, new_num))
+        weighted_list = sorted(weighted_list, key=lambda x: x[1], reverse=True)
+        print(weighted_list)
+        return weighted_list
+
     def get_reccommended_counters(self, pokemon_list):
         """ 
         Returns recommended counters to the list of pokemon
@@ -486,6 +555,7 @@ class MetaTeamDestroyer:
         recommended_mons = defaultdict(int)
         total_squared_mons = 0
         exponent = 1
+        #pokemon_list = self.create_real_pokemon_list(pokemon_list)
         for lead in pokemon_list:
             #counters = list(self.get_counters(lead[0]))
             
