@@ -137,6 +137,7 @@ $("[id^=unhide-note").click(function(e){
 $("[id^=skill]").click(function (e) {
     e.preventDefault();
     var skill = event.target.id.slice(5).replace('t', 'o').replace('p', '<').replace('s', '/');
+    console.log("adding " + skill);
     var routineText = document.getElementById('log').value;
     if (routineText != "") {
         $('#log').val(routineText + ' ' + skill);
@@ -144,14 +145,112 @@ $("[id^=skill]").click(function (e) {
         $('#log').val(skill);
     }
 });
+
+$("#col-skill").on('click', 'a', function (e) {
+    e.preventDefault();
+    var skill = event.target.id.slice(5).replace('t', 'o').replace('p', '<').replace('s', '/');
+    console.log("adding " + skill);
+    var routineText = document.getElementById('log').value;
+    if (routineText != "") {
+        $('#log').val(routineText + ' ' + skill);
+    } else {
+        $('#log').val(skill);
+    }
+    addRecSkill();
+});
 function updateNumSkills() {
     let skills = $("#log").val().trim().split(/[\s]/);
     let num_skills = skills.length;
     document.getElementById('num_skills').textContent = "Number of skills: " + num_skills;
 }
+function addRecSkill() {
+    var skill_text = $("#log").val();
+    // ignore if last skill was a space
+    if (skill_text[skill_text.length - 1] == " ") {
+        return
+    }
+    let skills = skill_text.split(/[\s]/);
+    var last_skill = skills[skills.length - 1];
+    var next_skill = recommendSkill(last_skill);
+    if (next_skill != undefined && next_skill != "") {
+        // clear out all recommended 
+        var recc = document.getElementsByClassName("recc-skill");
+        while(recc.length > 0) {
+            recc[0].parentNode.removeChild(recc[0]);
+        }
+
+        // add new recommended
+        console.log("recommended: " + next_skill);
+        // add a button with the skill under the log
+        var new_line = document.createElement("br");
+        new_line.className = "recc-skill";
+        for(let i=0; i<next_skill.length; i++){
+            n_skill = next_skill[i];
+            var new_link = document.createElement('a');
+            new_link.id = "skill" + n_skill;
+            new_link.value = "skill" + n_skill;
+            new_link.textContent = n_skill;
+            new_link.className = "recc-skill"
+            new_link.style = "display: inline-block; width: auto; border: 1px solid; background-color: #F5F5F5; margin-right: 10px";
+            logger = document.getElementById("log");
+            logger.parentNode.insertBefore(new_link, logger.nextSibling);
+        }
+        logger.parentNode.insertBefore(new_line, logger.nextSibling);
+
+        // automatically add to log
+        //$('#log').val(skill_text + ' ' + next_skill);
+    }
+}
+
+function recommendSkill(current_skill) {
+    //var all_turns = JSON.parse('{{ user_turns | tojson }}');
+    var all_turns = {{ user_turns | tojson }};
+    var next_skills = {};
+    for (let turn_num = 0; turn_num < all_turns.length; turn_num++) {
+        var turn = all_turns[turn_num];
+        skill = "";
+        for (let skill_num = 0; skill_num < turn.length - 1; skill_num++) {
+            var skill = turn[skill_num];
+            //console.log("Current: " + current_skill + " - checking " + skill);
+            // Get next skill if the current skill was found
+            if (skill == current_skill){
+                next_skill = turn[skill_num + 1];
+                if (!(next_skill in next_skills)) {
+                    next_skills[next_skill] = 0;
+                }
+                next_skills[next_skill]++;
+            }
+        }
+    }
+
+    if (next_skills.length == 0) {
+        return "";
+    }
+
+    // sort and find the most used next skill
+    var items = Object.keys(next_skills).map(function(key) {
+        return [key, next_skills[key]];
+    });
+    items.sort(function(first, second) {
+        return second[1] - first[1];
+    });
+    if (items.length == 0) {
+        return "";
+    }
+    console.log(next_skills);
+    most_used_next = items[0][0];
+    most_used_next = items.slice(0, 5);
+    most_used = []
+    for (let i=0; i<most_used_next.length; i++){
+        most_used.push(most_used_next[i][0]);
+    }
+    return most_used;
+
+};
 
 $("#log").on('input', function (e) {
     //updateNumSkills();
+    addRecSkill();
 });
 $("[id$=_skills]").change(function (e) {
     var skill = $(this).val().slice(5).replace('t', 'o').replace('p', '<').replace('s', '/');

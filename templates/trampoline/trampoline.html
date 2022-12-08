@@ -47,9 +47,9 @@
           </div>
 
           <!-- Skills to be logged -->
-          <div class="form-row">
+          <div class="form-row" id="row-skill">
             <div class="col-sm-3">Skills:<br><a href="/logger/about">Click here for help</a></div>
-            <div class="col">
+            <div class="col" id="col-skill">
               <textarea id="log" name="log" rows="5" style="width:90%" form="logger"
                 placeholder="Input your routines here">{{routine_text}}</textarea>
             </div>
@@ -76,6 +76,7 @@
               </div>
               {% endfor %}
               <!--<span id="num_skills">Number of skills: 0</span>-->
+              <div id="recc-skill"></div>
             </div>
             <div class="col-sm">
               <a id="repeat-skills" title="repeat skills" href="#"><span class="fa fa-repeat ml-3 mr-1 float-right" aria-hidden='true'></span></a>
