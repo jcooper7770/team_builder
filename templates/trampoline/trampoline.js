@@ -144,6 +144,7 @@ $("[id^=skill]").click(function (e) {
     } else {
         $('#log').val(skill);
     }
+    addRecSkill();
 });
 
 $("#col-skill").on('click', 'a', function (e) {
