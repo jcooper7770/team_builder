@@ -40,7 +40,7 @@ from flask_session import Session
 
 from application.pokemon.leagues import LEAGUES_LIST
 from application.pokemon.team_building import MetaTeamDestroyer, PokemonUser, get_counters_for_rating, NoPokemonFound, TeamCreater,\
-     create_table_from_results, set_refresh, get_refresh
+     create_table_from_results, set_refresh, get_refresh, use_weighted_values
 from application.pokemon.battle_sim import sim_battle
 from application.pokemon.move_counts import get_move_counts, make_image
 
@@ -436,15 +436,18 @@ def trampoline_log():
 
     # Get data from database
     user_practices = Practice.load_from_db(username, date=session.get("search_date"), skills=session.get("search_skills", ""))
+    all_turns = []
     for practice in user_practices:
         # Add the turns into a table for that practice
         title_date = practice.date.strftime("%A %m/%d/%Y")
         title = f"{title_date} ({practice.event})"
         practice_table = skills_table(practice.turns, title=title, expand_comments=user.get("expand_comments", False))
         practice_tables.append(practice_table)
+        for turn in practice.turns:
+            all_turns.append([skill.shorthand for skill in turn.skills])
 
     all_practice_tables = "<br><br>".join(practice_tables)
-   
+    print(f"all_turns: {all_turns}")
     html = [
         #"<h1 style='text-align:center;' class=\"header\">Previous Practices</h1>",
         # Div for practices so they are scrollable
@@ -466,7 +469,8 @@ def trampoline_log():
         error_text=session.get('error'),
         search_date=session.get("search_date").strftime("%Y-%m-%d") if session.get("search_date") else None,
         current_date=session.get('current_date').strftime("%Y-%m-%d") if session.get('current_date') else None,
-        search_skills=session.get("search_skills", "")
+        search_skills=session.get("search_skills", ""),
+        user_turns=all_turns
     )
 
 
@@ -527,6 +531,7 @@ def run():
     num_days = int(request.args.get('num_days', '1'))
     rating = eval(request.args.get('rating', "None"))
     use_tooltip = bool(request.args.get('tooltips', False))
+    use_weighted_values(bool(request.args.get('weights', False)))
     N_TEAMS = int(request.args.get('num_teams', N_TEAMS))
     html = []
     error_text = ""

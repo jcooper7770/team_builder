@@ -203,8 +203,11 @@ function addRecSkill() {
 }
 
 function recommendSkill(current_skill) {
-    console.log('{{user_turns}}');
-    var all_turns = {{ user_turns | tojson }};
+    if ( {{ user_turns }} == undefined) {
+        var all_turns = [];
+    }else {
+        var all_turns = {{ user_turns | tojson }};
+    }
     var next_skills = {};
     for (let turn_num = 0; turn_num < all_turns.length; turn_num++) {
         var turn = all_turns[turn_num];
