@@ -272,7 +272,7 @@ $('[id^=copy-text]').click(function(e){
     var routine = "";
     for (var i=0; i<tds.length; i++){
         var td = tds[i];
-        if (td.firstChild == null){
+        if (td == undefined || td.firstChild == null){
             break;
         }    
         else {
@@ -330,6 +330,15 @@ $("[id^=minimize_]").click(function(e){
         button.className = "fa fa-window-maximize";
     } else {
         button.className = "fa fa-window-minimize";
+    }
+});
+$("[id^=edit_]").click(function (e) {
+    var date_to_edit = event.target.id.split("_")[1];
+    var event_to_edit = event.target.id.split("_")[2];
+    let confirmText = "".concat("Are you sure you want to edit ", date_to_edit, " ", event_to_edit, "?");
+    if (confirm(confirmText) == true) {
+        var url = "/logger/edit/" + date_to_edit + "/" + event_to_edit;
+        location.href = encodeURI(url);
     }
 });
 $("[id^=remove_]").click(function (e) {

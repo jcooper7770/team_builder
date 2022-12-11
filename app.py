@@ -136,6 +136,23 @@ def clear_day():
     return jsonify(status="fail")
 
 
+@app.route("/logger/edit/<day>/<event>")
+def edit_day(day, event):
+    """
+    Edits the given day and event
+    """
+    print(f"Editing {day} and {event}")
+    datetime_to_edit = datetime.datetime.strptime(day, "%m-%d-%Y")
+    practices = Practice.load_from_db(session.get('name'), datetime_to_edit)
+    practice = [p for p in practices if p.event == event]
+    raw_log = '\n'.join(p.raw() for p in practice)
+    session['log'] = {day: raw_log}
+    session["search_date"] = datetime_to_edit
+    session['event'] = event
+    print(f"log: {raw_log}")
+    return redirect(url_for("trampoline_log"))
+
+
 @app.route("/logger/delete/<day>/<event>")
 def delete_day(day, event):
     """
@@ -258,8 +275,14 @@ def _save_trampoline_data(request):
     form_date_str = request.form.get('date', str(datetime.date.today()))
     form_date = datetime.datetime.strptime(form_date_str, "%Y-%m-%d")
     session['current_date'] = form_date
+    if session['search_date'] != session['current_date']:
+        print(f"search: {session['search_date']} - current: {session['current_date']}")
+        session['search_date'] = None
     practice = Practice(form_date.date(), routines, event)
-    saved_practice = practice.save()
+    replace_practice = session.get('log', {}).get(form_date.strftime('%m-%d-%Y')) is not None
+    print(f"~~~~~~~~~~~~replace: {replace_practice} - log {session['log']} - date {form_date.strftime('%m-%d-%Y')}")
+    saved_practice = practice.save(replace=replace_practice)
+    session['log'] = {}
 
     # Log the turns to the log file
     for turn_num, turn in enumerate(routines):
@@ -457,11 +480,16 @@ def trampoline_log():
     ]
     body = "".join(html) if all_practice_tables else ""
     logging.info(f"error: {session.get('error', '')}")
+
+    # Replace the log
+    print(f"~~~~session log: {session['log']} - current date: {session['current_date'].strftime('%Y-%m-%d')}")
+    date_to_use = session.get('search_date') or session.get('current_date')
+    log_text = session.get('log', {}).get(date_to_use.strftime("%m-%d-%Y")) or request.args.get('routine', '')
     return render_template(
         "trampoline/trampoline.html",
         body=body, username=username,
         event=event,
-        routine_text=request.args.get('routine', ''),
+        routine_text=log_text,
         user=session.get('name'),
         goals=get_user_goals(current_user()),
         airtimes=get_user_airtimes(current_user()),
@@ -809,6 +837,7 @@ def logout():
     session["error"] = ""
     session["current_athlete"] = ""
     session["previous_page"] = "trampoline_log"
+    session['log'] = {}
     return redirect(url_for('login'))
 
 

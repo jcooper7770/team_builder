@@ -221,9 +221,12 @@ class Practice:
         self.turns = turns
         self.event = event
 
-    def save(self):
+    def save(self, replace=False):
         """
         Save the current practice
+
+        :param replace: Whether or not to replace the entire practice
+        :type replace: bool
         """
         # save to the db
         #user_data = get_from_db(user=CURRENT_USER)
@@ -241,6 +244,8 @@ class Practice:
         
         #saving_turns = [turn.toJSON() for turn in self.turns]
         #add_to_db(turns, CURRENT_USER, self.event, self.date, table=TABLE_NAME)
+        if replace:
+            delete_from_db(self.date, user=session.get('name'), event=self.event)
         add_to_db(turns, user, self.event, self.date, table=TABLE_NAME)
 
         # save to the file
@@ -281,6 +286,23 @@ class Practice:
             [Routine([Skill(skill, event=event) for skill in routine], event=event) if (routine and routine[0][0]!="-") else Routine([], note=routine[0][1:] if routine else routine) for routine in practice_data[date]['turns']],
             event
         )
+
+    def raw(self):
+        """
+        Returns the raw log
+        """
+        #raw_log = ""
+        log_lines = []
+        for turn in self.turns:
+            raw_turn = ' '.join([skill.shorthand for skill in turn.skills])
+            log_lines.append(raw_turn)
+            #for skill in turn.skills:
+            #    raw_log = f"{raw_log} {skill.shorthand}"
+            if turn.note:
+                #raw_log = f"{raw_log}\n# {turn.note}"
+                log_lines.append(f"# {turn.note}")
+            #raw_log = f"{raw_log}\n"
+        return '\n'.join(log_lines).strip()
 
     @classmethod
     def load_from_db(self, user, date=None, skills=None):
@@ -483,19 +505,20 @@ def set_current_user(user):
     CURRENT_USER = user
     session["name"] = user
 
+
 def current_event():
     """
     Returns the current event
     """
-    return EVENT
+    return session.get('event', EVENT)
 
 
 def set_current_event(event):
     """
     Sets the current event
     """
-    global EVENT
-    EVENT = event
+    session['event'] = event
+
 
 def set_current_athlete(name):
     """
