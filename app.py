@@ -280,7 +280,7 @@ def _save_trampoline_data(request):
         session['search_date'] = None
     practice = Practice(form_date.date(), routines, event)
     replace_practice = session.get('log', {}).get(form_date.strftime('%m-%d-%Y')) is not None
-    print(f"~~~~~~~~~~~~replace: {replace_practice} - log {session['log']} - date {form_date.strftime('%m-%d-%Y')}")
+    print(f"~~~~~~~~~~~~replace: {replace_practice} - log {session.get('log')} - date {form_date.strftime('%m-%d-%Y')}")
     saved_practice = practice.save(replace=replace_practice)
     session['log'] = {}
 
@@ -482,7 +482,7 @@ def trampoline_log():
     logging.info(f"error: {session.get('error', '')}")
 
     # Replace the log
-    print(f"~~~~session log: {session['log']} - current date: {session['current_date'].strftime('%Y-%m-%d')}")
+    print(f"~~~~session log: {session.get('log', {})} - current date: {session['current_date'].strftime('%Y-%m-%d')}")
     date_to_use = session.get('search_date') or session.get('current_date')
     log_text = session.get('log', {}).get(date_to_use.strftime("%m-%d-%Y")) or request.args.get('routine', '')
     return render_template(
