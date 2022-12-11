@@ -484,7 +484,10 @@ def trampoline_log():
     # Replace the log
     print(f"~~~~session log: {session.get('log', {})} - current date: {session.get('current_date')}")
     date_to_use = session.get('search_date') or session.get('current_date')
-    log_text = session.get('log', {}).get(date_to_use.strftime("%m-%d-%Y")) or request.args.get('routine', '')
+    if date_to_use:
+        log_text = session.get('log', {}).get(date_to_use.strftime("%m-%d-%Y")) or request.args.get('routine', '')
+    else:
+        log_text = request.args.get('routine', '')
     return render_template(
         "trampoline/trampoline.html",
         body=body, username=username,
