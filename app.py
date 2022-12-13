@@ -953,7 +953,7 @@ def user_stats():
         routines = routines[0]
         for s in routines.skills:
             skill = s.shorthand
-            if skill in ["...", 'X']:
+            if skill in NON_SKILLS:
                 continue
 
             all_skills[skill][event] += 1
