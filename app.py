@@ -973,7 +973,7 @@ def user_stats():
     tables = []
     
     all_skills_ordered = OrderedDict()
-    for key in sorted(all_skills.keys(), key=lambda x: int(x[:-1])):
+    for key in sorted(all_skills.keys(), key=lambda x: int(x[:-1]) if len(x)>1 else x):
         all_skills_ordered[key] = all_skills[key]
     # add dmt passes
     dmt_passes_ordered = OrderedDict()
