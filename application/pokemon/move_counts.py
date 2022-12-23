@@ -208,7 +208,11 @@ def generate_move_strings(pokemon, pokemon_ranking, counts, chosen_fast_move=Non
             # if the charge move is not as recommended
             if not charge_move.upper() in most_used_charges:
                 continue
-        short_count = f"{count[0]}{'-' if count[0]!=count[1] else ''}"
+        added = "-" if count[0] != count[1] else ""
+        added = f"{added}*" if count[2] != count[0] else added
+        #added = f"{added}^" if count[3] != count[0] else added
+        #short_count = f"{count[0]}{'-' if count[0]!=count[1] else ''}"
+        short_count = f"{count[0]}{added}"
         pokemon_moveset['fast'] = ' '.join(fast_move.upper().split('_'))
         pokemon_moveset['charge'].append({'move': ' '.join(charge_move.upper().split("_")), 'count': short_count})
 
@@ -385,11 +389,15 @@ def draw_text(imgText, position, text, font, anchor="ms"):
     """
     bbox = imgText.textbbox(
         position,
-        f"{text}",
+        f" {text} ",
         font=font,
         anchor=anchor
     )
-    imgText.rectangle(bbox, fill=(128, 128, 128, 25))
+    new_size = (0, -2, 0, 2)
+    new_bbox = tuple(sum(x) for x in zip(bbox, new_size))
+    #imgText.rectangle(bbox, fill=(128, 128, 128, 25)) # grey background to text
+    #imgText.rectangle(bbox, fill=(255,255,255, 25), outline="#000000") # white background with black outline
+    imgText.rectangle(new_bbox, fill=(255,255,255, 25), outline="#000000")
     imgText.text(
         position,
         text,
@@ -406,7 +414,7 @@ if __name__ == '__main__':
         "gyarados", "jellicent", "lapras(water_gun)", "lugia", "machamp", "magnezone", "mandibuzz",
         "meganium", "muk", "nidoqueen", "ninetales", "pidgeot", "politoed",
         "poliwrath", "regice", "regirock", "registeel", "scrafty", "skarmory", "snorlax",
-        "steelix", "swampert", "sylveon", "talonflame(fire_spin)", "toxicroak", "trevenant",
+        "steelix", "swampert", "sylveon", "talonflame(fire_spin)", "talonflame", "toxicroak", "trevenant",
         "umbreon", "venusaur", "walrein", "zapdos", "obstagoon",
         "miltank", "dubwool"
     ]
