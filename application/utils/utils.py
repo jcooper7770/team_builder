@@ -75,7 +75,7 @@ class TableMaker:
             share_date = f"{date_to_remove.split('-')[2]}-{date_to_remove.split('-')[0]}-{date_to_remove.split('-')[1]}"
             share_a=f"<a href='/logger/_current_/practices?start={share_date}&end={share_date}' class='float-right' target='_blank' title='share practice'>Share</a>"
             edit_a = f'<button type="button" class="btn float-right"><a title="edit day" href="#"><span id="edit_{date_to_remove}_{event_to_remove}" class="fa fa-pencil-square-o" aria-hidden=\'true\'></span></button>'
-            delete_a = f'<button type="button" class="btn float-right"><a title="remove day" href="#"><span id="remove_{date_to_remove}_{event_to_remove}" class="fa fa-remove" aria-hidden=\'true\'></span></button>'
+            delete_a = f'<button type="button" class="btn float-right" id="delete-button"><a title="remove day" href="#"><span id="remove_{date_to_remove}_{event_to_remove}" class="fa fa-remove" aria-hidden=\'true\'></span></button>'
             self.table.append(f'<th colspan={colspan} align="center">{value}{delete_a}{edit_a}{share_a}</th>')
         except:
             self.table.append(f'<th colspan={colspan} align="center">{value}</th>')
