@@ -376,6 +376,8 @@ def trampoline_user_practices(username):
     user = None
     if username == "_current_":
         username = session.get('name')
+        return redirect(f"/logger/{username}/practices")
+
     try:
         user = get_user(username)
     except:
