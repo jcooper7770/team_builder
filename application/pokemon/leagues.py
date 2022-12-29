@@ -65,6 +65,7 @@ LEAGUES_LIST = LeagueList([
     League("ULPC", "2500-premierclassic", "ultra-premierclassic", cup_value="premierclassic"),
     League("ULRemix", "2500-remix", "ultra-remix", cup_value="remix"),
     League("ULHalloween", "2500-halloween", "ultra-halloween"),
+    League("ULHoliday", "2500-holiday", "ultra-holiday"),
 
     # Master cups
     League("ML", "10000", "master"),
