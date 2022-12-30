@@ -363,7 +363,8 @@ def coach_home():
         goals=get_user_goals(current_user()),
         error_text=session.get('error'),
         search_date=session.get("search_date").strftime("%Y-%m-%d") if session.get("search_date") else None,
-        search_skills=session.get("search_skills", "")
+        search_skills=session.get("search_skills", ""),
+        user_turns=[]
     )
 
 
@@ -886,6 +887,7 @@ def coach_settings():
     if request.method == "GET":
         users, _ = get_users_and_turns(only_users=True)
         current_user = Athlete.load(session.get('name'))
+        print(current_user)
         return render_template(
             "trampoline/coach_settings.html",
             users=users, user=session.get('name'),
