@@ -71,20 +71,25 @@
     </div>
     <div class="row card-body">
       <div class="col-sm-6">
-        <div class="row">Messages:</div>
-        <div class="row">Send Message to athletes:</div>
+        <form action="/logger/coach/messages" name="mark_messages" id="mark_messages" method="POST">
+        <div class="row"><b><u>Messages:</u></b></div>
+          <div class="row" style="overflow-y:scroll; height:100px;">
+            <ul style="list-style-type: none;">
+              {% for message in messages %}
+              <li><input name="message_{{loop.index}}" type="checkbox"{% if message.read %} checked {% endif %}\>{{ message.msg }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+          <div class="row">
+            <button class="btn btn-primary" type="submit" id="mark_read">Mark Read</button>
+          </div>
+        </form>
       </div>
       <div class="col-sm-6">
-        <div class="row">
-          <ul>
-            {% for message in messages %}
-            <li>{{ message}}</li>
-            {% endfor %}
-          </ul>
-        </div>
+        <div class="row"><b><u>Send message to athletes:</u></b></div>
         <div class="row">
           <form action="/logger/coach/messages" method="POST" id="messages" name="messages">
-            <textarea id="message" name="message" rows="5" style="width:90%" form="messages"
+            <textarea id="message" name="message" rows="5" cols="40" style="width:90%" form="messages"
                   placeholder="Input your message here"></textarea>
             <button class="btn btn-primary" type="submit" id="submit">Submit</button>
           </form>
@@ -93,6 +98,7 @@
     </div>
  </div>
 </div>
+<br><br>
 
 <script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
   crossorigin="anonymous"></script>

@@ -888,11 +888,17 @@ def coach_settings():
         users, _ = get_users_and_turns(only_users=True)
         current_user = Athlete.load(session.get('name'))
         print(current_user)
+        messages = []
+        for message in current_user.messages:
+            if isinstance(message, str):
+                message = {"read": False, "msg": message}
+            messages.append(message)
+        
         return render_template(
             "trampoline/coach_settings.html",
             users=users, user=session.get('name'),
             athletes=current_user.athletes,
-            messages=current_user.messages
+            messages=messages
         )
     if request.method == "POST":
         athletes = request.form.getlist("coach_athletes")
@@ -908,15 +914,35 @@ def coach_message():
     Send a message to athletes
     """
     current_user = Athlete.load(session.get('name'))
-    messages = request.form.get("message")
-    print(f"messages: {messages}")
-    now = datetime.datetime.now()
-    new_message = f"{messages} - {current_user.name} {now.strftime('%Y-%m-%d %H:%M:%S')}"
 
-    for athlete in current_user.athletes:
-        a = Athlete.load(athlete)
-        a.messages.append(new_message)
-        a.save()
+    # Handle new messages for athletes
+    messages = request.form.get("message")
+    if messages:
+        print(f"messages: {messages}")
+        now = datetime.datetime.now()
+        new_message = f"{messages} - {current_user.name} {now.strftime('%Y-%m-%d %H:%M:%S')}"
+
+        for athlete in current_user.athletes:
+            a = Athlete.load(athlete)
+            a.messages.append({"read": False, "msg":new_message})
+            a.save()
+
+    # Handle marking messages as read
+    read_messages = {key:value for key, value in request.form.items() if key.startswith("message_")}
+    print(f"read messages: {read_messages}")
+    for message in range(len(current_user.messages)):
+        current_msg = current_user.messages[message]
+        if isinstance(current_msg, str):
+            current_user.messages[message] = {'read': False, 'msg': current_msg}
+        current_user.messages[message]['read'] = False
+
+    for message in read_messages:
+        message_num = int(message[8:]) - 1
+        current_msg = current_user.messages[message_num]
+        if isinstance(current_msg, str):
+            current_user.messages[message_num] = {'read': False, 'msg': current_msg}
+        current_user.messages[message_num]['read'] = True
+    current_user.save()
 
     return redirect(url_for('coach_settings'))
 
@@ -929,18 +955,34 @@ def athlete_message():
     users, _ = get_users_and_turns(only_users=True)
     current_user = Athlete.load(session.get('name'))
     messages = request.form.get("message")
-    print(f"messages: {messages}")
-    now = datetime.datetime.now()
-    new_message = f"{messages} - {current_user.name} {now.strftime('%Y-%m-%d %H:%M:%S')}"
+    if messages:
+        print(f"mesages: {messages}")
+        now = datetime.datetime.now()
+        new_message = f"{messages} - {current_user.name} {now.strftime('%Y-%m-%d %H:%M:%S')}"
 
-    for username, user in users.items():
-        if not user['is_coach']:
-            continue
-        if current_user.name in user['athletes']:
-            coach = Athlete.load(username)
-            coach.messages.append(new_message)
-            coach.save()
+        for username, user in users.items():
+            if not user['is_coach']:
+                continue
+            if current_user.name in user['athletes']:
+                coach = Athlete.load(username)
+                coach.messages.append({"read": False, "msg":new_message})
+                coach.save()
     
+    read_messages = {key:value for key, value in request.form.items() if key.startswith("message_")}
+    print(f"read messages: {read_messages}")
+    for message in range(len(current_user.messages)):
+        current_msg = current_user.messages[message]
+        if isinstance(current_msg, str):
+            current_user.messages[message] = {'read': False, 'msg': current_msg}
+        current_user.messages[message]['read'] = False
+
+    for message in read_messages:
+        message_num = int(message[8:]) - 1
+        current_msg = current_user.messages[message_num]
+        if isinstance(current_msg, str):
+            current_user.messages[message_num] = {'read': False, 'msg': current_msg}
+        current_user.messages[message_num]['read'] = True
+    current_user.save() 
     return redirect(url_for('user_profile'))
 
 
@@ -1143,13 +1185,19 @@ def user_profile():
 
     if user_data["is_coach"]:
         return redirect(url_for("coach_settings"))
+    
+    messages = []
+    for message in user_data['messages']:
+        if isinstance(message, str):
+            message = {"read": False, "msg": message}
+        messages.append(message)
 
     return render_template(
         "trampoline/user_profile.html",
         user=current_user,
         user_data=user_data,
         error_text=session.get('error'),
-        messages=user_data['messages']
+        messages=messages
     )
 
 
