@@ -891,7 +891,8 @@ def coach_settings():
         return render_template(
             "trampoline/coach_settings.html",
             users=users, user=session.get('name'),
-            athletes=current_user.athletes
+            athletes=current_user.athletes,
+            messages=current_user.messages
         )
     if request.method == "POST":
         athletes = request.form.getlist("coach_athletes")
@@ -899,6 +900,49 @@ def coach_settings():
         current_user.athletes = sorted(athletes)
         current_user.save()
         return redirect(url_for('coach_settings'))
+
+
+@app.route('/logger/coach/messages', methods=["POST"])
+def coach_message():
+    """
+    Send a message to athletes
+    """
+    current_user = Athlete.load(session.get('name'))
+    messages = request.form.get("message")
+    print(f"messages: {messages}")
+    now = datetime.datetime.now()
+    new_message = f"{messages} - {current_user.name} {now.strftime('%Y-%m-%d %H:%M:%S')}"
+
+    for athlete in current_user.athletes:
+        a = Athlete.load(athlete)
+        a.messages.append(new_message)
+        a.save()
+
+    return redirect(url_for('coach_settings'))
+
+
+@app.route('/logger/athlete/messages', methods=["POST"])
+def athlete_message():
+    """
+    Send a message to the coach
+    """
+    users, _ = get_users_and_turns(only_users=True)
+    current_user = Athlete.load(session.get('name'))
+    messages = request.form.get("message")
+    print(f"messages: {messages}")
+    now = datetime.datetime.now()
+    new_message = f"{messages} - {current_user.name} {now.strftime('%Y-%m-%d %H:%M:%S')}"
+
+    for username, user in users.items():
+        if not user['is_coach']:
+            continue
+        if current_user.name in user['athletes']:
+            coach = Athlete.load(username)
+            coach.messages.append(new_message)
+            coach.save()
+    
+    return redirect(url_for('user_profile'))
+
 
 
 @app.route("/pokemon/user")
@@ -1104,7 +1148,8 @@ def user_profile():
         "trampoline/user_profile.html",
         user=current_user,
         user_data=user_data,
-        error_text=session.get('error')
+        error_text=session.get('error'),
+        messages=user_data['messages']
     )
 
 

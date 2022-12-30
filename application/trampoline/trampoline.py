@@ -110,7 +110,7 @@ class Athlete:
     """
     Information about athlete
     """
-    def __init__(self, name, private=False, compulsory=[], optional=[], dm_prelims1=[], dm_prelims2=[], dm_finals1=[], dm_finals2=[], password="", expand_comments=False, is_coach=False, athletes=[], first_login=False, signup_date=None):
+    def __init__(self, name, private=False, compulsory=[], optional=[], dm_prelims1=[], dm_prelims2=[], dm_finals1=[], dm_finals2=[], password="", expand_comments=False, is_coach=False, athletes=[], first_login=False, signup_date=None, messages=[]):
         self.name = name
         self.compulsory = compulsory
         self.optional = optional
@@ -125,6 +125,7 @@ class Athlete:
         self.athletes = athletes
         self.first_login = first_login
         self.signup_date = signup_date or datetime.datetime.today()
+        self.messages = messages
 
     def set_comp(self, skills):
         """
@@ -162,7 +163,8 @@ class Athlete:
             'is_coach': self.is_coach,
             'athletes': self.athletes,
             'first_login': self.first_login,
-            'signup_date': str(self.signup_date)
+            'signup_date': str(self.signup_date),
+            'messages': self.messages
         }
         with open(file_name, 'w') as athlete_file:
             json.dump(athlete_data, athlete_file)
@@ -186,9 +188,10 @@ class Athlete:
                 user['name'], user["private"], user['compulsory'], user['optional'],
                 password=user['password'], expand_comments=user.get('expand_comments', False),
                 is_coach=user["is_coach"], athletes=user["athletes"], first_login=user['first_login'],
-                signup_date=signup_date
+                signup_date=signup_date, messages=user['messages']
             )
-        except:
+        except Exception as error:
+            print(f"Error loading user '{name}' because: {error}")
             athlete = None
 
         if athlete:

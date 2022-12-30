@@ -107,7 +107,8 @@ def get_user(user):
         "is_coach": user[6],
         "athletes": json.loads(user[7]),
         "first_login": user[8],
-        'signup_date': user[9] if len(user)==10 else None
+        'signup_date': user[9],
+        "messages": json.loads(user[10])
     }
 
 
@@ -316,7 +317,8 @@ def save_athlete(athlete):
             is_coach=athlete.is_coach,
             athletes=json.dumps(athlete.athletes),
             first_login=athlete.first_login,
-            signup_date=athlete.signup_date.strftime('%Y-%m-%d') if athlete.signup_date else None
+            signup_date=athlete.signup_date.strftime('%Y-%m-%d') if athlete.signup_date else None,
+            messages=json.dumps(athlete.messages)
         )
         engine.execute(ins)
     else:
@@ -330,6 +332,8 @@ def save_athlete(athlete):
             is_coach=athlete.is_coach,
             athletes=json.dumps(athlete.athletes),
             first_login=athlete.first_login,
+            signup_date=athlete.signup_date.strftime('%Y-%m-%d') if athlete.signup_date else None,
+            messages=json.dumps(athlete.messages)
         )
         engine.execute(update)
     
@@ -351,7 +355,7 @@ def get_users_and_turns(only_users=False):
     user_result = engine.execute("SELECT * from `users`")
     conn = engine.connect()
     user_data = {
-        user[0].lower(): {"private": user[1], "is_coach": user[6]}
+        user[0].lower(): {"private": user[1], "is_coach": user[6], "athletes": json.loads(user[7])}
         for user in user_result
     }
     user_result.close()
