@@ -181,7 +181,7 @@ class Athlete:
         # First check if user exists
         try:
             user = get_user(name)
-            signup_date = datetime.datetime.strptime(user.get('signup_date'), '%Y-%m-%d') if 'signup_date' in user else None
+            signup_date = datetime.datetime.strptime(user.get('signup_date'), '%Y-%m-%d') if user.get('signup_date') else None
             athlete = Athlete(
                 user['name'], user["private"], user['compulsory'], user['optional'],
                 password=user['password'], expand_comments=user.get('expand_comments', False),
