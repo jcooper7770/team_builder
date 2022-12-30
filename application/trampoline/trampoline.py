@@ -110,7 +110,7 @@ class Athlete:
     """
     Information about athlete
     """
-    def __init__(self, name, private=False, compulsory=[], optional=[], dm_prelims1=[], dm_prelims2=[], dm_finals1=[], dm_finals2=[], password="", expand_comments=False, is_coach=False, athletes=[], first_login=False):
+    def __init__(self, name, private=False, compulsory=[], optional=[], dm_prelims1=[], dm_prelims2=[], dm_finals1=[], dm_finals2=[], password="", expand_comments=False, is_coach=False, athletes=[], first_login=False, signup_date=None):
         self.name = name
         self.compulsory = compulsory
         self.optional = optional
@@ -124,6 +124,7 @@ class Athlete:
         self.is_coach = is_coach
         self.athletes = athletes
         self.first_login = first_login
+        self.signup_date = signup_date or datetime.datetime.today()
 
     def set_comp(self, skills):
         """
@@ -160,7 +161,8 @@ class Athlete:
             'expand_comments': self.expand_comments,
             'is_coach': self.is_coach,
             'athletes': self.athletes,
-            'first_login': self.first_login
+            'first_login': self.first_login,
+            'signup_date': str(self.signup_date)
         }
         with open(file_name, 'w') as athlete_file:
             json.dump(athlete_data, athlete_file)
@@ -179,10 +181,12 @@ class Athlete:
         # First check if user exists
         try:
             user = get_user(name)
+            signup_date = datetime.datetime.strptime(user.get('signup_date'), '%Y-%m-%d') if 'signup_date' in user else None
             athlete = Athlete(
                 user['name'], user["private"], user['compulsory'], user['optional'],
                 password=user['password'], expand_comments=user.get('expand_comments', False),
-                is_coach=user["is_coach"], athletes=user["athletes"], first_login=user['first_login']
+                is_coach=user["is_coach"], athletes=user["athletes"], first_login=user['first_login'],
+                signup_date=signup_date
             )
         except:
             athlete = None

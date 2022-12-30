@@ -106,7 +106,8 @@ def get_user(user):
         "expand_comments": user[5],
         "is_coach": user[6],
         "athletes": json.loads(user[7]),
-        "first_login": user[8]
+        "first_login": user[8],
+        'signup_date': user[9] if len(user)==10 else None
     }
 
 
@@ -315,6 +316,7 @@ def save_athlete(athlete):
             is_coach=athlete.is_coach,
             athletes=json.dumps(athlete.athletes),
             first_login=athlete.first_login,
+            signup_date=athlete.signup_date.strftime('%Y-%m-%d') if athlete.signup_date else None
         )
         engine.execute(ins)
     else:

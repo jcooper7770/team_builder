@@ -738,7 +738,10 @@ def sign_up():
         # Create the user and go to login page
 
         hashed_password = sha256_crypt.encrypt(password)
-        athlete = Athlete(username, private, password=hashed_password, is_coach=is_coach, first_login=True)
+        athlete = Athlete(
+            username, private, password=hashed_password,
+            is_coach=is_coach, first_login=True, signup_date=datetime.datetime.today()
+        )
         athlete.save()
         session["previous_page"] = "trampoline_log"
         return redirect(url_for('login'))
