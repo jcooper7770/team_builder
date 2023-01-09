@@ -129,6 +129,30 @@
                     {% endfor %}
                   </select>
                 </div>
+                <!-- Regionals teams have 6 -->
+                {% if league_key == "Regionals" %}
+                 <div class="col-auto">
+                  <select id="select-{{loop.index}}-4" name="select-{{league_key}}-{{loop.index}}-4" class="form-control select2">
+                    {% for pokemon in all_pokemon %}
+                      <option value="{{pokemon}}"{% if pokemon==team[3] %} selected{% endif %}>{{pokemon}}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="col-auto">
+                  <select id="select-{{loop.index}}-5" name="select-{{league_key}}-{{loop.index}}-5" class="form-control select2">
+                    {% for pokemon in all_pokemon %}
+                      <option value="{{pokemon}}"{% if pokemon==team[4] %} selected{% endif %}>{{pokemon}}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="col-auto">
+                  <select id="select-{{loop.index}}-6" name="select-{{league_key}}-{{loop.index}}-6" class="form-control select2">
+                    {% for pokemon in all_pokemon %}
+                      <option value="{{pokemon}}"{% if pokemon==team[5] %} selected{% endif %}>{{pokemon}}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                {% endif %}
               </div>
               {% endfor %}
 
@@ -179,8 +203,12 @@ $("#add-team").click(function(e){
 });
 // have to bind on the document for elements created in the future
 $(document).on('click', '[id^="delete-row"]', function(e){
-  var div = e.target.parentNode.parentNode.parentNode;
-  div.remove();
+  var league_text = $(this).parent().parent().parent().siblings().first().children().first().text();
+  let confirmText = "".concat("Are you sure you want to delete this ", league_text, " team?");
+  if (confirm(confirmText) == true) {
+    var div = e.target.parentNode.parentNode.parentNode;
+    div.remove();
+  }
 });
 //$("#add-team-dropdown").click(function(e){
 $("[id^=add-team-dropdown]").click(function(e){
@@ -193,8 +221,8 @@ $("[id^=add-team-dropdown]").click(function(e){
   var num_teams = all_dropdowns.children.length;
   var row_div = document.createElement("div");
   row_div.className = "form-row";
-
-  for(var i=1; i<4; i++) {
+  var num_pokemon = (league_text == "Regionals" ? 6 : 3)
+  for(var i=1; i<num_pokemon+1; i++) {
     var col_div = document.createElement("div");
     // First column contains delete button
     if(i==1){

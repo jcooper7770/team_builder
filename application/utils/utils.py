@@ -165,3 +165,9 @@ def skills_table(skills, title="Routines", expand_comments=False):
         skills_table.end_row()
     skills_table.end_table()
     return skills_table.render()
+
+
+def update_cache(key, value):
+    """Updates the cache"""
+    global CACHE
+    CACHE[key] = value

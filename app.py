@@ -698,7 +698,7 @@ def pokemon_sign_up():
         if session.get('error'):
             return redirect(url_for('pokemon_sign_up'))
         # Create the user and go to login page
-        default_teams = {"GL": {}, "UL": {}, "ML": {}}
+        default_teams = {"GL": {}, "UL": {}, "ML": {}, "Regionals": {}}
         hashed_password = sha256_crypt.encrypt(password)
         user = PokemonUser(username, hashed_password, "GL", default_teams)
         user.save()
@@ -995,15 +995,21 @@ def pokemon_user_profile():
     username = session.get('name')
     if not username:
         return redirect(url_for('pokemon_login'))
-    user=PokemonUser.load(username)
+    user = PokemonUser.load(username)
+    if 'Regionals' not in user.teams:
+        user.teams["Regionals"] = {}
     print(f"\n\nteams: {user.teams}")
     if CACHE.get('team_maker', {}):
         all_team_makers = CACHE.get('team_maker', {})
     else:
         all_team_makers = {"GL": MetaTeamDestroyer(league="GL")}
+        update_cache('team_maker', all_team_makers)
+
+    # all pokemon are in the game master
     all_pokemon = []
-    for league, team_maker in all_team_makers.items():
-        all_pokemon.extend([p.get('speciesId') for p in team_maker.all_pokemon])
+    for pokemon in list(all_team_makers.values())[0].game_master['pokemon']:
+        all_pokemon.append(pokemon.get('speciesId'))
+
     all_pokemon = list(set(all_pokemon))
     all_pokemon = sorted(all_pokemon)
 
@@ -1233,7 +1239,7 @@ def pokemon_update_user():
     }
     print(selected_pokemon)
     print(list(request.form.items()))
-    teams = {"GL": {}, "UL": {}, "ML": {}}
+    teams = {"GL": {}, "UL": {}, "ML": {}, "Regionals": {}}
     pokemon_keys = sorted(selected_pokemon.keys())
     for key in pokemon_keys:
         pokemon = selected_pokemon[key]
