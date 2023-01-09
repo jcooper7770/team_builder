@@ -583,11 +583,16 @@ def run():
     else:
         results, team_maker, num_days, rating = CACHE.get('results').get(chosen_league), CACHE.get('team_maker').get(chosen_league), CACHE.get("num_days"), CACHE.get("rating")
         print("Did not refresh data because options are the same")
-    CACHE['results'][chosen_league] = results
-    CACHE['team_maker'][chosen_league] = team_maker
-    CACHE['num_days'] = num_days
-    CACHE['rating'] = rating
-    CACHE['league'] = chosen_league
+    cache_results = CACHE['results']
+    cache_results[chosen_league] = results
+    update_cache('results', cache_results)
+
+    cache_team_maker = CACHE['team_maker']
+    cache_team_maker[chosen_league] = team_maker
+    update_cache('team_maker', cache_team_maker)
+    update_cache('num_days', num_days)
+    update_cache('rating', rating)
+    update_cache('league', chosen_league)
 
     # Recommended teams
     #  make N_TEAMS unique teams. But try 2*N_TEAMS times to make unique teams
