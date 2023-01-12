@@ -42,7 +42,7 @@ from application.pokemon.leagues import LEAGUES_LIST
 from application.pokemon.team_building import MetaTeamDestroyer, PokemonUser, get_counters_for_rating, NoPokemonFound, TeamCreater,\
      create_table_from_results, set_refresh, get_refresh, use_weighted_values
 from application.pokemon.battle_sim import sim_battle
-from application.pokemon.move_counts import get_move_counts, make_image
+from application.pokemon.move_counts import get_move_counts, make_image, get_all_rankings
 
 from application.trampoline.trampoline import convert_form_data, get_leaderboards, pretty_print, Practice, current_user, set_current_user,\
      current_event, set_current_event, set_current_athlete,\
@@ -56,6 +56,7 @@ app = Flask(__name__, static_url_path="", static_folder="static")
 app.config["CACHE_TYPE"] = "null"
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
+app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
 Session(app)
 
 #CACHE = {'results': {}, 'team_maker': {}, 'num_days': 1, 'rating': None}
@@ -1011,8 +1012,16 @@ def pokemon_user_profile():
         update_cache('team_maker', all_team_makers)
 
     # all pokemon are in the game master
+    team_maker = list(all_team_makers.values())[0]
+    regionals_data = []
+    if len(user.teams["Regionals"]) == 2:
+        gl_team_maker = all_team_makers.get('GL', MetaTeamDestroyer(league="GL"))
+        all_team_makers['GL'] = gl_team_maker
+        update_cache('team_maker', all_team_makers)
+        regionals_data = gl_team_maker.get_regionals_data(user.teams["Regionals"])
+
     all_pokemon = []
-    for pokemon in list(all_team_makers.values())[0].game_master['pokemon']:
+    for pokemon in team_maker.game_master['pokemon']:
         all_pokemon.append(pokemon.get('speciesId'))
 
     all_pokemon = list(set(all_pokemon))
@@ -1023,7 +1032,8 @@ def pokemon_user_profile():
         user=username, userObj=user,
         leagues=sorted(LEAGUES_LIST.league_names),
         all_pokemon=all_pokemon,
-        error_text=session.get('error')
+        regionals_data=json.dumps(regionals_data, indent=4),
+        error_text=session.get('error'),
         )
 
 

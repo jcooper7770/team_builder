@@ -248,6 +248,7 @@ class MetaTeamDestroyer:
 
         # start calculating the anti-meta pokemon
         #self.setup(rating)
+        self.set_counter_data()
 
     def filter_data(self, rating, days_back, league):
         """
@@ -360,7 +361,7 @@ class MetaTeamDestroyer:
             self.safeswaps_list = self.filter_top_pokemon(self.safeswaps_list)
             self.backs_list = self.filter_top_pokemon(self.backs_list)
         
-
+    def set_counter_data(self):
         # Create a mapping of the counters
         self.species_counters_dict = defaultdict(set)# pokemon that each pokemon counters well
         self.species_weaknesses_dict = defaultdict(set)# pokemon that each pokemon is weak to
@@ -402,18 +403,15 @@ class MetaTeamDestroyer:
         if results:
             league_data = results[0]
             last_fetched_date = league_data[2]
+            logger.info(f'{league} data was last fetched: {last_fetched_date}')
             latest_info = json.loads(league_data[1])
 
             same_date = True
-            if isinstance(last_fetched_date, date):
+            if type(last_fetched_date) == date:
                 same_date = last_fetched_date == datetime.today().date()
-            elif isinstance(last_fetched_date, datetime):
-                same_date = last_fetched_date.date() == datetime.today.date()
-            
-            #if not REFRESH_DATA and last_fetched_date.date() == datetime.today().date():
+            elif type(last_fetched_date) == datetime:
+                same_date = last_fetched_date.date() == datetime.today().date()
             if not REFRESH_DATA and same_date:
-                #print(f"results: {results}\n\n")
-                #print(f"info: {latest_info}")
                 self.last_fetched[league] = last_fetched_date
                 logger.info(f"Using data refreshed at: {self.last_fetched}")
                 return json.loads(latest_info)
@@ -463,6 +461,33 @@ class MetaTeamDestroyer:
             print(f"Failed to update latest info for: {league}")
         return latest_info
 
+    def get_regionals_data(self, teams):
+        """
+        Returns recommended regionals team based on two regionals teams
+
+        for now it just returns which pokemon each pokemon beats from the other team
+        """
+        team1, team2 = list(teams.values())[:2]
+        # check team 1 against team 2
+        #  data = {'first_mon': 5, ...} (1st mon beats 5 pokemon)
+        data1 = {p: [] for p in team1}
+        data2 = {p: [] for p in team2}
+        for p1 in set(team1):
+            # Get pokemon that beat the given pokemon
+            counters = self.get_counters(p1)
+            for p2 in set(team2):
+                if p2 in counters:
+                    data2[p2].append(p1)
+    
+        # team 2
+        for p2 in set(team2):
+            # Get pokemon that beat the given pokemon
+            counters = self.get_counters(p2)
+            for p1 in set(team1):
+                if p1 in counters:
+                    data1[p1].append(p2)
+
+        return {'1': data1, '2': data2}
 
     @staticmethod
     def filter_top_pokemon(pokemon_list):
