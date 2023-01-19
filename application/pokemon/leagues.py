@@ -1,5 +1,10 @@
 """
  All of the leagues
+
+ TODO:
+ - Deprecate "Classic" cups
+ - Deprecate cups not coming back
+ - Maybe have a 'deprecated' field?
 """
 
 class League:
@@ -58,6 +63,7 @@ LEAGUES_LIST = LeagueList([
     League("Willpower", "1500-willpower", "great-willpower"),
     League("Halloween", "1500-halloween", "great-halloween"),
     League("CatchS12", "1500", "great-catch1124"),
+    League("Weather", "1500-weather", "great-weather"),
 
     # Ultra cups
     League("UL", "2500", "ultra"),
