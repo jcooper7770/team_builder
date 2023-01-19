@@ -314,7 +314,8 @@ class MetaTeamDestroyer:
             opp_team = [opp_lead, backline[0], backline[1]]
             team_str = '-'.join(opp_team)
             #pokemon_teams[f'{opp_lead}-{opp_ss}-{opp_back}'].append(win)
-            pokemon_teams[team_str].append(win)
+            if '?' not in opp_team:
+                pokemon_teams[team_str].append(win)
         return (
             [leads, safeswaps, backs],
             pokemon_win_rates,
