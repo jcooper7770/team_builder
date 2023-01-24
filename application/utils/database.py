@@ -386,7 +386,7 @@ def get_simmed_battle(pokemon1, pokemon2):
     }
 
 
-def add_simmed_battle(pokemon1, pokemon2, battle_text, winner, leftover_health):
+def add_simmed_battle(pokemon1, pokemon2, battle_text, winner, leftover_health, update=False):
     """
     Adds in the simmed battle to the database
     """
@@ -394,12 +394,22 @@ def add_simmed_battle(pokemon1, pokemon2, battle_text, winner, leftover_health):
     conn = engine.connect()
     metadata = sqlalchemy.MetaData()
     table = sqlalchemy.Table("battles", metadata, autoload=True, autoload_with=engine)
-    ins = table.insert().values(
-        pokemon_key="_".join(sorted([pokemon1, pokemon2])),
-        battle_text=json.dumps(battle_text),
-        winner=winner,
-        leftover_health=leftover_health
-    )
-    engine.execute(ins)
+    pokemon_key = "_".join(sorted([pokemon1, pokemon2]))
+    if update:
+        update = table.update().where(table.c.pokemon_key==pokemon_key).values(
+            pokemon_key=pokemon_key,
+            battle_text=json.dumps(battle_text),
+            winner=winner,
+            leftover_health=leftover_health
+        )
+        engine.execute(update)
+    else:
+        ins = table.insert().values(
+            pokemon_key=pokemon_key,
+            battle_text=json.dumps(battle_text),
+            winner=winner,
+            leftover_health=leftover_health
+        )
+        engine.execute(ins)
     conn.close()
     engine.dispose()

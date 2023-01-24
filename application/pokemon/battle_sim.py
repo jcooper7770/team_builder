@@ -68,6 +68,10 @@ class Pokemon:
             if self.charge_moves_thrown == 0:
                 return self.moveset.bait_move()
             return higher_damage_move
+        elif self.health <= 10: # if low health then throw smaller move
+            bait_move = self.moveset.bait_move()
+            if self.energy >= bait_move['energy']:
+                return self.moveset.bait_move()
         return None
         #return self.energy >= self.charge_move['energy']
 
@@ -322,9 +326,9 @@ def sim_battle(pokemon1, pokemon2, team_creator):
     
 
 if __name__ == '__main__':
-    from team_building import MetaTeamDestroyer, TeamCreater
+    from application.pokemon.team_building import MetaTeamDestroyer, TeamCreater
     print("Initializing data...")
-    team_creator = MetaTeamDestroyer(league="Jungle")
+    team_creator = MetaTeamDestroyer(league="GL")
     tc = TeamCreater(team_creator)
 
     print("Simulating battle")
@@ -333,6 +337,8 @@ if __name__ == '__main__':
     #results = sim_battle('scrafty', 'stunfisk_galarian', tc)
     #results = sim_battle('stunfisk_galarian', 'scrafty', tc)
     results = sim_battle('venusaur', 'ferrothorn', tc)
+
+    results = sim_battle("medicham", "lanturn", tc)
     print(results[0], results[1])
     #sim_battle('stunfisk_galarian', 'dialga', tc)
     #sim_battle('talonflame', 'dialga', tc)

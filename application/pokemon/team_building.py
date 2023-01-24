@@ -43,7 +43,7 @@ from collections import defaultdict
 
 from application.pokemon.battle_sim import sim_battle
 from application.pokemon.leagues import LEAGUES_LIST
-from application.utils.database import create_engine
+from application.utils.database import create_engine, get_simmed_battle, add_simmed_battle
 from application.utils.utils import CACHE, logger, TableMaker
 
 # The number of pokemon to consider
@@ -468,26 +468,52 @@ class MetaTeamDestroyer:
 
         for now it just returns which pokemon each pokemon beats from the other team
         """
+        tc = TeamCreater(self)
         team1, team2 = list(teams.values())[:2]
         # check team 1 against team 2
         #  data = {'first_mon': 5, ...} (1st mon beats 5 pokemon)
-        data1 = {p: [] for p in team1}
-        data2 = {p: [] for p in team2}
+        data1 = {p: set() for p in team1}
+        data2 = {p: set() for p in team2}
         for p1 in set(team1):
             # Get pokemon that beat the given pokemon
             counters = self.get_counters(p1)
             for p2 in set(team2):
-                if p2 in counters:
-                    data2[p2].append(p1)
+                if p2 in counters and False:
+                    data2[p2].add(p1)
+                else:
+                    simmed_battle = get_simmed_battle(p1, p2)
+                    if simmed_battle:
+                        winner = simmed_battle.get('winner')
+                    else:
+                        winner, health, text = sim_battle(p1, p2, tc)
+                        add_simmed_battle(p1, p2, text, winner, health, update=True)
+
+                    if winner == p1:
+                        data1[p1].add(p2)
+                    else:
+                        data2[p2].add(p1)
     
         # team 2
         for p2 in set(team2):
             # Get pokemon that beat the given pokemon
             counters = self.get_counters(p2)
             for p1 in set(team1):
-                if p1 in counters:
-                    data1[p1].append(p2)
+                if p1 in counters and False:
+                    data1[p1].add(p2)
+                else:
+                    simmed_battle = get_simmed_battle(p1, p2)
+                    if simmed_battle:
+                        winner = simmed_battle.get('winner')
+                    else:
+                        winner, health, text = sim_battle(p1, p2, tc)
+                        add_simmed_battle(p1, p2, text, winner, health, update=True)
+                    if winner == p2:
+                        data2[p2].add(p1)
+                    else:
+                        data1[p1].add(p2)
 
+        data1 = {p: list(v) for p, v in data1.items()}
+        data2 = {p: list(v) for p, v in data2.items()}
         return {'1': data1, '2': data2}
 
     @staticmethod
