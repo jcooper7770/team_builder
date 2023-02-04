@@ -1032,7 +1032,7 @@ def pokemon_user_profile():
         user=username, userObj=user,
         leagues=sorted(LEAGUES_LIST.league_names),
         all_pokemon=all_pokemon,
-        regionals_data=json.dumps(regionals_data, indent=4),
+        regionals_data=regionals_data,
         error_text=session.get('error'),
         )
 

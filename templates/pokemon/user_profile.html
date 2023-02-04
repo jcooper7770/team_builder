@@ -161,7 +161,17 @@
           </div>
           {% endfor %}
 
-          {{regionals_data  }}
+          <!-- Print out which pokemon wins -->
+          {% for player, team in regionals_data.items() %}
+          <hr>
+          {{ player }}:
+          <ul>
+            {% for pokemon, wins in team.items() %}
+            <li>{{pokemon}}: {{wins}}</li>
+            {% endfor%}
+          </ul>
+          {% endfor %}  
+          
           <div class="row">
             <div class="col">
               <button type="submit" class="btn btn-primary">Save</button>
