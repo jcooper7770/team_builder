@@ -486,7 +486,7 @@ class MetaTeamDestroyer:
                         winner = simmed_battle.get('winner')
                     else:
                         winner, health, text = sim_battle(p1, p2, tc)
-                        add_simmed_battle(p1, p2, text, winner, health, update=True)
+                        add_simmed_battle(p1, p2, text, winner, health, update=False)
 
                     if winner == p1:
                         data1[p1].add(p2)
