@@ -4,10 +4,25 @@ Simulate battles between two pokemon
   TODO:
     - [DONE] Determine pokemon level and ideal IVs from league
     - Figure out proper charge move to throw instead of the first one
-    - Add buff/debuff
+    - [DONE] Add buff/debuff
+    - [DONE] Implement fast move sneaks
+    - Wait entire fast move time until the opponent can throw it's charge move
+        that way the damage and energy goes through before/after a charge move is thrown
 '''
 
 import math
+import threading
+import time
+import random
+import re
+
+
+# from https://9db.jp/pokego/data/50
+STATUS_EFFECT = {
+    "att": [1.25, 1.5, 1.75, 2.0], # 5/4, 6/4, 7/4, 8/4
+    "def": [0.8, 0.667, 0.5714286, 0.5] # 4/5, 4/6, 4/7, 4/8
+}
+ALWAYS_BUFF = False
 
 
 class Move:
@@ -48,7 +63,15 @@ class Pokemon:
         self.data = data
         self.charge_moves_thrown = 0
         self.moveset = moveset
-
+        self.turns = 0 # To help keep track of sneaking moves
+        self.fastmove_turns = moveset.fast['cooldown'] / 500
+        self.fastmoves_thrown = 0
+        self.charge_thrown = False
+        self.is_attacking = False
+        self.turns = 0
+        self.att_status = 0
+        self.def_status = 0
+        
     def damage(self, amount):
         self.health -= amount
         if self.health < 0:
@@ -59,18 +82,22 @@ class Pokemon:
         self.energy += self.moveset.fast['energyGain']
         if self.energy > 100:
             self.energy = 100
+        self.turns += self.moveset.fast['cooldown'] / 500
+        self.fastmoves_thrown += 1
 
-    def check_charge(self):
+    def check_charge(self, opponent_shields=1, opponent_damage=10):
         """ Throws the charge move if enough energy """
         higher_damage_move = self.moveset.higher_damage()
         if self.energy >= higher_damage_move['energy']:
             # Bait the less energy move on first charge move
-            if self.charge_moves_thrown == 0:
+            self.charge_thrown = True
+            if self.charge_moves_thrown == 0 and opponent_shields > 0:
                 return self.moveset.bait_move()
             return higher_damage_move
-        elif self.health <= 10: # if low health then throw smaller move
+        elif self.health <= opponent_damage: # if low health then throw smaller move
             bait_move = self.moveset.bait_move()
             if self.energy >= bait_move['energy']:
+                self.charge_thrown = True
                 return self.moveset.bait_move()
         return None
         #return self.energy >= self.charge_move['energy']
@@ -87,7 +114,7 @@ class Pokemon:
         return False
 
     def __str__(self):
-        return f"{self.id} ({self.health}, {self.energy})"
+        return f"{self.id} ({self.health}, {self.energy}, {self.fastmoves_thrown})"
 
     def __repr__(self):
         return self.__str__()
@@ -176,13 +203,34 @@ def calculate_move_damage(move, attacker, defender, team_creator):
 
     # PVPoke uses a bonus multiplier value. Not sure why..
     # https://github.com/pvpoke/pvpoke/blob/master/src/js/battle/Battle.js#L221
-    bonus_multiplier = 1.3
+    bonus_multiplier = 1.3 # UPDATE: this is because PVP damage is 1.3x power
     print(f"{move.get('moveId')} effectiveness: {effectiveness}")
     print(f"p: {power} - a: {attack} - d: {defense} - s: {stab} - e: {effectiveness}")
     return math.floor(0.5 * power * attack / defense * stab * effectiveness * bonus_multiplier) + 1
 
 
-def sim_battle(pokemon1, pokemon2, team_creator):
+def status_damage(damage, att_status, def_status):
+    """
+    Return the total damage given status boosts/debuffs
+
+    :damage: current damage before buffs/debuffs
+    :att_status: attack status of attacking pokemon
+    :def_status: def status of defending pokemon
+
+    boost/def based on (boost + 4)/4 and 4/(debuff + 4)
+    i.e. 
+      +1 att means att pokemon does 5/4 damage
+      -1 def means pokemon takes 5/4 dmg from opponent
+      -1 att means att pokemon does 4/5 damage
+      +1 def means opponent does 4/5 damage
+    """
+    dmg = lambda x: ((float(x) if x > 0 else 0.0) + 4.0) / ((float(x) if x < 0 else 0.0) + 4.0)
+    att_dmg, def_dmg = dmg(att_status), dmg(def_status)
+    damage = float(damage)
+    return math.floor((damage - 1.0) * (att_dmg * def_dmg)) + 1.0
+
+
+def sim_battle(pokemon1, pokemon2, team_creator, shields=[1,1]):
     """
     Simulate a battle between two pokemon
     """
@@ -261,7 +309,6 @@ def sim_battle(pokemon1, pokemon2, team_creator):
     healths = {pokemon1: p1_health, pokemon2: p2_health}
 
     # THE BATTLE
-    shields = [1, 1]
     turns = 0
     pokemons = [
         #Pokemon(pokemon1, p1_health, p1_fastmove, p1_chargemove1, shields[0], pokemon1_data),
@@ -273,7 +320,11 @@ def sim_battle(pokemon1, pokemon2, team_creator):
     # sort pokemon by higher attack to lower
     pokemons.sort(key=lambda x: get_pokemon_stat(x.data, team_creator, 'atk'), reverse=True)
 
+    print(f"{pokemons[0].id}: {pokemons[0].fastmove_turns}")
+    print(f"{pokemons[1].id}: {pokemons[1].fastmove_turns}")
     battle_text = []
+
+    battle_function(pokemons, battle_text)
     while pokemons[0].health > 0 and pokemons[1].health > 0:
         turns += 1
         health_text = f"{turns}: {pokemons[0]}\t{pokemons[1]}"
@@ -283,17 +334,26 @@ def sim_battle(pokemon1, pokemon2, team_creator):
             # skip if the pokemon fainted
             if pokemon.health <= 0:
                 continue
+            other_pokemon = pokemons[1 - num % 2]
 
+            '''
+            pokemon.turns += 1
+            if pokemon.done_attacking():
+                pokemon.turns = 0
+                pokemon.attack()
+                other_pokemon.damage(pokemon.moveset.fast['damage'])
+            '''
             # determine if fast move is done
             if turns * 500 % pokemon.moveset.fast['cooldown'] == 0:
                 # keep track of other pokemon health
-                pokemons[1-num%2].damage(pokemon.moveset.fast['damage'])
+                #pokemons[1-num%2].damage(pokemon.moveset.fast['damage'])
+                other_pokemon.damage(pokemon.moveset.fast['damage'])
 
                 # Keep track of energy
                 pokemon.attack()
 
                 # throw charge move
-                thrown_charge = pokemon.check_charge()
+                thrown_charge = pokemon.check_charge(opponent_shields=other_pokemon)
                 #if pokemon.check_charge():
                 if thrown_charge:
                     charge_text = f"{pokemon} threw {thrown_charge['moveId']}"
@@ -301,10 +361,39 @@ def sim_battle(pokemon1, pokemon2, team_creator):
                     battle_text.append(charge_text)
                     pokemon.energy -= thrown_charge['energy']
                     pokemon.charge_moves_thrown += 1
-                    if not pokemons[1-num%2].take_charge(thrown_charge['damage']):
-                        shield_text = f"{pokemons[1-num%2].id} used a shield"
+                    #if not pokemons[1-num%2].take_charge(thrown_charge['damage']):
+                    if not other_pokemon.take_charge(thrown_charge['damage']):
+                        #shield_text = f"{pokemons[1-num%2].id} used a shield"
+                        shield_text = f"{other_pokemon.id} used a shield"
                         print(shield_text)
                         battle_text.append(shield_text)
+        
+        # No sneaks occur if one pokemon is dead from charge move
+        if pokemons[0].health == 0 or pokemons[1].health == 0:
+            continue
+        # determine if sneaks occcured
+        # check alignment of fast move timing
+        if pokemons[0].fastmoves_thrown * pokemons[0].fastmove_turns == pokemons[1].fastmoves_thrown * pokemons[1].fastmove_turns:
+            # if both pokemon throw charge at same time then no sneaks
+            # pokemons 1 sneak
+            if pokemons[0].charge_thrown and not pokemons[1].charge_thrown:
+                pokemons[1].attack()
+                pokemons[0].damage(pokemons[1].moveset.fast['damage'])
+                print(f"{pokemons[1]} got to sneak a fast move ({pokemons[1].moveset.fast['moveId']})")
+            # pokmeon 0 sneak
+            if pokemons[1].charge_thrown and not pokemons[0].charge_thrown:
+                pokemons[0].attack()
+                pokemons[1].damage(pokemons[0].moveset.fast['damage'])
+                print(f"{pokemons[0]} got to sneak a fast move ({pokemons[0].moveset.fast['moveId']})")
+        
+        # Reset the fastmove counts if any charge moves are thrown
+        if pokemons[0].charge_thrown or pokemons[1].charge_thrown:
+            pokemons[0].fastmoves_thrown = 0
+            pokemons[1].fastmoves_thrown = 0
+            pokemons[0].charge_thrown = False
+            pokemons[1].charge_thrown = False
+                    
+
 
     finishing_text = f"{pokemons[0]}\t{pokemons[1]}"
     print(finishing_text)
@@ -323,7 +412,222 @@ def sim_battle(pokemon1, pokemon2, team_creator):
     battle_text.append(finishing_text)
     
     return winner, leftover_health, battle_text
+
+
+def is_fast_move_done(pokemon, turns):
+    """
+    Determine if the fast move finished
+    """
+    return ((turns - 1)*500) % pokemon.moveset.fast['cooldown'] == 0
+
+
+def attack(att_pokemon, def_pokemon, stop_event, turn_event, other_turn_event, str_events):
+    """
+    :param att_pokemon: the attacking pokemon
+    :param def_pokemon: the defending pokemon
+    :param stop_event: stop if a charge move is being thrown
+    :param turn_event: event to indicate a turn is finished
+    :param other_turn_event: event to indicate other pokemon is done with turn
+    :param str_events: dict (b.c thread safe) containing all text events
+    """
+    turns = 0
+    while def_pokemon.health > 0:
+        turn_event.clear()
+        #print(f"cleared turn for {att_pokemon.id}")
+        time.sleep(0.1)
+        turns += 1
+        att_pokemon.turns = turns
+        '''
+        # check at beginning of turn if a charge move can be thrown
+        thrown_charge = att_pokemon.check_charge()
+        if thrown_charge:
+            text = f"[{turns-1}] {att_pokemon.id} is throwing a charge move"
+            print(text)
+            str_events[att_pokemon.id].append(text)
+            stop_event.set()
+        '''
+
+        # Stop if a charge move is being thrown by either pokemon
+        if stop_event.is_set():
+            print(f"Stopped inside {att_pokemon.id} at turn {turns}")
+            turn_event.set()
+
+            # if finished with a fast move then sneak a move
+            if is_fast_move_done(att_pokemon, turns) and is_fast_move_done(def_pokemon, turns):
+                att_pokemon.attack()
+                damage = att_pokemon.moveset.fast['damage']
+                if att_pokemon.att_status or def_pokemon.def_status:
+                    damage = status_damage(damage, att_pokemon.att_status, def_pokemon.def_status)
+                def_pokemon.damage(damage)
+                text = f"[{turns-1}] {att_pokemon} sneaked attacked {def_pokemon} with {att_pokemon.moveset.fast['moveId']}"
+                print(text)
+                str_events[att_pokemon.id].append(text)
+
+            return
+
+        #if (turns*500) % att_pokemon.moveset.fast['cooldown'] != 0:
+        #    print(f"[{turns+1}] Waiting for {att_pokemon.id} to attack with {att_pokemon.moveset.fast['moveId']}")
+        if ((turns - 1)*500) % att_pokemon.moveset.fast['cooldown'] == 0:
+            # Check if a charge move can be thrown, else throw a fast move
+            thrown_charge = att_pokemon.check_charge(opponent_shields=def_pokemon.shields, opponent_damage=def_pokemon.moveset.fast['damage'])
+            if thrown_charge:
+                text = f"[{turns-1}] {att_pokemon} is throwing a charge move"
+                print(text)
+                str_events[att_pokemon.id].append(text)
+                stop_event.set()
+            else:
+                # keep track of energy
+                att_pokemon.attack()
+
+                # damage opponent
+                damage = att_pokemon.moveset.fast['damage']
+
+                # apply boosts/debuffs
+                if att_pokemon.att_status or def_pokemon.def_status:
+                    damage = status_damage(damage, att_pokemon.att_status, def_pokemon.def_status)
+                #damage = att_pokemon.moveset.fast['damage'] * att_pokemon.att_status
+                def_pokemon.damage(damage)
+                text = f"[{turns-1}] {att_pokemon} attacked {def_pokemon} with {att_pokemon.moveset.fast['moveId']}"
+                print(text)
+                str_events[att_pokemon.id].append(text)
+
+        turn_event.set()
+        #print(f"Set turn for {att_pokemon.id}")
+        waited = other_turn_event.wait(10)
+        if not waited:
+            print(f"****{att_pokemon} waited too long for turn to be done")
+
+
+
+
+def battle_function(pokemons: list, battle_text: list) -> list:
+    """
+    :param pokemons: a list of two pokemon
+    :param battle_text: the updated battle text
+    """
+    turns = 0
+    stop_event = threading.Event()
     
+    print(f"{pokemons[0]} - {pokemons[1]}")
+    while pokemons[0].health > 0 and pokemons[1].health > 0:
+        turn1_event = threading.Event()
+        turn2_event = threading.Event()
+        str_events = {p.id: [] for p in pokemons}
+        turns += 1
+        if turns > 10:
+            print("Cancelling out because too many charges thrown")
+            return
+        p1_thread = threading.Thread(
+            target=attack,
+            args=(pokemons[0], pokemons[1], stop_event, turn1_event, turn2_event, str_events,)
+        )
+        p2_thread = threading.Thread(
+            target=attack,
+            args=(pokemons[1], pokemons[0], stop_event, turn2_event, turn1_event, str_events,)
+        )
+        p1_thread.start()
+        p2_thread.start()
+
+        p1_thread.join()
+        p2_thread.join()
+
+        if stop_event.is_set():
+            stop_event.clear()
+            print("Stopped outer loop")
+            print(f"{pokemons[0]} - {pokemons[1]}")
+
+            # pokeons[0] has higher attack 
+            for i in range(len(pokemons)):
+                att_pokemon = pokemons[i]
+                def_pokemon = pokemons[1 - i % 2]
+                if att_pokemon.charge_thrown and att_pokemon.health > 0:
+                    # check if defending pokemon sneaks a move
+                    '''
+                    print(f"{def_pokemon} turns: {def_pokemon.turns} - cooldown: {def_pokemon.moveset.fast['cooldown']}")
+                    if not def_pokemon.charge_thrown and (def_pokemon.turns * 500) % def_pokemon.moveset.fast['cooldown'] == 0:
+                        def_pokemon.attack()
+                        att_pokemon.damage(def_pokemon.moveset.fast['damage'])
+                        print(f"{def_pokemon} snuck a move on {att_pokemon}")
+                    '''
+
+                    # throw charge
+                    thrown_charge = att_pokemon.check_charge(opponent_shields=def_pokemon.shields, opponent_damage=def_pokemon.moveset.fast['damage'])
+                    #thrown_charge = att_pokemon.check_charge()
+                    att_pokemon.energy -= thrown_charge['energy']
+                    att_pokemon.charge_moves_thrown += 1
+                    att_pokemon.charge_thrown = False
+                    text = f"{att_pokemon.id} threw {thrown_charge['moveId']}"
+                    print(text)
+                    str_events[att_pokemon.id].append(f"[{att_pokemon.turns}] {text}")
+
+                    # calculate damage based on boosts/debuffs
+                    damage = thrown_charge['damage']
+                    if att_pokemon.att_status or def_pokemon.def_status:
+                        damage = status_damage(damage, att_pokemon.att_status, def_pokemon.def_status)
+
+                    # Check if defending pokemon used shield
+                    if not def_pokemon.take_charge(damage):
+                        shield_text = f"{def_pokemon.id} used a shield"
+                        print(shield_text)
+                        battle_text.append(shield_text)
+                        str_events[def_pokemon.id].append(f"[{def_pokemon.turns}] {shield_text}")
+
+                    # apply possible buggs or debuffs
+                    if thrown_charge.get('buffApplyChance') and thrown_charge.get('buffs'):
+                        chance = float(thrown_charge.get('buffApplyChance'))
+                        buffs = thrown_charge.get('buffs')
+                        if ALWAYS_BUFF or random.random() <= chance:
+                            archetype = thrown_charge.get('archetype', '')
+                            if "Self" in archetype or 'Boost' in archetype and thrown_charge['name'] != 'Obstruct':
+                                att_pokemon.att_status += int(buffs[0])
+                                att_pokemon.def_status += int(buffs[1])
+                                text = f"{att_pokemon.id} boost! [{att_pokemon.att_status}, {att_pokemon.def_status}]"
+                                print(text)
+                                str_events[att_pokemon.id].append(f"[{att_pokemon.turns}] {text}")
+                            else:
+                                print(f"{def_pokemon.id} debuff!")
+                                def_pokemon.att_status += int(buffs[0])
+                                def_pokemon.def_status += int(buffs[1])
+                                text = f"{def_pokemon.id} debuff! [{def_pokemon.att_status}, {def_pokemon.def_status}]"
+                                print(text)
+                                str_events[def_pokemon.id].append(f"[{def_pokemon.turns}] {text}")
+                            # Obstruct is special
+                            if thrown_charge['name'] == "Obstruct":
+                                self_buff = thrown_charge.get('buffsSelf', [0, 0])
+                                att_pokemon.att_status += int(self_buff[0])
+                                att_pokemon.def_status += int(self_buff[1])
+                                text = f"{att_pokemon.id} boost! [{att_pokemon.att_status}, {att_pokemon.def_status}]"
+                                print(text)
+                                str_events[att_pokemon.id].append(f"[{att_pokemon.turns}] {text}")
+
+                    if def_pokemon.health <= 0:
+                        text = f"{def_pokemon.id} fainted"
+                        print(text)
+                        str_events[def_pokemon.id].append(f"[{def_pokemon.turns}] {text}")
+                        break
+            #print(str_events)
+            print("\n\n")
+            print(print_turns(str_events))
+            print("\n\n")
+            
+
+def print_turns(str_events):
+    turns = {}
+    for p, p_events in str_events.items():
+        for event in p_events:
+            res = re.findall(r'\[([0-9]*)\] (.*)', event)
+            if res:
+                turn, string = res[0]
+                if turn not in turns:
+                    turns[turn] = []
+                turns[turn].append(string)
+
+    final_string = []
+    for turn in sorted(list(turns.keys()), key=lambda x: int(x)):
+        turn_str = '  -  '.join(turns[turn])
+        final_string.append(f"[{turn}] {turn_str}")
+    return '\n'.join(final_string)
+
 
 if __name__ == '__main__':
     from application.pokemon.team_building import MetaTeamDestroyer, TeamCreater
@@ -332,13 +636,15 @@ if __name__ == '__main__':
     tc = TeamCreater(team_creator)
 
     print("Simulating battle")
-    results = sim_battle('stunfisk_galarian', 'venusaur', tc)
+    #results = sim_battle('stunfisk_galarian', 'venusaur', tc)
     #results = sim_battle('stunfisk_galarian', 'scrafty', tc)
     #results = sim_battle('scrafty', 'stunfisk_galarian', tc)
     #results = sim_battle('stunfisk_galarian', 'scrafty', tc)
-    results = sim_battle('venusaur', 'ferrothorn', tc)
+    #results = sim_battle('medicham', 'wigglytuff', tc, shields=[0, 0])
+    #results = sim_battle('venusaur', 'ferrothorn', tc)
 
     results = sim_battle("medicham", "lanturn", tc)
+    #results = sim_battle("medicham", "scrafty", tc)
     print(results[0], results[1])
     #sim_battle('stunfisk_galarian', 'dialga', tc)
     #sim_battle('talonflame', 'dialga', tc)
