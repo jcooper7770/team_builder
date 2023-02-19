@@ -393,6 +393,7 @@ $("#refresh-league-data").click(function (e){
 });
 
 // Refreshes once a new league is chosen
+/*
 $("#league_picker").change(function(e){
         var league= $(this).val();
         var chosen_pokemon = $("#mySelect").val();
@@ -402,7 +403,7 @@ $("#league_picker").change(function(e){
         spinnerContainer.style.display = "flex";
         location.href = "?league="+league+"&pokemon="+chosen_pokemon+"&num_days="+num_days;
     });
-
+*/
 var spinnerClose = document.getElementById("spinner-close");
 spinnerClose.addEventListener("click", function() {
   var spinnerContainer = document.querySelector(".spinner-container");
