@@ -1,5 +1,4 @@
 {% extends "trampoline/base.html" %}
-
 {% block content %}
 <br>
 {% block logging %}
@@ -90,8 +89,16 @@
                 class="form-control"></div>
           </div>
 
-
-          <button type="submit" class="btn btn-primary">Submit</button>
+          <button id="submit-button" type="submit" class="btn btn-primary">Submit</button>
+          <div class="spinner-container">
+            <div class="spinner"></div>
+            <div class="spinner-text">Submitting data...</div>
+            <button id="spinner-close" class="spinner-close" aria-label="Close">
+              <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10.894 9l6.553-6.553a1 1 0 1 0-1.414-1.414L9.48 7.586 2.928 1.034a1 1 0 0 0-1.414 1.414L7.066 9 .514 15.553a1 1 0 0 0 1.414 1.414L9 10.414l6.553 6.553a1 1 0 0 0 1.414-1.414L10.894 9z" fill-rule="evenodd"></path>
+              </svg>
+            </button>
+          </div>
         </form>
 
       </td>
@@ -123,7 +130,7 @@
             <div class="form-inline">
               <input type="text" name="goal_string" id="goal_string" placeholder="Write goal here" style="width:70%;"
                 class="form-control mr-1" \>
-              <button type="submit" class="btn btn-primary" style="display:inline-block">Submit Goal</button>
+              <button id="submit-goals" type="submit" class="btn btn-primary" style="display:inline-block">Submit Goal</button>
             </div>
 
           </td>
@@ -189,7 +196,7 @@
                 class="form-control mr-1" \>
                 <!-- add date picker field -->
               <input type="date" name="airtime-date" class="form-control" id="airtime-date" \>
-              <button type="submit" class="btn btn-primary" style="display:inline-block">Submit Airtime</button>
+              <button id="submit-airtime" type="submit" class="btn btn-primary" style="display:inline-block">Submit Airtime</button>
             </div>
 
           </td>
@@ -253,7 +260,7 @@
         <li class="nav-item">
           <form class="form-inline my-2" action="{{url_for('search_skills')}}" method="POST">
             <input class="form-control mr-sm-2 mr-auto" type="text" name="practice_skills" id="practice_skills" placeholder="Input skills/combos"{% if search_skills %} value="{{search_skills}}"{% endif %}>
-            <button class="btn btn-secondary" type="submit">Search for skills</button>
+            <button id="submit-skills" class="btn btn-secondary" type="submit">Search for skills</button>
           </form>
         </li>
         <li class="nav-item">

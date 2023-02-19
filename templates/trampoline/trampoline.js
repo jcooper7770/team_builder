@@ -256,6 +256,26 @@ $("#log").on('input', function (e) {
     //updateNumSkills();
     addRecSkill();
 });
+
+// Get a reference to the button and spinner elements
+const button = document.getElementById("submit-button");
+const spinner = document.querySelector(".spinner-container");
+button.addEventListener("click", function() {
+  showSpinner("Submitting data...")
+});
+const goal_button = document.getElementById("submit-goals")
+goal_button.addEventListener("click", function() {
+  showSpinner("Submitting goals...")
+});
+
+const airtime_button = document.getElementById("submit-airtime")
+airtime_button.addEventListener("click", function() {
+  showSpinner("Submitting airtime...")
+});
+const skill_button = document.getElementById("submit-skills")
+skill_button.addEventListener("click", function() {
+  showSpinner("Submitting skill for search...")
+});
 $("[id$=_skills]").change(function (e) {
     var skill = $(this).val().slice(5).replace('t', 'o').replace('p', '<').replace('s', '/');
     var routineText = document.getElementById('log').value;
@@ -347,6 +367,8 @@ $("[id^=remove_]").click(function (e) {
     var event_to_remove = event.target.id.split("_")[2];
     let confirmText = "".concat("Are you sure you want to delete ", date_to_remove, " ", event_to_remove, "?");
     if (confirm(confirmText) == true) {
+        showSpinner("Deleting data...")
+
         $.ajax({
             type: 'GET',
             url: "/logger/delete/" + date_to_remove + "/" + event_to_remove,
@@ -356,3 +378,35 @@ $("[id^=remove_]").click(function (e) {
         });
     }
 });
+function showSpinner(text) {
+  var spinnerText = document.querySelector('.spinner-text');
+  var textContent = text || "Loading...";
+  spinnerText.textContent = textContent;
+
+  // add css for each letter to cause a delay
+  var spanCount = textContent.length;
+  var spanCSS = "";
+  for (var i = 1; i <= spanCount; i++) {
+    var delay = (i - 1) * 0.1;
+    spanCSS += `.spinner-text span:nth-child(${i}) { animation-delay: ${delay}s; } `;
+  }
+  var styleElement = document.querySelector("style[type='text/css']");
+  styleElement.insertAdjacentHTML('beforeend', spanCSS);
+
+  // move each letter into a span element
+  var chars = text.split('');
+  var wrappedChars = chars.map(function(char) {
+    return '<span>' + char + '</span>';
+  });
+  spinnerText.innerHTML = wrappedChars.join('');
+
+  // make the spinner visible
+  var spinnerContainer = document.querySelector(".spinner-container");
+  spinnerContainer.style.display = "flex";
+
+  // allow spinner to be closed
+  var spinnerClose = document.getElementById("spinner-close");
+  spinnerClose.addEventListener("click", function() {
+    spinnerContainer.style.display = "none";
+  });
+}
