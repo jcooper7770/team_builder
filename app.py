@@ -368,6 +368,13 @@ def coach_home():
         user_turns=[]
     )
 
+@app.route("/pokemon", methods=["GET"])
+def pokemon_landing():
+    """
+    Pokemon landing page
+    """
+    return render_template("pokemon/landing_page.html")
+
 
 
 @app.route("/logger/<username>/practices", methods=['GET'])
