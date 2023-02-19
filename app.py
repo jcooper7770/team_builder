@@ -599,11 +599,10 @@ def run():
     #  make N_TEAMS unique teams. But try 2*N_TEAMS times to make unique teams
     team_results = make_recommended_teams(team_maker, chosen_pokemon, chosen_league, chosen_position)
 
-    html.append("<h1 align='center'><u>Recommended Teams</u></h1>")
+    html.append("<h1 align='center'><u>Randomly Generated Teams</u></h1>")
     html.append(create_table_from_results(team_results, width='50%'))
 
     # Data
-    html.append("<h1 align='center'><u>Meta Data</u></h1>")
     #html.append("<div align='center'><button onclick='hideData()'>Toggle data</button></div>")
     #html.append("<div id='data' class='data'>")
     #tc = TeamCreater(team_maker)
