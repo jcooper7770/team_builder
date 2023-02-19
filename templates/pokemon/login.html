@@ -37,7 +37,7 @@
             <div class="col-sm-1">
             </div>
             <div class="col-sm-6">
-              <button type="submit" class="btn btn-primary float-left">Login</button>
+              <button id="submit-login" type="submit" class="btn btn-primary float-left">Login</button>
               <a class="btn btn-primary float-left mx-2" href="/pokemon/sign_up">Sign-Up</a>
             </div>
           </div>
@@ -46,4 +46,13 @@
     </div>
   </div>
 </div>
+
+<script type="text/javascript">
+var submit = document.getElementById("submit-login");
+submit.addEventListener("click", function() {
+  var spinnerContainer = document.querySelector(".spinner-container");
+  spinnerContainer.style.display = "flex";
+});
+
+</script>
 {% endblock %}

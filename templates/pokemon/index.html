@@ -2,15 +2,6 @@
 
 {% block content %}
 <br><br>
-<div class="spinner-container">
-  <div class="spinner"></div>
-  <div class="spinner-text">Loading data...</div>
-  <button id="spinner-close" class="spinner-close" aria-label="Close">
-    <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
-      <path d="M10.894 9l6.553-6.553a1 1 0 1 0-1.414-1.414L9.48 7.586 2.928 1.034a1 1 0 0 0-1.414 1.414L7.066 9 .514 15.553a1 1 0 0 0 1.414 1.414L9 10.414l6.553 6.553a1 1 0 0 0 1.414-1.414L10.894 9z" fill-rule="evenodd"></path>
-    </svg>
-  </button>
-</div>
 <!--
 {% if error_text %}
 <p style='background-color:yellow;text-align:center'><b>{{error_text}}</b></p>
@@ -404,15 +395,11 @@ $("#league_picker").change(function(e){
         location.href = "?league="+league+"&pokemon="+chosen_pokemon+"&num_days="+num_days;
     });
 */
-var spinnerClose = document.getElementById("spinner-close");
-spinnerClose.addEventListener("click", function() {
-  var spinnerContainer = document.querySelector(".spinner-container");
-  spinnerContainer.style.display = "none";
-});
 var submit = document.getElementById("submit-button");
 submit.addEventListener("click", function() {
   var spinnerContainer = document.querySelector(".spinner-container");
   spinnerContainer.style.display = "flex";
 });
+
 </script>
 {% endblock %}
