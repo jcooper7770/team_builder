@@ -364,6 +364,24 @@ def get_users_and_turns(only_users=False):
     return user_data, all_turns
 
 
+def get_all_simmed_battles():
+    """
+    Returns all simmed battles
+    """
+    engine = create_engine()
+    result = engine.execute('SELECT * from `battles`')
+    if result.rowcount == 0:
+        return []
+    results = [r for r in result]
+    return {
+        simmed_battle[0]: {
+            'battle_text': json.loads(simmed_battle[1]),
+            'winner': simmed_battle[2],
+            'leftover_health': simmed_battle[3]
+        } for simmed_battle in results
+    }
+
+
 def get_simmed_battle(pokemon1, pokemon2):
     """
     Checks if there was a simulated battle saved in the db

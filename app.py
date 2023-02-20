@@ -40,7 +40,7 @@ from flask_session import Session
 
 from application.pokemon.leagues import LEAGUES_LIST
 from application.pokemon.team_building import MetaTeamDestroyer, PokemonUser, get_counters_for_rating, NoPokemonFound, TeamCreater,\
-     create_table_from_results, set_refresh, get_refresh, use_weighted_values
+     create_table_from_results, set_refresh, get_refresh, use_weighted_values, get_recent_league
 from application.pokemon.battle_sim import sim_battle
 from application.pokemon.move_counts import get_move_counts, make_image, get_all_rankings
 
@@ -567,7 +567,8 @@ def run():
         if user and user.fav_league in LEAGUES_LIST.league_names:
             chosen_league = user.fav_league
         else:
-            chosen_league = "ML"
+            chosen_league = get_recent_league() or "GL"
+            #chosen_league = "ML"
     chosen_pokemon = request.args.get('pokemon', '')
     chosen_position = request.args.get('position', 'lead')
     num_days = int(request.args.get('num_days', '1'))

@@ -43,7 +43,7 @@ from collections import defaultdict
 
 from application.pokemon.battle_sim import sim_battle
 from application.pokemon.leagues import LEAGUES_LIST
-from application.utils.database import create_engine, get_simmed_battle, add_simmed_battle
+from application.utils.database import create_engine, get_simmed_battle, add_simmed_battle, get_all_simmed_battles
 from application.utils.utils import CACHE, logger, TableMaker
 
 # The number of pokemon to consider
@@ -256,7 +256,7 @@ class MetaTeamDestroyer:
         """
         temp_latest_info = []
         if days_back or rating:
-            print(f"\n\n!!! rating: {rating} -  all ratings: {self.all_ratings}") 
+            #print(f"\n\n!!! rating: {rating} -  all ratings: {self.all_ratings}") 
             if rating and rating not in self.all_ratings:
                 raise NoPokemonFound(f"Rating '{rating}' does not exist. Rating options are: {self.all_ratings}")
             for record in self.latest_info:
@@ -330,7 +330,6 @@ class MetaTeamDestroyer:
         pokemon_counts, pokemon_win_rates, pokemon_teams = self.calculate_pokemon_numbers(self.latest_info, rating)
         leads, safeswaps, backs = pokemon_counts
 
-        print(f"----------\n\nteams: {pokemon_teams}")
         self.leads_list = sorted(list(leads.items()), key=lambda x: x[1], reverse=True)
         self.safeswaps_list = sorted(list(safeswaps.items()), key=lambda x: x[1], reverse=True)
         self.backs_list = sorted(list(backs.items()), key=lambda x: x[1], reverse=True)
@@ -474,43 +473,47 @@ class MetaTeamDestroyer:
         #  data = {'first_mon': 5, ...} (1st mon beats 5 pokemon)
         data1 = {p: set() for p in team1}
         data2 = {p: set() for p in team2}
+
+        battles = ["_".join(sorted([p1, p2])) for p1 in team1 for p2 in team2]
+        all_battles = get_all_simmed_battles()
+        unsimmed_battles = set(battles).difference(set(all_battles.keys()))
+        print(f"The following are not simmed yet: {unsimmed_battles}. {len(battles)} - {len(all_battles)}")
+
         for p1 in set(team1):
             # Get pokemon that beat the given pokemon
-            counters = self.get_counters(p1)
             for p2 in set(team2):
-                if p2 in counters and False:
-                    data2[p2].add(p1)
+                battle = "_".join(sorted([p1, p2]))
+                winner = ""
+                if battle in all_battles:
+                    simmed_battle = all_battles[battle]
+                    winner = simmed_battle.get('winner')
                 else:
-                    simmed_battle = get_simmed_battle(p1, p2)
-                    if simmed_battle:
-                        winner = simmed_battle.get('winner')
-                    else:
-                        winner, health, text = sim_battle(p1, p2, tc)
-                        add_simmed_battle(p1, p2, text, winner, health, update=False)
-
-                    if winner == p1:
-                        data1[p1].add(p2)
-                    else:
-                        data2[p2].add(p1)
+                    winner, health, text = sim_battle(p1, p2, tc)
+                    add_simmed_battle(p1, p2, text, winner, health, update=False)
+                    all_battles[battle] = {"winner": winner}
+    
+                if winner == p1:
+                    data1[p1].add(p2)
+                elif winner == p2:
+                    data2[p2].add(p1)
     
         # team 2
         for p2 in set(team2):
             # Get pokemon that beat the given pokemon
-            counters = self.get_counters(p2)
             for p1 in set(team1):
-                if p1 in counters and False:
-                    data1[p1].add(p2)
+                battle = "_".join(sorted([p1, p2]))
+                winner = ""
+                if battle in all_battles:
+                    simmed_battle = all_battles[battle]
+                    winner = simmed_battle.get('winner')
                 else:
-                    simmed_battle = get_simmed_battle(p1, p2)
-                    if simmed_battle:
-                        winner = simmed_battle.get('winner')
-                    else:
-                        winner, health, text = sim_battle(p1, p2, tc)
-                        add_simmed_battle(p1, p2, text, winner, health, update=True)
-                    if winner == p2:
-                        data2[p2].add(p1)
-                    else:
-                        data1[p1].add(p2)
+                    winner, health, text = sim_battle(p1, p2, tc)
+                    add_simmed_battle(p1, p2, text, winner, health, update=False)
+                
+                if winner == p2:
+                    data2[p2].add(p1)
+                elif winner == p1:
+                    data1[p1].add(p2)
 
         data1 = {p: list(v) for p, v in data1.items()}
         data2 = {p: list(v) for p, v in data2.items()}
@@ -1016,6 +1019,37 @@ def create_table_from_results(results, pokemon=None, width=None, tc=None, toolti
 
     table.end_table()
     return table.render()
+
+
+def get_recent_league():
+    """
+    Return the league with the most recent data
+    """
+    engine = create_engine()
+    all_rankings = []
+
+    # make a single query for all leagues 
+    sql_query = 'SELECT * from `pokemon_data`;'
+    query_results = engine.execute(sql_query)
+    results = [result for result in query_results]
+    leagues = {}
+    for result in results:
+        # Skip rankings and only get league records
+        league = result[0]
+        if league.startswith('all_pokemon') or league == "game_master":
+            continue
+        try:
+            records = sorted(json.loads(json.loads(result[1])).get('records'), key=lambda x: x.get('time'), reverse=True)
+        except:
+            print(f"ERROR: failed to get data for {league}")
+            continue
+        latest_record = records[0]
+        leagues[league] = latest_record.get('time')
+    latest_league = sorted(leagues.items(), key=lambda x: x[1], reverse=True)[0]
+    print(f"Latest league: {latest_league}")
+    return latest_league[0]
+
+
 
 if __name__ == "__main__":
     results, team_maker, error = get_counters_for_rating(rating=None, league="MLC", days_back=1)
