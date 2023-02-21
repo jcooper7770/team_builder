@@ -15,10 +15,10 @@
 <div class="container mt-5" style="background: rgba(255,255,255,0.4); border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
   <h1 align="center">Welcome to the Anti-Meta Team Generator!</h1>
   <p>Here you'll find all the resources you need to become a top-notch Pokemon Go PVP battler, including: learning the current meta in each league, learning counts for each pokemon, and learning popular teams.</p>
-
+  {% set cardSize = 10 %}
   <div class="row">
-    <div class="col-md-6 mx-auto mb-4 d-flex justify-content-center">
-      <div class="card mx-auto">
+    <div class="col-md-{{cardSize}} mx-auto mb-4 d-flex justify-content-center">
+      <div class="card mx-auto w-100">
         <div class="card-body">
           <h2 id="meta-data" class="card-title">Meta Data</h2>
           <p class="card-text">Here you'll find the latest information on the Pokemon Go Battle meta, including the most popular Pokemon, moves, and team compositions.</p>
@@ -32,8 +32,8 @@
   </div>
 
   <div class="row">
-    <div class="col-md-6 mx-auto mb-4 d-flex justify-content-center">
-      <div class="card mx-auto">
+    <div class="col-md-{{cardSize}} mx-auto mb-4 d-flex justify-content-center">
+      <div class="card mx-auto w-100">
         <div class="card-body">
           <h2 id="about" class="card-title">About</h2>
           <p class="card-text">Learn about how to read the meta data and how to use it to build teams.</p>
@@ -46,8 +46,8 @@
   </div>
 
   <div class="row">
-    <div class="col-md-6 mx-auto mb-4 d-flex justify-content-center">
-      <div class="card mx-auto">
+    <div class="col-md-{{cardSize}} mx-auto mb-4 d-flex justify-content-center">
+      <div class="card mx-auto w-100">
         <div class="card-body">
           <h2 id="move-counts" class="card-title">Move Counts</h2>
           <p class="card-text">Learn the counts for all pokemon moves in Pokemon Go. Also create your own move counts infographics!</p>
@@ -61,8 +61,8 @@
   </div>
 
   <div class="row">
-    <div class="col-md-6 mx-auto mb-4 d-flex justify-content-center">
-      <div class="card mx-auto">
+    <div class="col-md-{{cardSize}} mx-auto mb-4 d-flex justify-content-center">
+      <div class="card mx-auto w-100">
         <div class="card-body">
           <h2 id="go-battle-log" class="card-title">Go Battle Log</h2>
           <p class="card-text">Keep track of your battle results and see how you're improving over time. Use this tool to track your progress and identify areas for improvement.</p>
@@ -76,8 +76,8 @@
   </div>
 
   <div class="row">
-    <div class="col-md-6 mx-auto mb-4 d-flex justify-content-center">
-      <div class="card mx-auto">
+    <div class="col-md-{{cardSize}} mx-auto mb-4 d-flex justify-content-center">
+      <div class="card mx-auto w-100">
         <div class="card-body">
           <h2 id="pvpoke" class="card-title">Pvpoke</h2>
           <p class="card-text">Pvpoke is an open-source tool for simulating, ranking, and building teams for Pokemon GO PvP (player versus player) battles.</p>
@@ -90,8 +90,8 @@
   </div>
 
   <div class="row">
-    <div class="col-md-6 mx-auto mb-4 d-flex justify-content-center">
-      <div class="card mx-auto">
+    <div class="col-md-{{cardSize}} mx-auto mb-4 d-flex justify-content-center">
+      <div class="card mx-auto w-100">
         <div class="card-body">
           <h2 id="pvpoke" class="card-title">Support me on Patreon</h2>
           <p class="card-text">Please consider supporting me on my <a target="_blank" href="http://patreon.com/itsFlippinCoop">Patreon</a>. This will help encourage me to continue working on my website and producing move count infographics.</p>
