@@ -191,8 +191,7 @@ function addRecSkill() {
             new_link.id = "skill" + n_skill;
             new_link.value = "skill" + n_skill;
             new_link.textContent = n_skill;
-            new_link.className = "recc-skill"
-            new_link.style = "display: inline-block; width: auto; border: 1px solid; background-color: #F5F5F5; margin-right: 10px";
+            new_link.className = "recc-skill btn btn-info"
             logger = document.getElementById("log");
             logger.parentNode.insertBefore(new_link, logger.nextSibling);
         }
