@@ -848,6 +848,13 @@ class MetaTeamDestroyer:
             print(f"Could not find counters for {pokemon}. Returning empty team")
             return self.team_results([], pokemon)
         
+        # If lead is a mega/primal then remove megas/primals from counters
+        if "_mega" in pokemon.lower() or "_primal" in pokemon.lower():
+            counter_counters = [
+                c for c in counter_counters
+                if ("mega" not in c[0].lower() and "primal" not in c[0].lower())
+            ]
+
         # need to pick one at a time so there are no repeats      
         back_pokemon1 = self.choose_weighted_pokemon(counter_counters)[0]
         index = [p[0] for p in counter_counters].index(back_pokemon1)
@@ -856,6 +863,13 @@ class MetaTeamDestroyer:
         # Also need to remove pokemon with similar names by checking for the first part of a pokemon name
         pokemon_keyword = back_pokemon1.split('_')[0]
         counter_counters = [c for c in counter_counters if pokemon_keyword not in c]
+
+        # If the second pokemon was a mega/primal then remove megas and primals
+        if "_mega" in back_pokemon1.lower() or "_primal" in back_pokemon1.lower():
+            counter_counters = [
+                c for c in counter_counters
+                if ("_mega" not in c[0].lower() and "_primal" not in c[0].lower())
+            ]
 
         # Choose the third pokemon
         if counter_counters:
