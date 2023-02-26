@@ -80,4 +80,5 @@ LEAGUES_LIST = LeagueList([
     League("MLC", "10000-classic", "master", cup_value="classic"),
     League("MLPC", "10000-premierclassic", "master-premierclassic", cup_value="premierclassic"),
     League("MLP", "10000-premier", "master-premier", cup_value="premier"),
+    League("MLMega", "10000-mega", "master-mega"),
 ])
