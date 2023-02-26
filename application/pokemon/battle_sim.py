@@ -222,11 +222,24 @@ def status_damage(damage, att_status, def_status):
     i.e. 
       +1 att means att pokemon does 5/4 damage
       -1 def means pokemon takes 5/4 dmg from opponent
+      -2 def means pokemon takes 6/4
+      -4 def means pokemon takes 8/4
       -1 att means att pokemon does 4/5 damage
       +1 def means opponent does 4/5 damage
+      +4 def means opponent does 4/8 damage
     """
-    dmg = lambda x: ((float(x) if x > 0 else 0.0) + 4.0) / ((float(x) if x < 0 else 0.0) + 4.0)
-    att_dmg, def_dmg = dmg(att_status), dmg(def_status)
+    dmg_dict ={
+        -4: 4/8,
+        -3: 4/7,
+        -2: 4/6,
+        -1: 4/5,
+        0:  4/4,
+        1:  5/4,
+        2:  6/4,
+        3:  7/4,
+        4:  8/4
+    }
+    att_dmg, def_dmg = dmg_dict[att_status], 1/dmg_dict[def_status]
     damage = float(damage)
     return math.floor((damage - 1.0) * (att_dmg * def_dmg)) + 1.0
 
@@ -489,23 +502,23 @@ def battle_function(pokemons: list, battle_text: list) -> list:
                         if ALWAYS_BUFF or random.random() <= chance:
                             archetype = thrown_charge.get('archetype', '')
                             if "Self" in archetype or 'Boost' in archetype and thrown_charge['name'] != 'Obstruct':
-                                att_pokemon.att_status += int(buffs[0])
-                                att_pokemon.def_status += int(buffs[1])
+                                att_pokemon.att_status = max(-4, min(4, att_pokemon.att_status + int(buffs[0])))
+                                att_pokemon.def_status = max(-4, min(4, att_pokemon.def_status + int(buffs[1])))
                                 text = f"{att_pokemon.id} boost! [{att_pokemon.att_status}, {att_pokemon.def_status}]"
                                 #print(text)
                                 str_events[att_pokemon.id].append(f"[{att_pokemon.turns}] {text}")
                             else:
                                 #print(f"{def_pokemon.id} debuff!")
-                                def_pokemon.att_status += int(buffs[0])
-                                def_pokemon.def_status += int(buffs[1])
+                                def_pokemon.att_status = max(-4, min(4, def_pokemon.att_status + int(buffs[0])))
+                                def_pokemon.def_status = max(-4, min(4, def_pokemon.def_status + int(buffs[1])))
                                 text = f"{def_pokemon.id} debuff! [{def_pokemon.att_status}, {def_pokemon.def_status}]"
                                 #print(text)
                                 str_events[def_pokemon.id].append(f"[{def_pokemon.turns}] {text}")
                             # Obstruct is special
                             if thrown_charge['name'] == "Obstruct":
                                 self_buff = thrown_charge.get('buffsSelf', [0, 0])
-                                att_pokemon.att_status += int(self_buff[0])
-                                att_pokemon.def_status += int(self_buff[1])
+                                att_pokemon.att_status = max(-4, min(4, att_pokemon.att_status + int(self_buff[0])))
+                                att_pokemon.def_status = max(-4, min(4, att_pokemon.def_status + int(self_buff[1])))
                                 text = f"{att_pokemon.id} boost! [{att_pokemon.att_status}, {att_pokemon.def_status}]"
                                 #print(text)
                                 str_events[att_pokemon.id].append(f"[{att_pokemon.turns}] {text}")
@@ -550,7 +563,7 @@ def debug_print(text):
 if __name__ == '__main__':
     from application.pokemon.team_building import MetaTeamDestroyer, TeamCreater
     print("Initializing data...")
-    team_creator = MetaTeamDestroyer(league="GL")
+    team_creator = MetaTeamDestroyer(league="MLMega")
     tc = TeamCreater(team_creator)
 
     print("Simulating battle")
@@ -561,7 +574,9 @@ if __name__ == '__main__':
     #results = sim_battle('medicham', 'wigglytuff', tc, shields=[0, 0])
     #results = sim_battle('venusaur', 'ferrothorn', tc)
 
-    results = sim_battle("medicham", "lanturn", tc)
+    #results = sim_battle("medicham", "lanturn", tc)
+    results = sim_battle("groudon_primal", "zamazenta_hero", tc)
+    
     #results = sim_battle("medicham", "scrafty", tc)
     print(results[0], results[1])
     #print(results[2])
