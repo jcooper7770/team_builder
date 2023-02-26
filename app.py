@@ -562,13 +562,15 @@ def run():
 
     global CACHE
     global N_TEAMS
-    chosen_league = request.args.get("league", None)
+    chosen_league = request.args.get("league", session.get('league'))
     if not chosen_league:
         if user and user.fav_league in LEAGUES_LIST.league_names:
             chosen_league = user.fav_league
         else:
             chosen_league = get_recent_league() or "GL"
+            session['league'] = chosen_league
             #chosen_league = "ML"
+    print(f"Chosen league: {chosen_league}. {session.get('league')}")
     chosen_pokemon = request.args.get('pokemon', '')
     chosen_position = request.args.get('position', 'lead')
     num_days = int(request.args.get('num_days', '1'))
