@@ -172,7 +172,7 @@ def get_all_rankings():
     }
 
 
-def generate_move_strings(pokemon, pokemon_ranking, counts, chosen_fast_move=None):
+def generate_move_strings(pokemon, pokemon_ranking, counts, chosen_fast_move=None, mega=None):
     """
     Generate move strings for image
     """
@@ -190,7 +190,7 @@ def generate_move_strings(pokemon, pokemon_ranking, counts, chosen_fast_move=Non
     ranked_moves = [move['moveId'] for move in sorted(sorted_moves, key=lambda x:x['uses'], reverse=True)]
     most_used_charges = ranked_moves[:3] if len(ranked_moves) >= 3 else ranked_moves
 
-    for move, count in counts.get(pokemon, {}).items():
+    for move, count in counts.get(mega or pokemon, {}).items():
         # move looks like "fast_move (0) [1] - charge move [50]"
         fast_move = move.split('-')[0].split()[0]
         charge_move = move.split('-')[1].split()[0]
@@ -303,8 +303,16 @@ def make_image(pokemon_list, number_per_row=5):
         if z:
             pokemon, chosen_fast_move = z.groups()
         
+        # in case of mega/primal
+        mega = ""
+        z = re.findall(r"(.*)_[primal|mega]", pokemon)
+        if z:
+            print(f"Found primal or mega: {pokemon}.")
+            mega = z[0]
+            print(f"Found mega/primal {mega}")
+        
         # Skip the pokemon if its not in the rankings
-        pokemon_ranking = rankings.get(pokemon, {})
+        pokemon_ranking = rankings.get(mega if mega else pokemon, {})
         if not pokemon_ranking and pokemon != "logo":
             print(f"Skipping {pokemon} because not in rankings")
             continue
@@ -377,7 +385,7 @@ def make_image(pokemon_list, number_per_row=5):
             continue
 
         # add move count text for pokemon
-        pokemon_moveset = generate_move_strings(pokemon, pokemon_ranking, counts, chosen_fast_move=chosen_fast_move)
+        pokemon_moveset = generate_move_strings(pokemon, pokemon_ranking, counts, chosen_fast_move=chosen_fast_move, mega=mega)
         add_counts_to_img(pokemon, pokemon_moveset, blank_img, row, col, [image_font, cm_image_font, count_image_font])
 
     blank_img.save("image.png")
