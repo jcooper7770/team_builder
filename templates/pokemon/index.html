@@ -1,341 +1,422 @@
 {% extends "pokemon/base.html" %}
 
 {% block content %}
-<br><br>
-<!--
-{% if error_text %}
-<p style='background-color:yellow;text-align:center'><b>{{error_text}}</b></p>
-{% endif %}
--->
-<h1 align="center"><u>Options</u></h1>
-<br>
-<div class="container">
-  <form action="/">
-  <table border=1 align="center" class="table table-striped">
-    <thead class="thead-dark">
-      <th colspan=2>Options</th>
-    </thead>
-    <tbody>
-      <tr>
-        <td>League</td>
-        <td>
-        <select id="league_picker" name="league">
-        {% for league in leagues %}
-          <option value="{{league}}" id="option_{{league}}"{% if current_league==league %} selected{% endif %}>{{league}}</option>
-        {% endfor %}
-        </select>
-        <button class="btn btn-secondary" id="refresh-league-data">Refresh League Data</button>
-        Last refreshed: {{ last_refreshed }}
-        </td>
-      </tr>
-      <tr>
-        <td>Create team from pokemon</td>
-        <td>
-         <input type='hidden' value='{{current_league}}' name='league' />
-         <select id="mySelect" name="pokemon">
-           <option value="">None</option>
-         {% for pokemon in all_pokemon %}
-           <option value='{{pokemon.speciesId}}'{% if current_pokemon == pokemon.speciesId %} selected{% endif %}>{{pokemon.speciesId}}</option>
-         {% endfor %}
-         </select>
-         <br><input type='radio' id='lead' value='lead' name='position' {% if chosen_position=="lead" %} checked {% endif %}><label for='lead'>In the lead</label>
-         <br><input type='radio' id='back' value='back' name='position' {% if chosen_position=="back" %} checked {% endif %}><label for='back'>In the back</label>
-        </td>
-      </tr>
-      <tr>
-        <td>Number of days of data:</td>
-        <td>
-          <input type="text" id="num_days" value="{{num_days}}" name="num_days" class="form-control" />
-        </td>
-      </tr>
-      <tr>
-        <td>Rating:</td>
-        <td>
-          <select id="rating" name="rating">
-            <option value="None">None</option>
-            {% for rating in ratings %}
-            <option value="{{rating}}"{% if rating == current_rating %} selected{% endif %}>{{rating}}</option>
+<div class="outside">
+  <div class="options-menu">
+    <button class="options-menu-button my-auto">Options <i class="fa fa-angle-double-right"></i></button>
+    <button class="options-close-button my-auto"><i class="fa fa-times" aria-hidden="true"></i></button>
+    <div style="clear:both;"></div>
+    <div class="container">
+      <form action="/">
+      <table border=1 align="center" class="table table-striped table-sm">
+        <thead class="thead-dark">
+          <th colspan=2>Options</th>
+        </thead>
+        <tbody>
+          <tr>
+            <td align="center">League:</td>
+          </tr>
+          <tr>
+            <td>
+            <select id="league_picker" name="league" class="form-control">
+            {% for league in leagues %}
+              <option value="{{league}}" id="option_{{league}}"{% if current_league==league %} selected{% endif %}>{{league}}</option>
             {% endfor %}
+            </select>
+            <button class="btn btn-secondary w-100" id="refresh-league-data">Refresh League Data</button>
+            <br>Last refreshed: {{ last_refreshed }}
+            </td>
+          </tr>
+          <tr>
+            <td align="center">Create team from pokemon:</td>
+          </tr>
+          <tr>
+            <td>
+            <input type='hidden' value='{{current_league}}' name='league' />
+            <select id="mySelect" name="pokemon" class="form-control">
+              <option value="">None</option>
+            {% for pokemon in all_pokemon %}
+              <option value='{{pokemon.speciesId}}'{% if current_pokemon == pokemon.speciesId %} selected{% endif %}>{{pokemon.speciesId}}</option>
+            {% endfor %}
+            </select>
+            <input type='radio' id='lead' value='lead' name='position' {% if chosen_position=="lead" %} checked {% endif %}><label for='lead'>In the lead</label>
+            <br><input type='radio' id='back' value='back' name='position' {% if chosen_position=="back" %} checked {% endif %}><label for='back'>In the back</label>
+            </td>
+          </tr>
+          <tr>
+            <td align="center">Number of days of data:</td>
+          </tr>
+          <tr>
+            <td>
+              <input type="number" min="1" step="1" id="num_days" value="{{num_days}}" name="num_days" class="form-control" />
+            </td>
+          </tr>
+          <tr>
+            <td align="center">Rating:</td>
+          </tr>
+          <tr>
+            <td>
+              <select id="rating" name="rating" class="form-control">
+                <option value="None">None</option>
+                {% for rating in ratings %}
+                <option value="{{rating}}"{% if rating == current_rating %} selected{% endif %}>{{rating}}</option>
+                {% endfor %}
+              </select>
+            </td>
+          </tr>
+          <tr>
+            <td align="center">Number of recommended teams:</td>
+          </tr>
+          <tr>
+            <td>
+              <input type="number" min="1" step="1" id="num_teams" value="{{number_teams}}" name="num_teams" class="form-control" />
+            </td>
+          </tr>
+          <tr>
+            <td colspan=2 align="right"><button id="submit-button" type="submit" class="btn btn-primary w-100">Submit</button></td>
+          </tr>
+        </tbody>
+      </table>
+      </form>
+    </div>
+  </div>
+
+  <div class="main-content">
+  <!--
+  <h1 align="center"><u>Options</u></h1>
+  <br>
+  <div class="container">
+    <form action="/">
+    <table border=1 align="center" class="table table-striped">
+      <thead class="thead-dark">
+        <th colspan=2>Options</th>
+      </thead>
+      <tbody>
+        <tr>
+          <td>League</td>
+          <td>
+          <select id="league_picker" name="league">
+          {% for league in leagues %}
+            <option value="{{league}}" id="option_{{league}}"{% if current_league==league %} selected{% endif %}>{{league}}</option>
+          {% endfor %}
           </select>
-        </td>
-      </tr>
-      <tr>
-        <td>Number of recommended teams:</td>
-        <td>
-          <input type="text" id="num_teams" value="{{number_teams}}" name="num_teams" class="form-control" />
-        </td>
-      </tr>
-      <tr>
-        <td colspan=2 align="right"><button id="submit-button" type="submit" class="btn btn-primary">Submit</button></td>
-      </tr>
-    </tbody>
-  </table>
-  </form>
-</div>
+          <button class="btn btn-secondary" id="refresh-league-data">Refresh League Data</button>
+          Last refreshed: {{ last_refreshed }}
+          </td>
+        </tr>
+        <tr>
+          <td>Create team from pokemon</td>
+          <td>
+          <input type='hidden' value='{{current_league}}' name='league' />
+          <select id="mySelect" name="pokemon">
+            <option value="">None</option>
+          {% for pokemon in all_pokemon %}
+            <option value='{{pokemon.speciesId}}'{% if current_pokemon == pokemon.speciesId %} selected{% endif %}>{{pokemon.speciesId}}</option>
+          {% endfor %}
+          </select>
+          <br><input type='radio' id='lead' value='lead' name='position' {% if chosen_position=="lead" %} checked {% endif %}><label for='lead'>In the lead</label>
+          <br><input type='radio' id='back' value='back' name='position' {% if chosen_position=="back" %} checked {% endif %}><label for='back'>In the back</label>
+          </td>
+        </tr>
+        <tr>
+          <td>Number of days of data:</td>
+          <td>
+            <input type="text" id="num_days" value="{{num_days}}" name="num_days" class="form-control" />
+          </td>
+        </tr>
+        <tr>
+          <td>Rating:</td>
+          <td>
+            <select id="rating" name="rating">
+              <option value="None">None</option>
+              {% for rating in ratings %}
+              <option value="{{rating}}"{% if rating == current_rating %} selected{% endif %}>{{rating}}</option>
+              {% endfor %}
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td>Number of recommended teams:</td>
+          <td>
+            <input type="text" id="num_teams" value="{{number_teams}}" name="num_teams" class="form-control" />
+          </td>
+        </tr>
+        <tr>
+          <td colspan=2 align="right"><button id="submit-button" type="submit" class="btn btn-primary">Submit</button></td>
+        </tr>
+      </tbody>
+    </table>
+    </form>
+  </div>
+  -->
+  <br><br>
+  <div class="container">
+    <h1 align="center"><u>Meta Data</u></h1>
+    <div class="border-dark">
+      <nav class="bg-dark">
+        <ul class="nav nav-tabs" id="pokemon-position" role="tablist">
+          <li class="nav-item">
+            <a class="nav-link active" href="#nav-leads" id="nav-leads-tab" data-toggle="tab" aria-controls="nav-leads" role="tab" aria-selected="true">Leads</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#nav-ss" id="nav-ss-tab" data-toggle="tab" aria-controls="nav-ss" role="tab" aria-selected="false">Second</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#nav-back" id="nav-back-tab" data-toggle="tab" aria-controls="nav-back" role="tab" aria-selected="false">Third</a>
+          </li>
+          <li class="nav-item ml-auto">
+            <p class="nav-link" style="color:white">Using <b>{{ n_teams }}</b> teams of data</p>
+          </li>
+        </ul>
+      </nav>
+      <div class="p-0">
+        <div class="tab-content">
 
-<br><br>
-<div class="container">
-  <h1 align="center"><u>Meta Data</u></h1>
-  <div class="border-dark">
-    <nav class="bg-dark">
-      <ul class="nav nav-tabs" id="pokemon-position" role="tablist">
-        <li class="nav-item">
-          <a class="nav-link active" href="#nav-leads" id="nav-leads-tab" data-toggle="tab" aria-controls="nav-leads" role="tab" aria-selected="true">Leads</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#nav-ss" id="nav-ss-tab" data-toggle="tab" aria-controls="nav-ss" role="tab" aria-selected="false">Second</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#nav-back" id="nav-back-tab" data-toggle="tab" aria-controls="nav-back" role="tab" aria-selected="false">Third</a>
-        </li>
-        <li class="nav-item ml-auto">
-          <p class="nav-link" style="color:white">Using <b>{{ n_teams }}</b> teams of data</p>
-        </li>
-      </ul>
-    </nav>
-    <div class="p-0">
-      <div class="tab-content">
+          <!-- Leads Tab -->
+          <div class="tab-pane fade show active" id="nav-leads" role="tabpanel" aria-labelledby="nav-leads-tab">
+            <table class="table my-0" border="1">
+              <thead class="thead-dark">
+                <th colspan="2" class="text-center">Leads</th>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="width:50%">
+                    <b>Leads reported on GoBattleLog</b>
+                    <br>
+                    <p>The number of times the pokemon is reported as first on a team by trainers using GoBattleLog.</p>
+                    <p>In parentheses is the pokemon's actual win rate in the lead.</p>
+                    <p>Download move counts: <a href='/move_image?pokemon={{lead_move_count_string}}' target="_blank">Move counts</a></p>
+                  </td>
+                  <td>
+                    <b>Leads that beat the meta leads</b>
+                    <br>
+                    <p>Weighted percent of the leads (on the left) that the pokemon beats (using a 1-1 shield scenario).</p>
+                    <p>In parentheses is the pokemon's actual win rate in the lead.</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="data" style="height:400px;">
+                      <table>
+                        <tr style="border:none;">
+                          <td style="border:none;padding-top:1px;padding-bottom:0px"><b><u>Pokemon</u></b></td>
+                          <td style="border:none;padding-top:1px;padding-bottom:0px"><b><u># Reports</u></b></td>
+                        </tr>
+                      {% for lead in result_data.meta_leads %}
+                        <tr style="border:none;">
+                          <td style="border:none;padding-top:1px;padding-bottom:0px;overflow: visible;">
+                            {{ lead[0] | pokemonColor(current_pokemon, current_league) | safe }} ({{poke_win_rates['leads'][lead[0]]}})
+                            <!--{{ lead[0] }}-->
+                          </td>
+                          <td style="border:none;padding-top:1px;padding-bottom:0px">
+                            {{ lead[1] }}
+                          </td>
+                        </tr>
+                      {% endfor %}
+                      </table>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="data" style="height:400px;">
+                      <table border="0">
+                        <tr style="border:none;">
+                          <td style="border:none;padding-top:1px;padding-bottom:0px"><b><u>Pokemon</u></b></td>
+                          <td style="border:none;padding-top:1px;padding-bottom:0px"><b><u>Predicted win rate</u></b></td>
+                        </tr>
+                      {% for lead in result_data.good_leads %}
+                        {% if lead[1] >= 15 %}
+                        <tr border="0">
+                          <td style="border:none;padding-top:1px;padding-bottom:0px">
+                            {{ lead[0] | pokemonColor(current_pokemon, current_league) | safe }} ({{poke_win_rates['leads'][lead[0]]}})
+                            <!--{{ lead[0] }}-->
+                          </td>
+                          <td style="border:none;padding-top:1px;padding-bottom:0px">
+                            {{ "%.2f" | format(lead[1]) }}%
+                          </td>
+                        </tr>
+                        {% endif %}
+                      {% endfor %}
+                      </table>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
 
-        <!-- Leads Tab -->
-        <div class="tab-pane fade show active" id="nav-leads" role="tabpanel" aria-labelledby="nav-leads-tab">
-          <table class="table my-0" border="1">
-            <thead class="thead-dark">
-              <th colspan="2" class="text-center">Leads</th>
-            </thead>
-            <tbody>
-              <tr>
-                <td style="width:50%">
-                  <b>Leads reported on GoBattleLog</b>
-                  <br>
-                  <p>The number of times the pokemon is reported as first on a team by trainers using GoBattleLog.</p>
-                  <p>In parentheses is the pokemon's actual win rate in the lead.</p>
-                  <p>Download move counts: <a href='/move_image?pokemon={{lead_move_count_string}}'>Move counts</a></p>
-                </td>
-                <td>
-                  <b>Leads that beat the meta leads</b>
-                  <br>
-                  <p>Weighted percent of the leads (on the left) that the pokemon beats (using a 1-1 shield scenario).</p>
-                  <p>In parentheses is the pokemon's actual win rate in the lead.</p>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <div class="data" style="height:400px;">
-                    <table>
-                      <tr style="border:none;">
-                        <td style="border:none;padding-top:1px;padding-bottom:0px"><b><u>Pokemon</u></b></td>
-                        <td style="border:none;padding-top:1px;padding-bottom:0px"><b><u># Reports</u></b></td>
-                      </tr>
-                    {% for lead in result_data.meta_leads %}
-                      <tr style="border:none;">
-                        <td style="border:none;padding-top:1px;padding-bottom:0px;overflow: visible;">
-                          {{ lead[0] | pokemonColor(current_pokemon, current_league) | safe }} ({{poke_win_rates['leads'][lead[0]]}})
-                          <!--{{ lead[0] }}-->
-                        </td>
-                        <td style="border:none;padding-top:1px;padding-bottom:0px">
-                          {{ lead[1] }}
-                        </td>
-                      </tr>
-                    {% endfor %}
-                    </table>
-                  </div>
-                </td>
-                <td>
-                  <div class="data" style="height:400px;">
-                    <table border="0">
-                      <tr style="border:none;">
-                        <td style="border:none;padding-top:1px;padding-bottom:0px"><b><u>Pokemon</u></b></td>
-                        <td style="border:none;padding-top:1px;padding-bottom:0px"><b><u>Predicted win rate</u></b></td>
-                      </tr>
-                    {% for lead in result_data.good_leads %}
-                      {% if lead[1] >= 15 %}
-                      <tr border="0">
-                        <td style="border:none;padding-top:1px;padding-bottom:0px">
-                          {{ lead[0] | pokemonColor(current_pokemon, current_league) | safe }} ({{poke_win_rates['leads'][lead[0]]}})
-                          <!--{{ lead[0] }}-->
-                        </td>
-                        <td style="border:none;padding-top:1px;padding-bottom:0px">
-                          {{ "%.2f" | format(lead[1]) }}%
-                        </td>
-                      </tr>
-                      {% endif %}
-                    {% endfor %}
-                    </table>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+          <!-- Second pokemon Tab -->
+          <div class="tab-pane fade" id="nav-ss" role="tabpanel" aria-labelledby="nav-ss-tab">
+            <table class="table my-0" border="1">
+              <thead class="thead-dark">
+                <th colspan="2" class="text-center">Second Pokemon</th>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="width:50%">
+                    <b>Second pokemon reported on GoBattleLog</b>
+                    <br>
+                    <p>The number of times the pokemon is reported as the second pokemon on a team by trainers using GoBattleLog.</p>
+                    <p>In parentheses is the pokemon's actual win rate in the second position.</p>
+                    <p>Download move counts: <a href='/move_image?pokemon={{ss_move_count_string}}'>Move counts</a></p>
+                  </td>
+                  <td>
+                    <b>Second pokemon that beat the meta second pokemon</b>
+                    <br>
+                    <p>Weighted percent of the second pokemon (on the left) that the pokemon beats (using a 1-1 shield scenario).</p>
+                    <p>In parentheses is the pokemon's actual win rate in the second position.</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="data" style="height:400px;">
+                      <table>
+                        <tr style="border:none;">
+                          <td style="border:none;padding-top:1px;padding-bottom:0px"><b><u>Pokemon</u></b></td>
+                          <td style="border:none;padding-top:1px;padding-bottom:0px"><b><u># Reports</u></b></td>
+                        </tr>
+                      {% for ss in result_data.meta_ss %}
+                        <tr style="border:none;">
+                          <td style="border:none;padding-top:1px;padding-bottom:0px">
+                            {{ ss[0] }} ({{poke_win_rates['ss'][ss[0]]}})
+                          </td>
+                          <td style="border:none;padding-top:1px;padding-bottom:0px">
+                            {{ ss[1] }}
+                          </td>
+                        </tr>
+                      {% endfor %}
+                      </table>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="data" style="height:400px;">
+                      <table border="0">
+                        <tr style="border:none;">
+                          <td style="border:none;padding-top:1px;padding-bottom:0px"><b><u>Pokemon</u></b></td>
+                          <td style="border:none;padding-top:1px;padding-bottom:0px"><b><u>Predicted win rate</u></b></td>
+                        </tr>
+                      {% for ss in result_data.good_ss %}
+                        {% if ss[1] >= 15 %}
+                        <tr border="0">
+                          <td style="border:none;padding-top:1px;padding-bottom:0px">
+                            {{ ss[0] }} ({{poke_win_rates['ss'][ss[0]]}})
+                          </td>
+                          <td style="border:none;padding-top:1px;padding-bottom:0px">
+                            {{ "%.2f" | format(ss[1]) }}%
+                          </td>
+                        </tr>
+                        {% endif %}
+                      {% endfor %}
+                      </table>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
 
-        <!-- Second pokemon Tab -->
-        <div class="tab-pane fade" id="nav-ss" role="tabpanel" aria-labelledby="nav-ss-tab">
-          <table class="table my-0" border="1">
-            <thead class="thead-dark">
-              <th colspan="2" class="text-center">Second Pokemon</th>
-            </thead>
-            <tbody>
-              <tr>
-                <td style="width:50%">
-                  <b>Second pokemon reported on GoBattleLog</b>
-                  <br>
-                  <p>The number of times the pokemon is reported as the second pokemon on a team by trainers using GoBattleLog.</p>
-                  <p>In parentheses is the pokemon's actual win rate in the second position.</p>
-                  <p>Download move counts: <a href='/move_image?pokemon={{ss_move_count_string}}'>Move counts</a></p>
-                </td>
-                <td>
-                  <b>Second pokemon that beat the meta second pokemon</b>
-                  <br>
-                  <p>Weighted percent of the second pokemon (on the left) that the pokemon beats (using a 1-1 shield scenario).</p>
-                  <p>In parentheses is the pokemon's actual win rate in the second position.</p>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <div class="data" style="height:400px;">
-                    <table>
-                      <tr style="border:none;">
-                        <td style="border:none;padding-top:1px;padding-bottom:0px"><b><u>Pokemon</u></b></td>
-                        <td style="border:none;padding-top:1px;padding-bottom:0px"><b><u># Reports</u></b></td>
-                      </tr>
-                    {% for ss in result_data.meta_ss %}
-                      <tr style="border:none;">
-                        <td style="border:none;padding-top:1px;padding-bottom:0px">
-                          {{ ss[0] }} ({{poke_win_rates['ss'][ss[0]]}})
-                        </td>
-                        <td style="border:none;padding-top:1px;padding-bottom:0px">
-                          {{ ss[1] }}
-                        </td>
-                      </tr>
-                    {% endfor %}
-                    </table>
-                  </div>
-                </td>
-                <td>
-                  <div class="data" style="height:400px;">
-                    <table border="0">
-                      <tr style="border:none;">
-                        <td style="border:none;padding-top:1px;padding-bottom:0px"><b><u>Pokemon</u></b></td>
-                        <td style="border:none;padding-top:1px;padding-bottom:0px"><b><u>Predicted win rate</u></b></td>
-                      </tr>
-                    {% for ss in result_data.good_ss %}
-                      {% if ss[1] >= 15 %}
-                      <tr border="0">
-                        <td style="border:none;padding-top:1px;padding-bottom:0px">
-                          {{ ss[0] }} ({{poke_win_rates['ss'][ss[0]]}})
-                        </td>
-                        <td style="border:none;padding-top:1px;padding-bottom:0px">
-                          {{ "%.2f" | format(ss[1]) }}%
-                        </td>
-                      </tr>
-                      {% endif %}
-                    {% endfor %}
-                    </table>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Third pokemon Tab -->
-        <div class="tab-pane fade" id="nav-back" role="tabpanel" aria-labelledby="nav-back-tab">
-          <table class="table my-0" border="1">
-            <thead class="thead-dark">
-              <th colspan="2" class="text-center">Third Pokemon</th>
-            </thead>
-            <tbody>
-              <tr>
-                <td style="width:50%">
-                  <b>Third pokemon reported on GoBattleLog</b>
-                  <br>
-                  <p>The number of times the pokemon is reported as last on a team by trainers using GoBattleLog.</p>
-                  <p>In parentheses is the pokemon's actual win rate in the third position.</p>
-                  <p>Download move counts: <a href='/move_image?pokemon={{back_move_count_string}}'>Move counts</a></p>
-                </td>
-                <td>
-                  <b>Third pokemon that beat the meta third pokemon</b>
-                  <br>
-                  <p>Weighted percent of the third pokemon (on the left) that the pokemon beats (using a 1-1 shield scenario).</p>
-                  <p>In parentheses is the pokemon's actual win rate in the third position.</p>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <div class="data" style="height:400px;">
-                    <table>
-                      <tr style="border:none;">
-                        <td style="border:none;padding-top:1px;padding-bottom:0px"><b><u>Pokemon</u></b></td>
-                        <td style="border:none;padding-top:1px;padding-bottom:0px"><b><u># Reports</u></b></td>
-                      </tr>
-                    {% for back in result_data.meta_backs %}
-                      <tr style="border:none;">
-                        <td style="border:none;padding-top:1px;padding-bottom:0px">
-                          {{ back[0] }} ({{ poke_win_rates['back'][back[0]]}})
-                        </td>
-                        <td style="border:none;padding-top:1px;padding-bottom:0px">
-                          {{ back[1] }}
-                        </td>
-                      </tr>
-                    {% endfor %}
-                    </table>
-                  </div>
-                </td>
-                <td>
-                  <div class="data" style="height:400px;">
-                    <table border="0">
-                      <tr style="border:none;">
-                        <td style="border:none;padding-top:1px;padding-bottom:0px"><b><u>Pokemon</u></b></td>
-                        <td style="border:none;padding-top:1px;padding-bottom:0px"><b><u>Predicted win rate</u></b></td>
-                      </tr>
-                    {% for back in result_data.good_backs %}
-                      {% if back[1] >= 15 %}
-                      <tr border="0">
-                        <td style="border:none;padding-top:1px;padding-bottom:0px">
-                          {{ back[0] }} ({{ poke_win_rates['back'][back[0]]}})
-                        </td>
-                        <td style="border:none;padding-top:1px;padding-bottom:0px">
-                          {{ "%.2f" | format(back[1]) }}%
-                        </td>
-                      </tr>
-                      {% endif %}
-                    {% endfor %}
-                    </table>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+          <!-- Third pokemon Tab -->
+          <div class="tab-pane fade" id="nav-back" role="tabpanel" aria-labelledby="nav-back-tab">
+            <table class="table my-0" border="1">
+              <thead class="thead-dark">
+                <th colspan="2" class="text-center">Third Pokemon</th>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="width:50%">
+                    <b>Third pokemon reported on GoBattleLog</b>
+                    <br>
+                    <p>The number of times the pokemon is reported as last on a team by trainers using GoBattleLog.</p>
+                    <p>In parentheses is the pokemon's actual win rate in the third position.</p>
+                    <p>Download move counts: <a href='/move_image?pokemon={{back_move_count_string}}'>Move counts</a></p>
+                  </td>
+                  <td>
+                    <b>Third pokemon that beat the meta third pokemon</b>
+                    <br>
+                    <p>Weighted percent of the third pokemon (on the left) that the pokemon beats (using a 1-1 shield scenario).</p>
+                    <p>In parentheses is the pokemon's actual win rate in the third position.</p>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="data" style="height:400px;">
+                      <table>
+                        <tr style="border:none;">
+                          <td style="border:none;padding-top:1px;padding-bottom:0px"><b><u>Pokemon</u></b></td>
+                          <td style="border:none;padding-top:1px;padding-bottom:0px"><b><u># Reports</u></b></td>
+                        </tr>
+                      {% for back in result_data.meta_backs %}
+                        <tr style="border:none;">
+                          <td style="border:none;padding-top:1px;padding-bottom:0px">
+                            {{ back[0] }} ({{ poke_win_rates['back'][back[0]]}})
+                          </td>
+                          <td style="border:none;padding-top:1px;padding-bottom:0px">
+                            {{ back[1] }}
+                          </td>
+                        </tr>
+                      {% endfor %}
+                      </table>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="data" style="height:400px;">
+                      <table border="0">
+                        <tr style="border:none;">
+                          <td style="border:none;padding-top:1px;padding-bottom:0px"><b><u>Pokemon</u></b></td>
+                          <td style="border:none;padding-top:1px;padding-bottom:0px"><b><u>Predicted win rate</u></b></td>
+                        </tr>
+                      {% for back in result_data.good_backs %}
+                        {% if back[1] >= 15 %}
+                        <tr border="0">
+                          <td style="border:none;padding-top:1px;padding-bottom:0px">
+                            {{ back[0] }} ({{ poke_win_rates['back'][back[0]]}})
+                          </td>
+                          <td style="border:none;padding-top:1px;padding-bottom:0px">
+                            {{ "%.2f" | format(back[1]) }}%
+                          </td>
+                        </tr>
+                        {% endif %}
+                      {% endfor %}
+                      </table>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
+    <br><br>
+
+    <div style="height:500px;overflow:auto;">
+      <table class="table table-striped" border="1">
+        <thead class="thead-dark bg-dark text-white">
+          <tr><td colspan=2 align="center">Top Used Teams</td></tr>
+          <th>Team</th><th>Win Rate</th>
+        </thead>
+        <tbody>
+          {% for team, wr in team_win_rates.items() %}
+          <tr>
+            <td>{{ team }}</td><td>{{ wr }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
+
+  {{body|safe}}
   <br><br>
 
-  <div style="height:500px;overflow:auto;">
-    <table class="table table-striped" border="1">
-      <thead class="thead-dark bg-dark text-white">
-        <tr><td colspan=2 align="center">Top Used Teams</td></tr>
-        <th>Team</th><th>Win Rate</th>
-      </thead>
-      <tbody>
-        {% for team, wr in team_win_rates.items() %}
-        <tr>
-          <td>{{ team }}</td><td>{{ wr }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
   </div>
 </div>
-
-{{body|safe}}
-<br><br>
 <script src="https://code.jquery.com/jquery-3.5.1.js"
           integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
           crossorigin="anonymous"></script>
  
 <script type="text/javascript">
+var slideMainContent = false; // make main content slide over for menu
+var refreshOnLeagueChange = false; // refresh data if league picker is changed
 // Fix for showing tooltips inside of a overflow scrollable div
 $("a.tooltip1").hover(function() {
   $(this).addClass("hover");
@@ -353,58 +434,77 @@ $("#refresh-league-data").click(function (e){
   var league = $("#league_picker").val();
   alert("Refreshing data for: " + league);
   // POST to refresh data
-  var spinnerContainer = document.querySelector(".spinner-container");
-  spinnerContainer.style.display = "flex";
+  var spinnercontainer = document.querySelector(".spinner-container");
+  spinnercontainer.style.display = "flex";
   $.post("/data/refresh", {
     league: league
   },
   function(data, status){
-    /*
-    if(data == "success"){
-     alert("data refreshed!") 
-    }
-    alert("Data: " + data +"\nStatus: " + status);
-    */
   });
   location.reload();
-
-  /*
-  // GET?
-  $.ajax({
-    type: 'GET',
-    url: "/data/refresh/" + league,
-    success: function (data) {
-      location.reload();
-    }
-  });
-  */
-
-
-  // Refresh page
 });
 
 // Refreshes once a new league is chosen
-/*
 $("#league_picker").change(function(e){
-        var league= $(this).val();
-        var chosen_pokemon = $("#mySelect").val();
-        var num_days = $("#num_days").val();
-        alert("Reloading page for " + league + " league");
-        var spinnerContainer = document.querySelector(".spinner-container");
-        spinnerContainer.style.display = "flex";
-        location.href = "?league="+league+"&pokemon="+chosen_pokemon+"&num_days="+num_days;
-    });
-*/
+  if (refreshOnLeagueChange) {
+    var league= $(this).val();
+    var chosen_pokemon = $("#mySelect").val();
+    var num_days = $("#num_days").val();
+    alert("Reloading page for " + league + " league");
+    var spinnercontainer = document.querySelector(".spinner-container");
+    spinnercontainer.style.display = "flex";
+    location.href = "?league="+league+"&pokemon="+chosen_pokemon+"&num_days="+num_days;
+  }
+});
+
 var submit = document.getElementById("submit-button");
 submit.addEventListener("click", function() {
-  var spinnerContainer = document.querySelector(".spinner-container");
-  spinnerContainer.style.display = "flex";
+  var spinnercontainer = document.querySelector(".spinner-container");
+  spinnercontainer.style.display = "flex";
 });
 
 // show spinner on reload
 window.onbeforeunload = function(e) {
-  var spinnerContainer = document.querySelector(".spinner-container");
-  spinnerContainer.style.display = "flex";
+  var spinnercontainer = document.querySelector(".spinner-container");
+  spinnercontainer.style.display = "flex";
 }
+$(document).ready(function () {
+  var spinnercontainer = document.querySelector(".spinner-container");
+  spinnercontainer.style.display = "none";
+  console.log("Done loading");
+});
+window.onload = function(e) {
+}
+
+// options menu
+const menuButton = document.querySelector('.options-menu-button');
+const closeButton = document.querySelector('.options-close-button');
+const menu = document.querySelector('.options-menu');
+const content = document.querySelector('.main-content');
+
+menuButton.addEventListener('click', function() {
+  menu.classList.toggle('open');
+  menuButton.classList.toggle('open');
+  if (slideMainContent){
+    content.classList.toggle('open');
+  }
+  // change icon
+  document.querySelector('.options-menu-button i').classList = "fa fa-angle-double-left";
+});
+closeButton.addEventListener('click', function() {
+  menu.classList.toggle('open');
+  menuButton.classList.toggle('open');
+
+  if (slideMainContent){
+    content.classList.toggle('open');
+  }
+  // change icon
+  document.querySelector('.options-menu-button i').classList = "fa fa-angle-double-right";
+});
+const navbar = document.querySelector('.navbar');
+const optionsMenu = document.querySelector('.options-menu');
+
+optionsMenu.style.top = navbar.getBoundingClientRect().height + 'px';
+
 </script>
 {% endblock %}
