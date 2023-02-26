@@ -1,0 +1,14 @@
+.bgtext2 {
+    -webkit-background-clip: text;
+    background-clip: text;
+    background-image: url('/images/newFlippinCoopLogo.png');
+    color: transparent;
+    font-size: 40px;
+    font-weight: 700;
+    height: 100px;
+    background-position: top 10% center;
+    /*background-size: contain;
+    background-repeat: no-repeat;*/
+    /*background: url('/images/newFlippinCoopLogo.png');*/
+    background-size: 500px 500px;
+  }
