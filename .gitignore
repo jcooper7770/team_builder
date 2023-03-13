@@ -9,6 +9,9 @@ flask_session/
 # ignore pokemon images
 pokemon_images/*
 
+# Ignore algorithm plots
+algo_plots/*
+
 # Ignore python compiled files
 *.pyc
 

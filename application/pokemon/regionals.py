@@ -1,7 +1,41 @@
+'''
+ $ python -m application.pokemon.regionals
+'''
 import re
 import statistics
 
 from application.pokemon.team_building import MetaTeamDestroyer, set_refresh
+
+
+class Pokemon:
+    def __init__(self, species, types):
+        self.species = species
+        self.types = types
+        self.rating = None
+    
+    def set_rating(self, rating):
+        self.rating = rating
+    
+    def __str__(self):
+        rating = f"{self.rating:.3f}" if self.rating is not None else "<unrated>"
+        return f"{self.species} [{rating}]"
+    
+    def __repr__(self):
+        return str(self)
+
+
+class Team:
+    def __init__(self, pokemon):
+        self.pokemon = pokemon
+
+    def __str__(self):
+        return str(sorted(self.pokemon))
+
+    def __repr__(self):
+        return str(self)
+    
+    def __iter__(self):
+        return iter(self.pokemon)
 
 
 def get_teams():
@@ -38,6 +72,7 @@ def get_teams():
                 new_team.append(name)
 
             teams.append(new_team)
+            #teams.append(Team(new_team))
     print(teams)
     return teams
 
@@ -54,6 +89,7 @@ def create_optimal_team(team_creator):
 
     # Get all pokemon
     all_pokemon = {p['speciesId']:p for p in team_creator.all_pokemon}
+    all_pokemon = {p['speciesId']:Pokemon(p['speciesId'], p['types']) for p in team_creator.game_master['pokemon']}
     counters = team_creator.species_counters_dict
 
     # Get number of times each pokemon wins against each pokemon from each team
@@ -79,10 +115,18 @@ def create_optimal_team(team_creator):
     # Combined
     avg_wins_dict = {p: (statistics.median(v) + statistics.mean(v))/2 for p, v in wins_dict.items()}
 
+    # add pokemon types
+    for p, v in avg_wins_dict.items():
+        all_pokemon[p].set_rating(v)
+        #print(all_pokemon[p])
+
+
     # Choose all the top pokemon
     top_wins = sorted(list(avg_wins_dict.items()), key=lambda x: x[1], reverse=True)
-    top_wins = sorted(list(avg_wins_dict.items()), key=lambda x: x[1], reverse=True)
-    print(top_wins)
+    #top_wins = sorted(list(avg_wins_dict.items()), key=lambda x: x[1], reverse=True)
+    #print(top_wins)
+    top_wins = sorted(list(all_pokemon.values()), key=lambda x: x.rating, reverse=True)
+    print([p for p in top_wins if p.rating])
     return top_wins
 
 
