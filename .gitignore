@@ -20,5 +20,8 @@ routines.txt
 test.log
 data/
 
+# ignore venv
+venv/
+
 # Ignore vscode files
 .vscode/
