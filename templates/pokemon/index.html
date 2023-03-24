@@ -421,6 +421,19 @@
           crossorigin="anonymous"></script>
  
 <script type="text/javascript">
+const num_start_input = document.getElementById("num_days_start");
+const num_end_input = document.getElementById("num_days_end");
+num_start_input.addEventListener('input', () => {
+  if (parseInt(num_start_input.value) <= parseInt(num_end_input.value)) {
+    num_start_input.value = parseInt(num_end_input.value) + 1;
+  }
+});
+num_end_input.addEventListener('input', () => {
+  if (parseInt(num_end_input.value) >= parseInt(num_start_input.value)) {
+    num_end_input.value = parseInt(num_start_input.value) - 1;
+  }
+});
+
 var slideMainContent = false; // make main content slide over for menu
 var refreshOnLeagueChange = false; // refresh data if league picker is changed
 // Fix for showing tooltips inside of a overflow scrollable div
