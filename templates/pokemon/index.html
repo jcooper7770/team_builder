@@ -185,7 +185,7 @@
                     <br>
                     <p>The number of times the pokemon is reported as first on a team by trainers using GoBattleLog.</p>
                     <p>In parentheses is the pokemon's actual win rate in the lead.</p>
-                    <p>Download move counts: <a href='/move_image?pokemon={{lead_move_count_string}}' target="_blank">Move counts</a></p>
+                    <p style="margin: 0px"><a href='/move_image?pokemon={{lead_move_count_string}}' class="btn btn-primary" style="width: 100%">Download move counts</a></p>
                   </td>
                   <td>
                     <b>Leads that beat the meta leads</b>
@@ -257,7 +257,7 @@
                     <br>
                     <p>The number of times the pokemon is reported as the second pokemon on a team by trainers using GoBattleLog.</p>
                     <p>In parentheses is the pokemon's actual win rate in the second position.</p>
-                    <p>Download move counts: <a href='/move_image?pokemon={{ss_move_count_string}}'>Move counts</a></p>
+                    <p style="margin: 0px;"><a href='/move_image?pokemon={{ss_move_count_string}}' class="btn btn-primary" style="width: 100%">Download move counts</a></p>
                   </td>
                   <td>
                     <b>Second pokemon that beat the meta second pokemon</b>
@@ -327,7 +327,7 @@
                     <br>
                     <p>The number of times the pokemon is reported as last on a team by trainers using GoBattleLog.</p>
                     <p>In parentheses is the pokemon's actual win rate in the third position.</p>
-                    <p>Download move counts: <a href='/move_image?pokemon={{back_move_count_string}}'>Move counts</a></p>
+                    <p style="margin: 0px;"><a href='/move_image?pokemon={{back_move_count_string}}' class="btn btn-primary" style="width: 100%">Download move counts</a></p>
                   </td>
                   <td>
                     <b>Third pokemon that beat the meta third pokemon</b>
@@ -388,10 +388,12 @@
     </div>
     <br><br>
 
+    <!-- Top used teams -->
     <div style="height:500px;overflow:auto;">
       <table class="table table-striped" border="1">
         <thead class="thead-dark bg-dark text-white">
           <tr><td colspan=2 align="center">Top Used Teams</td></tr>
+          <tr><td colspan="2" style="padding: 0px;"><a class="btn btn-primary" href="/move_image?pokemon={{teams_move_count_string}}" target="_blank" style="width: 100%">Download move counts</a></td></tr>
           <th>Team</th><th>Win Rate</th>
         </thead>
         <tbody>

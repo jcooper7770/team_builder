@@ -540,7 +540,8 @@ def move_count_image():
     '''
     make_image(list(set(pokemon_list)), number_per_row=num_cols)
     export_image = os.path.join(app.root_path, "image.png")
-    return send_file(export_image, as_attachment=True, cache_timeout=0)
+    #return send_file(export_image, as_attachment=True, cache_timeout=0)
+    return send_file(export_image, as_attachment=True)
     #return json.dumps({"status": "OK"})
 
 
@@ -619,6 +620,11 @@ def run():
     #html.append(create_table_from_results(results, pokemon=chosen_pokemon, width='75%', tc=tc, tooltip=use_tooltip))
     #html.append("</div>")
 
+    # make a list of pokemon from the teams
+    teams_pokemon = set()
+    for team in team_maker.pokemon_teams:
+        for pokemon in team.split('-'):
+            teams_pokemon.add(pokemon)
     return render_template(
         "pokemon/index.html",
         body="".join(html).replace(" table-responsive-lg", ""),
@@ -635,6 +641,7 @@ def run():
         lead_move_count_string=','.join(pokemon[0] for pokemon in team_maker.result_data['meta_leads']),
         ss_move_count_string=','.join(pokemon[0] for pokemon in team_maker.result_data['meta_ss']),
         back_move_count_string=','.join(pokemon[0] for pokemon in team_maker.result_data['meta_backs']),
+        teams_move_count_string=','.join(teams_pokemon),
         poke_win_rates=team_maker.pokemon_win_rates,
         team_win_rates=team_maker.pokemon_teams,
         n_teams=sum([p[1] for p in team_maker.result_data['meta_leads']]),
