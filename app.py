@@ -90,11 +90,12 @@ def make_recommended_teams(team_maker, chosen_pokemon, chosen_league, chosen_pos
     return team_results
 
 
-def get_new_data(league, num_days, rating):
+def get_new_data(league, num_days_start, num_days_end, rating):
     diff_league = CACHE.get("results", {}).get(league) is None
-    diff_days = CACHE.get("num_days") != num_days
+    diff_days_start = CACHE.get("num_days_start") != num_days_start
+    diff_days_end = CACHE.get("num_days_end") != num_days_end
     diff_rating = CACHE.get("rating") != rating
-    return diff_league or diff_days or diff_rating
+    return diff_league or diff_days_start or diff_days_end or diff_rating
 
 
 @app.route("/data/refresh", methods=["POST"])
@@ -574,7 +575,8 @@ def run():
     print(f"Chosen league: {chosen_league}. {session.get('league')}")
     chosen_pokemon = request.args.get('pokemon', '')
     chosen_position = request.args.get('position', 'lead')
-    num_days = int(request.args.get('num_days', '1'))
+    num_days_start = int(request.args.get('num_days_start', '1'))
+    num_days_end = int(request.args.get('num_days_end', '0'))
     rating = eval(request.args.get('rating', "None"))
     use_tooltip = bool(request.args.get('tooltips', False))
     use_weighted_values(bool(request.args.get('weights', False)))
@@ -584,16 +586,17 @@ def run():
 
     print("----- Refreshed -----")
     # Data tables from cache
-    if get_refresh() or get_new_data(chosen_league, num_days, rating):
+    if get_refresh() or get_new_data(chosen_league, num_days_start, num_days_end, rating):
         try:
-            results, team_maker, data_error = get_counters_for_rating(rating, chosen_league, days_back=num_days)
+            #results, team_maker, data_error = get_counters_for_rating(rating, chosen_league, days_back=num_days)
+            results, team_maker, data_error = get_counters_for_rating(rating, chosen_league, days_back_start=num_days_start, days_back_end=num_days_end)
         except NoPokemonFound as exc:
             error_text = f"ERROR: Could not get data because: {str(exc)}. Using all data instead"
-            results, team_maker = get_counters_for_rating(None, chosen_league, days_back=None)
+            results, team_maker = get_counters_for_rating(None, chosen_league, days_back_start=None, days_back_end=None)
         if data_error:
             error_text = f"ERROR: could not get data because: {data_error}. Using all data instead"
     else:
-        results, team_maker, num_days, rating = CACHE.get('results').get(chosen_league), CACHE.get('team_maker').get(chosen_league), CACHE.get("num_days"), CACHE.get("rating")
+        results, team_maker, num_days_start, num_days_end, rating = CACHE.get('results').get(chosen_league), CACHE.get('team_maker').get(chosen_league), CACHE.get("num_days_start"), CACHE.get('num_days_end'), CACHE.get("rating")
         print("Did not refresh data because options are the same")
     cache_results = CACHE['results']
     cache_results[chosen_league] = results
@@ -602,7 +605,8 @@ def run():
     cache_team_maker = CACHE['team_maker']
     cache_team_maker[chosen_league] = team_maker
     update_cache('team_maker', cache_team_maker)
-    update_cache('num_days', num_days)
+    update_cache('num_days_start', num_days_start)
+    update_cache('num_days_end', num_days_end)
     update_cache('rating', rating)
     update_cache('league', chosen_league)
 
@@ -632,7 +636,8 @@ def run():
         current_league=chosen_league,
         all_pokemon=sorted(team_maker.all_pokemon, key=lambda x: x.get('speciesId')),
         chosen_position=chosen_position,
-        num_days=num_days,
+        num_days_start=num_days_start,
+        num_days_end=num_days_end,
         rating=rating,
         number_teams=N_TEAMS,
         current_pokemon=chosen_pokemon,

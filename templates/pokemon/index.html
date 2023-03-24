@@ -44,11 +44,15 @@
             </td>
           </tr>
           <tr>
-            <td align="center">Number of days of data:</td>
+            <td align="center">Time Range of Data (in days):</td>
           </tr>
           <tr>
             <td>
-              <input type="number" min="1" step="1" id="num_days" value="{{num_days}}" name="num_days" class="form-control" />
+              From:
+              <input type="number" min="1" step="1" id="num_days_start" value="{{num_days_start}}" name="num_days_start" class="form-control" />
+              <br>
+              To:
+              <input type="number" min="0" step="1" id="num_days_end" value="{{num_days_end}}" name="num_days_end" class="form-control" />
             </td>
           </tr>
           <tr>
