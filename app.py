@@ -573,6 +573,7 @@ def run():
             session['league'] = chosen_league
             #chosen_league = "ML"
     print(f"Chosen league: {chosen_league}. {session.get('league')}")
+    session['league'] = chosen_league
     chosen_pokemon = request.args.get('pokemon', '')
     chosen_position = request.args.get('position', 'lead')
     num_days_start = int(request.args.get('num_days_start', '1'))
