@@ -6,6 +6,7 @@ SQLAlchemy
 pymysql
 passlib
 Pillow
+PyMuPDF
 # had to run "pip3 install --upgrade pip setuptools wheel" before
 #opencv-contrib-python
 # for testing

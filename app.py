@@ -1210,6 +1210,16 @@ def user_stats():
         dmt_passes=dmt_passes_ordered
     )
 
+@app.route("/logger/user/compcard")
+def user_comp_card():
+    """
+    Create comp card for the user
+    """
+    athlete = Athlete.load(session.get("name"))
+    athlete.save_comp_card()
+    return send_file("modified_comp_card.pdf", as_attachment=True)
+
+
 @app.route("/logger/user")
 def user_profile():
     """

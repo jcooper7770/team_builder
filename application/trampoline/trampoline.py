@@ -36,6 +36,8 @@ from flask import session
 from application.utils.database import get_user, get_users_and_turns, save_athlete,\
     delete_from_db, get_from_db, add_to_db
 from application.utils.utils import NON_SKILLS
+from application.trampoline.comp_card import fill_out
+
 
 NUM_FLIPS = {
     1: 0,
@@ -140,6 +142,35 @@ class Athlete:
         """
         self.optional = skills
         self.save()
+
+    def save_comp_card(self):
+        """
+        Saves the user's routines onto a comp card
+        """
+        comp_card_data = {}
+
+        # compulsory
+        total_dd = 0
+        for num, skill in enumerate(self.compulsory.split()):
+            comp_card_data[f'vol1skill{num+1}'] = skill
+            skill_dd = Skill(skill).difficulty
+            comp_card_data[f'vol1skill{num+1}dd'] = f'{skill_dd:.1f}'
+            total_dd += skill_dd
+        comp_card_data['vol1total'] = f'{total_dd:.1f}'
+
+        # optional and finals
+        total_dd = 0
+        for num, skill in enumerate(self.optional.split()):
+            comp_card_data[f'vol2skill{num+1}'] = skill
+            comp_card_data[f'finalsskill{num+1}'] = skill
+            skill_dd = Skill(skill).difficulty
+            comp_card_data[f'vol2skill{num+1}dd'] = f'{skill_dd:.1f}'
+            comp_card_data[f'finalsskill{num+1}dd'] = f'{skill_dd:.1f}'
+            total_dd += skill_dd
+        comp_card_data['vol2total'] = f'{total_dd:.1f}'
+        comp_card_data['finalstotal'] = f'{total_dd:.1f}'
+
+        fill_out(comp_card_data)
 
     def save(self):
         """
@@ -605,6 +636,8 @@ def get_skill_difficulty(skill):
     """
     if skill.event == "dmt":
         return get_dmt_difficulty(skill)
+    if skill.shorthand in ['41<', '41/']:
+        return 0.6
     difficulty_per_flip = 0.5 if skill.pos in [TUCK_POS, 't'] else 0.6
     flip_difficulty = (skill.flips - skill.flips%1) * difficulty_per_flip + \
                       (skill.flips % 1 / 0.25) * 0.1
