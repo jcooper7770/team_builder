@@ -68,6 +68,7 @@ LEAGUES_LIST = LeagueList([
     League("Electric", "1500-electric", "great-electric"),
     League("Psychic", "1500-psychic", "great-psychic"),
     League("Mountain", "1500-mountain", "great-mountain"),
+    League("Spring", "1500-spring", "great-spring"),
 
     # Ultra cups
     League("UL", "2500", "ultra"),
