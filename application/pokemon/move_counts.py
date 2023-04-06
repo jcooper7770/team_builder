@@ -305,7 +305,7 @@ def make_image(pokemon_list, number_per_row=5):
         
         # in case of mega/primal
         mega = ""
-        z = re.findall(r"(.*)_[primal|mega]", pokemon)
+        z = re.findall(r"(.*)_(primal|mega)", pokemon)
         if z:
             print(f"Found primal or mega: {pokemon}.")
             mega = z[0]
@@ -420,7 +420,7 @@ if __name__ == '__main__':
         "abomasnow", "articuno(ice_shard)", "blastoise", "charizard", "clefable", "cresselia",
         "drapion", "drifblim", "escavalier", "ferrothorn", "giratina", "gligar",
         "gyarados", "jellicent", "lapras(water_gun)", "lugia", "machamp", "magnezone", "mandibuzz",
-        "meganium", "muk", "nidoqueen", "ninetales", "pidgeot", "politoed",
+        "meganium", "muk", "nidoqueen", "ninetales", "ninetales_alolan", "pidgeot", "politoed",
         "poliwrath", "regice", "regirock", "registeel", "scrafty", "skarmory", "snorlax",
         "steelix", "swampert", "sylveon", "talonflame(fire_spin)", "talonflame", "toxicroak", "trevenant",
         "umbreon", "venusaur", "walrein", "zapdos", "obstagoon",
