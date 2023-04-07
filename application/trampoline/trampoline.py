@@ -143,7 +143,7 @@ class Athlete:
         self.optional = skills
         self.save()
 
-    def save_comp_card(self):
+    def save_comp_card(self, filename=""):
         """
         Saves the user's routines onto a comp card
         """
@@ -170,7 +170,7 @@ class Athlete:
         comp_card_data['vol2total'] = f'{total_dd:.1f}'
         comp_card_data['finalstotal'] = f'{total_dd:.1f}'
 
-        fill_out(comp_card_data)
+        fill_out(comp_card_data, filename=filename or "modified_comp_card.pdf")
 
     def save(self):
         """

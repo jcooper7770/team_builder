@@ -1220,6 +1220,27 @@ def user_comp_card():
     return send_file("modified_comp_card.pdf", as_attachment=True)
 
 
+@app.route("/logger/coach/compcards")
+def coach_comp_cards():
+    """
+    Create comp cards for the coach's athletes
+    """
+    import zipfile
+    coach = Athlete.load(session.get("name"))
+    for athlete_name in coach.athletes:
+        athlete = Athlete.load(athlete_name)
+        athlete.save_comp_card(f"{athlete_name}_tramp.pdf")
+
+    zipfile_name = "Comp_cards.zip"
+    zipf = zipfile.ZipFile(zipfile_name,'w', zipfile.ZIP_DEFLATED)
+    for _, _,files in os.walk('.'):
+        for file in files:
+            if file.endswith("_tramp.pdf"):
+                zipf.write(file)
+    zipf.close()
+    return send_file(zipfile_name, mimetype='zip', as_attachment=True)
+
+
 @app.route("/logger/user")
 def user_profile():
     """
@@ -1314,6 +1335,8 @@ def update_user():
     expand_comments = True if request.form.get("expand")=="true" else False
     compulsory = request.form.get("compulsory")
     optional = request.form.get("optional")
+    pass1 = request.form.get('pass1')
+    pass2 = request.form.get('pass2')
     athlete = Athlete.load(session.get("name"))
 
     # update password
@@ -1333,6 +1356,8 @@ def update_user():
     athlete.compulsory = [skill for skill in compulsory.split()]
     athlete.optional = [skill for skill in optional.split()]
     athlete.expand_comments = expand_comments
+    athlete.dm_prelim1 = [skill for skill in pass1.split()]
+    athlete.dm_prelim2 = [skill for skill in pass2.split()]
     athlete.save()
     return redirect(url_for("user_profile"))
 

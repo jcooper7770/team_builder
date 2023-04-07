@@ -2,6 +2,7 @@ var curr_page = 1;
 var paginated_practices = [];
 $(document).ready(function() {
     // Set logger date to current local date if a search date isn't chosen
+    {% if url_for(request.endpoint) == "/logger" %}
     {% if not search_date %}
     {% if not current_date %}
     var date = new Date();
@@ -17,6 +18,7 @@ $(document).ready(function() {
     document.getElementById("logger-date").value = "{{search_date}}";
     document.getElementById("airtime-date").value = "{{search_date}}";
     document.getElementById("practice_date").value = "{{search_date}}";
+    {% endif %}
     {% endif %}
 
     // paginate practices
@@ -259,22 +261,30 @@ $("#log").on('input', function (e) {
 // Get a reference to the button and spinner elements
 const button = document.getElementById("submit-button");
 const spinner = document.querySelector(".spinner-container");
-button.addEventListener("click", function() {
-  showSpinner("Submitting data...")
-});
+if (button != null) {
+    button.addEventListener("click", function() {
+    showSpinner("Submitting data...")
+    });
+}
 const goal_button = document.getElementById("submit-goals")
-goal_button.addEventListener("click", function() {
-  showSpinner("Submitting goals...")
-});
+if (goal_button != null) {
+    goal_button.addEventListener("click", function() {
+    showSpinner("Submitting goals...")
+    });
+}
 
 const airtime_button = document.getElementById("submit-airtime")
-airtime_button.addEventListener("click", function() {
-  showSpinner("Submitting airtime...")
-});
+if (airtime_button != null) {
+    airtime_button.addEventListener("click", function() {
+    showSpinner("Submitting airtime...")
+    });
+}
 const skill_button = document.getElementById("submit-skills")
-skill_button.addEventListener("click", function() {
-  showSpinner("Submitting skill for search...")
-});
+if (skill_button != null) {
+    skill_button.addEventListener("click", function() {
+    showSpinner("Submitting skill for search...")
+    });
+}
 $("[id$=_skills]").change(function (e) {
     var skill = $(this).val().slice(5).replace('t', 'o').replace('p', '<').replace('s', '/');
     var routineText = document.getElementById('log').value;

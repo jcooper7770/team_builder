@@ -56,6 +56,9 @@
           <div class="row">
             <button class="btn btn-primary" type="submit" id="submit">Submit</button>
           </div>
+          <div class="row">
+            <button class="btn btn-primary" type="button" id="comp-cards">Make Athlete Comp Cards</button>
+          </div>
         </form>
         <br>
       </div>
@@ -159,8 +162,14 @@ $('#athletes_after').change(function(e){
 
     }
   });
+ })
+ $('#comp-cards').click(function(e) {
+    console.log("Making comp cards")
+    e.preventDefault();
+    var url = "/logger/coach/compcards";
+    location.href = encodeURI(url);
+  });
 
-})
 
 </script>
 {% endblock %}

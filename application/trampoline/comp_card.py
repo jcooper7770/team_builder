@@ -64,7 +64,6 @@ def generate_fields_obj():
             'size': 12
         }
 
-
         # finals routine
         fields[f'finalsskill{num+1}'] = {
             'pos': (100, 538 + 18*num),
@@ -80,7 +79,8 @@ def generate_fields_obj():
         }
     FIELDS = fields
 
-def fill_out(data):
+
+def fill_out(data, filename="modified_comp_card.pdf"):
     """
     Fill out the comp card with the data
     """
@@ -107,7 +107,7 @@ def fill_out(data):
         )
 
     # Save the modified PDF file
-    pdf_doc.save("modified_comp_card.pdf")
+    pdf_doc.save(filename)
 
 if __name__ == '__main__':
     comp_card_file = "comp_card_trampoline.pdf"
