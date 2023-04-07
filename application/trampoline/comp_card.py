@@ -1,5 +1,6 @@
 #import PyPDF2
 import fitz
+import os
 
 PDF_FILE = "comp_card_trampoline.pdf"
 FIELDS = {
@@ -107,7 +108,11 @@ def fill_out(data, filename="modified_comp_card.pdf"):
         )
 
     # Save the modified PDF file
-    pdf_doc.save(filename)
+    if not os.path.exists("comp_cards"):
+        os.mkdir("comp_cards")
+
+    file_path = os.path.join("comp_cards", filename)
+    pdf_doc.save(file_path)
 
 if __name__ == '__main__':
     comp_card_file = "comp_card_trampoline.pdf"

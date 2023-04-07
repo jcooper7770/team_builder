@@ -1217,7 +1217,7 @@ def user_comp_card():
     """
     athlete = Athlete.load(session.get("name"))
     athlete.save_comp_card()
-    return send_file("modified_comp_card.pdf", as_attachment=True)
+    return send_file("comp_cards/modified_comp_card.pdf", as_attachment=True)
 
 
 @app.route("/logger/coach/compcards")
@@ -1227,16 +1227,13 @@ def coach_comp_cards():
     """
     import zipfile
     coach = Athlete.load(session.get("name"))
+    zipfile_name = "Comp_cards.zip"
+    zipf = zipfile.ZipFile(zipfile_name,'w', zipfile.ZIP_DEFLATED)
     for athlete_name in coach.athletes:
         athlete = Athlete.load(athlete_name)
         athlete.save_comp_card(f"{athlete_name}_tramp.pdf")
-
-    zipfile_name = "Comp_cards.zip"
-    zipf = zipfile.ZipFile(zipfile_name,'w', zipfile.ZIP_DEFLATED)
-    for _, _,files in os.walk('.'):
-        for file in files:
-            if file.endswith("_tramp.pdf"):
-                zipf.write(file)
+        zipf.write(f"comp_cards/{athlete_name}_tramp.pdf")
+    
     zipf.close()
     return send_file(zipfile_name, mimetype='zip', as_attachment=True)
 
