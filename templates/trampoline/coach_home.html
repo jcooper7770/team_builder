@@ -10,16 +10,23 @@
 
           <!-- Username -->
           <div class="form-row">
-            <div class="col-sm-4"><label>Athlete:</label></div>
+            <div class="col-sm-4"><label>Athletes hidden:</label></div>
             <div class="col">
-              <select id="athlete">
-                <option value="">All athletes</option>
+              <select id="athlete" multiple>
+                <!--<option id="option_all" value="">All athletes</option>-->
                 {% for athlete in athletes %}
-                <option value="{{athlete}}"{% if athlete == current_athlete %} selected{% endif %}>{{athlete}}</option>
+                <option id="option_{{athlete}}" value="{{athlete}}"{% if athlete == current_athlete %} selected{% endif %}>{{athlete}}</option>
                 {% endfor %}
               </select>
             </div>
           </div>
+          <div class="form-row">
+            <div class="col-sm-4"><label>Athletes shown:</label></div>
+            <div class="col">
+              <select id="after" multiple></select>
+            </div>
+          </div>
+
         </form>
 
       </td>
@@ -42,8 +49,40 @@ $('#athlete').change(function(e) {
 });
 */
 // Update tables on the fly
-$('#athlete').change(function(e) {
-    var val = document.querySelector("#athlete").value;
+$("[id^=option_").click(function(e){
+  if (e.target.id == "option_all") {
+    var after = document.getElementById("after");
+    console.log(after.children);
+    for(var i=0; i<after.children.length; i++) {
+      document.getElementById("athlete").append(after.children[i]);
+    }
+    //for(ele of document.getElementById("after").childNodes) {
+    //  document.getElementById("athlete").append(ele);
+    //  console.log(ele);
+    //}
+  } else {
+    if (e.target.parentElement.id == "athlete") {
+      document.getElementById("after").append(e.target);
+      e.target.selected = false;
+    } else {
+      document.getElementById("athlete").append(e.target);
+      e.target.selected = false;
+    }
+  }
+  changeView();
+});
+
+function changeView() {
+    //var val = document.querySelector("#athlete").value;
+
+    var selected = [];
+    const athletesSelect = document.getElementById("after");
+    for(option of athletesSelect.children) {
+      selected.push(option.value);
+      console.log(option.value);
+    }
+    console.log(selected);
+
     for(let i=0; i<paginated_practices.length; i++) {
         var page = paginated_practices[i];
         for (let j=0; j<page.length; j++) {
@@ -52,17 +91,71 @@ $('#athlete').change(function(e) {
 
             // re-display the table incase it was hidden
             table.style.display = "";
-            if (val == "") {
-                continue
+            if (selected.length == 0) {
+              continue
             }
             var thead = table.children[0];
             var title = thead.children[0].children[0].innerHTML;
-            if (!title.includes(val)) {
+
+            var includes = false;
+            for(ath of selected) {
+              if(title.includes(ath)) {
+                includes = true;
+              }
+            }
+            if (!includes) {
                 table.style.display = "none";
             }
         }
     }
     repaginate();
+}
+/*
+$('#athlete').change(function(e) {
+    console.log(e.target.id);
+    var val = document.querySelector("#athlete").value;
+
+    var selected = [];
+    const athletesSelect = document.getElementById("after");
+    for(option of athletesSelect.children) {
+      selected.push(option.value);
+      console.log(option.value);
+    }
+    
+
+    for(let i=0; i<paginated_practices.length; i++) {
+        var page = paginated_practices[i];
+        for (let j=0; j<page.length; j++) {
+            var container = page[j];
+            var table = container.children[0];
+
+            // re-display the table incase it was hidden
+            table.style.display = "";
+            //if (val == "") {
+            //    continue
+            //}
+            if (selected == []) {
+              continue
+            }
+            var thead = table.children[0];
+            var title = thead.children[0].children[0].innerHTML;
+
+            var includes = false;
+            for(ath of selected) {
+              if(title.includes(ath)) {
+                includes = true;
+              }
+            }
+            if (!includes) {
+                table.style.display = "none";
+            }
+            //if (!title.includes(val)) {
+            //    table.style.display = "none";
+            //}
+        }
+    }
+    repaginate();
 });
+*/
 </script>
 {% endblock %}

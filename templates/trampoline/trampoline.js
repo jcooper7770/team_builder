@@ -116,8 +116,8 @@ const repaginate = function() {
             // start a new page if there are 10 non-hidden things
             if (numCurrentPage == 10) {
                 newPaginatedPractices.push(paginatedPage);
-                console.log("Starting a new page");
-                console.log(paginatedPage);
+                //console.log("Starting a new page");
+                //console.log(paginatedPage);
                 paginatedPage = [];
                 numCurrentPage = 0;
             }
@@ -132,7 +132,7 @@ const repaginate = function() {
     var practices_page = document.createElement("div");
     practices_page.id = "practices_page";
     curr_page = 1;
-    console.log(paginated_practices);
+    //console.log(paginated_practices);
     for(element of paginated_practices[curr_page-1]){
         practices_page.append(element);
         if (element.firstChild.style.display != "none") {
