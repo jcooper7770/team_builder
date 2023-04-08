@@ -34,9 +34,35 @@
 
 {% block javascript %}
 <script type="text/javascript">
+/*
+// reload to update tables
 $('#athlete').change(function(e) {
   var athlete = $(this).val();
   location.href = "?athlete="+athlete
+});
+*/
+// Update tables on the fly
+$('#athlete').change(function(e) {
+    var val = document.querySelector("#athlete").value;
+    for(let i=0; i<paginated_practices.length; i++) {
+        var page = paginated_practices[i];
+        for (let j=0; j<page.length; j++) {
+            var container = page[j];
+            var table = container.children[0];
+
+            // re-display the table incase it was hidden
+            table.style.display = "";
+            if (val == "") {
+                continue
+            }
+            var thead = table.children[0];
+            var title = thead.children[0].children[0].innerHTML;
+            if (!title.includes(val)) {
+                table.style.display = "none";
+            }
+        }
+    }
+    repaginate();
 });
 </script>
 {% endblock %}

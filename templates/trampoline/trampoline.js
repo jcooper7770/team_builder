@@ -20,7 +20,10 @@ $(document).ready(function() {
     document.getElementById("practice_date").value = "{{search_date}}";
     {% endif %}
     {% endif %}
+    paginate();
+});
 
+const paginate = function() {
     // paginate practices
     var practices = [];
     var practices_div = document.getElementById("practices");
@@ -31,6 +34,7 @@ $(document).ready(function() {
         }
     }
 
+    // split practices into pages
     var page_size = 10;
     n_pages = Math.floor(practices.length / page_size) + 1;
     for(i=0; i< n_pages; i++) {
@@ -43,8 +47,29 @@ $(document).ready(function() {
         paginated_practices.push(current_page);
     }
 
+    // clear the practices div
     practices_div.innerHTML = "";
 
+    // create buttons for pages
+    createPageButtons();
+
+    // create practice page divs
+    var practices_page = document.createElement("div");
+    practices_page.id = "practices_page";
+    for(element of paginated_practices[curr_page-1]){
+        practices_page.append(element);
+        practices_page.append(document.createElement("br"));
+        practices_page.append(document.createElement("br"));
+    }
+    practices_div.append(practices_page);
+
+}
+
+const createPageButtons = function () {
+    // clear the practices div
+    var practices_div = document.getElementById("practices");
+    practices_div.innerHTML = "";
+    // create buttons for pages
     var page_buttons = document.createElement("div");
     page_buttons.id = "page_buttons";
     page_buttons.classList.add("text-center")
@@ -74,16 +99,51 @@ $(document).ready(function() {
     page_buttons.prepend(prev_page);
     practices_div.append(page_buttons);
 
+}
+
+const repaginate = function() {
+    var newPaginatedPractices = [];
+
+    var numCurrentPage = 0; // number of non-hidden on page
+    var paginatedPage = []; // current page of elements
+    for(page=0; page < paginated_practices.length; page++){
+        for (element of paginated_practices[page]) {
+            paginatedPage.push(element);
+            if (element.firstChild.style.display != "none") {
+                numCurrentPage++;
+            }
+
+            // start a new page if there are 10 non-hidden things
+            if (numCurrentPage == 10) {
+                newPaginatedPractices.push(paginatedPage);
+                console.log("Starting a new page");
+                console.log(paginatedPage);
+                paginatedPage = [];
+                numCurrentPage = 0;
+            }
+        }
+    }
+    newPaginatedPractices.push(paginatedPage);
+
+    paginated_practices = newPaginatedPractices;
+    createPageButtons();
+    //var practices_page = document.getElementById("practices_page");
+    //practices_page.innerHTML = "";
     var practices_page = document.createElement("div");
     practices_page.id = "practices_page";
+    curr_page = 1;
+    console.log(paginated_practices);
     for(element of paginated_practices[curr_page-1]){
         practices_page.append(element);
-        practices_page.append(document.createElement("br"));
-        practices_page.append(document.createElement("br"));
+        if (element.firstChild.style.display != "none") {
+            practices_page.append(document.createElement("br"));
+            practices_page.append(document.createElement("br"));
+        }
     }
-    practices_div.append(practices_page);
+    var practices_div = document.getElementById("practices");
+    practices_div.appendChild(practices_page);
 
-});
+}
 
 // Change the practice page
 const changePage = function() {
@@ -116,10 +176,11 @@ const changePage = function() {
     practices_page.innerHTML = "";
     for(element of paginated_practices[curr_page-1]){
         practices_page.append(element);
-        practices_page.append(document.createElement("br"));
-        practices_page.append(document.createElement("br"));
+        if (element.firstChild.style.display != "none") {
+            practices_page.append(document.createElement("br"));
+            practices_page.append(document.createElement("br"));
+        }
     }
-
 }
 // keep the skill dropdowns open
 $(function() {
@@ -387,6 +448,34 @@ $("[id^=remove_]").click(function (e) {
         });
     }
 });
+
+$("#search-practice").click(function (e) {
+
+    var val = document.querySelector("#practice_date").value;
+    var date = new Date(val);
+    var string_date = ((date.getMonth() > 8) ? (date.getMonth() + 1) : ('0' + (date.getMonth() + 1))) + '/' + ((date.getDate() > 8) ? (date.getDate()+1) : ('0' + (date.getDate()+1))) + '/' + date.getFullYear();
+    console.log(string_date);
+    for(let i=0; i<paginated_practices.length; i++) {
+        var page = paginated_practices[i];
+        for (let j=0; j<page.length; j++) {
+            var container = page[j];
+            var table = container.children[0];
+
+            // re-display the table incase it was hidden
+            table.style.display = "";
+            if (val == "") {
+                continue
+            }
+            var thead = table.children[0];
+            var title = thead.children[0].children[0].innerHTML;
+            if (!title.includes(string_date)) {
+                table.style.display = "none";
+            }
+        }
+    }
+    document.querySelector('.spinner-container').style.display = "none";
+});
+
 function showSpinner(text) {
   var spinnerText = document.querySelector('.spinner-text');
   var textContent = text || "Loading...";
