@@ -3,35 +3,37 @@
 {% block logging %}
 <br>
 <div class="form-group" align="center">
-  <table align="center">
-    <tr>
-      <td>
-        <form action="{{ url_for('trampoline_log') }}" method="post" id="logger" name="logger" style="text-align:left;">
+        <!--<form action="{{ url_for('trampoline_log') }}" method="post" id="logger" name="logger" style="text-align:left;">-->
 
-          <!-- Username -->
-          <div class="form-row">
-            <div class="col-sm-4"><label>Athletes hidden:</label></div>
-            <div class="col">
-              <select id="athlete" multiple>
-                <!--<option id="option_all" value="">All athletes</option>-->
-                {% for athlete in athletes %}
-                <option id="option_{{athlete}}" value="{{athlete}}"{% if athlete == current_athlete %} selected{% endif %}>{{athlete}}</option>
-                {% endfor %}
-              </select>
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="col-sm-4"><label>Athletes shown:</label></div>
-            <div class="col">
-              <select id="after" multiple></select>
-            </div>
-          </div>
+  <div class="form-row">
+    <!-- Athletes to show -->
+    <div class="col-sm-4"><label>Athletes shown:</label></div>
+    <div class="col">
+      <select id="after" style="width: 100%;" multiple>
+      
+        {% for athlete in athletes %}
+        <option id="option_{{athlete}}" value="{{athlete}}"{% if athlete == current_athlete %} selected{% endif %}>{{athlete}}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+  <div class="form-row">
 
-        </form>
+    <!-- Athletes to hide -->
+    <div class="col-sm-4"><label>Athletes hidden:</label></div>
+    <div class="col">
+      <select id="athlete" style="width:100%" multiple>
+        <!--<option id="option_all" value="">All athletes</option>-->
+        <!--{% for athlete in athletes %}
+        <option id="option_{{athlete}}" value="{{athlete}}"{% if athlete == current_athlete %} selected{% endif %}>{{athlete}}</option>
+        {% endfor %}-->
+      </select>
+    </div>
 
-      </td>
-    </tr>
-  </table>
+  </div>
+
+        <!--</form>-->
+
 </div>
 {% endblock %}
 
