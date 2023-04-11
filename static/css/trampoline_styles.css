@@ -101,3 +101,12 @@
   margin-right: 5px;
   padding: 5px;
 }
+
+.athlete-list {
+  list-style: none;
+  background-color: white;
+  border-radius: 1px;
+  border: 1px solid;
+  height: 100px;
+  overflow-y: auto;
+}

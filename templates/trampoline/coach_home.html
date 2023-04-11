@@ -9,12 +9,13 @@
     <!-- Athletes to show -->
     <div class="col-sm-4"><label>Athletes shown:</label></div>
     <div class="col">
-      <select id="after" style="width: 100%;" multiple>
-      
+      <ul id="shown_athletes" class="athlete-list mx-auto text-left">
         {% for athlete in athletes %}
-        <option id="option_{{athlete}}" value="{{athlete}}"{% if athlete == current_athlete %} selected{% endif %}>{{athlete}}</option>
+        <li id="athlete_{{athlete}}">
+          <input type="checkbox" id="show_{{athlete}}" \>  {{athlete}}
+        </li>
         {% endfor %}
-      </select>
+      </ul>
     </div>
   </div>
   <div class="form-row">
@@ -22,12 +23,7 @@
     <!-- Athletes to hide -->
     <div class="col-sm-4"><label>Athletes hidden:</label></div>
     <div class="col">
-      <select id="athlete" style="width:100%" multiple>
-        <!--<option id="option_all" value="">All athletes</option>-->
-        <!--{% for athlete in athletes %}
-        <option id="option_{{athlete}}" value="{{athlete}}"{% if athlete == current_athlete %} selected{% endif %}>{{athlete}}</option>
-        {% endfor %}-->
-      </select>
+      <ul id="hidden_athletes" class="athlete-list mx-auto text-left"></ul>
     </div>
 
   </div>
@@ -43,47 +39,41 @@
 
 {% block javascript %}
 <script type="text/javascript">
-/*
-// reload to update tables
-$('#athlete').change(function(e) {
-  var athlete = $(this).val();
-  location.href = "?athlete="+athlete
-});
-*/
 // Update tables on the fly
-$("[id^=option_").click(function(e){
-  if (e.target.id == "option_all") {
-    var after = document.getElementById("after");
-    console.log(after.children);
-    for(var i=0; i<after.children.length; i++) {
-      document.getElementById("athlete").append(after.children[i]);
-    }
-    //for(ele of document.getElementById("after").childNodes) {
-    //  document.getElementById("athlete").append(ele);
-    //  console.log(ele);
-    //}
+$("[id^=show_]").click(function(e) {
+  if (e.target.parentElement.parentElement.id == "shown_athletes") {
+    document.getElementById("hidden_athletes").appendChild(e.target.parentElement);
   } else {
-    if (e.target.parentElement.id == "athlete") {
-      document.getElementById("after").append(e.target);
-      e.target.selected = false;
-    } else {
-      document.getElementById("athlete").append(e.target);
-      e.target.selected = false;
-    }
+    document.getElementById("shown_athletes").appendChild(e.target.parentElement);
   }
+  e.target.checked = false;
   changeView();
+  
+  // sort the items by athlete name
+  sortAthletes("shown_athletes");
+  sortAthletes("hidden_athletes");
 });
+
+function sortAthletes(listId) {
+  var athletes = [];
+  const athleteList = document.getElementById(listId);
+  var athletes = Array.from(athleteList.children);
+  athletes.sort((a,b) => (a.innerText > b.innerText) ? 1 : -1);
+  for (athlete of athletes) {
+    athleteList.appendChild(athlete);
+  }
+}
 
 function changeView() {
-    //var val = document.querySelector("#athlete").value;
-
     var selected = [];
     const athletesSelect = document.getElementById("after");
-    for(option of athletesSelect.children) {
-      selected.push(option.value);
-      console.log(option.value);
+    const shownList = document.getElementById("shown_athletes");
+    for (listItem of shownList.children) {
+      const athleteName = listItem.innerText.trim();
+      if (athleteName != "") {
+        selected.push(athleteName);
+      }
     }
-    console.log(selected);
 
     for(let i=0; i<paginated_practices.length; i++) {
         var page = paginated_practices[i];
@@ -112,52 +102,5 @@ function changeView() {
     }
     repaginate();
 }
-/*
-$('#athlete').change(function(e) {
-    console.log(e.target.id);
-    var val = document.querySelector("#athlete").value;
-
-    var selected = [];
-    const athletesSelect = document.getElementById("after");
-    for(option of athletesSelect.children) {
-      selected.push(option.value);
-      console.log(option.value);
-    }
-    
-
-    for(let i=0; i<paginated_practices.length; i++) {
-        var page = paginated_practices[i];
-        for (let j=0; j<page.length; j++) {
-            var container = page[j];
-            var table = container.children[0];
-
-            // re-display the table incase it was hidden
-            table.style.display = "";
-            //if (val == "") {
-            //    continue
-            //}
-            if (selected == []) {
-              continue
-            }
-            var thead = table.children[0];
-            var title = thead.children[0].children[0].innerHTML;
-
-            var includes = false;
-            for(ath of selected) {
-              if(title.includes(ath)) {
-                includes = true;
-              }
-            }
-            if (!includes) {
-                table.style.display = "none";
-            }
-            //if (!title.includes(val)) {
-            //    table.style.display = "none";
-            //}
-        }
-    }
-    repaginate();
-});
-*/
 </script>
 {% endblock %}
