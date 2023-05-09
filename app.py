@@ -532,7 +532,7 @@ def about():
 @app.route("/move_image", methods=["GET", "POST"])
 def move_count_image():
     pokemon_list = request.args.get("pokemon", "").split(",")
-    num_cols = request.args.get("cols", 7)
+    num_cols = int(request.args.get("cols", 7))
     '''
     data = request.json
     print(data)
