@@ -253,19 +253,20 @@ def add_counts_to_img(pokemon, pokemon_moveset, blank_img, row, col, fonts):
         font=count_image_font
     )
 
-    # second charge move
-    draw_text(
-        imgText,
-        (charge_xpos + 33 if len(pokemon_moveset['charge'])==3 else charge_xpos, row*100 + 60),
-        pokemon_moveset['charge'][1]['move'],
-        font=cm_image_font
-    )
-    draw_text(
-        imgText,
-        (charge_xpos + 33 if len(pokemon_moveset['charge'])==3 else charge_xpos, row*100 + 85),
-        pokemon_moveset['charge'][1]['count'],
-        font=count_image_font
-    )
+    if len(pokemon_moveset['charge']) > 1:
+        # second charge move
+        draw_text(
+            imgText,
+            (charge_xpos + 33 if len(pokemon_moveset['charge'])==3 else charge_xpos, row*100 + 60),
+            pokemon_moveset['charge'][1]['move'],
+            font=cm_image_font
+        )
+        draw_text(
+            imgText,
+            (charge_xpos + 33 if len(pokemon_moveset['charge'])==3 else charge_xpos, row*100 + 85),
+            pokemon_moveset['charge'][1]['count'],
+            font=count_image_font
+        )
     
     if len(pokemon_moveset['charge']) == 3:
         draw_text(
