@@ -189,25 +189,31 @@ def generate_move_strings(pokemon, pokemon_ranking, counts, chosen_fast_move=Non
     # Sort moves by number of uses in gobattlelog    
     ranked_moves = [move['moveId'] for move in sorted(sorted_moves, key=lambda x:x['uses'], reverse=True)]
     most_used_charges = ranked_moves[:3] if len(ranked_moves) >= 3 else ranked_moves
+    
+    # Pick the most used fast move
+    unsorted_fast_moves = [move for move in pokemon_ranking['moves']['fastMoves'] if move['uses']]
+    most_used_fast_move = [move['moveId'] for move in sorted(unsorted_fast_moves, key=lambda x:x['uses'], reverse=True)][0]
 
     for move, count in counts.get(mega or pokemon, {}).items():
         # move looks like "fast_move (0) [1] - charge move [50]"
         fast_move = move.split('-')[0].split()[0]
         charge_move = move.split('-')[1].split()[0]
 
+        # Check charge move
+        if charge_move.upper() not in most_used_charges: # Charge move not in most used
+            #print(f"{pokemon} - charge {charge_move} not in most used")
+            continue
+
+        # Check fast move
         if chosen_fast_move:
             # if a fast move is chosen for the image
-            if fast_move.upper() != chosen_fast_move.upper():
+            if fast_move.upper() != chosen_fast_move.upper(): # Not a chosen fast move
                 continue
-            if charge_move.upper() not in most_used_charges:
-                continue
-        elif pokemon_ranking and pokemon_ranking.get('moveset', []):
-            # if the fast move is not as recommended
-            if not pokemon_ranking.get('moveset')[0].lower() == fast_move:
-                continue
-            # if the charge move is not as recommended
-            if not charge_move.upper() in most_used_charges:
-                continue
+            #if charge_move.upper() not in most_used_charges:
+            #    continue
+        elif most_used_fast_move.lower() != fast_move: # Fast move different than most used
+            #print(f"{pokemon} - fast {fast_move} not the most used fast move")
+            continue
         added = "-" if count[0] != count[1] else ""
         added = f"{added}*" if count[2] != count[0] else added
         #added = f"{added}^" if count[3] != count[0] else added
@@ -215,10 +221,8 @@ def generate_move_strings(pokemon, pokemon_ranking, counts, chosen_fast_move=Non
         short_count = f"{count[0]}{added}"
         pokemon_moveset['fast'] = ' '.join(fast_move.upper().split('_'))
         pokemon_moveset['charge'].append({'move': ' '.join(charge_move.upper().split("_")), 'count': short_count})
-
     if not pokemon_moveset['charge']:
         pokemon_moveset['charge'] = [{'move': '???', 'count': '?'}, {'move': '???', 'count': '?'}]
-
     return pokemon_moveset
 
 
