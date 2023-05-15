@@ -107,12 +107,12 @@ def set_table_name(table_name):
     global TABLE_NAME
     TABLE_NAME = table_name
 
-
+3
 class Athlete:
     """
     Information about athlete
     """
-    def __init__(self, name, private=False, compulsory=[], optional=[], dm_prelims1=[], dm_prelims2=[], dm_finals1=[], dm_finals2=[], password="", expand_comments=False, is_coach=False, athletes=[], first_login=False, signup_date=None, messages=[]):
+    def __init__(self, name, private=False, compulsory=[], optional=[], dm_prelims1=[], dm_prelims2=[], dm_finals1=[], dm_finals2=[], password="", expand_comments=False, is_coach=False, athletes=[], first_login=False, signup_date=None, messages=[], tu_prelims1=[], tu_prelims2=[]):
         self.name = name
         self.compulsory = compulsory
         self.optional = optional
@@ -121,6 +121,8 @@ class Athlete:
         self.dm_prelim2 = dm_prelims2
         self.dm_finals1 = dm_finals1
         self.dm_finals2 = dm_finals2
+        self.tu_prelims1 = tu_prelims1
+        self.tu_prelims2 = tu_prelims2
         self.password = password
         self.expand_comments = expand_comments
         self.is_coach = is_coach
@@ -189,6 +191,8 @@ class Athlete:
             'dm_prelim2': self.dm_prelim2,
             'dm_finals1': self.dm_finals1,
             'dm_finals2': self.dm_finals2,
+            'tu_prelims1': self.tu_prelims1,
+            'tu_prelims2': self.tu_prelims2,
             'password': self.password,
             'expand_comments': self.expand_comments,
             'is_coach': self.is_coach,
@@ -366,6 +370,7 @@ class Practice:
         return_vals = []
         for practice_date, event_data in practices.items():
             for event, turns in event_data.items():# turns = [{0: {'skills': '801o', 'note': 'dsfd'}}...]
+                skill_class = TumblingSkill if event == "tumbling" else Skill
                 turns_list = [y[1] for y in sorted(turns.items(), key=lambda x: x[0])]
                 # make routines for practice object
                 routines = []
@@ -375,7 +380,7 @@ class Practice:
                     #print(f"{practice_date} - skills: '{skills}' - note: '{note}'")
                     # not a note
                     if skills and skills[0]!="-":
-                        routine = Routine([Skill(skill, event=event) for skill in skills.split()], event=event, note=note)
+                        routine = Routine([skill_class(skill, event=event) for skill in skills.split()], event=event, note=note)
                         routines.append(routine)
                         continue
                     # notes
@@ -478,6 +483,129 @@ class Skill:
         return str(self)
 
 
+class TumblingSkill(Skill):
+    """
+    A tumbling skill converted from a string
+    """
+    def __init__(self, string, event=EVENT):
+        self.flips = 0
+        self.twists = []
+        self.pos = string[-1]
+        self.shorthand = string
+        self.event = event
+
+        if string not in NON_SKILLS:
+            self.flips = self.get_flips_from_skill(string)
+            self.twists = [int(n)/2.0 for n in string[:-1].strip('.').replace('-', '0')]
+            self.difficulty = self.get_difficulty()
+        else:
+            self.flips, self.twists, self.difficulty = (0, [0], 0)
+
+        # skip adding to all skills for now
+        ''' 
+        current_skills = ALL_SKILLS.get(self.flips_str.get(self.flips, -1), None)
+        # Add to ALL_SKILLS if matches criteria:
+        #   - at least one flip
+        #   - proper format of a skill (i.e. 40/ not 4/)
+        #   - not already in the list of skills
+        if self.flips and self.shorthand[:-1] not in ALL_SKILLS['user added'] and (not current_skills or self.shorthand[:-1] not in current_skills):
+            #ALL_SKILLS['user added'] = []
+            if self.validate_skill():
+                ALL_SKILLS['user added'].append(self.shorthand[:-1])
+                ALL_SKILLS['user added'] = sorted(ALL_SKILLS['user added'], key=lambda x: (self.get_flips_from_skill(f"{x} "), self.get_twists_from_skill(f"{x} ")))
+        '''
+    def validate_skill(self):
+        return True
+
+
+    def get_difficulty(self):
+        """
+        Returns the difficulty of the skill
+
+        From: https://static.usagym.org/PDFs/Forms/T&T/DD_TU.pdf
+        """
+        #print(f"**** {self.shorthand} ; {self.twists} ; {self.flips}")
+        # Roundoff, front handspring, and back handspring are 0.1
+        if self.shorthand in ["(", "h", "f"]:
+            return 0.1
+        
+        # whips are 0.2
+        if self.shorthand == "^":
+            return 0.2
+        
+        bonus = 0
+
+        # forward skills get 0.1 bonus
+        forward_bonus = 0
+        if self.shorthand.startswith("."):
+            #print("**** adding forward skill")
+            #bonus += 0.1
+            forward_bonus = 0.1
+
+        
+        # Single flip pike and straight get 0.1 bonus
+        # Flip and position bonus
+        #   # flips      tuck    pike    straight
+        #     1           0        0.1     0.1
+        #     2           0        0.1     0.2
+        #     3           0        0.2     0.4
+        flip_bonus = {
+            1: {"<": 0.1, "/": 0.1},
+            2: {"<": 0.1, "/": 0.2},
+            3: {"<": 0.2, "/": 0.4}
+        }
+        bonus += flip_bonus.get(self.flips, {}).get(self.pos, 0)
+
+        total_twists = int(sum(self.twists) * 2)
+        #print(f"**** total twists: {total_twists}")
+        twist_difficulty = 0
+        twist_value = {
+            1: [(0, 0.2), (4, 0.3), (6, 0.4)],
+            2: [(0, 0.1), (2, 0.2), (4, 0.3), (6, 0.4)],
+            3: [(0, 0.3), (2, 0.4)]
+        }
+        current_add = 0
+        for twist_num in range(1, total_twists + 1):
+            for value in twist_value.get(self.flips, [(0, 0)]):
+                if twist_num > value[0]:
+                    current_add = value[1]
+            twist_difficulty += current_add
+            #print(f"**** {twist_num} -> {current_add}")
+            '''
+            # brute force
+            if self.flips == 1:
+                if twist_num < 4:
+                    twist_difficulty += 0.2
+                    twist_difficulty += twist_value.get()
+                elif twist_num <= 6:
+                    twist_difficulty += 0.3
+                else:
+                    twist_difficulty += 0.4
+            '''
+        #print(f"**** {twist_difficulty}")
+        base = (0.5 + forward_bonus) * self.flips + bonus + twist_difficulty
+
+        #print(f"**** {self.flips} ; {bonus} ; {twist_difficulty}")
+        # random modifier for single flips with twists, it seems to remove 0.1
+        if self.flips == 1 and total_twists > 0:
+            base -= 0.1
+
+        # miller (33/)
+        # (0.5 * 2) + 0.2 + (0.1 + 0.1) + (0.2 + 0.2) + (0.3 + 0.3)
+        return base * self.flips
+
+    def get_flips_from_skill(self, string):
+        """
+        Returns the number of flips in a skill
+        """
+        # Ignore the '.' for forward skills
+        if string.startswith("."):
+            string = string[1:]
+        # the number of flips is usually the number of characters (besides position)
+        # but return 1 if a roundoff or handspring
+        return max(len(string) - 1, 1)
+
+
 class Routine():
     """
     Routine
@@ -509,15 +637,25 @@ class Routine():
     
     def add_skill(self, skill):
         """ Add the given skill(s) to the routine """
+        skill_class = TumblingSkill if self.event == "tumbling" else Skill
+        if self.event == "tumbling":
+            skill = skill.replace('-', '0')
         # Skills ending in 'ooo' or 'o</' should be multiple of the same skill
         if skill in NON_SKILLS:
-            self.skills.append(Skill(skill, event=self.event))
+            #self.skills.append(Skill(skill, event=self.event))
+            self.skills.append(skill_class(skill, event=self.event))
             return
-        no_pos_skill = ''.join(s for s in skill if s.isdigit())
-        skill_pos = ''.join(s for s in skill if not s.isdigit())
+        #no_pos_skill = ''.join(s for s in skill if s.isdigit())
+        no_pos_skill = ''.join(s for s in skill if s not in 'o</')
+        #skill_pos = ''.join(s for s in skill if not s.isdigit())
+        skill_pos = ''.join(s for s in skill if s in 'o</')
         new_skills_list = []
         for pos in skill_pos:
-            new_skill = Skill(f"{no_pos_skill}{pos}", event=self.event)
+            #new_skill = Skill(f"{no_pos_skill}{pos}", event=self.event)
+            new_skill = skill_class(f"{no_pos_skill}{pos}", event=self.event)
+            new_skills_list.append(new_skill)
+        if not skill_pos:
+            new_skill = skill_class(skill, event=self.event)
             new_skills_list.append(new_skill)
         self.skills.extend(new_skills_list)
 
@@ -564,6 +702,15 @@ def set_current_athlete(name):
     """
     global CURRENT_ATHLETE
     CURRENT_ATHLETE = Athlete.load(name)
+
+
+def get_tumbling_difficulty(skill):
+    """
+    Returns the difficulty/tarrif of the tumbling skill
+
+    Got DD from https://static.usagym.org/PDFs/Forms/T&T/DD_TU.pdf
+    """
+    pass
 
 
 def get_dmt_difficulty(skill):
@@ -699,8 +846,10 @@ def convert_form_data(form_data, logger=print, event=EVENT, notes=None, get_athl
     for turn in turn_skills:
         if not turn:
             continue
-        # notes start with '-'
-        if turn[0] and turn[0][0] in ['-', '#']:
+        # notes start with '-' or '#'
+        note_starts = {'tumbling': ['#']}
+        note_start = note_starts.get(event, ['-', '#'])
+        if turn[0] and turn[0][0] in note_start:
             note_str = ' '.join(turn)
             if skill_turns and skill_turns[-1].skills and not skill_turns[-1].note:
                 skill_turns[-1].note = note_str.strip('-').strip('#')
@@ -749,9 +898,12 @@ def convert_form_data(form_data, logger=print, event=EVENT, notes=None, get_athl
             try:
                 # Allow multiple of the same skill (i.e. 40o<//<o)
                 routine.add_skill(skill)
-            except:
+            except Exception as skill_err:
                 if logger:
-                    logger(f"Cannot convert '{skill}' into a skill")
+                    logger(f"Cannot convert '{skill}' into a skill because: {skill_err}")
+                    import traceback
+                    logger(traceback.format_exc())
+                    raise
                 continue
         skill_turns.append(routine)
     # add the notes to the beginning

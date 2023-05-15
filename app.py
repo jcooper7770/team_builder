@@ -1075,8 +1075,9 @@ def user_stats():
     print(f"user turns: {len(user_turns)}")
 
     # Collect all skills
-    all_skills = defaultdict(lambda: {'all': 0, 'trampoline': 0, 'dmt': 0})
-    dmt_passes = defaultdict(lambda: {'all': 0, 'trampoline': 0, 'dmt': 0})
+    all_skills = defaultdict(lambda: {'all': 0, 'trampoline': 0, 'dmt': 0, 'tumbling': 0})
+    dmt_passes = defaultdict(lambda: {'all': 0, 'trampoline': 0, 'dmt': 0, 'tumbling': 0})
+    tumbling_skills = defaultdict(lambda: {'all': 0, 'trampoline': 0, 'dmt': 0, 'tumbling': 0})
     for turn in user_turns:
         skills = turn[1]
         event = turn[4]
@@ -1092,9 +1093,12 @@ def user_stats():
             if skill in NON_SKILLS:
                 continue
 
-            all_skills[skill][event] += 1
-            all_skills[skill]['all'] += 1
-        
+            if event != "tumbling":
+                all_skills[skill][event] += 1
+                all_skills[skill]['all'] += 1
+            else:
+                tumbling_skills[skill][event] += 1
+
         # add double mini passes
         if event == "dmt" and len(routines.skills) == 2:
             dmt_skills = [s.shorthand for s in routines.skills]
@@ -1118,6 +1122,10 @@ def user_stats():
     for key in sorted(dmt_passes.keys(), key=lambda x: (x.split()[0][:-1], x.split()[1][:-1])):
         #all_skills_ordered[key] = dmt_passes[key]
         dmt_passes_ordered[key] = dmt_passes[key]
+    # order tumbling skills
+    tumbling_skills_ordered = OrderedDict()
+    for key in sorted(tumbling_skills.keys(), key=lambda x: (len(x), x)):
+        tumbling_skills_ordered[key] = tumbling_skills[key]
     print(all_skills_ordered)
 
     body = ""
@@ -1148,10 +1156,12 @@ def user_stats():
     day_flips = {
         'trampoline': defaultdict(int),
         'dmt': defaultdict(int),
+        'tumbling': defaultdict(int)
     }
     flips_per_turn = {
         'trampoline': defaultdict(list),
-        'dmt': defaultdict(list)
+        'dmt': defaultdict(list),
+        'tumbling': defaultdict(list)
     }
     turns_per_practice = defaultdict(int)
     for event, all_turns in event_turns.items():
@@ -1194,6 +1204,8 @@ def user_stats():
     datapts['dmt_flips_per_day'] = [{'x': date, 'y': flips} for date, flips in day_flips['dmt'].items()]
     datapts['dmt_flips_per_turn'] = [{'x': date, 'y': sum(flips)/len(flips)} for date, flips in flips_per_turn['dmt'].items()]
     datapts['trampoline_flips_per_turn'] = [{'x': date, 'y': sum(flips)/len(flips)} for date, flips in flips_per_turn['trampoline'].items()]
+    datapts['tumbling_flips_per_day'] = [{'x': date, 'y': flips} for date, flips in day_flips['tumbling'].items()]
+    datapts['tumbling_flips_per_turn'] = [{'x': date, 'y': sum(flips)/len(flips)} for date, flips in flips_per_turn['tumbling'].items()]
     datapts['turns_per_practice'] = [{'x': date, 'y': turns} for date, turns in sorted(turns_per_practice.items(), key=lambda x: x[0])]
 
     # airtimes data
@@ -1207,7 +1219,8 @@ def user_stats():
         chart_end=request.args.get('chart_end', ""),
         error_text=session.get('error'),
         all_skills=all_skills_ordered,
-        dmt_passes=dmt_passes_ordered
+        dmt_passes=dmt_passes_ordered,
+        tumbling_skills=tumbling_skills_ordered
     )
 
 @app.route("/logger/user/compcard")
@@ -1334,6 +1347,8 @@ def update_user():
     optional = request.form.get("optional")
     pass1 = request.form.get('pass1')
     pass2 = request.form.get('pass2')
+    tu_pass1 = request.form.get('tu-pass1')
+    tu_pass2 = request.form.get('tu-pass2')
     athlete = Athlete.load(session.get("name"))
 
     # update password
@@ -1355,6 +1370,8 @@ def update_user():
     athlete.expand_comments = expand_comments
     athlete.dm_prelim1 = [skill for skill in pass1.split()]
     athlete.dm_prelim2 = [skill for skill in pass2.split()]
+    athlete.tu_prelim1 = [skill for skill in tu_pass1.split()]
+    athlete.tu_prelim2 = [skill for skill in tu_pass2.split()]
     athlete.save()
     return redirect(url_for("user_profile"))
 

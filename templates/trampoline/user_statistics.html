@@ -75,7 +75,7 @@
 
 <div class="container">
   <div class="card border-primary">
-    <div class="card-header text-center"><h2>Pass Statistics</h2></div>
+    <div class="card-header text-center"><h2>DMT Pass Statistics</h2></div>
     <div class="card-body px-0 py-0">
       <table border=1 class="table table-striped my-0" id="pass_table">
         <thead>
@@ -89,6 +89,31 @@
           <tr>
             <td>{{pass}}</td>
             <td>{{pass_stats['dmt']}}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<br>
+
+<div class="container">
+  <div class="card border-primary">
+    <div class="card-header text-center"><h2>Tumbling Statistics</h2></div>
+    <div class="card-body px-0 py-0">
+      <table border=1 class="table table-striped my-0" id="tumbling_table">
+        <thead>
+          <tr>
+            <th style="position: sticky; top:0; background: gray;" id="col_tu_skill">Skill</th>
+            <th style="position: sticky; top:0; background: gray;" id="col_tu_total">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for skill, skill_stats in tumbling_skills.items() %}
+          <tr>
+            <td>{{skill}}</td>
+            <td>{{skill_stats['tumbling']}}</td>
           </tr>
           {% endfor %}
         </tbody>
