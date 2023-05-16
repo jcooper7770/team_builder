@@ -25,6 +25,7 @@ TODO:
   - Add teams for pokemon users
   - [DONE] Add tumbling
   - [DONE] Add links to DD sheets (from USAG)
+  - Move routines and passes to a new table
 """
 
 import datetime
@@ -1240,6 +1241,16 @@ def user_comp_card():
     return send_file("comp_cards/modified_comp_card.pdf", as_attachment=True)
 
 
+@app.route("/logger/user/dm_compcard")
+def user_dm_comp_card():
+    """
+    Create double mini comp card for the user
+    """
+    athlete = Athlete.load(session.get("name"))
+    athlete.save_dm_comp_card()
+    return send_file("comp_cards/modified_comp_card.pdf", as_attachment=True)
+
+
 @app.route("/logger/coach/compcards")
 def coach_comp_cards():
     """
@@ -1356,6 +1367,9 @@ def update_user():
     pass2 = request.form.get('pass2')
     tu_pass1 = request.form.get('tu-pass1')
     tu_pass2 = request.form.get('tu-pass2')
+    tramp_level = request.form.get('level-tramp')
+    dmt_level = request.form.get('level-dmt')
+    tumbling_level = request.form.get('level-tu')
     athlete = Athlete.load(session.get("name"))
 
     # update password
@@ -1379,6 +1393,7 @@ def update_user():
     athlete.dm_prelim2 = [skill for skill in pass2.split()]
     athlete.tu_prelim1 = [skill for skill in tu_pass1.split()]
     athlete.tu_prelim2 = [skill for skill in tu_pass2.split()]
+    athlete.levels = [tramp_level, dmt_level, tumbling_level]
     athlete.save()
     return redirect(url_for("user_profile"))
 

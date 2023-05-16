@@ -108,7 +108,12 @@ def get_user(user):
         "athletes": json.loads(user[7]),
         "first_login": user[8],
         'signup_date': user[9],
-        "messages": json.loads(user[10])
+        "messages": json.loads(user[10]),
+        'dm_prelim1': user[11],
+        'dm_prelim2': user[12],
+        'dm_finals1': user[13],
+        'dm_finals2': user[14],
+        'levels': json.loads(user[15])
     }
 
 
@@ -318,7 +323,12 @@ def save_athlete(athlete):
             athletes=json.dumps(athlete.athletes),
             first_login=athlete.first_login,
             signup_date=athlete.signup_date.strftime('%Y-%m-%d') if athlete.signup_date else None,
-            messages=json.dumps(athlete.messages)
+            messages=json.dumps(athlete.messages),
+            dm_prelims1=' '.join(athlete.dm_prelim1),
+            dm_prelims2=' '.join(athlete.dm_prelim2),
+            dm_finals1=' '.join(athlete.dm_finals1),
+            dm_finals2=' '.join(athlete.dm_finals2),
+            levels=json.dumps(athlete.levels)
         )
         engine.execute(ins)
     else:
@@ -333,7 +343,12 @@ def save_athlete(athlete):
             athletes=json.dumps(athlete.athletes),
             first_login=athlete.first_login,
             signup_date=athlete.signup_date.strftime('%Y-%m-%d') if athlete.signup_date else None,
-            messages=json.dumps(athlete.messages)
+            messages=json.dumps(athlete.messages),
+            dm_prelims1=' '.join(athlete.dm_prelim1),
+            dm_prelims2=' '.join(athlete.dm_prelim2),
+            dm_finals1=' '.join(athlete.dm_finals1),
+            dm_finals2=' '.join(athlete.dm_finals2),
+            levels=json.dumps(athlete.levels)
         )
         engine.execute(update)
     

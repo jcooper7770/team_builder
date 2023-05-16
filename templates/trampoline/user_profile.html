@@ -78,7 +78,11 @@
               <label for="level-tramp">Level:</label>
             </div>
             <div class="col-sm-10">
-              <select id="level-tramp" class="form-select">
+              <select id="level-tramp" class="form-select" name="level-tramp">
+                {% for i in range(1, 11) %}
+                <option value="{{i}}" {% if user_data['levels'][0]|int == i %}selected{% endif %}>{{i}}</option>
+                {% endfor %}
+                <!--
                 <option value="1">1</option> 
                 <option value="2">2</option>
                 <option value="3">3</option>
@@ -89,11 +93,12 @@
                 <option value="8">8</option>  
                 <option value="9">9</option>  
                 <option value="10" selected>10</option>  
-                <option value="OE">Open Elite</option>  
-                <option value="YE">Youth Elite</option>  
-                <option value="JE">Junior Elite</option>  
-                <option value="IE">Intermediate Elite</option>  
-                <option value="SE">Senior Elite</option>  
+                -->
+                <option value="OE" {% if user_data['levels'][0] == 'OE' %}selected{% endif %}>Open Elite</option>
+                <option value="YE" {% if user_data['levels'][0] == 'YE' %}selected{% endif %}>Youth Elite</option>
+                <option value="JE" {% if user_data['levels'][0] == 'JE' %}selected{% endif %}>Junior Elite</option>
+                <option value="IE" {% if user_data['levels'][0] == 'IE' %}selected{% endif %}>Intermediate Elite</option>
+                <option value="SE" {% if user_data['levels'][0] == 'SE' %}selected{% endif %}>Senior Elite</option>
               </select>
             </div>
           </div>
@@ -127,7 +132,11 @@
               <label for="level">Level:</label>
             </div>
             <div class="col-sm-10">
-              <select id="level-dmt" class="form-select">
+              <select id="level-dmt" class="form-select" name="level-dmt">
+                {% for i in range(1, 11) %}
+                <option value="{{i}}" {% if user_data['levels'][1]|int == i %}selected{% endif %}>{{i}}</option>
+                {% endfor %}
+                <!--
                 <option value="1">1</option> 
                 <option value="2">2</option>
                 <option value="3">3</option>
@@ -138,11 +147,12 @@
                 <option value="8">8</option>  
                 <option value="9">9</option>  
                 <option value="10" selected>10</option>  
-                <option value="OE">Open Elite</option>  
-                <option value="YE">Youth Elite</option>  
-                <option value="JE">Junior Elite</option>  
-                <option value="IE">Intermediate Elite</option>  
-                <option value="SE">Senior Elite</option>  
+                -->
+                <option value="OE" {% if user_data['levels'][1] == 'OE' %}selected{% endif %}>Open Elite</option>
+                <option value="YE" {% if user_data['levels'][1] == 'YE' %}selected{% endif %}>Youth Elite</option>
+                <option value="JE" {% if user_data['levels'][1] == 'JE' %}selected{% endif %}>Junior Elite</option>
+                <option value="IE" {% if user_data['levels'][1] == 'IE' %}selected{% endif %}>Intermediate Elite</option>
+                <option value="SE" {% if user_data['levels'][1] == 'SE' %}selected{% endif %}>Senior Elite</option>
               </select>
             </div>
           </div>
@@ -151,7 +161,7 @@
               <label for="pass1">Pass 1:</label>
             </div>
             <div class="col-sm-10">
-              <input type="text" value="" class="form-control" name="pass1"><br>
+              <input type="text" value="{{user_data['dm_prelim1']}}" class="form-control" name="pass1"><br>
             </div>
           </div>
           <div class="row" id="pass2-row">
@@ -159,12 +169,12 @@
               <label for="pass2">Pass 2:</label>
             </div>
             <div class="col-sm-10">
-              <input type="text" value="" class="form-control" name="pass2"><br>
+              <input type="text" value="{{user_data['dm_prelim2']}}" class="form-control" name="pass2"><br>
             </div>
           </div>
           <div class="row">
             <div class="col-sm-10">
-              <button type="button" class="btn btn-primary" id="comp-card-dmt" disabled>Create Comp Card</button>
+              <button type="button" class="btn btn-primary" id="comp-card-dmt">Create Comp Card</button>
             </div>
           </div>
           <hr>
@@ -176,7 +186,11 @@
               <label for="level-tu">Level:</label>
             </div>
             <div class="col-sm-10">
-              <select id="level-tu" class="form-select">
+              <select id="level-tu" class="form-select" name="level-tu">
+                {% for i in range(1, 11) %}
+                <option value="{{i}}" {% if user_data['levels'][2]|int == i %}selected{% endif %}>{{i}}</option>
+                {% endfor %}
+                <!--
                 <option value="1">1</option> 
                 <option value="2">2</option>
                 <option value="3">3</option>
@@ -186,12 +200,13 @@
                 <option value="7">7</option>  
                 <option value="8">8</option>  
                 <option value="9">9</option>  
-                <option value="10" selected>10</option>  
-                <option value="OE">Open Elite</option>  
-                <option value="YE">Youth Elite</option>  
-                <option value="JE">Junior Elite</option>  
-                <option value="IE">Intermediate Elite</option>  
-                <option value="SE">Senior Elite</option>  
+                <option value="10" {% if user_data['levels'][2] == 10 %}selected{% endif %}>10</option>
+                -->
+                <option value="OE" {% if user_data['levels'][2] == 'OE' %}selected{% endif %}>Open Elite</option>
+                <option value="YE" {% if user_data['levels'][2] == 'YE' %}selected{% endif %}>Youth Elite</option>
+                <option value="JE" {% if user_data['levels'][2] == 'JE' %}selected{% endif %}>Junior Elite</option>
+                <option value="IE" {% if user_data['levels'][2] == 'IE' %}selected{% endif %}>Intermediate Elite</option>
+                <option value="SE" {% if user_data['levels'][2] == 'SE' %}selected{% endif %}>Senior Elite</option>
               </select>
             </div>
           </div>
@@ -328,7 +343,12 @@
     var url = "/logger/user/compcard";
     location.href = encodeURI(url);
   });
-  
+  $('#comp-card-dmt').click(function(e) {
+    e.preventDefault();
+    var url = "/logger/user/dm_compcard";
+    location.href = encodeURI(url);
+  });
+
   const compulsoryLevels = ["1", "2", "3", "4", "5", "6", "7"]
   const twoOptionalLevels = ["IE", "SE"]
   const level = document.getElementById("level-tramp");

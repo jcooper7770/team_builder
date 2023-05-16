@@ -81,14 +81,77 @@ def generate_fields_obj():
     FIELDS = fields
 
 
-def fill_out(data, filename="modified_comp_card.pdf"):
+def generate_dmt_fields_obj():
+    """
+    Generate the FIELDS obj for the double mini comp card
+    """
+    global FIELDS
+    fields = {
+        "name": {'pos': (110, 175), 'size': 24},
+        'team': {'pos': (400, 140), 'size': 24},
+        'coaches': {'pos': (400, 175), 'size': 24},
+        'gender': {'pos': (535, 42), 'size': 12},
+        'level': {'pos': (535, 64), 'size': 12},
+        'age': {'pos': (535, 86), 'size': 12},
+    }
+
+    # prelims pass 1
+    fields["prelims_pass1_mounter"] = {'pos': (150, 265), 'size': 14}
+    fields["prelims_pass1_mounter_dd"] = {'pos': (150, 290), 'size': 14}
+    fields["prelims_pass1_spotter"] = {'pos': (215, 265), 'size': 14}
+    fields["prelims_pass1_spotter_dd"] = {'pos': (215, 290), 'size': 14}
+    fields["prelims_pass1_dismount"] = {'pos': (285, 265), 'size': 14}
+    fields["prelims_pass1_dismount_dd"] = {'pos': (285, 290), 'size': 14}
+    fields["prelims_pass1_total"] = {'pos': (360, 275), 'size': 20}
+
+    # prelims pass 2
+    fields["prelims_pass2_mounter"] = {'pos': (150, 407), 'size': 14}
+    fields["prelims_pass2_mounter_dd"] = {'pos': (150, 430), 'size': 14}
+    fields["prelims_pass2_spotter"] = {'pos': (215, 407), 'size': 14}
+    fields["prelims_pass2_spotter_dd"] = {'pos': (215, 430), 'size': 14}
+    fields["prelims_pass2_dismount"] = {'pos': (285, 407), 'size': 14}
+    fields["prelims_pass2_dismount_dd"] = {'pos': (285, 430), 'size': 14}
+    fields["prelims_pass2_total"] = {'pos': (360, 418), 'size': 20}
+
+    # finals pass 1
+    fields["finals_pass1_mounter"] = {'pos': (150, 549), 'size': 14}
+    fields["finals_pass1_mounter_dd"] = {'pos': (150, 572), 'size': 14}
+    fields["finals_pass1_spotter"] = {'pos': (215, 549), 'size': 14}
+    fields["finals_pass1_spotter_dd"] = {'pos': (215, 572), 'size': 14}
+    fields["finals_pass1_dismount"] = {'pos': (285, 549), 'size': 14}
+    fields["finals_pass1_dismount_dd"] = {'pos': (285, 572), 'size': 14}
+    fields["finals_pass1_total"] = {'pos': (360, 560), 'size': 20}
+
+    # finals pass 2
+    fields["finals_pass2_mounter"] = {'pos': (150, 691), 'size': 14}
+    fields["finals_pass2_mounter_dd"] = {'pos': (150, 714), 'size': 14}
+    fields["finals_pass2_spotter"] = {'pos': (215, 691), 'size': 14}
+    fields["finals_pass2_spotter_dd"] = {'pos': (215, 714), 'size': 14}
+    fields["finals_pass2_dismount"] = {'pos': (285, 691), 'size': 14}
+    fields["finals_pass2_dismount_dd"] = {'pos': (285, 714), 'size': 14}
+    fields["finals_pass2_total"] = {'pos': (360, 702), 'size': 20}
+
+    FIELDS = fields
+
+
+def generate_tumbling_fields_obj():
+    pass
+
+
+def fill_out(data, filename="modified_comp_card.pdf", event="trampoline"):
     """
     Fill out the comp card with the data
     """
-    generate_fields_obj()
+    if event == "trampoline":
+        generate_fields_obj()
+    elif event == "dm":
+        generate_dmt_fields_obj()
+    elif event == "tumbling":
+        generate_tumbling_fields_obj()
 
     # Open the PDF file
-    pdf_doc = fitz.open(PDF_FILE)
+    #pdf_doc = fitz.open(PDF_FILE)
+    pdf_doc = fitz.open(f"comp_card_{event}.pdf")
     # Get the first page of the PDF file
     page = pdf_doc[0]
     text_color = (0, 0, 0)  # black
@@ -118,6 +181,7 @@ if __name__ == '__main__':
     comp_card_file = "comp_card_trampoline.pdf"
     generate_fields_obj()
 
+    '''
     routine_skills = [
         ('12001<', '2.0'),
         ('811<', '1.4'),
@@ -156,5 +220,38 @@ if __name__ == '__main__':
         data[f'vol2skill{num+1}dd'] = skill[1]
         data[f'finalsskill{num+1}'] = skill[0]
         data[f'finalsskill{num+1}dd'] = skill[1]
+    '''
+    passes = [
+        ("801<", "2.8"),
+        ("822/", "4.4")
+    ]
+    data = {
+        'name': 'Jeremy Cooper',
+        'team': 'World Elite',
+        'coaches': "Logan Dooley",
+        'gender': 'M',
+        'age': 'N/A',
+        'level': 'Sr',
+        "prelims_pass1_mounter": "801<",
+        "prelims_pass1_mounter_dd": "2.8",
+        "prelims_pass1_dismount": "822/",
+        "prelims_pass1_dismount_dd": "4.4",
+        "prelims_pass1_total": "7.2",
+        "prelims_pass2_mounter": "803<",
+        "prelims_pass2_mounter_dd": "3.6",
+        "prelims_pass2_dismount": "813<",
+        "prelims_pass2_dismount_dd": "4.0",
+        "prelims_pass2_total": "7.6",
+        "finals_pass1_mounter": "803<",
+        "finals_pass1_mounter_dd": "3.6",
+        "finals_pass1_dismount": "813<",
+        "finals_pass1_dismount_dd": "4.0",
+        "finals_pass1_total": "7.6",
+        "finals_pass2_spotter": "803<",
+        "finals_pass2_spotter_dd": "3.6",
+        "finals_pass2_dismount": "813<",
+        "finals_pass2_dismount_dd": "4.0",
+        "finals_pass2_total": "7.6",
+    }
 
-    fill_out(data)
+    fill_out(data, event="dm")

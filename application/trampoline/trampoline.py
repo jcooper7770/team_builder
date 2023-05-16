@@ -112,7 +112,7 @@ class Athlete:
     """
     Information about athlete
     """
-    def __init__(self, name, private=False, compulsory=[], optional=[], dm_prelims1=[], dm_prelims2=[], dm_finals1=[], dm_finals2=[], password="", expand_comments=False, is_coach=False, athletes=[], first_login=False, signup_date=None, messages=[], tu_prelims1=[], tu_prelims2=[]):
+    def __init__(self, name, private=False, compulsory=[], optional=[], dm_prelims1=[], dm_prelims2=[], dm_finals1=[], dm_finals2=[], password="", expand_comments=False, is_coach=False, athletes=[], first_login=False, signup_date=None, messages=[], tu_prelims1=[], tu_prelims2=[], tramp_level=10, dmt_level=10, tumbling_level=10):
         self.name = name
         self.compulsory = compulsory
         self.optional = optional
@@ -130,6 +130,7 @@ class Athlete:
         self.first_login = first_login
         self.signup_date = signup_date or datetime.datetime.today()
         self.messages = messages
+        self.levels = [tramp_level, dmt_level, tumbling_level]
 
     def set_comp(self, skills):
         """
@@ -149,7 +150,7 @@ class Athlete:
         """
         Saves the user's routines onto a comp card
         """
-        comp_card_data = {}
+        comp_card_data = {'level': str(self.levels[0])}
 
         # compulsory
         total_dd = 0
@@ -173,6 +174,30 @@ class Athlete:
         comp_card_data['finalstotal'] = f'{total_dd:.1f}'
 
         fill_out(comp_card_data, filename=filename or "modified_comp_card.pdf")
+
+    def save_dm_comp_card(self, filename=""):
+        """
+        Save the user's double mini comp card
+        """
+        comp_card_data = {'level': str(self.levels[1])}
+
+        dmt_passes = {
+            'prelims': [self.dm_prelim1.split(), self.dm_prelim2.split()],
+            'finals': [self.dm_finals1.split(), self.dm_finals2.split()]
+        }
+        status = {0: 'mounter', 1: 'dismount'}
+        for round, round_passes in dmt_passes.items():
+            for num, dmt_pass in enumerate(round_passes):
+                total_dd = 0
+                for skill_num, skill in enumerate(dmt_pass):
+                    comp_card_data[f"{round}_pass{num+1}_{status[skill_num]}"] = skill
+                    dd = Skill(skill, event="dmt").difficulty
+                    total_dd += dd
+                    comp_card_data[f"{round}_pass{num+1}_{status[skill_num]}_dd"] = f'{dd:.1f}'
+                comp_card_data[f"{round}_pass{num+1}_total"] = f'{total_dd:.1f}'
+
+        print(comp_card_data)
+        fill_out(comp_card_data, filename=filename or "modified_comp_card.pdf", event="dm")
 
     def save(self):
         """
@@ -223,7 +248,9 @@ class Athlete:
                 user['name'], user["private"], user['compulsory'], user['optional'],
                 password=user['password'], expand_comments=user.get('expand_comments', False),
                 is_coach=user["is_coach"], athletes=user["athletes"], first_login=user['first_login'],
-                signup_date=signup_date, messages=user['messages']
+                signup_date=signup_date, messages=user['messages'],
+                dm_prelims1=user['dm_prelim1'], dm_prelims2=user['dm_prelim2'], dm_finals1=user['dm_finals1'], dm_finals2=user['dm_finals2'],
+                tramp_level=user['levels'][0], dmt_level=user['levels'][1], tumbling_level=user['levels'][2]
             )
         except Exception as error:
             print(f"Error loading user '{name}' because: {error}")
