@@ -23,6 +23,8 @@ TODO:
   - Split templates for pokemon and trampoline sites
   - [DONE] Add login for pokemon site
   - Add teams for pokemon users
+  - [DONE] Add tumbling
+  - [DONE] Add links to DD sheets (from USAG)
 """
 
 import datetime
@@ -521,6 +523,11 @@ def trampoline_log():
 def about_trampoline():
     commit_hash = subprocess.check_output(["git", "rev-parse", "HEAD"]).decode('ascii').strip()
     return render_template("trampoline/about_trampoline.html", user=session.get("name"), commit_hash=commit_hash)
+
+
+@app.route("/logger/resources")
+def resource_trampoline():
+    return render_template("trampoline/resources.html", user=session.get("name"))
 
 
 @app.route("/about")
