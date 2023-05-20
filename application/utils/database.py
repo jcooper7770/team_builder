@@ -113,7 +113,8 @@ def get_user(user):
         'dm_prelim2': user[12],
         'dm_finals1': user[13],
         'dm_finals2': user[14],
-        'levels': json.loads(user[15])
+        'levels': json.loads(user[15]),
+        "coach_requests": json.loads(user[16])
     }
 
 
@@ -321,13 +322,14 @@ def save_athlete(athlete):
             expand_comments=athlete.expand_comments,
             is_coach=athlete.is_coach,
             athletes=json.dumps(athlete.athletes),
+            coach_requests=json.dumps(athlete.coach_requests),
             first_login=athlete.first_login,
             signup_date=athlete.signup_date.strftime('%Y-%m-%d') if athlete.signup_date else None,
             messages=json.dumps(athlete.messages),
-            dm_prelims1=' '.join(athlete.dm_prelim1),
-            dm_prelims2=' '.join(athlete.dm_prelim2),
-            dm_finals1=' '.join(athlete.dm_finals1),
-            dm_finals2=' '.join(athlete.dm_finals2),
+            dm_prelims1=' '.join(athlete.dm_prelim1) if isinstance(athlete.dm_prelim1, list) else athlete.dm_prelim1,
+            dm_prelims2=' '.join(athlete.dm_prelim2) if isinstance(athlete.dm_prelim2, list) else athlete.dm_prelim2,
+            dm_finals1=' '.join(athlete.dm_finals1) if isinstance(athlete.dm_finals1, list) else athlete.dm_finals1,
+            dm_finals2=' '.join(athlete.dm_finals2) if isinstance(athlete.dm_finals2, list) else athlete.dm_finals2,
             levels=json.dumps(athlete.levels)
         )
         engine.execute(ins)
@@ -341,13 +343,14 @@ def save_athlete(athlete):
             expand_comments=athlete.expand_comments,
             is_coach=athlete.is_coach,
             athletes=json.dumps(athlete.athletes),
+            coach_requests=json.dumps(athlete.coach_requests),
             first_login=athlete.first_login,
             signup_date=athlete.signup_date.strftime('%Y-%m-%d') if athlete.signup_date else None,
             messages=json.dumps(athlete.messages),
-            dm_prelims1=' '.join(athlete.dm_prelim1),
-            dm_prelims2=' '.join(athlete.dm_prelim2),
-            dm_finals1=' '.join(athlete.dm_finals1),
-            dm_finals2=' '.join(athlete.dm_finals2),
+            dm_prelims1=' '.join(athlete.dm_prelim1) if isinstance(athlete.dm_prelim1, list) else athlete.dm_prelim1,
+            dm_prelims2=' '.join(athlete.dm_prelim2) if isinstance(athlete.dm_prelim2, list) else athlete.dm_prelim2,
+            dm_finals1=' '.join(athlete.dm_finals1) if isinstance(athlete.dm_finals1, list) else athlete.dm_finals1,
+            dm_finals2=' '.join(athlete.dm_finals2) if isinstance(athlete.dm_finals2, list) else athlete.dm_finals2,
             levels=json.dumps(athlete.levels)
         )
         engine.execute(update)

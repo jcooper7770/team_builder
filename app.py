@@ -934,13 +934,32 @@ def coach_settings():
             "trampoline/coach_settings.html",
             users=users, user=session.get('name'),
             athletes=current_user.athletes,
+            requests=current_user.coach_requests,
             messages=messages
         )
     if request.method == "POST":
         athletes = request.form.getlist("coach_athletes")
         current_user = Athlete.load(session.get('name'))
-        current_user.athletes = sorted(athletes)
+        new_athletes, new_requests = [], []
+        for athlete in athletes:
+            if athlete in current_user.athletes:
+                new_athletes.append(athlete)
+            else:
+                new_requests.append(athlete)
+
+        #current_user.athletes = sorted(athletes)
+        current_user.athletes = sorted(new_athletes)
+        current_user.coach_requests = sorted(new_requests)
         current_user.save()
+
+        # Go tell the athletes that the coaches requested
+        for athlete in new_requests:
+            user = Athlete.load(athlete)
+            requests = user.coach_requests
+            if current_user.name not in requests:
+                requests.append(current_user.name)
+                user.coach_requests = sorted(requests)
+                user.save()
         return redirect(url_for('coach_settings'))
 
 
@@ -1264,6 +1283,8 @@ def coach_comp_cards():
         athlete = Athlete.load(athlete_name)
         athlete.save_comp_card(f"{athlete_name}_tramp.pdf")
         zipf.write(f"comp_cards/{athlete_name}_tramp.pdf")
+        athlete.save_dm_comp_card(f"{athlete_name}_dmt.pdf")
+        zipf.write(f"comp_cards/{athlete_name}_dmt.pdf")
     
     zipf.close()
     return send_file(zipfile_name, mimetype='zip', as_attachment=True)
@@ -1302,6 +1323,44 @@ def user_profile():
         messages=messages
     )
 
+@app.route("/logger/user/requests", methods=["POST"])
+def coach_request():
+    """
+    Approve or Deny coach requests
+    """
+    request_id = request.form['id']
+    print(request_id)
+
+    username = session.get('name')
+    current_user = Athlete.load(username)
+    if "approve" in request_id:
+        coach_name = request_id[16:]
+
+        # Move athlete from requests to coach's athletes
+        coach = Athlete.load(coach_name)
+        coach.coach_requests = [request for request in coach.coach_requests if request != username]
+        print(f"Adding {username} to {coach.athletes}")
+        coach.athletes.append(username)
+        coach.athletes = sorted(coach.athletes)
+        coach.save()
+
+        # Remove coach from athlete requests
+        current_user.coach_requests = [request for request in current_user.coach_requests if request != coach_name]
+        current_user.save()
+    elif "deny" in request_id:
+        coach_name = request_id[13:]
+        
+        # Remove athlete from coach requests
+        coach = Athlete.load(coach_name)
+        coach.coach_requests = [request for request in coach.coach_requests if request != username]
+        coach.save()
+
+        # Remove coach from athlete requests
+        current_user.coach_requests = [request for request in current_user.coach_requests if request != coach_name]
+        current_user.save()
+
+
+    return {"success": True}
 
 @app.route("/pokemon/user/update", methods=["POST"])
 def pokemon_update_user():

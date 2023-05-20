@@ -4,6 +4,28 @@
 <!-- Settings -->
 <br><br>
 <div class="container">
+
+  <!-- Coach Requests -->
+  {% if user_data['coach_requests'] %}
+  <div class="card border-primary">
+    <div class="card-header text-center">
+      <h2>Coach Requests</h2>
+    </div>
+    <div class="card-body">
+      {% for request in user_data['coach_requests'] %}
+      <div class="row" style="border-bottom: 1px solid;">
+        <div class="col-sm-2"><p><b>{{ request }}</b></p></div>
+        <div class="col-sm-10">
+          <button class="btn btn-primary" id="request_approve_{{request}}">Approve</button>
+          <button class="btn btn-danger" id="request_deny_{{request}}">Deny</button>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  <br>
+  {% endif %}
+
   <div class="card border-primary">
     <div class="card-header text-center">
       <h2>User Settings for {{user}}</h2>
@@ -338,6 +360,25 @@
     var url = "/logger/user/export?from=" + fromText + "&to=" + toText;
     location.href = encodeURI(url);
   });
+  $("[id^=request_]").click(function(e){
+    e.preventDefault();
+    var id = e.target.id;
+    //e.target.parentElement.parentElement.style.display = "none";
+  
+    $.ajax({
+      url: "/logger/user/requests",
+      type: "POST",
+      data: {
+        id: id
+      },
+      success: function(response) {
+        e.target.parentElement.parentElement.style.display = "none";
+        console.log(response);
+
+      }
+    })
+  });
+
   $('#comp-card').click(function(e) {
     e.preventDefault();
     var url = "/logger/user/compcard";

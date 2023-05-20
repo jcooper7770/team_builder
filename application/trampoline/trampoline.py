@@ -107,12 +107,35 @@ def set_table_name(table_name):
     global TABLE_NAME
     TABLE_NAME = table_name
 
-3
-class Athlete:
+class User:
+    def __init__(self, name, password="", signup_date=None, first_login=False):
+        self.name = name
+        self.password = password
+        self.signup_date = signup_date
+        self.first_login = first_login
+
+
+class Coach(User):
+    def __init__(self, name, password="", signup_date=None, first_login=False, athletes=[]):
+        self.name = name
+        self.password = password
+        self.signup_date = signup_date
+        self.first_login = first_login
+        self.athletes = athletes
+
+
+class Athlete(User):
     """
     Information about athlete
     """
-    def __init__(self, name, private=False, compulsory=[], optional=[], dm_prelims1=[], dm_prelims2=[], dm_finals1=[], dm_finals2=[], password="", expand_comments=False, is_coach=False, athletes=[], first_login=False, signup_date=None, messages=[], tu_prelims1=[], tu_prelims2=[], tramp_level=10, dmt_level=10, tumbling_level=10):
+    def __init__(
+            self, name, private=False, compulsory=[], optional=[],
+            dm_prelims1=[], dm_prelims2=[], dm_finals1=[], dm_finals2=[],
+            password="", expand_comments=False, is_coach=False, athletes=[],
+            first_login=False, signup_date=None, messages=[],
+            tu_prelims1=[], tu_prelims2=[], tramp_level=10, dmt_level=10, tumbling_level=10,
+            coach_requests=[]
+        ):
         self.name = name
         self.compulsory = compulsory
         self.optional = optional
@@ -131,6 +154,7 @@ class Athlete:
         self.signup_date = signup_date or datetime.datetime.today()
         self.messages = messages
         self.levels = [tramp_level, dmt_level, tumbling_level]
+        self.coach_requests = coach_requests
 
     def set_comp(self, skills):
         """
@@ -222,6 +246,7 @@ class Athlete:
             'expand_comments': self.expand_comments,
             'is_coach': self.is_coach,
             'athletes': self.athletes,
+            'coach_requests': self.coach_requests,
             'first_login': self.first_login,
             'signup_date': str(self.signup_date),
             'messages': self.messages
@@ -250,7 +275,8 @@ class Athlete:
                 is_coach=user["is_coach"], athletes=user["athletes"], first_login=user['first_login'],
                 signup_date=signup_date, messages=user['messages'],
                 dm_prelims1=user['dm_prelim1'], dm_prelims2=user['dm_prelim2'], dm_finals1=user['dm_finals1'], dm_finals2=user['dm_finals2'],
-                tramp_level=user['levels'][0], dmt_level=user['levels'][1], tumbling_level=user['levels'][2]
+                tramp_level=user['levels'][0], dmt_level=user['levels'][1], tumbling_level=user['levels'][2],
+                coach_requests=user['coach_requests']
             )
         except Exception as error:
             print(f"Error loading user '{name}' because: {error}")
