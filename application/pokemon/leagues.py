@@ -79,6 +79,7 @@ LEAGUES_LIST = LeagueList([
     League("ULHalloween", "2500-halloween", "ultra-halloween"),
     League("ULHoliday", "2500-holiday", "ultra-holiday"),
     League("ULWeather", "2500-weather", "ultra-weather"),
+    League("ULSummer", "2500-summer", "ultra-summer"),
 
     # Master cups
     League("ML", "10000", "master"),
