@@ -541,13 +541,14 @@ def about():
 def move_count_image():
     pokemon_list = request.args.get("pokemon", "").split(",")
     num_cols = int(request.args.get("cols", 7))
+    reset = bool(request.args.get('reset', False))
     '''
     data = request.json
     print(data)
     pokemon_list = data.get("pokemon")
     num_cols = data.get("cols", 5)
     '''
-    make_image(list(set(pokemon_list)), number_per_row=num_cols)
+    make_image(list(set(pokemon_list)), number_per_row=num_cols, reset_data=reset)
     export_image = os.path.join(app.root_path, "image.png")
     #return send_file(export_image, as_attachment=True, cache_timeout=0)
     return send_file(export_image, as_attachment=True)

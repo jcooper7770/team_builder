@@ -6,6 +6,8 @@ TODO:
  - [DONE] pick only meta relevant moves
 
   $ python -m application.pokemon.move_counts
+
+# TODO: Figure out how to get latest rankings data from gobattlelog for new moves
 """
 
 from dataclasses import dataclass
@@ -14,6 +16,7 @@ import os.path
 import logging
 import re
 import requests
+import time
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -33,6 +36,33 @@ twitch.tv/itsflippincoop"""
 
 ALL_RANKINGS = []
 GAME_MASTER = {}
+LATEST_DATA = {}
+
+
+def get_popular_moves(league="GL", days_back=0):
+    """
+    Gets all the popular moves from the database per pokemon
+    """
+    global LATEST_DATA
+    if not LATEST_DATA:
+        engine = create_engine()
+        query_results = engine.execute(f'SELECT * from `pokemon_data` WHERE pokemon_data.league="{league}";')
+        results = [result for result in query_results]
+        latest_data = json.loads(json.loads(results[0][1]))
+        LATEST_DATA = latest_data
+    pokemon_moves = {}
+    start_time = time.time()
+    for record in LATEST_DATA.get('records'):
+        if days_back and record.get('time') < start_time - days_back * 24 * 3600:
+            continue
+        for pokemon in record.get('oppo_team').split('/'):
+            species, moves = pokemon.split(':')
+            if species not in pokemon_moves:
+                pokemon_moves[species] = {}
+            for move in moves.split(','):
+                pokemon_moves[species].update({move: pokemon_moves[species].get(move, 0) + 1})
+    return pokemon_moves
+
 
 def get_moves(game_master):
     """
@@ -141,13 +171,13 @@ def get_game_master():
     return game_master
 
 
-def get_all_rankings():
+def get_all_rankings(reset_data=False):
     """
     Get all rankings
     """
     # Skip the database queries if all rankings are already saved
     global ALL_RANKINGS
-    if ALL_RANKINGS:
+    if ALL_RANKINGS and not reset_data:
         return {
         pokemon['speciesId']: pokemon
         for pokemon in ALL_RANKINGS
@@ -172,13 +202,25 @@ def get_all_rankings():
     }
 
 
-def generate_move_strings(pokemon, pokemon_ranking, counts, chosen_fast_move=None, mega=None):
+def generate_move_strings(pokemon, pokemon_ranking, counts, chosen_fast_move=None, mega=None, popular_moves={}):
     """
     Generate move strings for image
     """
+    print(f"{pokemon}: {pokemon_ranking}")
     pokemon_moveset = {'fast': '', 'charge': []}
     # get three most common charge move
-    sorted_moves = [move for move in pokemon_ranking['moves']['chargedMoves'] if move['uses']]
+    num_moves = []
+    charged_moves = pokemon_ranking['moves']['chargedMoves']
+    print(charged_moves)
+    if popular_moves:
+        for move in pokemon_ranking['moves']['chargedMoves']:
+            move_id = move.get('moveId')
+            num_moves.append({'moveId': move_id, 'uses': popular_moves.get(move_id.lower())})
+        charged_moves = num_moves
+    print(charged_moves)
+
+    #sorted_moves = [move for move in pokemon_ranking['moves']['chargedMoves'] if move['uses']]
+    sorted_moves = [move for move in charged_moves if move['uses']]
 
     # Pick the three moves at random if there are no use metrics
     if not sorted_moves:
@@ -287,12 +329,13 @@ def add_counts_to_img(pokemon, pokemon_moveset, blank_img, row, col, fonts):
         )
 
 
-def make_image(pokemon_list, number_per_row=5):
+def make_image(pokemon_list, number_per_row=5, reset_data=False):
     """
     Make a move counts image from the list of pokemon
     """
     counts = get_move_counts(None)
-    rankings = get_all_rankings()
+    rankings = get_all_rankings(reset_data)
+    pokemon_moves = get_popular_moves(days_back=30)
     image_url = "https://img.pokemondb.net/sprites/go/normal/{pokemon}.png"
     image_height = ((len(pokemon_list) + 1) // number_per_row) * 100 + 100
     image_width = number_per_row * 200
@@ -390,7 +433,8 @@ def make_image(pokemon_list, number_per_row=5):
             continue
 
         # add move count text for pokemon
-        pokemon_moveset = generate_move_strings(pokemon, pokemon_ranking, counts, chosen_fast_move=chosen_fast_move, mega=mega)
+        popular_moves = pokemon_moves.get(pokemon, {})
+        pokemon_moveset = generate_move_strings(pokemon, pokemon_ranking, counts, chosen_fast_move=chosen_fast_move, mega=mega, popular_moves=popular_moves)
         add_counts_to_img(pokemon, pokemon_moveset, blank_img, row, col, [image_font, cm_image_font, count_image_font])
 
     blank_img.save("image.png")
