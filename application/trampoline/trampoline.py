@@ -842,6 +842,10 @@ def get_skill_difficulty(skill):
     flip_difficulty = (skill.flips - skill.flips%1) * difficulty_per_flip + \
                       (skill.flips % 1 / 0.25) * 0.1
     
+    # Single flips with more than 0.5 twist lose 0.1 dd
+    if skill.flips == 1 and skill.twists[0] > 0 and skill.pos not in [TUCK_POS, 't']:
+        flip_difficulty -= 0.1
+
     return flip_difficulty \
            + sum([2*twist for twist in skill.twists]) * 0.1 \
            + (0.1 if skill.flips == 3 else 0) # extra 0.1 for a triple flip
