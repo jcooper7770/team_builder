@@ -433,7 +433,10 @@ class Practice:
                     #print(f"{practice_date} - skills: '{skills}' - note: '{note}'")
                     # not a note
                     if skills and skills[0]!="-":
-                        routine = Routine([skill_class(skill, event=event) for skill in skills.split()], event=event, note=note)
+                        try:
+                            routine = Routine([skill_class(skill, event=event) for skill in skills.split()], event=event, note=note)
+                        except:
+                            print(f"Skipping data: {skills}")
                         routines.append(routine)
                         continue
                     # notes
@@ -479,6 +482,9 @@ class Skill:
         self.flips = 0
         self.twists = []
         self.pos = string[-1]
+        if self.pos not in POSITIONS and string not in NON_SKILLS:
+            string = f"{string}o"
+            self.pos = "o"
         self.shorthand = string
         self.event = event
 
