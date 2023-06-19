@@ -298,12 +298,12 @@ def delete_from_db(date, user="test", table_name=None, event=None):
     print(f"removed {result.rowcount} rows")
 
 
-def get_ratings():
+def get_ratings(user):
     """
     Returns all ratings from the db
     """
     engine = create_engine()
-    result = engine.execute('SELECT * from `ratings`;')
+    result = engine.execute(f'SELECT * from `ratings` where `user`="{user}";')
     ratings = [rating for rating in result]
     result.close()
     ratings_map = {}
@@ -315,7 +315,7 @@ def get_ratings():
 
 
 
-def rate_practice_in_db(date, event, rating):
+def rate_practice_in_db(date, event, rating, user):
     """
     Saves the rating to the database
     """
@@ -328,17 +328,18 @@ def rate_practice_in_db(date, event, rating):
     except:
         table = MockTable()
     # First check if user exists
-    result = engine.execute(f'SELECT * from `ratings` WHERE `practice`="{practice}"')
+    result = engine.execute(f'SELECT * from `ratings` WHERE `practice`="{practice}" AND `user`="{user}"')
     if result.rowcount == 0:
         # add in rating
         ins = table.insert().values(
             practice=practice,
-            rating=rating
+            rating=rating,
+            user=user
         )
         engine.execute(ins)
     else:
         # else update user
-        update = table.update().where(table.c.practice==practice).values(
+        update = table.update().where(table.c.practice==practice).where(table.c.user==user).values(
             rating=rating
         )
         engine.execute(update)

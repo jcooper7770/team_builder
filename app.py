@@ -194,7 +194,7 @@ def rate_practice():
     rating = request.json.get("rating")
     practice, event = practice_date.split("_")
     print(f"Rating {practice} ({event}): {rating}")
-    rate_practice_in_db(practice, event, rating)
+    rate_practice_in_db(practice, event, rating, session.get('name'))
     return {"success": True}
 
 @app.route("/logger/search", methods=["POST", "GET"])
@@ -488,7 +488,7 @@ def trampoline_log():
     # Get data from database
     user_practices = Practice.load_from_db(username, date=session.get("search_date"), skills=session.get("search_skills", ""))
     all_turns = []
-    all_ratings = get_ratings()
+    all_ratings = get_ratings(session.get('name'))
     print(all_ratings)
     for practice in user_practices:
         # Add the turns into a table for that practice
