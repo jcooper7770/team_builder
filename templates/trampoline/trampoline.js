@@ -512,6 +512,39 @@ function handleRatingSelection(option) {
 
 }
 
+$("[id^=search-rating]").click(function(e) {
+    // remove all backgrounds of search buttons
+    document.querySelectorAll("[id^=search-rating]").forEach(x => {
+        x.style.background = "";
+    });
+    const rating = e.target.id.slice(-1);
+    e.target.style.background = "blue";
+    showSpinner("Searching by rating...");
+
+    for(let i=0; i<paginated_practices.length; i++) {
+        var page = paginated_practices[i];
+        for (let j=0; j<page.length; j++) {
+            var container = page[j];
+            var table = container.children[0];
+
+            // re-display the table incase it was hidden
+            table.style.display = "";
+            if (rating == "0") {
+                continue
+            }
+            var thead = table.children[0];
+            var table_rating_element = thead.children[0].children[0].firstChild;
+            const table_rating = table_rating_element.getAttribute("name");
+            if (table_rating != rating) {
+                table.style.display = "none";
+            }
+
+        }
+    }
+    document.querySelector('.spinner-container').style.display = "none";
+
+});
+
 $("#search-practice").click(function (e) {
     showSpinner("Searching for date");
     var val = document.querySelector("#practice_date").value;

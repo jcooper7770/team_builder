@@ -72,7 +72,7 @@ class TableMaker:
         ratings_dict ={"3": "😊", "2": "😐", "1": "😞", "0": ""}
         self.new_row()
         try:
-            rating_text = f'<span id="practice-rating">{ratings_dict.get(str(rating)) if rating else ""}</span>'
+            rating_text = f'<span id="practice-rating" name="{rating}">{ratings_dict.get(str(rating)) if rating else ""}</span>'
             date_to_remove = value.split()[1].replace("/", '-')
             event_to_remove = value.split()[2].replace("(", "").replace(")", "")
             share_date = f"{date_to_remove.split('-')[2]}-{date_to_remove.split('-')[0]}-{date_to_remove.split('-')[1]}"
