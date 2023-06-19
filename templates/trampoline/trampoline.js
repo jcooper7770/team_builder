@@ -343,7 +343,7 @@ if (airtime_button != null) {
 const skill_button = document.getElementById("submit-skills")
 if (skill_button != null) {
     skill_button.addEventListener("click", function() {
-    showSpinner("Submitting skill for search...")
+        showSpinner("Submitting skill for search...")
     });
 }
 $("[id$=_skills]").change(function (e) {
@@ -452,6 +452,17 @@ $("[id^=remove_]").click(function (e) {
 $("#search-practice").click(function (e) {
 
     var val = document.querySelector("#practice_date").value;
+    console.log(val);
+    if (val == null | val == "") {
+        $.ajax({
+            type: 'GET',
+            url: "/logger/search?practice_date=",
+            success: function (data) {
+                location.reload();
+            }
+        });
+        return
+    }
     var date = new Date(val);
     var string_date = ((date.getMonth() > 8) ? (date.getMonth() + 1) : ('0' + (date.getMonth() + 1))) + '/' + ((date.getDate() > 8) ? (date.getDate()+1) : ('0' + (date.getDate()+1))) + '/' + date.getFullYear();
     console.log(string_date);
@@ -463,7 +474,7 @@ $("#search-practice").click(function (e) {
 
             // re-display the table incase it was hidden
             table.style.display = "";
-            if (val == "") {
+            if (val == "" || val == null) {
                 continue
             }
             var thead = table.children[0];
