@@ -496,6 +496,7 @@ function handleRatingSelection(option) {
   // Perform any desired action with the selected rating
   console.log('Selected rating:', selectedRating);
   option.parentNode.parentNode.parentNode.firstChild.textContent = selectedRating;
+  option.parentNode.parentNode.parentNode.firstChild.setAttribute("name", rating);
 
   var practice_name = option.parentNode.parentNode.parentNode.getAttribute("name");
   // save the rating by sending a POST
