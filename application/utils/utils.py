@@ -8,6 +8,7 @@
 import traceback
 
 import logging
+
 logging.basicConfig(level=logging.DEBUG)
 
 logger = logging.getLogger('werkzeug') # grabs underlying WSGI logger
@@ -67,16 +68,18 @@ class TableMaker:
     def new_line(self):
         self.table.append("<br>")
 
-    def new_header(self, value, colspan):
+    def new_header(self, value, colspan, rating=None):
+        ratings_dict ={"3": "😊", "2": "😐", "1": "😞", "0": ""}
         self.new_row()
         try:
+            rating_text = f'<span id="practice-rating">{ratings_dict.get(str(rating)) if rating else ""}</span>'
             date_to_remove = value.split()[1].replace("/", '-')
             event_to_remove = value.split()[2].replace("(", "").replace(")", "")
             share_date = f"{date_to_remove.split('-')[2]}-{date_to_remove.split('-')[0]}-{date_to_remove.split('-')[1]}"
-            share_a=f"<a href='/logger/_current_/practices?start={share_date}&end={share_date}' class='float-right' target='_blank' title='share practice'>Share</a>"
+            share_a=f"<a href='/logger/_current_/practices?start={share_date}&end={share_date}' class='btn-rate float-right' target='_blank' title='share practice'>Share</a>"
             edit_a = f'<button type="button" class="btn float-right"><a title="edit day" href="#"><span id="edit_{date_to_remove}_{event_to_remove}" class="fa fa-pencil-square-o" aria-hidden=\'true\'></span></button>'
             delete_a = f'<button type="button" class="btn float-right" id="delete-button"><a title="remove day" href="#"><span id="remove_{date_to_remove}_{event_to_remove}" class="fa fa-remove" aria-hidden=\'true\'></span></button>'
-            self.table.append(f'<th colspan={colspan} align="center">{value}{delete_a}{edit_a}{share_a}</th>')
+            self.table.append(f'<th id="practice-header" colspan={colspan} align="center" name="{date_to_remove}_{event_to_remove}">{rating_text}{value}{delete_a}{edit_a}{share_a}</th>')
         except:
             self.table.append(f'<th colspan={colspan} align="center">{value}</th>')
         self.end_row()
@@ -101,7 +104,7 @@ class TableMaker:
         return "".join(self.table)
 
 
-def skills_table(skills, title="Routines", expand_comments=False):
+def skills_table(skills, title="Routines", expand_comments=False, rating=None):
     """
     Writes all trampoline skills to a table
     """
@@ -113,7 +116,7 @@ def skills_table(skills, title="Routines", expand_comments=False):
     total_difficulty = 0
     total_skills = 0
     skills_table = TableMaker(border=1, align="center", width="30%")
-    skills_table.new_header(title, colspan=most_cols+8)
+    skills_table.new_header(title, colspan=most_cols+8, rating=rating)
     total_turn_num = 0
     
     for turn_num, turn in enumerate(skills):

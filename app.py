@@ -51,7 +51,8 @@ from application.trampoline.trampoline import convert_form_data, get_leaderboard
      current_event, set_current_event, set_current_athlete,\
      ALL_SKILLS, get_leaderboards, Athlete, get_user_turns, get_turn_dds
 from application.utils.database import create_engine, get_users_and_turns, set_table_name, insert_goal_to_db, get_user_goals, complete_goal,\
-    delete_goal_from_db, get_user, get_simmed_battle, add_simmed_battle, add_airtime_to_db, get_user_airtimes, delete_airtime_from_db
+    delete_goal_from_db, get_user, get_simmed_battle, add_simmed_battle, add_airtime_to_db, get_user_airtimes, delete_airtime_from_db,\
+    rate_practice_in_db, get_ratings
 from application.utils.utils import *
 
 
@@ -187,6 +188,14 @@ def search_skills():
     #SEARCH_SKILLS = skills
     return redirect(url_for('trampoline_log'))
 
+@app.route("/logger/rate_practice", methods=["POST"])
+def rate_practice():
+    practice_date = request.json.get("date")
+    rating = request.json.get("rating")
+    practice, event = practice_date.split("_")
+    print(f"Rating {practice} ({event}): {rating}")
+    rate_practice_in_db(practice, event, rating)
+    return {"success": True}
 
 @app.route("/logger/search", methods=["POST", "GET"])
 def search_date():
@@ -415,6 +424,8 @@ def trampoline_user_practices(username):
             return render_template("trampoline/user_practices.html", body=body)
 
     practice_tables = []
+    all_ratings = get_ratings()
+    print(all_ratings)
     user_practices = Practice.load_from_db(username, date=None, skills=session.get("search_skills", ""))
     for practice in user_practices:
         if start_date and practice.date < start_date:
@@ -425,7 +436,9 @@ def trampoline_user_practices(username):
         # Add the turns into a table for that practice
         title_date = practice.date.strftime("%A %m/%d/%Y")
         title = f"{title_date} ({practice.event})"
-        practice_table = skills_table(practice.turns, title=title, expand_comments=user.get("expand_comments", False))
+        practice_rating = all_ratings.get(f"{title_date}_{practice.event}", 0)
+        print(f"practice {title} rating: {practice_rating}")
+        practice_table = skills_table(practice.turns, title=title, expand_comments=user.get("expand_comments", False), rating=practice_rating)
         practice_tables.append(practice_table)
 
     all_practice_tables = "<br><br>".join(practice_tables)
@@ -475,11 +488,16 @@ def trampoline_log():
     # Get data from database
     user_practices = Practice.load_from_db(username, date=session.get("search_date"), skills=session.get("search_skills", ""))
     all_turns = []
+    all_ratings = get_ratings()
+    print(all_ratings)
     for practice in user_practices:
         # Add the turns into a table for that practice
         title_date = practice.date.strftime("%A %m/%d/%Y")
+        rating_date = practice.date.strftime("%m-%d-%Y")
         title = f"{title_date} ({practice.event})"
-        practice_table = skills_table(practice.turns, title=title, expand_comments=user.get("expand_comments", False))
+        practice_rating = all_ratings.get(f"{rating_date}_{practice.event}", 0)
+        print(f"practice {title} rating: {practice_rating}")
+        practice_table = skills_table(practice.turns, title=title, expand_comments=user.get("expand_comments", False), rating=practice_rating)
         practice_tables.append(practice_table)
         for turn in practice.turns:
             all_turns.append([skill.shorthand for skill in turn.skills])

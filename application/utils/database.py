@@ -298,6 +298,56 @@ def delete_from_db(date, user="test", table_name=None, event=None):
     print(f"removed {result.rowcount} rows")
 
 
+def get_ratings():
+    """
+    Returns all ratings from the db
+    """
+    engine = create_engine()
+    result = engine.execute('SELECT * from `ratings`;')
+    ratings = [rating for rating in result]
+    result.close()
+    ratings_map = {}
+    for rating in ratings:
+        ratings_map[rating[0]] = rating[1]
+
+    return ratings_map
+
+
+
+
+def rate_practice_in_db(date, event, rating):
+    """
+    Saves the rating to the database
+    """
+    practice = f"{date}_{event}"
+    engine = create_engine()
+    conn = engine.connect()
+    metadata = sqlalchemy.MetaData()
+    try:
+        table = sqlalchemy.Table("ratings", metadata, autoload=True, autoload_with=engine)
+    except:
+        table = MockTable()
+    # First check if user exists
+    result = engine.execute(f'SELECT * from `ratings` WHERE `practice`="{practice}"')
+    if result.rowcount == 0:
+        # add in rating
+        ins = table.insert().values(
+            practice=practice,
+            rating=rating
+        )
+        engine.execute(ins)
+    else:
+        # else update user
+        update = table.update().where(table.c.practice==practice).values(
+            rating=rating
+        )
+        engine.execute(update)
+    
+    result.close()
+    conn.close()
+    engine.dispose()
+  
+
 def save_athlete(athlete):
     """
     Saves the athlete to the DB

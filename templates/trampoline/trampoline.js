@@ -449,6 +449,69 @@ $("[id^=remove_]").click(function (e) {
     }
 });
 
+//
+// Rating dropdown
+//
+// Get the dropdown menu template
+const dropdownTemplate = document.querySelector('#dropdown-template');
+
+// Function to add the dropdown menu to a table header
+function addDropdownToTableHeader(tableHeader) {
+  // Clone the dropdown template content
+  const dropdown = dropdownTemplate.content.cloneNode(true);
+
+  // Append the dropdown menu to the table header
+  tableHeader.appendChild(dropdown);
+}
+
+// Get all table headers and add the dropdown menu to each one
+const tableHeaders = document.querySelectorAll('#practice-header');
+tableHeaders.forEach(function (header) {
+  addDropdownToTableHeader(header);
+});
+
+// Event delegation for dynamically added rating options
+document.addEventListener('click', function (event) {
+  const target = event.target;
+  if (target.classList.contains('rating-option')) {
+    handleRatingSelection(target);
+  }
+});
+
+// Event delegation for dynamically added dropdown buttons
+document.addEventListener('click', function (event) {
+  const target = event.target;
+  if (target.classList.contains('dropdown-btn')) {
+    const dropdownContent = target.nextElementSibling;
+    dropdownContent.style.display =
+      dropdownContent.style.display === 'block' ? 'none' : 'block';
+  }
+});
+
+// Function to handle rating option selection
+function handleRatingSelection(option) {
+  const selectedRating = option.textContent;
+  const rating = option.getAttribute("name");
+
+  // Perform any desired action with the selected rating
+  console.log('Selected rating:', selectedRating);
+  option.parentNode.parentNode.parentNode.firstChild.textContent = selectedRating;
+
+  var practice_name = option.parentNode.parentNode.parentNode.getAttribute("name");
+  // save the rating by sending a POST
+  const data = {rating: rating, date: practice_name}
+  $.ajax({
+    type: 'POST',
+    url: "/logger/rate_practice",
+    contentType: 'application/json',
+    data: JSON.stringify(data),
+    success: function (data) {
+        console.log("successfully saved data");
+    }
+  });
+
+}
+
 $("#search-practice").click(function (e) {
     showSpinner("Searching for date");
     var val = document.querySelector("#practice_date").value;
