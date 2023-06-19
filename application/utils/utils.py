@@ -62,7 +62,7 @@ class TableMaker:
     def end_row(self):
         self.table.append("</tr>")
         if self._row_num == 1:
-            self.table.append("</thead><tbody>")
+            self.table.append("</thead><tbody style=\"background: white;\">")
 
     def new_line(self):
         self.table.append("<br>")
@@ -136,6 +136,11 @@ def skills_table(skills, title="Routines", expand_comments=False):
             note_html = f' <i title="toggle comment" class="fa fa-comments" id="unhide-note"></i> <span id="hidden-note" style="display:{display};">{turn.note}</span>'
         skills_table.add_cell(f"<b><a id='copy-text' title='Copy text' href='#'>{total_turn_num}</a></b>{note_html}")
 
+        num_skills = len([skill for skill in turn.skills if skill.shorthand not in NON_SKILLS])
+        total_skills += num_skills
+        total_difficulty += turn.difficulty
+        total_flips += turn.total_flips
+        '''
         # Skills
         for skill in turn.skills:
             skills_table.add_cell(skill.shorthand)
@@ -145,23 +150,28 @@ def skills_table(skills, title="Routines", expand_comments=False):
             skills_table.add_cell("")
 
         # total skills
-        num_skills = len([skill for skill in turn.skills if skill.shorthand not in NON_SKILLS])
         #skills_table.add_cell(num_skills, colspan="1 style=\"border-left: 1px solid black;\"")
         skills_table.add_cell(num_skills)
-        total_skills += num_skills
         #skills_table.add_cell(total_skills, colspan="1 style=\"border-left: 1px solid black;\"")
         skills_table.add_cell(total_skills)
 
         # total flips
         skills_table.add_cell(turn.total_flips)
-        total_flips += turn.total_flips
         skills_table.add_cell(total_flips)
 
         # total difficulty
         skills_table.add_cell(f"{turn.difficulty:0.1f}")
-        total_difficulty += turn.difficulty
         skills_table.add_cell(f"{total_difficulty:0.1f}")
 
+        skills_table.end_row()
+
+        skills_table.new_row()
+        '''
+        cell_value = " ".join(skill.shorthand for skill in turn.skills)
+        next_line = f"<b>Skills:</b> {num_skills} - <b>Flips:</b> {turn.total_flips} - <b>DD:</b> {turn.difficulty:0.1f}"
+        totals_line = f"<b>Skills:</b> {total_skills} - <b>Flips:</b> {total_flips} - <b>DD:</b> {total_difficulty:0.1f}"
+        skills_table.add_cell(f"{cell_value}")
+        skills_table.add_cell(f"<u><b>Turn:</b></u> {next_line}<br><b><u>Total:</u></b> {totals_line}", colspan=most_cols)
         skills_table.end_row()
     skills_table.end_table()
     return skills_table.render()
