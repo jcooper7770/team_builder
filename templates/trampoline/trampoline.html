@@ -264,7 +264,8 @@
       <button type="button" class="btn float-right">
 
         {% if url_for(request.endpoint) == "/logger" %}
-        <span class="fa fa-window-maximize" id="minimize_practices" style="color: white;"></span>
+        <!--<span class="fa fa-window-maximize" id="minimize_practices" style="color: white;"></span>-->
+        <span class="fa fa-window-minimize" id="minimize_practices" style="color: white;"></span>
         {% else %}
         <span class="fa fa-window-minimize" id="minimize_practices" style="color: white;"></span>
         {% endif %}
@@ -308,7 +309,7 @@
 
 </nav>
 <!--/.Navbar-->
-<div id="practices_body" {% if url_for(request.endpoint) == "/logger" %}style="display:none;"{% endif %}>
+<div id="practices_body" {% if url_for(request.endpoint) == "/logger" %}{% endif %}>
 {{body|safe}}
 </div>
 <br>
