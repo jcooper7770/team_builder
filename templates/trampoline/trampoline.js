@@ -450,7 +450,7 @@ $("[id^=remove_]").click(function (e) {
 });
 
 $("#search-practice").click(function (e) {
-
+    showSpinner("Searching for date");
     var val = document.querySelector("#practice_date").value;
     console.log(val);
     if (val == null | val == "") {
