@@ -18,6 +18,11 @@
     text-align: center;
 }
 
+.x {
+  color: red;
+  font-weight: bold;
+}
+
 .spinner-container {
   display: none;
   position: fixed;

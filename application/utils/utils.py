@@ -168,6 +168,7 @@ def skills_table(skills, title="Routines", expand_comments=False):
         skills_table.new_row()
         '''
         cell_value = " ".join(skill.shorthand for skill in turn.skills)
+        cell_value = cell_value.replace("X", "<span class=\"x\">X</span>")
         next_line = f"<b>Skills:</b> {num_skills} - <b>Flips:</b> {turn.total_flips} - <b>DD:</b> {turn.difficulty:0.1f}"
         totals_line = f"<b>Skills:</b> {total_skills} - <b>Flips:</b> {total_flips} - <b>DD:</b> {total_difficulty:0.1f}"
         skills_table.add_cell(f"{cell_value}")
