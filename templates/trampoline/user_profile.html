@@ -1,0 +1,417 @@
+{% extends "trampoline/base.html" %}
+
+{% block content %}
+<!-- Settings -->
+<br><br>
+<div class="container">
+
+  <!-- Coach Requests -->
+  {% if user_data['coach_requests'] %}
+  <div class="card border-primary">
+    <div class="card-header text-center">
+      <h2>Coach Requests</h2>
+    </div>
+    <div class="card-body">
+      {% for request in user_data['coach_requests'] %}
+      <div class="row" style="border-bottom: 1px solid;">
+        <div class="col-sm-2"><p><b>{{ request }}</b></p></div>
+        <div class="col-sm-10">
+          <button class="btn btn-primary" id="request_approve_{{request}}">Approve</button>
+          <button class="btn btn-danger" id="request_deny_{{request}}">Deny</button>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  <br>
+  {% endif %}
+
+  <div class="card border-primary">
+    <div class="card-header text-center">
+      <h2>User Settings for {{user}}</h2>
+    </div>
+    <div class="row card-body">
+      <div class="col-sm">
+        <form action="/logger/user/update" method="POST">
+           <!-- Change password -->
+          <div class="row">
+            <div class="col-sm-2">
+              <label>Change Password:</label>
+            </div>
+            <div class="col">
+              <div class="row">
+                <div class="col-sm-2">
+                  <label>Old password:</label>
+                </div>
+                <div class="col-sm-6">
+                  <input type="password" value="" class="form-control" name="old_password" placeholder="old password"><br>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-sm-2">
+                  <label>New password:</label>
+                </div>
+                <div class="col-sm-6">
+                  <input type="password" value="" class="form-control" name="new_password" placeholder="new password"><br>
+                </div>
+              </div>
+            </div>
+          </div>
+          <hr>
+
+          <div class="row">
+            <div class="col-sm-2">
+              <p class="card-text">Private (hide from leaderboards):</p>
+            </div>
+            <div class="col-sm-10">
+              <input type="radio" id="yes" name="private" value="true" {% if user_data["private"]==True %} checked{%
+                endif %}>
+              <label for="yes">Yes, do not show data in leaderboards</label>
+
+              <br>
+              <input type="radio" id="no" name="private" value="false" {% if user_data["private"]==False %} checked{%
+                endif %}>
+              <label for="no">No, show data in leaderboards</label>
+              <br>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-2">
+              <p class="card-text">Expand all comments:</p>
+            </div>
+            <div class="col-sm-10">
+              <input type="radio" id="yes" name="expand" value="true" {% if user_data["expand_comments"]==True %} checked{%
+                endif %}>
+              <label for="yes">Yes, show all comments</label>
+
+              <br>
+              <input type="radio" id="no" name="expand" value="false" {% if user_data["expand_comments"]==False %} checked{%
+                endif %}>
+              <label for="no">No, hide all comments</label>
+              <br>
+            </div>
+          </div>
+          <hr>
+          <div class="row">
+            <h1 style="text-decoration: underline;">Trampoline:</h1>
+          </div>
+          <div class="row">
+            <div class="col-sm-2">
+              <label for="level-tramp">Level:</label>
+            </div>
+            <div class="col-sm-10">
+              <select id="level-tramp" class="form-select" name="level-tramp">
+                {% for i in range(1, 11) %}
+                <option value="{{i}}" {% if user_data['levels'][0]|int == i %}selected{% endif %}>{{i}}</option>
+                {% endfor %}
+                <!--
+                <option value="1">1</option> 
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>  
+                <option value="5">5</option>  
+                <option value="6">6</option>  
+                <option value="7">7</option>  
+                <option value="8">8</option>  
+                <option value="9">9</option>  
+                <option value="10" selected>10</option>  
+                -->
+                <option value="OE" {% if user_data['levels'][0] == 'OE' %}selected{% endif %}>Open Elite</option>
+                <option value="YE" {% if user_data['levels'][0] == 'YE' %}selected{% endif %}>Youth Elite</option>
+                <option value="JE" {% if user_data['levels'][0] == 'JE' %}selected{% endif %}>Junior Elite</option>
+                <option value="IE" {% if user_data['levels'][0] == 'IE' %}selected{% endif %}>Intermediate Elite</option>
+                <option value="SE" {% if user_data['levels'][0] == 'SE' %}selected{% endif %}>Senior Elite</option>
+              </select>
+            </div>
+          </div>
+          <div class="row" id="compulsory-row">
+            <div class="col-sm-2">
+              <label for="compulsory" id="routine1-label">Compulsory:</label>
+            </div>
+            <div class="col-sm-10">
+              <input type="text" value="{{user_data['compulsory']}}" class="form-control" name="compulsory"><br>
+            </div>
+          </div>
+          <div class="row" id="optional-row">
+            <div class="col-sm-2">
+              <label for="optional" id="routine2-label">Optional:</label>
+            </div>
+            <div class="col-sm-10">
+              <input type="text" value="{{user_data['optional']}}" class="form-control" name="optional"><br>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-10">
+              <button type="button" class="btn btn-primary" id="comp-card">Create Comp Card</button>
+            </div>
+          </div>
+          <hr>
+          <div class="row">
+            <h1 style="text-decoration: underline;">Double Mini:</h1>
+          </div>
+          <div class="row">
+            <div class="col-sm-2">
+              <label for="level">Level:</label>
+            </div>
+            <div class="col-sm-10">
+              <select id="level-dmt" class="form-select" name="level-dmt">
+                {% for i in range(1, 11) %}
+                <option value="{{i}}" {% if user_data['levels'][1]|int == i %}selected{% endif %}>{{i}}</option>
+                {% endfor %}
+                <!--
+                <option value="1">1</option> 
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>  
+                <option value="5">5</option>  
+                <option value="6">6</option>  
+                <option value="7">7</option>  
+                <option value="8">8</option>  
+                <option value="9">9</option>  
+                <option value="10" selected>10</option>  
+                -->
+                <option value="OE" {% if user_data['levels'][1] == 'OE' %}selected{% endif %}>Open Elite</option>
+                <option value="YE" {% if user_data['levels'][1] == 'YE' %}selected{% endif %}>Youth Elite</option>
+                <option value="JE" {% if user_data['levels'][1] == 'JE' %}selected{% endif %}>Junior Elite</option>
+                <option value="IE" {% if user_data['levels'][1] == 'IE' %}selected{% endif %}>Intermediate Elite</option>
+                <option value="SE" {% if user_data['levels'][1] == 'SE' %}selected{% endif %}>Senior Elite</option>
+              </select>
+            </div>
+          </div>
+          <div class="row" id="pass1-row">
+            <div class="col-sm-2">
+              <label for="pass1">Pass 1:</label>
+            </div>
+            <div class="col-sm-10">
+              <input type="text" value="{{user_data['dm_prelim1']}}" class="form-control" name="pass1"><br>
+            </div>
+          </div>
+          <div class="row" id="pass2-row">
+            <div class="col-sm-2">
+              <label for="pass2">Pass 2:</label>
+            </div>
+            <div class="col-sm-10">
+              <input type="text" value="{{user_data['dm_prelim2']}}" class="form-control" name="pass2"><br>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-10">
+              <button type="button" class="btn btn-primary" id="comp-card-dmt">Create Comp Card</button>
+            </div>
+          </div>
+          <hr>
+          <div class="row">
+            <h1 style="text-decoration: underline;">Tumbling:</h1>
+          </div>
+          <div class="row">
+            <div class="col-sm-2">
+              <label for="level-tu">Level:</label>
+            </div>
+            <div class="col-sm-10">
+              <select id="level-tu" class="form-select" name="level-tu">
+                {% for i in range(1, 11) %}
+                <option value="{{i}}" {% if user_data['levels'][2]|int == i %}selected{% endif %}>{{i}}</option>
+                {% endfor %}
+                <!--
+                <option value="1">1</option> 
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>  
+                <option value="5">5</option>  
+                <option value="6">6</option>  
+                <option value="7">7</option>  
+                <option value="8">8</option>  
+                <option value="9">9</option>  
+                <option value="10" {% if user_data['levels'][2] == 10 %}selected{% endif %}>10</option>
+                -->
+                <option value="OE" {% if user_data['levels'][2] == 'OE' %}selected{% endif %}>Open Elite</option>
+                <option value="YE" {% if user_data['levels'][2] == 'YE' %}selected{% endif %}>Youth Elite</option>
+                <option value="JE" {% if user_data['levels'][2] == 'JE' %}selected{% endif %}>Junior Elite</option>
+                <option value="IE" {% if user_data['levels'][2] == 'IE' %}selected{% endif %}>Intermediate Elite</option>
+                <option value="SE" {% if user_data['levels'][2] == 'SE' %}selected{% endif %}>Senior Elite</option>
+              </select>
+            </div>
+          </div>
+          <div class="row" id="tu-pass1-row">
+            <div class="col-sm-2">
+              <label for="tu-pass1">Pass 1:</label>
+            </div>
+            <div class="col-sm-10">
+              <input type="text" value="" class="form-control" name="tu-pass1"><br>
+            </div>
+          </div>
+          <div class="row" id="tu-pass2-row">
+            <div class="col-sm-2">
+              <label for="tu-pass2">Pass 2:</label>
+            </div>
+            <div class="col-sm-10">
+              <input type="text" value="" class="form-control" name="tu-pass2"><br>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-10">
+              <button type="button" class="btn btn-primary" id="comp-card-tu" disabled>Create Comp Card</button>
+            </div>
+          </div>
+          <hr>
+          <div class="row">
+            <div class="col">
+              <button type="submit" class="btn btn-primary">Save</button>
+            </div>
+          </div>
+        </form>
+        <br>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Options -->
+<br><br>
+<div class="container">
+  <div class="card border-primary">
+    <div class="card-header text-center">
+      <h2>User Options for {{user}}</h2>
+    </div>
+    <div class="row card-body">
+      <div class="col-sm">
+        <div class="row">
+          <div class="col-sm-2">
+            <h6>Data handling:</h6>
+          </div>
+          <div class="col-sm-5">
+            <p class="card-text">Save all your data into a csv</p>
+            <div class="row">
+              <div class="col-sm-2">
+                <label for="export-from">From: </label>
+              </div>
+              <div class="col-sm">
+                <input name="export-from" id="export-from" type="date" placeholder="mm/dd/yyyy" />
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-2">
+                <label for="export-to">To: </label>
+              </div>
+              <div class="col-sm">
+                <input name="export-to" id="export-to" type="date" placeholder="mm/dd/yyyy" />
+              </div>
+            </div>
+            <button class="btn btn-primary" id="export-data">Export Data</button>
+          </div>
+          <div class="col-sm-5">
+            <p class="card-text">Import data from a csv</p>
+            <button class="btn btn-primary">Import Data</button>
+          </div>
+        </div>
+        <br>
+      </div>
+    </div>
+  </div>
+
+  <!-- Send messages to athletes -->
+  <br><br>
+  <div class="card border-primary">
+    <div class="card-header text-center">
+      <h2>Message Center</h2>
+    </div>
+    <div class="row card-body">
+      <div class="col-sm-6">
+        <div class="row"><b><u>Messages:</u></b></div>
+        <form name="read_msgs" id="read_msgs" method="POST" action="/logger/athlete/messages">
+          <div class="row" style="overflow-y:scroll; height:100px;">
+            <ul style="list-style-type: none;">
+              {% for message in messages %}
+              <li><input name="message_{{loop.index}}" type="checkbox"{% if message.read %} checked {% endif %}\>{{ message.msg }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+          <div class="row">
+            <button class="btn btn-primary" type="submit" id="mark_read">Mark Read</button>
+          </div>
+        </form>
+      </div>
+      <div class="col-sm-6">
+        <div class="row"><b><u>Send Message to coach:</u></b></div>
+        <div class="row">
+          <form action="/logger/athlete/messages" method="POST" id="messages" name="messages">
+            <textarea id="message" name="message" rows="5" cols="40" style="width:90%" form="messages"
+                  placeholder="Input your message here"></textarea>
+            <button class="btn btn-primary" type="submit" id="submit">Submit</button>
+          </form>
+        </div>
+      </div>
+    </div>
+ </div>
+
+</div>
+
+<br><br>
+
+
+<script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
+  crossorigin="anonymous"></script>
+
+<script type="text/javascript">
+  $("#export-data").click(function (e) {
+    e.preventDefault();
+    var fromText = $('#export-from').val();
+    var toText = $('#export-to').val();
+    var url = "/logger/user/export?from=" + fromText + "&to=" + toText;
+    location.href = encodeURI(url);
+  });
+  $("[id^=request_]").click(function(e){
+    e.preventDefault();
+    var id = e.target.id;
+    //e.target.parentElement.parentElement.style.display = "none";
+  
+    $.ajax({
+      url: "/logger/user/requests",
+      type: "POST",
+      data: {
+        id: id
+      },
+      success: function(response) {
+        e.target.parentElement.parentElement.style.display = "none";
+        console.log(response);
+
+      }
+    })
+  });
+
+  $('#comp-card').click(function(e) {
+    e.preventDefault();
+    var url = "/logger/user/compcard";
+    location.href = encodeURI(url);
+  });
+  $('#comp-card-dmt').click(function(e) {
+    e.preventDefault();
+    var url = "/logger/user/dm_compcard";
+    location.href = encodeURI(url);
+  });
+
+  const compulsoryLevels = ["1", "2", "3", "4", "5", "6", "7"]
+  const twoOptionalLevels = ["IE", "SE"]
+  const level = document.getElementById("level-tramp");
+  level.addEventListener("change", (event) => {
+    const levelValue = event.target.value;
+    console.log(`You are level ${levelValue}`);
+
+    if (compulsoryLevels.includes(levelValue)) {
+      console.log("no optional routine");
+      document.getElementById("optional-row").style.display = "none";
+      document.getElementById("routine1-label").textContent = "Compulsory:";
+        document.getElementById("routine2-label").textContent = "Optional:";
+    } else {
+      document.getElementById("optional-row").style.display = "";
+      if (twoOptionalLevels.includes(levelValue)) {
+        document.getElementById("routine1-label").textContent = "Optional 1:";
+        document.getElementById("routine2-label").textContent = "Optional 2:";
+      } else {
+        document.getElementById("routine1-label").textContent = "Compulsory:";
+        document.getElementById("routine2-label").textContent = "Optional:";
+      }
+    }
+  })
+</script>
+{% endblock %}

@@ -1,0 +1,106 @@
+{% extends "trampoline/trampoline.html" %}
+
+{% block logging %}
+<br>
+<div class="form-group" align="center">
+        <!--<form action="{{ url_for('trampoline_log') }}" method="post" id="logger" name="logger" style="text-align:left;">-->
+
+  <div class="form-row">
+    <!-- Athletes to show -->
+    <div class="col-sm-4"><label>Athletes shown:</label></div>
+    <div class="col">
+      <ul id="shown_athletes" class="athlete-list mx-auto text-left">
+        {% for athlete in athletes %}
+        <li id="athlete_{{athlete}}">
+          <input type="checkbox" id="show_{{athlete}}" \>  {{athlete}}
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="form-row">
+
+    <!-- Athletes to hide -->
+    <div class="col-sm-4"><label>Athletes hidden:</label></div>
+    <div class="col">
+      <ul id="hidden_athletes" class="athlete-list mx-auto text-left"></ul>
+    </div>
+
+  </div>
+
+        <!--</form>-->
+
+</div>
+{% endblock %}
+
+<br>
+
+<br><br><br>
+
+{% block javascript %}
+<script type="text/javascript">
+// Update tables on the fly
+$("[id^=show_]").click(function(e) {
+  if (e.target.parentElement.parentElement.id == "shown_athletes") {
+    document.getElementById("hidden_athletes").appendChild(e.target.parentElement);
+  } else {
+    document.getElementById("shown_athletes").appendChild(e.target.parentElement);
+  }
+  e.target.checked = false;
+  changeView();
+  
+  // sort the items by athlete name
+  sortAthletes("shown_athletes");
+  sortAthletes("hidden_athletes");
+});
+
+function sortAthletes(listId) {
+  var athletes = [];
+  const athleteList = document.getElementById(listId);
+  var athletes = Array.from(athleteList.children);
+  athletes.sort((a,b) => (a.innerText > b.innerText) ? 1 : -1);
+  for (athlete of athletes) {
+    athleteList.appendChild(athlete);
+  }
+}
+
+function changeView() {
+    var selected = [];
+    const athletesSelect = document.getElementById("after");
+    const shownList = document.getElementById("shown_athletes");
+    for (listItem of shownList.children) {
+      const athleteName = listItem.innerText.trim();
+      if (athleteName != "") {
+        selected.push(athleteName);
+      }
+    }
+
+    for(let i=0; i<paginated_practices.length; i++) {
+        var page = paginated_practices[i];
+        for (let j=0; j<page.length; j++) {
+            var container = page[j];
+            var table = container.children[0];
+
+            // re-display the table incase it was hidden
+            table.style.display = "";
+            if (selected.length == 0) {
+              continue
+            }
+            var thead = table.children[0];
+            var title = thead.children[0].children[0].innerHTML;
+
+            var includes = false;
+            for(ath of selected) {
+              if(title.includes(ath)) {
+                includes = true;
+              }
+            }
+            if (!includes) {
+                table.style.display = "none";
+            }
+        }
+    }
+    repaginate();
+}
+</script>
+{% endblock %}

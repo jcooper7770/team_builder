@@ -1,0 +1,57 @@
+{% extends "pokemon/base.html" %}
+
+{% block content %}
+<br><br>
+<div class="container">
+  <div class="card border-primary">
+    <div class="card-header text-center">
+      <h2>Sign-Up</h2>
+    </div>
+    <div class="row card-body">
+      <div class="col-sm">
+        <form method="POST" action="{{ url_for('pokemon_sign_up') }}" id="sign_up">
+
+          <!-- Username -->
+          <div class="form-group row">
+            <div class="col-sm-1">
+              <label for="username">Username: </label>
+            </div>
+            <div class="col-sm-4">
+              <input class="form-control" type="text" id="username" name="username" placeholder="Username" \>
+            </div>
+          </div>
+
+          <!-- Password -->
+          <div class="form-group row">
+            <div class="col-sm-1">
+              <label for="password">Password: </label>
+            </div>
+            <div class="col-sm-4">
+              <input class="form-control" type="password" id="password" name="password" placeholder="Password" >
+            </div>
+          </div>
+
+          <!-- Confirm password-->
+          <div class="form-group row">
+            <div class="col-sm-1">
+              <label for="password">Confirm Password: </label>
+            </div>
+            <div class="col-sm-4">
+              <input class="form-control" type="password" id="confirm" name="confirm" placeholder="Confirm Password" >
+            </div>
+          </div>
+
+          <!-- Submit and sign-up -->
+          <div class="form-group row">
+            <div class="col-sm-2">
+              <button type="submit" class="btn btn-primary">Sign-Up</button>
+            </div>
+            <div class="col-sm-2">
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

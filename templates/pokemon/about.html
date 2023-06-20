@@ -1,0 +1,160 @@
+{% extends "pokemon/base.html" %}
+
+{% block content %}
+<div class="container mt-5" style="background: rgba(255,255,255,0.4); border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
+  <h1 style="text-align:center;">About</h1>
+
+  <div class="row">
+    <div class="col-md-12 mx-auto mb-4 d-flex justify-content-center">
+      <div class="card mx-auto">
+        <div class="card-body">
+          <h2 id="meta-data" class="card-title">Reading Meta Data</h2>
+          <p class="card-text">Leads reported on GoBattleLog: this section shows the leads, second, and third pokemon on teams that trainers encountered in Go Battle League that they reported on GoBattleLog.</p>
+          <p class="card-text">Leads that beat the meta leads: this section shows the results from anti-meta algorithm for pokemon which beat the reported leads, second, and third pokemon.</p>
+          <p class="card-text">
+            <p style="text-align:center;">Example results:</p>
+            <table border='1'  align='center' style='background-color:#FFFFFF;' class="mx-auto">
+            <tr>
+              <th>Leads reported on GoBattleLog</th><th>Leads that beat the meta leads</th>
+            </tr>
+            <tr>
+              <td style="padding: 5px 10px 5px;">
+                <table border="0" style="padding: 10px;">
+                  <tr>
+                    <td>Dialga (62/127 || 48.82%)  </td><td>127</td>
+                  </tr>
+                  <tr>
+                    <td>Mewtwo (40/96 || 41.67%)  </td><td>96</td>
+                  </tr>
+                </table>
+              </td>
+              <td style="padding: 5px 10px 5px;">
+                <table border="0">
+                  <tr>
+                    <td>Groudon (12/22 || 54.55%)  </td><td>62.39%</td>
+                  </tr>
+                  <tr>
+                    <td>Metagross (14/25 || 56.00%)  </td><td>57.25%</td>
+                  </tr>
+                </table>
+              </td>
+
+            </tr>
+            </table>
+          </p>
+          <p class="card-text">
+          In this example above, you can learn the following from the left side of the table:
+          <ul style="list-style-position: inside; margin-left: 10px">
+            <li>127 Dialgas and 96 Mewtwos were reported in the lead.</li>
+            <li>The number of Dialgas and Mewtwos that won the lead were 48.82% and 41.67% respectively.</li>
+          </ul>
+          From the right side of the table you can learn the following:
+          <ul style="list-style-position: inside; margin-left: 10px">
+            <li>Groudon beats 62.39% and Metagross beats 57.25% of the leads reported on GoBattleLog.</li>
+            <li>Groudons and Metagross were reported to actually win the lead 54.55% and 56.00% of the time.</li>
+          </ul>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-12 mx-auto mb-4 d-flex justify-content-center">
+      <div class="card mx-auto">
+        <div class="card-body">
+          <h2 id="meta-data" class="card-title">Reading Move Counts</h2>
+          <p class="card-text">On the <a href="/move_counts">Move Counts</a> page you can learn how many fast moves it takes each pokemon to get to all of their charge moves.</p>
+          <p style="text-align:center;">Example results:</p>
+          <table class="table table-striped mx-auto" border="1" style="width:50%;">
+          <thead class="thead-dark bg-dark text-white">
+            <tr><th colspan="2">Bulbasaur</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>tackle (1) [3] - power_whip [50]</td><td>[17, 17, 16, 17, 17]</td></tr>
+            <tr><td>vine_whip (2) [8] - power_whip [50]</td><td>[7, 6, 6, 6, 7]</td></tr>
+          </tbody>
+          </table>
+          <p class="card-text">
+            In this example above, you can learn the move counts for a Bulbasaur with the following movesets:
+            <ul style="list-style-position: inside; margin-left: 10px;">
+              <li>Tackle fast move and Power Whip charge move</li>
+              <li>Vine Whip fast move and Power Whip charge move</li>
+            </ul>
+            The left side of the table states:
+            <ul style="list-style-position: inside; margin-left: 10px">
+              <li>The moveset (Tackle/Power Whip or Vine Whip/Power Whip)</li>
+              <li>How many turns the fast move is (1 turn for Tackle and 2 turns for Vipe Whip)</li>
+              <li>How much energy the fast move gains (3 energy for Tackle and 8 energy for Vine Whip)</li>
+              <li>How much energy it costs to use the charge move (50 for Power Whip)</li>
+            </ul>
+            while the right side of the table shows how many counts it is to each subsequent charge move:
+            <ul style="list-style-position: inside; margin-left: 10px">
+              <li>Using Tackle, it takes <b>17</b> fast moves to get to the first and second Power Whip. Then the third Power Whip is <b>16</b> fast moves.</li>
+              <li>Using Vine Whip, it takes <b>7</b> fast moves to get to the first Power Whip. Then the second Power Whip is <b>6</b> fast moves.</li>
+            </ul>
+          </p>
+          <p class="card-text">
+            <u>Filtering pokemon</u><br>
+            You can create a comma-separated list of pokemon to input at the top of the page and it will show only those pokmeon. For example: "<i>walrein,trev,medi</i>" will only show Walrein, Trevenant, and Medicham.
+          </p>
+          <p class="card-text">
+            <u>Creating move images</u><br>
+            When you are ready you can create a move counts infographic from the filtered pokemon. Do this by clicking on the <i>Download move counts</i> button to the right of the filter input field. This will generate a move counts image similar to the following:
+            <center><img src="/images/example_move_counts.png" class="card-img-top" /></center>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-12 mx-auto mb-4 d-flex justify-content-center">
+      <div class="card mx-auto">
+        <div class="row card-body">
+          <div class="col-sm-3">
+            <img class="col-sm" src="/images/flipLogo.png" alt="logo" />
+          </div>
+          <div class="col-sm-9">
+            <h2 id="meta-data" class="card-title">About The Developer</h2>
+            <p class="card-text">Hey guys! It's me, itsFlippinCoop.</p>
+            <p class="card-text">
+              Here are some fun facts about me:
+              <ul style="list-style-position: inside; margin-left: 10px">
+                <li>I started playing Pokemon Go on July 7th, 2016, the day after release in the US</li>
+                <li>I started streaming on Twitch in March 2020. I started out with shiny hunting in Pokemon Let's Go - Eevee. I didn't start streaming Pokemon Go PVP battles until November 2020.</li>
+                <li>I have hit the Legend rank in GBL in seasons 8, 9, and 11 with an all-time high ELO of 3126 back in season 11.</li>
+              </ul>
+              Outside of Twitch:
+              <ul style="list-style-position: inside; margin-left: 10px">
+                <li>I have been competing in competitive Trampolining since October 2003.</li>
+                <li>I tried out to be on the U.S. team for the 2016 and 2021 Olympic Games.</li>
+                <li>I work as a programmer (duh)</li>
+              </ul> 
+            </p>
+            <p class="card-text">
+              To learn more about me:
+              <ul style="list-style-position: inside; margin-left: 10px">
+                <li>Follow me on Twitch: <a target="_blank" href="https://twitch.tv/itsFlippinCoop">https://twitch.tv/itsFlippinCoop</a></li>
+                <li>Watch my flipping videos (of me doing actual flips) on my <a target="_blank" href="https://www.instagram.com/itsflippincoop/">Instagram</a></li>
+                <li>Watch highlights from my streams on my <a target="_blank" href="https://youtube.com/@itsFlippinCoop">Youtube Channel</a></li>
+                <li>Join my <a target="_blank" href="https://discord.gg/E9xBYUx">Discord</a></li>
+                <li>Purchase my <a target="_blank" href="https://my-store-11593895.creator-spring.com/">Merch</a></li>
+                <li>Please consider supporting me on my <a target="_blank" href="http://patreon.com/itsFlippinCoop">Patreon</a>. This will help encourage me to continue working on my website and producing move count infographics.</li>
+              </ul>
+            </p>
+            <p class="card-text">Catch you on the Flipside!</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+</div>
+<br><br><br>
+<div class="container">
+  <p style="text-align:center">Current commit: {{commit_hash}}</p>
+</div>
+
+{% endblock %}

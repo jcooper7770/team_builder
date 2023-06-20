@@ -1,0 +1,134 @@
+{% extends "trampoline/base.html" %}
+
+{% block content %}
+
+<br><br>
+
+<!-- User chart tabs-->
+<div class="container">
+  <div class="card border-primary">
+    <div class="card-header text-center">
+      <h2>Practice Graphs</h2>
+    </div>
+    <div class="card-header">
+      <ul class="nav nav-tabs card-header-tabs" id="charts-list" role="tablist">
+        {% for event in datapts.keys() %}
+        <li class="nav-item">
+          <a class="nav-link{% if loop.first %} active{% endif %}" href="#{{event}}" id="{{event}}-tab" data-toggle="tab" aria-controls="{{event}}" role="tab" aria-selected="{% if loop.first %}true{% else %}false{% endif %}">{{ event.replace('_', ' ').capitalize() }}</a>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="card-body">
+
+    <div class="tab-content">
+      {% for event in datapts.keys() %}
+      <div class="tab-pane fade{% if loop.first %}show active{% endif %}" id="{{ event }}" role="tabpanel" aria-labelledby="{{ event }}-tab">
+        <canvas class="mx-auto" id="{{event}}Canvas" width="900" height="500"></canvas>
+      </div>
+      {% endfor %}
+    <br>
+    <div class="float-right">
+    Start: <input id="chart-start" name="chart-start" type="date" placeholder="mm/dd/yyyy" value="{{chart_start}}" \>
+    End: <input id="chart-end" name="chart-end" type="date" placeholder="mm/dd/yyyy" value="{{chart_end}}" \>
+    <button class="btn btn-primary" id="chart-dates">Update</button>
+    <br>
+    Show lines: 
+    yes: <input type="radio" id="chart-lines-yes" name="chart-lines" value="yes" \>
+    no: <input type="radio" id="chart-lines-no" name="chart-lines" value="no" checked \>
+    </div>
+    </div>
+  </div>
+</div>
+<br/>
+<br/>
+
+<!-- Skill stats -->
+<div class="container">
+  <div class="card border-primary">
+    <div class="card-header text-center"><h2>Skill Statistics</h2></div>
+    <div class="card-body px-0 py-0">
+      <table border=1 class="table table-striped my-0" id="skill_table">
+        <thead>
+          <tr>
+            <th style="position: sticky; top:0; background: gray;" id="col_skill">Skill</th>
+            <th style="position: sticky; top:0; background: gray;" id="col_tramp">Trampoline</th>
+            <th style="position: sticky; top:0; background: gray;" id="col_dmt">Dmt</th>
+            <th style="position: sticky; top:0; background: gray;" id="col_total">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for skill, skill_stats in all_skills.items() %}
+          <tr>
+            <td>{{skill}}</td>
+            <td>{{skill_stats['trampoline']}}</td>
+            <td>{{skill_stats['dmt']}}</td>
+            <td>{{skill_stats['all']}}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<br>
+
+<div class="container">
+  <div class="card border-primary">
+    <div class="card-header text-center"><h2>DMT Pass Statistics</h2></div>
+    <div class="card-body px-0 py-0">
+      <table border=1 class="table table-striped my-0" id="pass_table">
+        <thead>
+          <tr>
+            <th style="position: sticky; top:0; background: gray;" id="col_skill">Pass</th>
+            <th style="position: sticky; top:0; background: gray;" id="col_total">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for pass, pass_stats in dmt_passes.items() %}
+          <tr>
+            <td>{{pass}}</td>
+            <td>{{pass_stats['dmt']}}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<br>
+
+<div class="container">
+  <div class="card border-primary">
+    <div class="card-header text-center"><h2>Tumbling Statistics</h2></div>
+    <div class="card-body px-0 py-0">
+      <table border=1 class="table table-striped my-0" id="tumbling_table">
+        <thead>
+          <tr>
+            <th style="position: sticky; top:0; background: gray;" id="col_tu_skill">Skill</th>
+            <th style="position: sticky; top:0; background: gray;" id="col_tu_total">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for skill, skill_stats in tumbling_skills.items() %}
+          <tr>
+            <td>{{skill}}</td>
+            <td>{{skill_stats['tumbling']}}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<br>
+
+
+
+<script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
+  crossorigin="anonymous"></script>
+
+<script>
+{% include 'trampoline/user_stats.js' %}
+</script>
+{% endblock %}

@@ -1,0 +1,123 @@
+{% extends "trampoline/base.html" %}
+
+{% block content %}
+<br>
+<div class="container">
+  <div class="card border-primary">
+    <div class="card-header text-center">
+      <h2>Recording turns</h2>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-sm">
+          <center><img src="/images/tutorial1.png" class="card-img-top" /></center>
+          <p class="card-text">Type your skills into the text area which says "Input your routines here"</p>
+          <p class="card-text"><u>Some tips for recording your turns:</u></p>
+          <ul class="list-group-flush">
+            <li class="list-group-item list-group-item-info">Input multiple skills by separating skill by spaces. i.e. 40o 40<</li>
+            <li class="list-group-item list-group-item-primary">Use '%' or '--' to indicate the jumps were stopped but restarted the same turn</li>
+            <li class="list-group-item list-group-item-info">Input multiple turns at once by entering each turn on a separate line</li>
+            <li class="list-group-item list-group-item-primary">Add a comment on a turn by adding a new line and starting the comment with "#" or '-' (See below example)</li>
+            <li class="list-group-item list-group-item-info">Utilize the shortucts (see next section below).</li>
+            <li class="list-group-item list-group-item-primary">Copy a previously written turn by clicking on the number next to to the turn <img src="/images/tutorial3.png" width="75" height="50" /></li>
+            <li class="list-group-item list-group-item-info">Use the dropdowns to choose skills <img src="/images/tutorial4.png" width="75" height="50" /></li>
+            <li class="list-group-item list-group-item-primary">Use the recommended skills which show up below the log input field by clicking on them.</li>
+          </ul>
+          <center><img src="/images/tutorial2.png" class="card-img-bottom" /></center>
+        </div>
+      </div>
+    </div>
+  </div>
+  <br>
+  <div class="card border-primary">
+    <div class="card-header text-center">
+      <h2>Shortcuts</h2>
+    </div>
+    <div class="card-body">
+      <table class="table table-striped" border=1>
+        <thead class="thead-dark">
+          <th>Shortcut</th>
+          <th>Explaination</th>
+          <th>Example</th>
+          <th>Converted to</th>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Multiple of same skill</td>
+            <td>skill x(#)<br>Or<br>skill ooooo<br>Or<br>(skill)x#</td>
+            <td>40o x5<br>or<br>40ooooo<br>Or<br>(40o)x5</td>
+            <td>40o 40o 40o 40o 40o</td>
+          </tr>
+          <tr>
+            <td>Multiple of same skill (different positions)</td>
+            <td>skill o&lt;//&lt;o</td>
+            <td>40o&lt;//&lt;o</td>
+            <td>40o 40< 40/ 40/ 40< 40o</td>
+          </tr>
+
+          <tr>
+            <td>Multiple of group of skills</td>
+            <td>(skills)x(#)</td>
+            <td>(40o 41o)x2</td>
+            <td>40o 41o 40o 41o</td>
+          </tr>
+          <tr>
+            <td>Swingtime</td>
+            <td>Enter a normal swingtime</td>
+            <td>swingtime</td>
+            <td>40o 41o 40< 41< 40/ 41/</td>
+          </tr>
+          <tr>
+            <td>Twisting Swingtime</td>
+            <td>Enter a normal swingtime</td>
+            <td>twisting swingtime</td>
+            <td>40o 41o 42/ 41< 40< 43/ 40/ 41/ 44/</td>
+          </tr>
+          <tr>
+            <td>Compulsory routine</td>
+            <td>Enter the user's stored compulsory routine</td>
+            <td>compulsory</td>
+            <td>40o 41o 40< 41<</td>
+          </tr>
+          <tr>
+            <td>Optional routine</td>
+            <td>Enter the user's stored optional routine</td>
+            <td>optional</td>
+            <td>12001< 811< 12001o 813<</td>
+          </tr>
+
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <br>
+  <div class="card border-primary">
+    <div class="card-header text-center">
+      <h2>Creating Routines</h2>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-sm">
+          <p class="card-text">To save routines for a user from the logger page:</p>
+          <ul class="list-group-flush">
+            <li class="list-group-item list-group-item-primary">Complusory: Type "comp:routine skills". i.e. <span style="color:red">comp:40o 41o 40< 41<</span></li>
+            <li class="list-group-item list-group-item-info">Optional: Type "opt:routine skills". i.e. <span style="color:red">opt:12001< 811< 12001o 813<</span></li>
+          </ul>
+          <p class="card-text">Then to use them:</p>
+          <ul class="list-group-flush">
+            <li class="list-group-item list-group-item-primary">Compulsory: Type <span style="color:red">compulsory</span></li>
+            <li class="list-group-item list-group-item-info">Optional: Type <span style="color:red">optional</span></li>
+          </ul>
+          <p class="card-text">You can also save routines in the user profile by clicking on your username in the
+            navigation bar at the top of
+            the page.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<br><br>
+<div class="container">
+  <p style="text-align:center">Current commit: {{commit_hash}}</p>
+</div>
+{% endblock %}

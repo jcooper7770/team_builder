@@ -1,0 +1,27 @@
+# ignore practice data
+practices/
+exported_data/
+
+# ignore athlete data
+athletes/
+flask_session/
+
+# ignore pokemon images
+pokemon_images/*
+
+# Ignore algorithm plots
+algo_plots/*
+
+# Ignore python compiled files
+*.pyc
+
+# Ignore local files
+routines.txt
+test.log
+data/
+
+# ignore venv
+venv/
+
+# Ignore vscode files
+.vscode/

@@ -1,0 +1,143 @@
+{% extends "pokemon/base.html" %}
+
+{% block content %}
+<div class="container">
+  <!--<form action="/move_counts">-->
+    <table>
+      <tr>
+        <td>
+          <label>Filter Pokemon:</label>
+        </td>
+        <td>
+          <input list="pokemon" type="text" name="chosen_pokemon" onkeyup="filterPokemon()" class="form-control">
+          <datalist id="pokemon">
+            <option value="altaria,azumarill,bastiodon,diggersby,drapion,jumpluff,lanturn,licki,medicham,nidoqueen,ninetales,noctowl,obstagoon,registeel,sableye,scrafty,skarmory,stunfisk,swampert,talonflame,toxapex,toxicroak,trevenant,umbreon,walrein,wigglytuff,clefable,mew,cofrag,creselia,deoxys_defense,dewgong,froslass,whiscash,victreebell,victini,mandibuzz,lapras,machamp,pidgeot,sylveon,skuntank,muk_alolan,galv,charjabug,araquanid,ariados,lurantis,dubwool,abomasnow,shiftry,dedenne,dunsparce,dragonite,ferrothorn,shiftry,noctowl,greedent,guzzlord,miltank,pelipper,gliscor,staraptor(wing_attack),staraptor(gust),victini,tentacruel,lanturn(water_gun),chesnaught"><B>GL</B></option>
+            <option value="venusaur,charizard,pidgeot,sandslash_alolan,nidoqueen,ninetales,ninetales_alolan,machamp,tentacruel,muk,muk_alolan,muk_alolan,gyarados,lapras,snorlax,articuno,articuno_galarian,dragonite,mewtwo_armored,typhlosion,umbreon,steelix,swampert,flygon,walrein,regirock,regice,registeel,deoxys_defense,skuntank,drapion,toxicroak,abomasnow,gliscor,giratina_altered,cresselia,scrafty,escavalier,jellicent,galvantula,stunfisk_galarian,mandibuzz,cobalion(double_kick),virizion,talonflame,sylveon,trevenant,pyukumuku,tapu_fini,buzzwole,melmetal,greedent,obstagoon,sirfetchd,crobat,typhlosion(shadow_claw),ampharos,magnezone,golem_alolan(rollout),golem_alolan(volt_switch),bewear,aurorus,kyurem">UL</option>
+            <option value="avalu,conkel,darkra,dialga,dragonit,excadr,giratina,garcho,groudo,gyara,haxor,ho_oh,kyog,landor,lugia,machamp,melmetal,mamosw,metagr,mewtwo,palkia,regirock,rhyper,snorl,swamper,sylve(quick_attack),sylv(charm),togeki,tyrani,walrei,yvelt,zacian_hero(quick_attack),zacian_hero(snarl),zamazenta_hero,zaru,zekr,reshira,ursaluna,xern,hydr,florges">ML</option>
+            <option value="swampert,gyara,primarina,goliso,chesnaug,venus,chariza,bewear,florges,togekiss,magnezone,excad,mamoswine,avalugg,walrein,sirfetc,machamp,heracr,escav,roserade,hippowd,rhyper,genga,dragonite,garchomp,kommo,hydrei,haxor,miloti,metagross,sylve,sneasler,snorla,conkel,primarina(waterfall),gyarados(waterfall)">MLP</option>
+          </datalist>
+        </td>
+        <td>
+          <input type="number" name="num_rows" value="7" min="3" max="10" class="form-control">
+        </td>
+        <td>
+          <button type="submit" onclick="downloadData()">Download move counts</button>
+        </td>
+      </tr>
+      <tr>
+        <td>Filter Tips</td>
+        <td>
+          <ul style="list-style-position: inside; margin-left: 10px">
+            <li>
+              Write a list of comma-separated pokemon. <i>i.e. walrein,trev,medi</i>
+            </li>
+            <li>
+              Add fastmove (for the downloaded image) inside ( ). <i>i.e. walrein(waterfall),bulba(tackle),venu</i>
+            </li>
+          </ul>
+        </td>
+      </tr>
+    </table>
+
+  <div class="grid-container" style="display: grid; grid-template-columns: 50% 50%;" id="table-grid">
+  {% for pokemon in moves.keys() %}
+  <table border="1" id="{{pokemon}}_table" name="pokemon" class="table table-striped" style="width: 90%; height: 1%">
+    <thead class="thead-dark bg-dark text-white">
+    <tr>
+      <th colspan="2">{{ pokemon }}</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for counts in moves[pokemon].items() %}
+    <tr>
+      <td>{{counts[0]}}</td>
+      <td>{{counts[1]}}</td>
+    </tr>
+    </tbody>
+    {% endfor %}
+  </table>
+  {% endfor %}
+  </div>
+</div>
+
+
+<script type="text/javascript">
+
+  /*
+  Download the move counts image
+  */
+  function downloadData() {
+    var inputs = document.getElementsByName("chosen_pokemon")[0].value.toUpperCase().split(",");
+    var num_rows = document.getElementsByName("num_rows")[0].value;
+    var all_tables = document.getElementsByName("pokemon");
+    var all_pokemon = [];
+    for(var i in all_tables) {
+      var table = all_tables[i];
+      if (table.id == undefined) {
+        continue;
+      }
+      for (var input in inputs){
+        // remove move from chosen pokemon if it exists
+        const chosen_pokemon = inputs[input].replace(/(\(\w*\))/i, "");
+        if(table.id.toUpperCase().indexOf(chosen_pokemon) > -1){
+          var pokemon_name = table.id.slice(0, -6);
+          if(pokemon_name == "pidgeotto" && inputs[input].toLowerCase() == "pidgeot"){
+            continue;
+          }
+          // add back in the move
+          pokemon_name = pokemon_name + inputs[input].replace(/(\w*)(\(\w*\))?/i, "$2")
+          all_pokemon.push(pokemon_name)
+        }
+      } 
+    }
+    var url = "/move_image?pokemon=" + all_pokemon.join(',') + "&cols=" + num_rows;
+    location.href = encodeURI(url);
+
+  }
+
+  /*
+  Filter the pokemon tables based on the input
+  */
+  function filterPokemon() {
+    var inputs = document.getElementsByName("chosen_pokemon")[0].value.toUpperCase().split(",");
+
+    // remove new lines
+    new_lines = document.getElementsByTagName("br");
+    for(i = 0; i<new_lines.length; i++){
+      line = new_lines[i];
+      if(line.previousSibling.tagName == "TABLE"){
+        line.remove();
+      }
+    }
+
+    new_lines = document.querySelectorAll('[table_sep="true"]');
+    for(i=0;i<new_lines.length; i++){
+      line = new_lines[i];
+      line.remove();
+    }
+
+    // hide all non-chosen pokemon tables
+    all_tables = document.getElementsByName("pokemon");
+    for (i = 0; i < all_tables.length; i++){
+      table = all_tables[i];
+      for (var input in inputs){ // input it the index
+        // remove move from chosen pokemon if it exists
+        const pokemon = inputs[input].replace(/(\(\w*\))/i, "");
+
+        // check if the table has the given pokemon
+        if(table.id.toUpperCase().indexOf(pokemon) > -1){
+          all_tables[i].style.display = "";
+          break;
+        } else {
+          all_tables[i].style.display = "none";
+          next_sib = all_tables[i].nextSibling;
+          if(next_sib.tagName == "BR"){
+            next_sib.remove();
+          }
+        }
+      };
+    }
+
+  }
+</script>
+{% endblock %}

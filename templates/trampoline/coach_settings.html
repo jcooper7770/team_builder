@@ -1,0 +1,193 @@
+{% extends "trampoline/base.html" %}
+
+{% block content %}
+<!-- Settings -->
+<br><br>
+<div class="container">
+  <div class="card border-primary">
+    <div class="card-header text-center">
+      <h2>User Settings for {{user}}</h2>
+    </div>
+    <div class="row card-body">
+      <div class="col-sm">
+        <form action="/logger/coach/settings" method="POST">
+          <div class="row">
+
+            <!-- Athlete selection -->
+            <div class="col-sm-2">Athletes:</div>
+            <div class="col-sm-5">
+              <div class="row">
+                Athletes to add:
+              </div>
+              <div class="row">
+                <select class="form-control" id="athletes_before" style="width: 100%;" multiple>
+                  {% for athlete, athlete_data in users.items() %}
+                  {% if not athlete_data.is_coach and athlete not in athletes and athlete not in requests %}
+                  <option value="{{athlete}}" id="option_{{athlete}}">{{athlete}}</option>
+                  {% endif %}
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+            <div class="col-sm-5">
+              <div class="row">
+                Athletes added:
+              </div>
+              <div class="row">
+                <select class="form-control" name="coach_athletes" id="athletes_after" style="width: 100%;" multiple>
+                  {% for athlete in athletes %}
+                  <option value="{{athlete}}" id="option_{{athlete}}">{{athlete}}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="row">
+              Athletes:
+              </div>
+              <div class="row">
+                <ul id="athlete-list">
+                  {% for athlete in athletes %}
+                  <li>{{athlete}}</li>
+                  {% endfor %}
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <button class="btn btn-primary" type="submit" id="submit">Submit</button>
+          </div>
+          <div class="row">
+            <button class="btn btn-primary" type="button" id="comp-cards">Make Athlete Comp Cards</button>
+          </div>
+          <hr>
+          <div class="row">
+            <div class="col-sm-2">Pending athlete requests:</div>
+            <div class="col-sm-10">
+                <select class="form-control" id="athletes_before" style="width: 100%;" multiple>
+                  {% for request in requests %}
+                  <option id="request_{{request}}">{{ request }}</option>
+                  {% endfor %}
+                </select>
+            </div>
+          </div>
+        </form>
+        <br>
+      </div>
+    </div>
+  </div>
+  <br>
+  <br>
+
+  <!-- Send messages to athletes -->
+  <div class="card border-primary">
+    <div class="card-header text-center">
+      <h2>Message Center</h2>
+    </div>
+    <div class="row card-body">
+      <div class="col-sm-6">
+        <form action="/logger/coach/messages" name="mark_messages" id="mark_messages" method="POST">
+        <div class="row"><b><u>Messages:</u></b></div>
+          <div class="row" style="overflow-y:scroll; height:100px;">
+            <ul style="list-style-type: none;">
+              {% for message in messages %}
+              <li><input name="message_{{loop.index}}" type="checkbox"{% if message.read %} checked {% endif %}\>{{ message.msg }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+          <div class="row">
+            <button class="btn btn-primary" type="submit" id="mark_read">Mark Read</button>
+          </div>
+        </form>
+      </div>
+      <div class="col-sm-6">
+        <div class="row"><b><u>Send message to athletes:</u></b></div>
+        <div class="row">
+          <form action="/logger/coach/messages" method="POST" id="messages" name="messages">
+            <textarea id="message" name="message" rows="5" cols="40" style="width:90%" form="messages"
+                  placeholder="Input your message here"></textarea>
+            <button class="btn btn-primary" type="submit" id="submit">Submit</button>
+          </form>
+        </div>
+      </div>
+    </div>
+ </div>
+</div>
+<br><br>
+
+<script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
+  crossorigin="anonymous"></script>
+
+<script type="text/javascript">
+
+// Move the athletes over to the other list
+$("[id^=option_").click(function(e){
+  option_element = document.getElementById(e.target.id);
+  
+  if (option_element.parentElement.id == "athletes_before") {
+    select = document.getElementById("athletes_after")
+    option_element.selected = false;
+    select.appendChild(option_element);
+  } else {
+    select = document.getElementById("athletes_before")
+    option_element.selected = false;
+    select.appendChild(option_element);
+  }
+});
+
+// Move the athlete from requests if clicked
+$("[id^=request_]").click(function(e){
+  request_element = document.getElementById(e.target.id);
+  select = document.getElementById("athletes_before")
+  select.appendChild(request_element)
+});
+
+// select all athletes for the coach when submitting
+$('#submit').click(function(e){
+  $('#athletes_after').children().each(function(){
+    this.selected = true;
+  }); 
+})
+$('#athletes_before').change(function(e){
+  $('#athletes_before').children().each(function(){
+    if (this.selected){
+      select = document.getElementById("athletes_after")
+      this.selected = false;
+      select.appendChild(this);
+
+      // Add to list
+      var list = document.getElementById('athlete-list');
+      var athlete_name = document.createElement('li')
+      athlete_name.innerText = this.value;
+      list.appendChild(athlete_name);
+    }
+  });
+
+})
+$('#athletes_after').change(function(e){
+  $('#athletes_after').children().each(function(){
+    if (this.selected){
+      select = document.getElementById("athletes_before")
+      this.selected = false;
+      var athlete_name = this.value;
+      select.appendChild(this);
+
+      // Remove from list
+      $('#athlete-list').children().each(function(){
+        if(this.innerText == athlete_name){
+          this.remove();
+        }
+      });
+
+    }
+  });
+ })
+ $('#comp-cards').click(function(e) {
+    console.log("Making comp cards")
+    e.preventDefault();
+    var url = "/logger/coach/compcards";
+    location.href = encodeURI(url);
+  });
+
+
+</script>
+{% endblock %}
