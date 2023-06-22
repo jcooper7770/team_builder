@@ -70,6 +70,7 @@ LEAGUES_LIST = LeagueList([
     League("Mountain", "1500-mountain", "great-mountain"),
     League("Spring", "1500-spring", "great-spring"),
     League("Sunshine", "1500-sunshine", "great-sunshine"),
+    League("GLSingleType", "1500-single", "great-single"),
 
     # Ultra cups
     League("UL", "2500", "ultra"),
