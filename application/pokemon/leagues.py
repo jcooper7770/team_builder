@@ -36,6 +36,27 @@ class LeagueList:
     def get_cup_value(self, league):
         return self.leagues.get(league).cup_value if league in self.leagues else "all"
 
+    @property
+    def league_groups(self):
+        league_mapping = {"500": "Little Cup", "1500": "Great League", "2500": "Ultra League", "10000": "Master League"}
+        result = {x: [] for x in league_mapping.values()}
+        for name, league in self.leagues.items():
+            ranking_val = league.league_value
+            found = False
+            for key, value in league_mapping.items():
+                if ranking_val.startswith(key):
+                    result[value].append(name)
+                    found = True
+                    break
+            if not found:
+                result["Great League"].append(name)
+        # create list of [league, cups, CP value] pairs and sort by CP value
+        result2 = []
+        reverse_league_mapping = {y: x for x, y in league_mapping.items()}
+        for key, value in result.items():
+            result2.append([key, value, reverse_league_mapping[key]])
+        return sorted(result2, key=lambda x: int(x[2]))
+    
 
 LEAGUES_LIST = LeagueList([
     # Little cups

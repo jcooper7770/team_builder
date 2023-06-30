@@ -661,6 +661,7 @@ def run():
         "pokemon/index.html",
         body="".join(html).replace(" table-responsive-lg", ""),
         leagues=sorted(LEAGUES_LIST.league_names),
+        split_leagues=LEAGUES_LIST.league_groups,
         current_league=chosen_league,
         all_pokemon=sorted(team_maker.all_pokemon, key=lambda x: x.get('speciesId')),
         chosen_position=chosen_position,

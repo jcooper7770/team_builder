@@ -19,9 +19,13 @@
           <tr>
             <td>
             <select id="league_picker" name="league" class="form-control">
-            {% for league in leagues %}
-              <option value="{{league}}" id="option_{{league}}"{% if current_league==league %} selected{% endif %}>{{league}}</option>
-            {% endfor %}
+              {% for league in split_leagues %}
+              <optgroup label="{{ league[0] }}">
+                {% for cup in league[1] %}
+                <option value="{{cup}}" id="option_{{cup}}"{% if current_league==cup %} selected{% endif %}>{{cup}}</option>
+                {% endfor %}
+              </optgroup>
+              {% endfor %}
             </select>
             <button class="btn btn-secondary w-100" id="refresh-league-data">Refresh League Data</button>
             <br>Last refreshed: {{ last_refreshed }}
@@ -32,7 +36,6 @@
           </tr>
           <tr>
             <td>
-            <input type='hidden' value='{{current_league}}' name='league' />
             <select id="mySelect" name="pokemon" class="form-control">
               <option value="">None</option>
             {% for pokemon in all_pokemon %}
