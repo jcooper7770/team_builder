@@ -8,7 +8,7 @@
    <table align="center" width="100%">
     <tr>
       <td>
-        <form action="{{ url_for('trampoline_log') }}" method="post" id="logger" name="logger" style="text-align:left;">
+        <form action="{{ url_for('trampoline.trampoline_log') }}" method="post" id="logger" name="logger" style="text-align:left;">
 
           <!-- Username -->
           <div class="form-row">
@@ -115,7 +115,7 @@
 <!-- Goals -->
 <br><br>
 <div class="container">
-  <form action="{{ url_for('trampoline_log') }}" method="post" id="goals" style="text-align:left;">
+  <form action="{{ url_for('trampoline.trampoline_log') }}" method="post" id="goals" style="text-align:left;">
     <input type="hidden" name="goals_form" id="goals_form" value="goals_form" \>
     <table align="center" width="30%" border=1 class="table table-striped">
       <thead class="thead-dark">
@@ -179,7 +179,7 @@
 <br><br>
 <!-- Airtimes -->
 <div class="container">
-  <form action="{{ url_for('trampoline_log') }}" method="post" id="airtime" style="text-align:left;">
+  <form action="{{ url_for('trampoline.trampoline_log') }}" method="post" id="airtime" style="text-align:left;">
     <input type="hidden" name="airtime_form" id="airtime_form" value="airtime_form" \>
     <table align="center" width="30%" border=1 class="table table-striped">
       <thead class="thead-dark">
@@ -279,13 +279,13 @@
       <!-- Links -->
       <ul class="navbar-nav mr-auto">
         <li class="nav-item">
-          <form class="form-inline my-2" action="{{url_for('search_skills')}}" method="POST">
+          <form class="form-inline my-2" action="{{url_for('trampoline.search_skills')}}" method="POST">
             <input class="form-control mr-sm-2 mr-auto" type="text" name="practice_skills" id="practice_skills" placeholder="Input skills/combos"{% if search_skills %} value="{{search_skills}}"{% endif %}>
             <button id="submit-skills" class="btn btn-secondary" type="submit">Search for skills</button>
           </form>
         </li>
         <li class="nav-item">
-          <form class="form-inline my-2" action="{{url_for('search_date')}}" method="POST">
+          <form class="form-inline my-2" action="{{url_for('trampoline.search_date')}}" method="POST">
             <!--from:-->
             <input class="form-control mr-sm-2 mr-auto" type="date" name="practice_date" id="practice_date">
             <!--

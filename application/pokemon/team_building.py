@@ -908,7 +908,7 @@ def pretty_print_counters(counter_list, min_counters=None, use_percent=True):
 def get_counters_for_rating(rating, league="ULP", days_back_start=None, days_back_end=None):
     """ Prints the lead, safe swap, and back line counters at the given rating """
     if league not in LEAGUES_LIST.league_names:
-        return f"Did not find league '{league}'"
+        return f"Did not find league '{league}'", None, ""
     error = ""
 
     team_maker = MetaTeamDestroyer(rating=rating, league=league)

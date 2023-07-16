@@ -25,3 +25,15 @@ venv/
 
 # Ignore vscode files
 .vscode/
+
+# Ignore created comp cards
+comp_cards
+
+# files to ignore
+images.py
+algorithm.py
+chatGpt.py
+image.png
+Comp_cards.zip
+leaderboard.png
+newFlippinCoopLogo.png
