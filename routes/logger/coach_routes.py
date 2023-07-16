@@ -1,16 +1,9 @@
 import datetime
 
-from flask import Blueprint, jsonify, render_template, request, session, redirect, send_file, url_for
-import subprocess
-import traceback
-from passlib.hash import sha256_crypt
+from flask import Blueprint, render_template, request, session, redirect, url_for
 
-from application.trampoline.trampoline import convert_form_data, get_leaderboards, pretty_print, Practice, current_user, set_current_user,\
-     current_event, set_current_event, set_current_athlete,\
-     ALL_SKILLS, get_leaderboards, Athlete, get_user_turns, get_turn_dds
-from application.utils.database import create_engine, get_users_and_turns, set_table_name, insert_goal_to_db, get_user_goals, complete_goal,\
-    delete_goal_from_db, get_user, get_simmed_battle, add_simmed_battle, add_airtime_to_db, get_user_airtimes, delete_airtime_from_db,\
-    rate_practice_in_db, get_ratings
+from application.trampoline.trampoline import Practice, current_user, Athlete
+from application.utils.database import get_users_and_turns
 from application.utils.utils import *
 
 coach_bp = Blueprint('coach', __name__)

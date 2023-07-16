@@ -27,33 +27,16 @@ TODO:
   - [DONE] Add links to DD sheets (from USAG)
   - Move routines and passes to a new table
 """
-
-import datetime
-import json
-import os
 import socket
-import subprocess
 import traceback
-from collections import defaultdict, OrderedDict
-from passlib.hash import sha256_crypt
 
-from flask import Flask, request, render_template, jsonify, redirect, url_for, send_file,\
-    session, send_from_directory
+from flask import Flask
 from flask_session import Session
 
-from application.pokemon.leagues import LEAGUES_LIST
 from application.pokemon.subscription import sub_bp
-from application.pokemon.team_building import MetaTeamDestroyer, PokemonUser, get_counters_for_rating, NoPokemonFound, TeamCreater,\
-     create_table_from_results, set_refresh, get_refresh, use_weighted_values, get_recent_league
+from application.pokemon.team_building import TeamCreater
 from application.pokemon.battle_sim import sim_battle
-from application.pokemon.move_counts import get_move_counts, make_image, get_all_rankings
-
-from application.trampoline.trampoline import convert_form_data, get_leaderboards, pretty_print, Practice, current_user, set_current_user,\
-     current_event, set_current_event, set_current_athlete,\
-     ALL_SKILLS, get_leaderboards, Athlete, get_user_turns, get_turn_dds
-from application.utils.database import create_engine, get_users_and_turns, set_table_name, insert_goal_to_db, get_user_goals, complete_goal,\
-    delete_goal_from_db, get_user, get_simmed_battle, add_simmed_battle, add_airtime_to_db, get_user_airtimes, delete_airtime_from_db,\
-    rate_practice_in_db, get_ratings
+from application.utils.database import set_table_name, get_simmed_battle, add_simmed_battle
 from application.utils.utils import *
 
 from routes.logger.routes import tramp_bp
