@@ -32,7 +32,8 @@
     width: 300px;
     /*height: 100%;*/
     height: 100vh;
-    background-color: #fff;
+    /*background-color: #fff;*/
+    background-color: rgba(255, 255, 255, 0.9);
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
     transition: left 0.3s ease-in-out;
     transition: transform 0.3s ease-in-out;
@@ -59,7 +60,7 @@
   .options-menu-button {
     float: right;
     margin: 20px 10px 0 0;
-    background-color: #fff;
+    background-color: rgba(255, 255, 255, 0.7);
     border: none;
     font-size: 24px;
     cursor: pointer;
@@ -104,4 +105,8 @@ input[type=number]::-webkit-outer-spin-button {
   -webkit-appearance: textfield;
   -moz-appearance: textfield;
   appearance: textfield;
+}
+
+.move-count-options {
+  background-color: rgba(255, 255, 255, 0.7);
 }

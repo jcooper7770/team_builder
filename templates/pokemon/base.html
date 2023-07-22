@@ -115,21 +115,21 @@ function hideData() {
     <img src="/newFlippinCoopLogo.png" alt="Logo" style="width:40px;">
   </a>
   <ul class="navbar-nav mr-auto">
-    {% if request.endpoint == "run" %}
+    {% if request.endpoint == "pokmeon.run" %}
     <li class="nav-item active">
     {% else %}
     <li class="nav-item">
     {% endif %}
       <a class="nav-link" href="/" id="home">Home</a>
     </li>
-    {% if request.endpoint == "about" %}
+    {% if request.endpoint == "pokemon.about" %}
     <li class="nav-item active">
     {% else %}
     <li class="nav-item">
     {% endif %}
       <a class="nav-link" href="/about">About</a>
     </li>
-    {% if request.endpoint == "move_counts" %}
+    {% if request.endpoint == "pokemon.move_counts" %}
     <li class="nav-item active">
     {% else %}
     <li class="nav-item">
