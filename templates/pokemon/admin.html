@@ -32,7 +32,15 @@
             {% endfor %}
         </tbody>
     </table>
-    <button type="submit" class="btn btn-primary float-right">Update</button>
+    <button id="save" type="submit" class="btn btn-primary float-right">Update</button>
     </form>
 </div>
+
+<script type="text/javascript">
+$("#save").click(function (e) {
+  var spinnerContainer = document.querySelector(".spinner-container");
+  spinnerContainer.style.display = "flex";
+});
+
+</script>
 {% endblock %}
