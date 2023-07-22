@@ -216,7 +216,7 @@ def pokemon_login():
         if session.get('error'):
             return redirect(url_for('pokemon.pokemon_login'))
         session["name"] = username
-        return redirect(url_for('run'))
+        return redirect(url_for('pokemon.run'))
     return render_template("pokemon/login.html", user=session.get("name"), error_text=session.get('error'))
 
 
