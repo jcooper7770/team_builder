@@ -153,6 +153,9 @@ function hideData() {
         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Hello {{ user }}!</a>
         <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownMenuLink">
           <a class="dropdown-item" href="/pokemon/user">Settings</a>
+          {% if admin_user %}
+          <a class="dropdown-item" href="/pokemon/admin">Admin</a>
+          {% endif %}
           <a class="dropdown-item" href="/pokemon/logout">Logout</a>
         </div>
       </li>

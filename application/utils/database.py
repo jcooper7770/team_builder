@@ -433,6 +433,15 @@ def get_users_and_turns(only_users=False):
     return user_data, all_turns
 
 
+def get_db_table_data(table):
+    """
+    Returns all the data from the given table
+    """
+    engine = create_engine()
+    result = engine.execute(f"SELECT * from `{table}`")
+    return [r for r in result]
+
+
 def get_all_simmed_battles():
     """
     Returns all simmed battles

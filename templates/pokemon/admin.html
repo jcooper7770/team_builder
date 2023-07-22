@@ -1,0 +1,38 @@
+{% extends "pokemon/base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>User Information</h1>
+    <form action="/pokemon/admin" method="post">
+    <table id="userTable" class="table table-striped bg-white", border="1">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>isAdmin</th>
+                <th>isSubscribed</th>
+                <!-- Add more table headers for additional fields -->
+            </tr>
+        </thead>
+        <tbody>
+            <!-- User data will be dynamically added here -->
+            {% for user in data %}
+            <tr>
+                <td>{{user.name}}</td>
+                <td>{{user.fav_league}}</td>
+                <td>{{user.teams}}</td>
+                <td>
+                    <input name="admin_{{user.name}}" type="checkbox"{% if user.admin %} checked{%endif%}>
+                </td>
+                <td>
+                    <input name="subbed_{{user.name}}" type="checkbox"{% if user.subbed %} checked{%endif%}>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <button type="submit" class="btn btn-primary float-right">Update</button>
+    </form>
+</div>
+{% endblock %}

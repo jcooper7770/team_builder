@@ -284,7 +284,7 @@
                       {% for ss in result_data.meta_ss %}
                         <tr style="border:none;">
                           <td style="border:none;padding-top:1px;padding-bottom:0px">
-                            {{ ss[0] }} ({{poke_win_rates['ss'][ss[0]]}})
+                            {{ ss[0] | pokemonColor(current_pokemon, current_league) | safe }} ({{poke_win_rates['ss'][ss[0]]}})
                           </td>
                           <td style="border:none;padding-top:1px;padding-bottom:0px">
                             {{ ss[1] }}
@@ -305,7 +305,7 @@
                         {% if ss[1] >= 15 %}
                         <tr border="0">
                           <td style="border:none;padding-top:1px;padding-bottom:0px">
-                            {{ ss[0] }} ({{poke_win_rates['ss'][ss[0]]}})
+                            {{ ss[0] | pokemonColor(current_pokemon, current_league) }} ({{poke_win_rates['ss'][ss[0]]}})
                           </td>
                           <td style="border:none;padding-top:1px;padding-bottom:0px">
                             {{ "%.2f" | format(ss[1]) }}%
@@ -354,7 +354,7 @@
                       {% for back in result_data.meta_backs %}
                         <tr style="border:none;">
                           <td style="border:none;padding-top:1px;padding-bottom:0px">
-                            {{ back[0] }} ({{ poke_win_rates['back'][back[0]]}})
+                            {{ back[0] | pokemonColor(current_pokemon, current_league) }} ({{ poke_win_rates['back'][back[0]]}})
                           </td>
                           <td style="border:none;padding-top:1px;padding-bottom:0px">
                             {{ back[1] }}
@@ -375,7 +375,7 @@
                         {% if back[1] >= 15 %}
                         <tr border="0">
                           <td style="border:none;padding-top:1px;padding-bottom:0px">
-                            {{ back[0] }} ({{ poke_win_rates['back'][back[0]]}})
+                            {{ back[0] | pokemonColor(current_pokemon, current_league) }} ({{ poke_win_rates['back'][back[0]]}})
                           </td>
                           <td style="border:none;padding-top:1px;padding-bottom:0px">
                             {{ "%.2f" | format(back[1]) }}%

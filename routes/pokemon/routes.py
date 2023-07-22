@@ -1,6 +1,6 @@
 import os
 
-from flask import Blueprint, render_template, request, session, redirect, send_file, url_for
+from flask import Blueprint, render_template, request, session, redirect, send_file, url_for, jsonify
 import subprocess
 import traceback
 from passlib.hash import sha256_crypt
@@ -10,6 +10,7 @@ from application.pokemon.move_counts import get_move_counts, make_image, get_all
 from application.pokemon.team_building import MetaTeamDestroyer, PokemonUser, get_counters_for_rating, NoPokemonFound, get_recent_league,\
     use_weighted_values, get_refresh, create_table_from_results, set_refresh
 from application.utils.utils import *
+from application.utils.database import get_db_table_data
 
 poke_bp = Blueprint('pokemon', __name__)
 N_TEAMS = 3
@@ -187,7 +188,8 @@ def run():
         user=session.get("name", ""),
         ratings=sorted(team_maker.all_ratings),
         current_rating=rating,
-        last_refreshed=team_maker.last_fetched.get(f"all_pokemon_{chosen_league}", "")
+        last_refreshed=team_maker.last_fetched.get(f"all_pokemon_{chosen_league}", ""),
+        admin_user=user.is_admin
     )
 
 @poke_bp.route("/pokemon/login", methods=["GET", "POST"])
@@ -376,3 +378,56 @@ def pokemon_update_user():
     return redirect(url_for("pokemon.pokemon_user_profile"))
 
 
+@poke_bp.route('/pokemon/admin', methods=["POST", "GET"])
+def admin_page():
+    if request.method == "POST":
+        users = get_db_table_data("pokemon_user")
+        user_admin_map = {
+            user[0]: {'admin': user[4], 'subbed': user[5]}
+            for user in users
+        }
+        new_admin_map = {name: {'admin': False, 'subbed': False} for name in user_admin_map}
+        for key in request.form.keys():
+            if key.startswith("admin"):
+                value = request.form.get(key)
+                name = key[6:]
+                new_admin_map[name]['admin'] = True if value == "on" else False
+            elif key.startswith("subbed"):
+                value = request.form.get(key)
+                name = key[7:]
+                new_admin_map[name]['subbed'] = True if value == "on" else False
+                
+        # work around because flaks only gives checked boxes. Need to find unchecked
+        for name, value in user_admin_map.items():
+            changed = new_admin_map[name]['admin'] != value['admin'] or new_admin_map[name]['subbed'] != value['subbed']
+            if not changed:
+                continue
+            # Cannot change current user
+            if name == session.get('name'):
+                continue
+            user = PokemonUser.load(name)
+            user.is_admin = new_admin_map[name]['admin']
+            user.subscribed = new_admin_map[name]['subbed']
+            user.save()
+        return redirect(url_for('pokemon.admin_page'))
+
+    user = PokemonUser.load(session.get('name'))
+    if not user.is_admin:
+        return redirect(url_for("pokemon.pokemon_landing"))
+    # Query all users from the database
+    users = get_db_table_data("pokemon_user")
+
+    # Convert the user data to a list of dictionaries
+    user_data = [
+        {
+            'name': user[0],
+            'fav_league': user[2],
+            'teams': user[3],
+            'admin': user[4],
+            'subbed': user[5]
+        }
+        for user in users
+    ]
+
+    # Return the user data as JSON
+    return render_template("pokemon/admin.html", data=user_data, user=user.name)

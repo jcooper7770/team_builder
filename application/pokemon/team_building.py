@@ -99,11 +99,13 @@ class NoPokemonFound(Exception):
 
 class PokemonUser:
     """ Pokemon user object """
-    def __init__(self, name, password, fav_league, teams):
+    def __init__(self, name, password, fav_league, teams, is_admin=False, subscribed=False):
         self.name = name
         self.fav_league = fav_league
         self.teams = teams
         self.password = password
+        self.is_admin = is_admin
+        self.subscribed = subscribed
     
     def save(self):
         engine = create_engine()
@@ -116,7 +118,9 @@ class PokemonUser:
                 name=self.name,
                 password=self.password,
                 fav_league=self.fav_league,
-                teams=json.dumps(self.teams)
+                teams=json.dumps(self.teams),
+                is_admin=self.is_admin,
+                subscribed=self.subscribed
             )
             engine.execute(update)
         except:
@@ -125,7 +129,9 @@ class PokemonUser:
                 name=self.name,
                 password=self.password,
                 fav_league=self.fav_league,
-                teams=json.dumps(self.teams)
+                teams=json.dumps(self.teams),
+                is_admin=self.is_admin,
+                subscribed=self.subscribed
             )
             engine.execute(ins)
         engine.dispose()
@@ -143,7 +149,9 @@ class PokemonUser:
             name=results[0],
             password=results[1],
             fav_league=results[2],
-            teams=json.loads(results[3])
+            teams=json.loads(results[3]),
+            is_admin=results[4],
+            subscribed=results[5]
         )
 
 
