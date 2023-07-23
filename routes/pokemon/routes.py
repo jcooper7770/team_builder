@@ -189,7 +189,7 @@ def run():
         ratings=sorted(team_maker.all_ratings),
         current_rating=rating,
         last_refreshed=team_maker.last_fetched.get(f"all_pokemon_{chosen_league}", ""),
-        admin_user=user.is_admin
+        admin_user=user.is_admin if user else False
     )
 
 @poke_bp.route("/pokemon/login", methods=["GET", "POST"])
@@ -380,6 +380,9 @@ def pokemon_update_user():
 
 @poke_bp.route('/pokemon/admin', methods=["POST", "GET"])
 def admin_page():
+    session_name = session.get('name')
+    if not session_name:
+        return redirect(url_for("pokemon.pokemon_landing"))
     if request.method == "POST":
         users = get_db_table_data("pokemon_user")
         user_admin_map = {
@@ -411,7 +414,7 @@ def admin_page():
             user.save()
         return redirect(url_for('pokemon.admin_page'))
 
-    user = PokemonUser.load(session.get('name'))
+    user = PokemonUser.load(session_name)
     if not user.is_admin:
         return redirect(url_for("pokemon.pokemon_landing"))
     # Query all users from the database
