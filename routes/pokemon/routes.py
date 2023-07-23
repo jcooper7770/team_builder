@@ -304,7 +304,7 @@ def pokemon_user_profile():
 
     # all pokemon are in the game master
     team_maker = list(all_team_makers.values())[0]
-    regionals_data = []
+    regionals_data = {}
     if len(user.teams["Regionals"]) == 2:
         gl_team_maker = all_team_makers.get('GL', MetaTeamDestroyer(league="GL"))
         all_team_makers['GL'] = gl_team_maker
@@ -325,7 +325,8 @@ def pokemon_user_profile():
         all_pokemon=all_pokemon,
         regionals_data=regionals_data,
         error_text=session.get('error'),
-        )
+        admin_user=user.is_admin
+    )
 
 
 @poke_bp.route("/pokemon/user/update", methods=["POST"])
@@ -433,4 +434,4 @@ def admin_page():
     ]
 
     # Return the user data as JSON
-    return render_template("pokemon/admin.html", data=user_data, user=user.name)
+    return render_template("pokemon/admin.html", data=user_data, user=user.name, admin_user=True)
