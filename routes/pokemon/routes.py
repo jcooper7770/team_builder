@@ -4,6 +4,7 @@ from flask import Blueprint, render_template, request, session, redirect, send_f
 import subprocess
 import traceback
 from passlib.hash import sha256_crypt
+import openai
 
 from application.pokemon.leagues import LEAGUES_LIST
 from application.pokemon.move_counts import get_move_counts, make_image, get_all_rankings
@@ -14,6 +15,8 @@ from application.utils.database import get_db_table_data
 
 poke_bp = Blueprint('pokemon', __name__)
 N_TEAMS = 3
+
+openai.api_key = "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";
 
 def get_new_data(league, num_days_start, num_days_end, rating):
     diff_league = CACHE.get("results", {}).get(league) is None
@@ -58,7 +61,7 @@ def pokemon_landing():
 @poke_bp.route("/about")
 def about():
     commit_hash = subprocess.check_output(["git", "rev-parse", "HEAD"]).decode('ascii').strip()
-    return render_template("pokemon/about.html", commit_hash=commit_hash)
+    return render_template("pokemon/about.html", commit_hash=commit_hash, user=session.get('name'))
 
 
 @poke_bp.route("/move_image", methods=["GET", "POST"])
@@ -84,7 +87,7 @@ def move_counts():
     chosen_pokemon = request.args.get('chosen_pokemon', None)
     n_moves = int(request.args.get('n_moves', 5))
     moves = get_move_counts(None, chosen_pokemon=chosen_pokemon, n_moves=n_moves)
-    return render_template("pokemon/move_counts.html", moves=moves)
+    return render_template("pokemon/move_counts.html", moves=moves, user=session.get('name'))
 
 @poke_bp.route("/")
 def run():
@@ -435,3 +438,33 @@ def admin_page():
 
     # Return the user data as JSON
     return render_template("pokemon/admin.html", data=user_data, user=user.name, admin_user=True)
+
+
+@poke_bp.route("/pokemon/chatbot")
+def chatbot():
+    """
+    Chat bot for subscribers
+    """
+    return render_template("pokemon/chatbot.html", user=session.get('name'))
+
+
+@poke_bp.route("/pokemon/chat-gpt", methods=["POST"])
+def chat_gpt():
+    """
+    Send data to chatGPT and get response
+    """
+    models = openai.Model.list()
+    print(f"Models: {[m.id for m in models['data']]}")
+    data = request.json
+    text = data.get('text')
+    convo = data.get('convo')
+
+    prompt = f"""Hello! You are currently talking to a user on my pokemon go battle league team creation website. Here is the current conversation: {convo}
+    
+    Here is their latest message to you: {text}
+
+    Please respond accordingly, keeping in mind the entire conversation."""
+    chat_completion = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=[{"role": "user", "content": prompt}])
+    response = chat_completion.choices[0].message.content
+    print(f"response: {response}")
+    return jsonify(result=response)
