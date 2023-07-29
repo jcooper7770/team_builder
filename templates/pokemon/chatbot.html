@@ -31,7 +31,7 @@ submit.addEventListener("click", function() {
 */
 
 var send = document.getElementById("send-btn")
-send.addEventListener("click", function () {
+send.addEventListener("click", async function () {
   var spinnerContainer = document.querySelector(".spinner-container");
   spinnerContainer.style.display = "flex";
   input = document.getElementById("chat");
@@ -43,13 +43,13 @@ send.addEventListener("click", function () {
   addConvoRow("{{user}}", textVal, "red");
   input.value = "";
 
-  getData(textVal);
+  await getData(textVal);
 
   spinnerContainer.style.display = "none";
 
 });
 
-function addConvoRow(user, textValue, color) {
+async function addConvoRow(user, textValue, color) {
   var convo2 = document.getElementById("convo-div");
   var newLine = document.createElement("div");
   var name = document.createElement("span");
@@ -66,12 +66,27 @@ function addConvoRow(user, textValue, color) {
   convo2.scrollTop = convo2.scrollHeight;
 }
 
-function getData(text) {
+async function getData(text) {
   convo = document.getElementById("convo-div").textContent;
   const dataToSend = {
     text: text,
     convo: convo
   };
+  try {
+    const response = await fetch('/pokemon/chat-gpt', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(dataToSend)
+    })
+    const data = await response.json();
+    console.log(`response: ${data}`);
+    addConvoRow("OpenAI", data.result, "blue");
+  } catch (error) {
+    console.error(`Error: ${error}`);
+  }
+  /*
   fetch('/pokemon/chat-gpt', {
     method: 'POST',
     headers: {
@@ -83,7 +98,7 @@ function getData(text) {
     addConvoRow("OpenAI", data.result, "blue");
   }).catch(error => {
     console.error(`Error: ${error}`);
-  });
+  });*/
 }
 </script>
 {% endblock %}

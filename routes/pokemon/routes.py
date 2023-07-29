@@ -17,6 +17,7 @@ poke_bp = Blueprint('pokemon', __name__)
 N_TEAMS = 3
 
 openai.api_key = "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";
+openai.api_key = "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";
 
 def get_new_data(league, num_days_start, num_days_end, rating):
     diff_league = CACHE.get("results", {}).get(league) is None
