@@ -19,6 +19,7 @@ N_TEAMS = 3
 openai.api_key = "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";
 openai.api_key = "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";
 openai.api_key = "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"
+openai.api_key = os.environ.get("OPENAI_KEY")
 
 def get_new_data(league, num_days_start, num_days_end, rating):
     diff_league = CACHE.get("results", {}).get(league) is None
