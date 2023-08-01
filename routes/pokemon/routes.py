@@ -456,6 +456,7 @@ def chat_gpt():
     """
     Send data to chatGPT and get response
     """
+    print(f"Environment vars: {os.environ}")
     models = openai.Model.list()
     print(f"Models: {[m.id for m in models['data']]}")
     data = request.json
