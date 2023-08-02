@@ -79,7 +79,7 @@ def move_count_image():
     num_cols = data.get("cols", 5)
     '''
     make_image(list(set(pokemon_list)), number_per_row=num_cols, reset_data=reset)
-    export_image = os.path.join(poke_bp.root_path, "image.png")
+    export_image = os.path.abspath(os.path.join(poke_bp.root_path, "..", "..", "image.png"))
     #return send_file(export_image, as_attachment=True, cache_timeout=0)
     return send_file(export_image, as_attachment=True)
     #return json.dumps({"status": "OK"})
