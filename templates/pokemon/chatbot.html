@@ -11,7 +11,8 @@
         <div id="convo-div" style="height: 500px; width: 100%; overflow-y: scroll; border: 1px inset #ccc; background-color: light-gray;"></div>
         <!--<textarea disabled id="conversation" style="width: 100%;" rows="20"></textarea>-->
         <div class="col-sm-11">
-          <input class="form-control" id="chat" type="text" style="width: 100%;">
+          <!--<input class="form-control" id="chat" type="text" style="width: 100%;" placeholder="Type here">-->
+          <textarea class="form-control" id="chat" type="text" style="width: 100%;" placeholder="Type here"></textarea>
         </div>
         <div class="col-sm-1">
           <button id="send-btn" class="btn btn-success" style="width: 100%">Send</button>
@@ -32,6 +33,26 @@ submit.addEventListener("click", function() {
 
 var send = document.getElementById("send-btn")
 send.addEventListener("click", async function () {
+  await enterText()
+  /*
+  var spinnerContainer = document.querySelector(".spinner-container");
+  spinnerContainer.style.display = "flex";
+  input = document.getElementById("chat");
+  if (input.value == "") {
+    spinnerContainer.style.display = "none";
+    return
+  }
+  const textVal = input.value
+  addConvoRow("{{user}}", textVal, "red");
+  input.value = "";
+
+  await getData(textVal);
+
+  spinnerContainer.style.display = "none";
+  */
+});
+
+async function enterText() {
   var spinnerContainer = document.querySelector(".spinner-container");
   spinnerContainer.style.display = "flex";
   input = document.getElementById("chat");
@@ -47,7 +68,8 @@ send.addEventListener("click", async function () {
 
   spinnerContainer.style.display = "none";
 
-});
+ 
+}
 
 async function addConvoRow(user, textValue, color) {
   var convo2 = document.getElementById("convo-div");
@@ -86,7 +108,8 @@ async function getData(text) {
   } catch (error) {
     console.error(`Error: ${error}`);
   }
-  /*
+
+   /*
   fetch('/pokemon/chat-gpt', {
     method: 'POST',
     headers: {
@@ -99,6 +122,33 @@ async function getData(text) {
   }).catch(error => {
     console.error(`Error: ${error}`);
   });*/
+}
+/*
+document.getElementById("chat").addEventListener("keydown", async function (event) {
+  if (event.which === 13) {
+      if (!event.repeat) {
+          const newEvent = new Event("submit", {cancelable: true});
+          event.target.form.dispatchEvent(newEvent);
+      }
+
+      enterText()
+      event.preventDefault(); // Prevents the addition of a new line in the text field
+  }
+});
+*/
+
+function onTestChange() {
+  var key = window.event.keyCode;
+
+  // If the user has pressed enter
+  if (key === 13 && !window.event.keyCode) {
+    //document.getElementById("txtArea").value = document.getElementById("txtArea").value + "\n*";
+    enterText()
+    return false;
+  }
+  else {
+    return true;
+  }
 }
 </script>
 {% endblock %}

@@ -456,6 +456,19 @@ def chat_gpt():
     """
     Send data to chatGPT and get response
     """
+    # User must be logged in
+    if session.get('name'):
+        try:
+            user = PokemonUser.load(session.get('name'))
+        except:
+            return redirect(url_for('pokemon.pokemon_logout'))
+    else:
+        return redirect(url_for('pokemon.pokemon_logout'))
+
+    # User must be subscribed to use this
+    if not user.subscribed:
+        return redirect(url_for('pokemon.pokemon_user_profile'))
+
     print(f"Environment vars: {os.environ}")
     models = openai.Model.list()
     print(f"Models: {[m.id for m in models['data']]}")
@@ -463,11 +476,30 @@ def chat_gpt():
     text = data.get('text')
     convo = data.get('convo')
 
-    prompt = f"""Hello! You are currently talking to a user on my pokemon go battle league team creation website. Here is the current conversation: {convo}
-    
-    Here is their latest message to you: {text}
+    name = session.get('name')
+    type_effectiveness_explained = f"""Type Effectiveness Chart for Pokémon Battles:
 
-    Please respond accordingly, keeping in mind the entire conversation."""
+In Pokémon battles, the effectiveness of moves depends on the types of Pokémon involved. Here is a chart that shows how different types of moves interact with different Pokémon types:
+{TYPE_EFFECTIVENESS}
+
+In this chart:
+- The value '1.0' means the move is normally effective against the target type.
+- Values greater than '1.0' indicate the move is super effective.
+- Values less than '1.0' suggest the move is not very effective.
+- '0.625' indicates double resistance, and '1.6' indicates double weakness.
+
+For example, if you want to know the effectiveness of an Electric-type move against a Water/Ground type Pokémon like Swampert, you can look up the chart:
+- Electric is '0.625' effective against Ground, so it has reduced power.
+- Electric is '1.0' effective against Water, so it has normal power.
+- Overall, an Electric-type move would be normally effective against Swampert due to its Water/Ground typing, as it resists Electric-type moves."""
+    prompt = f"""Hello! You are currently talking to a user (named {name}) on my pokemon go battle league team creation website. Here is the current conversation: {convo}
+    
+Here is their latest message to you: {text}
+
+If the user asks anything that isn't about Pokemon or Pogo then don't answer and tell them it has to be about pokemon.
+Please respond accordingly, keeping in mind the entire conversation. Be as nice as possible.
+
+Also take into account type effectiveness. Here is how that works: {type_effectiveness_explained}"""
     chat_completion = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=[{"role": "user", "content": prompt}])
     response = chat_completion.choices[0].message.content
     print(f"response: {response}")
