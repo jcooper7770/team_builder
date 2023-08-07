@@ -88,12 +88,26 @@ async function addConvoRow(user, textValue, color) {
   convo2.scrollTop = convo2.scrollHeight;
 }
 
+async function getConvoHistory() {
+  var convoHistory = new Array();
+  const convoDiv = document.getElementById("convo-div");
+  for (var i = 0; i < convoDiv.children.length; i++) {
+    var singleChat = convoDiv.children[i].textContent;
+    convoHistory.push(singleChat);
+  }
+  return convoHistory
+}
+
 async function getData(text) {
   convo = document.getElementById("convo-div").textContent;
+  var convoHistory = await getConvoHistory();
+  console.log(convoHistory);
   const dataToSend = {
     text: text,
-    convo: convo
+    convo: convo,
+    history: convoHistory
   };
+  console.log(dataToSend);
   try {
     const response = await fetch('/pokemon/chat-gpt', {
       method: 'POST',

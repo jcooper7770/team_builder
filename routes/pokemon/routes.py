@@ -1,4 +1,5 @@
 import os
+import re
 
 from flask import Blueprint, render_template, request, session, redirect, send_file, url_for, jsonify
 import subprocess
@@ -475,6 +476,7 @@ def chat_gpt():
     data = request.json
     text = data.get('text')
     convo = data.get('convo')
+    history = data.get('history')
 
     name = session.get('name')
     type_effectiveness_explained = f"""Type Effectiveness Chart for Pokémon Battles:
@@ -500,7 +502,42 @@ If the user asks anything that isn't about Pokemon or Pogo then don't answer and
 Please respond accordingly, keeping in mind the entire conversation. Be as nice as possible.
 
 Also take into account type effectiveness. Here is how that works: {type_effectiveness_explained}"""
-    chat_completion = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=[{"role": "user", "content": prompt}])
+    prompt = f"""Hello! You are currently talking to a user (named {name}) on my pokemon go battle league team creation website. 
+If the user asks anything that isn't about Pokemon or Pogo then don't answer and tell them it has to be about pokemon.
+Please respond accordingly, keeping in mind the entire conversation. Be as nice as possible.
+
+Also take into account type effectiveness. Here is how that works: {type_effectiveness_explained}"""
+
+    #chat_completion = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=[{"role": "user", "content": prompt}])
+    messages = [
+        {"role": "system", "content": prompt},
+    ]
+    '''
+    convo_msgs = re.findall(r"^(.*) > (.*)", convo)
+    print(convo_msgs)
+    print(convo)
+    for msg in convo_msgs:
+        role = "user"
+        print(f"Message: {msg}")
+        if msg[0] == "OpenAI":
+            role = "assistant"
+        messages.append({"role": role, "content": msg[1]})
+    messages.append({"role": "user", "content": text})
+    '''
+    print(history)
+    for msg in history:
+        #chat_user, chat_message = re.findall(r"(.*) > (.*)", msg)
+        role = "user"
+        print(msg)
+        regex = rf"({name}|OpenAI) > (.*)"
+        print(regex)
+        chat_user, chat_message = re.findall(regex, msg)[0]
+        if chat_user == "OpenAI":
+            role = "assistant"
+        messages.append({"role": role, "content": chat_message})
+    messages.append({"role": "user", "content": text})       
+    print(messages)
+    chat_completion = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=messages)
     response = chat_completion.choices[0].message.content
     print(f"response: {response}")
     return jsonify(result=response)
