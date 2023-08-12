@@ -449,7 +449,16 @@ def chatbot():
     """
     Chat bot for subscribers
     """
-    return render_template("pokemon/chatbot.html", user=session.get('name'))
+    #team_maker = CACHE.get("team_maker", {}).get("GL") or MetaTeamDestroyer(rating=None, league="GL")
+    #CACHE["GL"] = team_maker
+    #pokemon_list = team_maker.all_pokemon if team_maker else ["pikachu"]
+    pokemon_list = get_all_rankings()
+    return render_template(
+        "pokemon/chatbot.html",
+        user=session.get('name'),
+        #pokemon=sorted(pokemon_list, key=lambda x: x['speciesId'])
+        pokemon=sorted(pokemon_list.keys())
+    )
 
 
 @poke_bp.route("/pokemon/chat-gpt", methods=["POST"])
@@ -477,6 +486,10 @@ def chat_gpt():
     text = data.get('text')
     convo = data.get('convo')
     history = data.get('history')
+    seen_pokemon = data.get('pokemonSeen')
+    run_pokemon = data.get('pokemonRun')
+    league = data.get('league')
+    print(f"Seen: {seen_pokemon}")
 
     name = session.get('name')
     type_effectiveness_explained = f"""Type Effectiveness Chart for Pokémon Battles:
@@ -506,7 +519,13 @@ Also take into account type effectiveness. Here is how that works: {type_effecti
 If the user asks anything that isn't about Pokemon or Pogo then don't answer and tell them it has to be about pokemon.
 Please respond accordingly, keeping in mind the entire conversation. Be as nice as possible.
 
-Also take into account type effectiveness. Here is how that works: {type_effectiveness_explained}"""
+Also take into account type effectiveness. Here is how that works: {type_effectiveness_explained}
+
+Here are the pokemon that the user has seen in Go Battle League: {seen_pokemon}.
+
+Here are some pokemon the user wants to use in the Go Battle League: {run_pokemon}.
+
+The player wants to play in the following league of GBL: {league}"""
 
     #chat_completion = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=[{"role": "user", "content": prompt}])
     messages = [
@@ -535,7 +554,14 @@ Also take into account type effectiveness. Here is how that works: {type_effecti
         if chat_user == "OpenAI":
             role = "assistant"
         messages.append({"role": role, "content": chat_message})
-    messages.append({"role": "user", "content": text})       
+    messages.append({"role": "user", "content": text})
+
+    team_info = f"""Here are the pokemon that the user has seen in Go Battle League (and wants to counter): {seen_pokemon}.
+
+Here are some pokemon the user wants to use in the Go Battle League (to counter the aforementioned pokemon): {run_pokemon}.
+
+The player wants to play in the following league of GBL: {league}"""
+    messages.append({"role": "system", "content": team_info}) 
     print(messages)
     chat_completion = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=messages)
     response = chat_completion.choices[0].message.content

@@ -110,3 +110,42 @@ input[type=number]::-webkit-outer-spin-button {
 .move-count-options {
   background-color: rgba(255, 255, 255, 0.7);
 }
+
+/* Chatbot textbox */
+
+.custom-textarea {
+  position: relative;
+  left: 5%;
+  right: 5%;
+  width: 100%;
+}
+
+#send-btn {
+  position: absolute;
+  top: 50%; /* Vertically align button in the middle */
+  right: 5px;
+  transform: translateY(-50%); /* Adjust for vertical alignment */
+  width: 30px; /* Set button width */
+  height: 30px; /* Set button height */
+  border: none;
+  border-radius: 50%; /* Make the button round */
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#send-btn::before {
+  content: "\2192"; /* Unicode arrow character */
+  font-size: 14px;
+}
+
+#chat {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  resize: none;
+}

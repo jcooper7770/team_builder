@@ -8,161 +8,198 @@
       <h2>Anti-meta chatbot</h2>
     </div>
     <div class="row card-body">
-        <div id="convo-div" style="height: 500px; width: 100%; overflow-y: scroll; border: 1px inset #ccc; background-color: light-gray;"></div>
-        <!--<textarea disabled id="conversation" style="width: 100%;" rows="20"></textarea>-->
-        <div class="col-sm-11">
-          <!--<input class="form-control" id="chat" type="text" style="width: 100%;" placeholder="Type here">-->
+      <div class="col-sm-4" style="border-right: solid lightgray;">
+        <div id="convo-div"
+          style="height: 500px; width: 100%; overflow-y: scroll; border: 1px inset #ccc; background-color: light-gray;">
+        </div>
+        <div class="row custom-textarea">
           <textarea class="form-control" id="chat" type="text" style="width: 100%;" placeholder="Type here"></textarea>
+          <button id="send-btn" class="btn btn-success"></button>
         </div>
-        <div class="col-sm-1">
-          <button id="send-btn" class="btn btn-success" style="width: 100%">Send</button>
-        </div>
-        
+      </div>
+      <div class="col-sm-8">
+        <label for="league">League:</label>
+        <select id="league" name="league">
+          <option value="GL">Great League</option>
+          <option value="UL">Ultra League</option>
+          <option value="ML">Master League</option>
+        </select>
+        <hr>
+        <label for="see">Pokemon you see often:</label>
+        <select id="pokemon-seen" class="form-control select2" name="see" onchange="selectChangeSeen(event)">
+          {% for p in pokemon %}
+          <option value="{{p}}">{{p}}</option>
+          {% endfor %}
+        </select>
+        <textarea disabled style="width: 100%;" id="seen-pokemon"></textarea>
+        <hr>
+        <label for="mine">Pokemon you want to run:</label>
+        <select id="pokemon-run" class="form-control select2" onchange="selectChangeRun(event)">
+          {% for p in pokemon %}
+          <option value="{{p}}">{{p}}</option>
+          {% endfor %}
+        </select>
+        <textarea disabled style="width: 100%;" id="run-pokemon"></textarea>
+      </div>
+
     </div>
   </div>
 </div>
 
 <script type="text/javascript">
-/*
-var submit = document.getElementById("submit-login");
-submit.addEventListener("click", function() {
-  var spinnerContainer = document.querySelector(".spinner-container");
-  spinnerContainer.style.display = "flex";
-});
-*/
-
-var send = document.getElementById("send-btn")
-send.addEventListener("click", async function () {
-  await enterText()
   /*
-  var spinnerContainer = document.querySelector(".spinner-container");
-  spinnerContainer.style.display = "flex";
-  input = document.getElementById("chat");
-  if (input.value == "") {
-    spinnerContainer.style.display = "none";
-    return
-  }
-  const textVal = input.value
-  addConvoRow("{{user}}", textVal, "red");
-  input.value = "";
-
-  await getData(textVal);
-
-  spinnerContainer.style.display = "none";
+  var submit = document.getElementById("submit-login");
+  submit.addEventListener("click", function() {
+    var spinnerContainer = document.querySelector(".spinner-container");
+    spinnerContainer.style.display = "flex";
+  });
   */
-});
+  // Initialize select2 for all select boxes
+  $('.select2').select2();
+  $(document).ready(function () {
+    $('.select2').select2({
+      closeOnSelect: true
+    });
+  });
 
-async function enterText() {
-  var spinnerContainer = document.querySelector(".spinner-container");
-  spinnerContainer.style.display = "flex";
-  input = document.getElementById("chat");
-  if (input.value == "") {
-    spinnerContainer.style.display = "none";
-    return
-  }
-  const textVal = input.value
-  addConvoRow("{{user}}", textVal, "red");
-  input.value = "";
 
-  await getData(textVal);
-
-  spinnerContainer.style.display = "none";
-
- 
-}
-
-async function addConvoRow(user, textValue, color) {
-  var convo2 = document.getElementById("convo-div");
-  var newLine = document.createElement("div");
-  var name = document.createElement("span");
-  name.style.color = color;
-  name.style.fontWeight = "bold";
-  name.textContent = user + " > ";
-  newLine.appendChild(name);
-  var text = document.createElement("span");
-  text.textContent = textValue;
-  text.style.whiteSpace = "pre-line";
-  newLine.appendChild(text);
-
-  convo2.appendChild(newLine);
-  convo2.scrollTop = convo2.scrollHeight;
-}
-
-async function getConvoHistory() {
-  var convoHistory = new Array();
-  const convoDiv = document.getElementById("convo-div");
-  for (var i = 0; i < convoDiv.children.length; i++) {
-    var singleChat = convoDiv.children[i].textContent;
-    convoHistory.push(singleChat);
-  }
-  return convoHistory
-}
-
-async function getData(text) {
-  convo = document.getElementById("convo-div").textContent;
-  var convoHistory = await getConvoHistory();
-  console.log(convoHistory);
-  const dataToSend = {
-    text: text,
-    convo: convo,
-    history: convoHistory
-  };
-  console.log(dataToSend);
-  try {
-    const response = await fetch('/pokemon/chat-gpt', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(dataToSend)
-    })
-    const data = await response.json();
-    console.log(`response: ${data}`);
-    addConvoRow("OpenAI", data.result, "blue");
-  } catch (error) {
-    console.error(`Error: ${error}`);
-  }
-
-   /*
-  fetch('/pokemon/chat-gpt', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(dataToSend)
-  }).then(response => response.json()).then( data => {
-    console.log(`response: ${data}`);
-    addConvoRow("OpenAI", data.result, "blue");
-  }).catch(error => {
-    console.error(`Error: ${error}`);
-  });*/
-}
-/*
-document.getElementById("chat").addEventListener("keydown", async function (event) {
-  if (event.which === 13) {
-      if (!event.repeat) {
-          const newEvent = new Event("submit", {cancelable: true});
-          event.target.form.dispatchEvent(newEvent);
+  seenPokemon = document.getElementById("pokemon-seen");
+  runPokemon = document.getElementById("pokemon-run");
+  seenPokemon.addEventListener("change", function() {
+    const seen = seenPokemon.value;
+    console.log(`selected: ${seen}`);
+  });
+  function selectChangeSeen(event) {
+    const seen = event.target.value;
+    /* remove option */
+    for (var i=0; i < seenPokemon.length; i++) {
+      if (seenPokemon.options[i].value == seen) {
+        seenPokemon.remove(i);
       }
-
-      enterText()
-      event.preventDefault(); // Prevents the addition of a new line in the text field
+    }
+    
+    /* add to list */
+    const seenText = document.getElementById("seen-pokemon");
+    var text = seenText.innerHTML;
+    if (text == "") {
+      seenText.innerHTML = seen;
+    } else {
+      seenText.innerHTML = text + ", " + seen;
+    }
   }
-});
-*/
-
-function onTestChange() {
-  var key = window.event.keyCode;
-
-  // If the user has pressed enter
-  if (key === 13 && !window.event.keyCode) {
-    //document.getElementById("txtArea").value = document.getElementById("txtArea").value + "\n*";
-    enterText()
-    return false;
+  function selectChangeRun(event) {
+    const run = event.target.value;
+    /* remove option */
+    for (var i=0; i < runPokemon.length; i++) {
+      if (runPokemon.options[i].value == run) {
+        runPokemon.remove(i);
+      }
+    }
+    
+    /* add to list */
+    const runText = document.getElementById("run-pokemon");
+    var text = runText.innerHTML;
+    if (text == "") {
+      runText.innerHTML = run;
+    } else {
+      runText.innerHTML = text + ", " + run;
+    }
   }
-  else {
-    return true;
+
+  var send = document.getElementById("send-btn")
+  send.addEventListener("click", async function () {
+    await enterText()
+  });
+  
+
+  async function enterText() {
+    var spinnerContainer = document.querySelector(".spinner-container");
+    spinnerContainer.style.display = "flex";
+    input = document.getElementById("chat");
+    if (input.value == "") {
+      spinnerContainer.style.display = "none";
+      return
+    }
+    const textVal = input.value
+    addConvoRow("{{user}}", textVal, "red");
+    input.value = "";
+
+    await getData(textVal);
+
+    spinnerContainer.style.display = "none";
   }
-}
+
+  async function addConvoRow(user, textValue, color) {
+    var convo2 = document.getElementById("convo-div");
+    var newLine = document.createElement("div");
+    var name = document.createElement("span");
+    name.style.color = color;
+    name.style.fontWeight = "bold";
+    name.textContent = user + " > ";
+    newLine.appendChild(name);
+    var text = document.createElement("span");
+    text.textContent = textValue;
+    text.style.whiteSpace = "pre-line";
+    newLine.appendChild(text);
+
+    convo2.appendChild(newLine);
+    convo2.scrollTop = convo2.scrollHeight;
+  }
+
+  async function getConvoHistory() {
+    var convoHistory = new Array();
+    const convoDiv = document.getElementById("convo-div");
+    for (var i = 0; i < convoDiv.children.length; i++) {
+      var singleChat = convoDiv.children[i].textContent;
+      convoHistory.push(singleChat);
+    }
+    return convoHistory
+  }
+
+  async function getData(text) {
+    convo = document.getElementById("convo-div").textContent;
+    var convoHistory = await getConvoHistory();
+    var pokemonSeen = document.getElementById("seen-pokemon").innerHTML;
+    var pokemonRun = document.getElementById("run-pokemon").innerHTML;
+    var league = document.getElementById("league").value;
+    console.log(convoHistory);
+    const dataToSend = {
+      text: text,
+      convo: convo,
+      history: convoHistory,
+      pokemonSeen: pokemonSeen,
+      pokemonRun: pokemonRun,
+      league: league,
+    };
+    console.log(dataToSend);
+    try {
+      const response = await fetch('/pokemon/chat-gpt', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(dataToSend)
+      })
+      const data = await response.json();
+      console.log(`response: ${data}`);
+      addConvoRow("OpenAI", data.result, "blue");
+    } catch (error) {
+      console.error(`Error: ${error}`);
+    }
+
+    function onTestChange() {
+      var key = window.event.keyCode;
+
+      // If the user has pressed enter
+      if (key === 13 && !window.event.keyCode) {
+        //document.getElementById("txtArea").value = document.getElementById("txtArea").value + "\n*";
+        enterText()
+        return false;
+      }
+      else {
+        return true;
+      }
+    }
+  }
 </script>
 {% endblock %}
