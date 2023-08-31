@@ -125,7 +125,7 @@ def get_move_counts(game_master, chosen_pokemon=None, n_moves=5):
             energy_gain = move.get('energyGain')
             fast_move_turns = int(move.get('cooldown')/500)
             for charge_move in charge_moves:
-                game_master_charge = moves.get(charge_move.lower())
+                game_master_charge = moves.get(str(charge_move).lower())
                 if not game_master_charge:
                     print(f"Missing {charge_move}")
                     continue
