@@ -60,7 +60,7 @@ def get_popular_moves(league="GL", days_back=0):
             if species not in pokemon_moves:
                 pokemon_moves[species] = {}
             for move in moves.split(','):
-                pokemon_moves[species].update({move: pokemon_moves[species].get(move, 0) + 1})
+                pokemon_moves[species].update({move: pokemon_moves[species].get(move, 0) + 1}) 
     return pokemon_moves
 
 
@@ -210,17 +210,23 @@ def generate_move_strings(pokemon, pokemon_ranking, counts, chosen_fast_move=Non
     pokemon_moveset = {'fast': '', 'charge': []}
     # get three most common charge move
     num_moves = []
+    num_fast_moves = []
     charged_moves = pokemon_ranking['moves']['chargedMoves']
-    print(charged_moves)
+    fast_moves = pokemon_ranking['moves']['fastMoves']
+    print(charged_moves, fast_moves)
+    print(popular_moves)
+
     if popular_moves:
-        for move in pokemon_ranking['moves']['chargedMoves']:
-            move_id = move.get('moveId')
-            num_moves.append({'moveId': move_id, 'uses': popular_moves.get(move_id.lower())})
-        charged_moves = num_moves
-    print(charged_moves)
+        game_master = get_game_master()
+        pokemon_in_gm_list = [p for p in game_master.get('pokemon', []) if p.get('speciesId', '') == pokemon]
+        pokemon_in_gm = pokemon_in_gm_list[0] if pokemon_in_gm_list else {}
+
+        charged_moves = [{'moveId': move_id.upper(), 'uses': num} for move_id, num in popular_moves.items() if move_id.upper() in pokemon_in_gm.get('chargedMoves')]
+        fast_moves = [{'moveId': move_id.upper(), 'uses': num} for move_id, num in popular_moves.items() if move_id.upper() in pokemon_in_gm.get('fastMoves')]
+    print(charged_moves, fast_moves)
 
     #sorted_moves = [move for move in pokemon_ranking['moves']['chargedMoves'] if move['uses']]
-    sorted_moves = [move for move in charged_moves if move['uses']]
+    sorted_moves = [move for move in charged_moves if move['uses'] is not None]
 
     # Pick the three moves at random if there are no use metrics
     if not sorted_moves:
@@ -233,7 +239,7 @@ def generate_move_strings(pokemon, pokemon_ranking, counts, chosen_fast_move=Non
     most_used_charges = ranked_moves[:3] if len(ranked_moves) >= 3 else ranked_moves
     
     # Pick the most used fast move
-    unsorted_fast_moves = [move for move in pokemon_ranking['moves']['fastMoves'] if move['uses']]
+    unsorted_fast_moves = [move for move in fast_moves if move['uses'] is not None]
     most_used_fast_move = [move['moveId'] for move in sorted(unsorted_fast_moves, key=lambda x:x['uses'], reverse=True)][0]
 
     for move, count in counts.get(mega or pokemon, {}).items():
