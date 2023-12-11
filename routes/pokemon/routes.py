@@ -6,7 +6,6 @@ import subprocess
 import traceback
 from passlib.hash import sha256_crypt
 import openai
-import paypalrestsdk
 
 from application.pokemon.leagues import LEAGUES_LIST
 from application.pokemon.move_counts import get_move_counts, make_image, get_all_rankings
