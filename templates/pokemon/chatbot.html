@@ -3,21 +3,30 @@
 {% block content %}
 <br><br>
 <div class="container">
+  {% if not subscribed_user %}
+  <div class="card border-danger text-center">
+    Subscribe to use this feature.
+    <a href="/paypal"><button class="btn btn-primary">Click here to subscribe</button></a>
+  </div>
+  <br></br>
+  {% endif %}
   <div class="card border-primary">
     <div class="card-header text-center">
       <h2>Anti-meta chatbot</h2>
     </div>
     <div class="row card-body">
-      <div class="col-sm-4" style="border-right: solid lightgray;">
+      <div class="col-sm-8" style="border-right: solid lightgray;">
         <div id="convo-div"
           style="height: 500px; width: 100%; overflow-y: scroll; border: 1px inset #ccc; background-color: light-gray;">
         </div>
         <div class="row custom-textarea">
-          <textarea class="form-control" id="chat" type="text" style="width: 100%;" placeholder="Type here"></textarea>
+          <textarea class="form-control" id="chat" type="text" style="width: 100%;" placeholder="{% if subscribed_user %}Type here"{% else %}Subscribe to use this feature" disabled{% endif %}></textarea>
+          {% if subscribed_user %}
           <button id="send-btn" class="btn btn-success"></button>
+          {% endif %}
         </div>
       </div>
-      <div class="col-sm-8">
+      <div class="col-sm-4">
         <label for="league">League:</label>
         <select id="league" name="league">
           <option value="GL">Great League</option>
@@ -58,7 +67,8 @@
   $('.select2').select2();
   $(document).ready(function () {
     $('.select2').select2({
-      closeOnSelect: true
+      closeOnSelect: true,
+      width: '100%'
     });
   });
 

@@ -136,6 +136,11 @@ function hideData() {
     {% endif %}
       <a class="nav-link" href="/move_counts">Move Counts</a>
     </li>
+    {% if subscribed_user %}
+    <li class="nav-item">
+      <a class="nav-link" href="/pokemon/chatbot">Chat Bot</a>
+    </li>
+    {% endif %}
     <li class="nav-item">
       <a class="nav-link" href="https://gobattlelog.com/">GoBattleLog</a>
     </li>
@@ -155,6 +160,9 @@ function hideData() {
           <a class="dropdown-item" href="/pokemon/user">Settings</a>
           {% if admin_user %}
           <a class="dropdown-item" href="/pokemon/admin">Admin</a>
+          {% endif %}
+          {% if not subscribed_user %}
+          <a class="dropdown-item" href="/paypal">Subscribe</a>
           {% endif %}
           <a class="dropdown-item" href="/pokemon/logout">Logout</a>
         </div>

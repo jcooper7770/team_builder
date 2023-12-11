@@ -1,0 +1,44 @@
+{% extends "pokemon/base.html" %}
+
+{% block content %}
+<br><br>
+<div class="container">
+    <div class="card border-primary">
+        <div class="card-header text-center">
+            <h2>Benefits of Subscribing</h2>
+        </div>
+        <div class="card-body">
+            Below are the reasons you should subscribe:
+            <ul>
+                <li>Access to the Team Creation Chatbot <a href="/pokemon/chatbot">here</a></li>
+                <li>Helps support Coop's time spend creating this website</li>
+            </ul>
+        </div>
+    </div>
+    <br>
+    <div class="card border-primary">
+        <div class="card-header text-center">
+            <h2>Subscribe</h2>
+        </div>
+        <div class="card-body mx-auto">
+            {% if subscribed_user %}
+            Already subscribed but feel free to donate
+            {% else %}
+            Use the below buttons to pay for your subscription
+            {% endif %}
+            <div id="paypal-button-container"></div>
+            <p id="result-message"></p>
+        </div>
+    </div>
+</div>
+<!-- Replace the "test" client-id value with your client-id -->
+<!--<script
+    src="https://www.paypal.com/sdk/js?client-id=Ad6FHlfOgLeEbxQHlN7sKw_N6BsbZuE5CB-9HjYfwlc-7YYZluJBnQBi-GQ7wdTuvt3j3dRBvIWl5_n-&components=buttons&vault=true&intent=subscription&enable-funding=paylater,card"
+    data-sdk-integration-source="integrationbuilder_sc"></script>
+-->
+<script src="https://www.paypal.com/sdk/js?client-id=Ad6FHlfOgLeEbxQHlN7sKw_N6BsbZuE5CB-9HjYfwlc-7YYZluJBnQBi-GQ7wdTuvt3j3dRBvIWl5_n-&components=buttons&enable-funding=paylater,venmo,card" data-sdk-integration-source="integrationbuilder_sc"></script>
+<!--<script src="pokemon/paypal_app.js"></script>-->
+<script>
+    {% include 'pokemon/paypal_app2.js' %}
+</script>
+{% endblock %}

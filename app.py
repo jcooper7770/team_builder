@@ -43,12 +43,14 @@ from routes.logger.routes import tramp_bp
 from routes.logger.comp_card_routes import comp_card_bp
 from routes.logger.coach_routes import coach_bp
 from routes.pokemon.routes import poke_bp
+from routes.pokemon.paypal_routes2 import paypal_bp
 
 app = Flask(__name__, static_url_path="", static_folder="static")
 app.config["CACHE_TYPE"] = "null"
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
+app.config["SQLALCHEMY_POOL_RECYCLE"] = 59 # for timing out queries
 app.secret_key = 'your_secret_key'
 Session(app)
 
@@ -57,6 +59,7 @@ app.register_blueprint(poke_bp, url_prefix="/")
 app.register_blueprint(tramp_bp, url_prefix="/")
 app.register_blueprint(comp_card_bp, url_prefix="/")
 app.register_blueprint(coach_bp, url_prefix="/")
+app.register_blueprint(paypal_bp, url_prefix="/")
 
 
 @app.template_filter()

@@ -6,6 +6,7 @@ import subprocess
 import traceback
 from passlib.hash import sha256_crypt
 import openai
+import paypalrestsdk
 
 from application.pokemon.leagues import LEAGUES_LIST
 from application.pokemon.move_counts import get_move_counts, make_image, get_all_rankings
@@ -90,8 +91,18 @@ def move_count_image():
 def move_counts():
     chosen_pokemon = request.args.get('chosen_pokemon', None)
     n_moves = int(request.args.get('n_moves', 5))
+    try:
+        user = PokemonUser.load(session.get('name'))
+    except:
+        user = None
     moves = get_move_counts(None, chosen_pokemon=chosen_pokemon, n_moves=n_moves)
-    return render_template("pokemon/move_counts.html", moves=moves, user=session.get('name'))
+    return render_template(
+        "pokemon/move_counts.html",
+        moves=moves,
+        user=session.get('name'),
+        admin_user=user.is_admin if user else False,
+        subscribed_user=user.subscribed if user else False
+    )
 
 @poke_bp.route("/")
 def run():
@@ -196,7 +207,8 @@ def run():
         ratings=sorted(team_maker.all_ratings),
         current_rating=rating,
         last_refreshed=team_maker.last_fetched.get(f"all_pokemon_{chosen_league}", ""),
-        admin_user=user.is_admin if user else False
+        admin_user=user.is_admin if user else False,
+        subscribed_user=user.subscribed if user else False
     )
 
 @poke_bp.route("/pokemon/login", methods=["GET", "POST"])
@@ -336,6 +348,22 @@ def pokemon_user_profile():
     )
 
 
+@poke_bp.route("/pokemon/user/subscribe", methods=["POST"])
+def pokemon_subscribe_user():
+    """
+    Marks a user as subscribed
+    """
+    username = session.get('name')
+    if not username:
+        return redirect(url_for('pokemon_login'))
+    user = PokemonUser.load(username)
+    if user.subscribed:
+        return jsonify(success=True, subscribed_before=True)
+    user.subscribed = True
+    user.save()
+    return jsonify(success=True, subscribed_before=False)
+
+
 @poke_bp.route("/pokemon/user/update", methods=["POST"])
 def pokemon_update_user():
     """
@@ -441,7 +469,12 @@ def admin_page():
     ]
 
     # Return the user data as JSON
-    return render_template("pokemon/admin.html", data=user_data, user=user.name, admin_user=True)
+    return render_template(
+        "pokemon/admin.html",
+        data=user_data, user=user.name,
+        admin_user=True,
+        subscribed_user=user.subscribed if user else False
+    )
 
 
 @poke_bp.route("/pokemon/chatbot")
@@ -453,11 +486,16 @@ def chatbot():
     #CACHE["GL"] = team_maker
     #pokemon_list = team_maker.all_pokemon if team_maker else ["pikachu"]
     pokemon_list = get_all_rankings()
+    try:
+        user = PokemonUser.load(session.get('name'))
+    except:
+        user = None
     return render_template(
         "pokemon/chatbot.html",
         user=session.get('name'),
         #pokemon=sorted(pokemon_list, key=lambda x: x['speciesId'])
-        pokemon=sorted(pokemon_list.keys())
+        pokemon=sorted(pokemon_list.keys()),
+        subscribed_user=user.subscribed if user else False
     )
 
 
@@ -477,7 +515,8 @@ def chat_gpt():
 
     # User must be subscribed to use this
     if not user.subscribed:
-        return redirect(url_for('pokemon.pokemon_user_profile'))
+        return jsonify(result="Must be subscribed to use this")
+        #return redirect(url_for('pokemon.pokemon_user_profile'))
 
     print(f"Environment vars: {os.environ}")
     models = openai.Model.list()
