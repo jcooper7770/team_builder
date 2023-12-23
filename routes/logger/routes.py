@@ -367,7 +367,7 @@ def trampoline_user_practices(username):
    
     html = [
         # Div for practices so they are scrollable
-        "<div id='practices' class='practices'><br><br>",
+        "<div id='practices'><br><br>",
         all_practice_tables,
         "</div>"
     ]
