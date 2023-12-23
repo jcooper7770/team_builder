@@ -6,16 +6,23 @@
     left: 0;
     width: 100%;
     height: 50px;
-    #background-color: royalblue;
+    /*background-color: royalblue;*/
     background-color: #343a40;
-    #background-color: #007bff;
-    #font-family: "Brush Script MT", cursive;
+    /*background-color: #007bff;*/
+    /*font-family: "Brush Script MT", cursive;*/
     font-family: 'Roboto', sans-serif;
     font-size: 40px;
-    #color: lightblue;
+    /*color: lightblue;*/
     color: white;
     z-index: 1;
     text-align: center;
+}
+
+.sticky {
+    position: sticky;
+    top: 0;
+    left: 0;  
+    z-index: 2;  
 }
 
 .x {
@@ -137,4 +144,30 @@
   border: 1px solid;
   height: 100px;
   overflow-y: auto;
+}
+
+/* Hero section */
+.hero-section {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /*text-align: center;*/
+  color: white;
+  background-color:  rgba(0, 0, 0, 0.5);
+}
+
+.hero-img {
+  border-radius: 50%;
+  height: 50%;
+  width: 50%;
+}
+
+.down-arrow {
+  position: absolute;
+  bottom: 50px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 24px;
+  z-index: 1;
 }
