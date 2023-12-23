@@ -149,3 +149,33 @@ input[type=number]::-webkit-outer-spin-button {
   border-radius: 5px;
   resize: none;
 }
+
+/* Hero section */
+.hero-section {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /*text-align: center;*/
+  color: white;
+  background-color:  rgba(0, 0, 0, 0.5);
+}
+
+.hero-img {
+  border-radius: 50%;
+}
+
+.hero-list {
+  align-items: start;
+  justify-content: left;
+  list-style-type:circle;
+}
+
+.down-arrow {
+  position: absolute;
+  bottom: 50px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 24px;
+  z-index: 1;
+}

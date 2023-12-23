@@ -1,7 +1,35 @@
 {% extends "pokemon/base.html" %}
 
 {% block content %}
-<div class="outside">
+<div class="hero-section">
+  <div class="row">
+    <!-- Image -->
+    <div class="col-md-6">
+      <img src="images/website_preview.png" class="img-fluid hero-img">
+    </div>
+
+    <div class="col-md-1"></div>
+    <!-- Text -->
+    <div class="col-md-4 text-white">
+      <p>Here you'll find all the resources you need to become a a <b>top-notch</b> Pokemon Go PVP battler, including:</p>
+      <ul class="hero-list">
+        <li>Learning the current meta in each league</li>
+        <li>Learning the counts for each pokemon</li>
+        <li>Learning popular teams</li>
+      </ul>
+      <p>Many battlers using this site have ascended to the <b>legend rank</b>. Get ahead of your opponents!</p>
+      <a class="btn btn-primary" href="/">Start Now</a>
+    </div>
+  </div>
+  <div class="down-arrow">
+    <a onclick="scrollToSection(event,'outside')" class="text-white">
+      <i class="fa fa-chevron-down"></i>
+    </a>
+  </div>
+</div>
+
+<div class="outside" id="outside">
+  <br><br>
 <div class="container" style="background: rgba(255,255,255,0.4); border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
   <h1 align="center">Welcome to the Anti-Meta Team Generator!</h1>
   <div class="row mx-auto">
