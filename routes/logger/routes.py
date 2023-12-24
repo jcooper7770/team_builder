@@ -364,7 +364,7 @@ def trampoline_user_practices(username):
         title = f"{title_date} ({practice.event}) ({num_turns} {'turns' if num_turns > 1 else 'turn'})"
         practice_rating = all_ratings.get(f"{title_date}_{practice.event}", 0)
         print(f"practice {title} rating: {practice_rating}")
-        practice_table = skills_table(practice.turns, title=title, expand_comments=user.get("expand_comments", False), rating=practice_rating)
+        practice_table = skills_table(practice.turns, title=title, expand_comments=user.get("expand_comments", False), rating=practice_rating, tags=practice.tags, editable=False)
         practice_tables.append(practice_table)
 
     all_practice_tables = "<br><br>".join(practice_tables)

@@ -431,7 +431,7 @@ class TableMaker:
     def new_line(self):
         self.table.append("<br>")
 
-    def new_header(self, value, colspan, rating=None, tags=[]):
+    def new_header(self, value, colspan, rating=None, tags=[], editable=True):
         ratings_dict ={"3": "😊", "2": "😐", "1": "😞", "0": ""}
         self.new_row()
         try:
@@ -439,9 +439,11 @@ class TableMaker:
             date_to_remove = value.split()[1].replace("/", '-')
             event_to_remove = value.split()[2].replace("(", "").replace(")", "")
             share_date = f"{date_to_remove.split('-')[2]}-{date_to_remove.split('-')[0]}-{date_to_remove.split('-')[1]}"
-            share_a=f"<a href='/logger/_current_/practices?start={share_date}&end={share_date}' class='btn-rate float-right' target='_blank' title='share practice'>Share</a>"
-            edit_a = f'<button type="button" class="btn float-right"><a title="edit day" href="#"><span id="edit_{date_to_remove}_{event_to_remove}" class="fa fa-pencil-square-o" aria-hidden=\'true\'></span></button>'
-            delete_a = f'<button type="button" class="btn float-right" id="delete-button"><a title="remove day" href="#"><span id="remove_{date_to_remove}_{event_to_remove}" class="fa fa-remove" aria-hidden=\'true\'></span></button>'
+            share_a, edit_a, delete_a = "", "", ""
+            if editable:
+                share_a=f"<a href='/logger/_current_/practices?start={share_date}&end={share_date}' class='btn-rate float-right' target='_blank' title='share practice'>Share</a>"
+                edit_a = f'<button type="button" class="btn float-right"><a title="edit day" href="#"><span id="edit_{date_to_remove}_{event_to_remove}" class="fa fa-pencil-square-o" aria-hidden=\'true\'></span></button>'
+                delete_a = f'<button type="button" class="btn float-right" id="delete-button"><a title="remove day" href="#"><span id="remove_{date_to_remove}_{event_to_remove}" class="fa fa-remove" aria-hidden=\'true\'></span></button>'
             tag_divs = [f'<div class="practice-tag">{tag}</div>' for tag in tags if tag]
             #self.table.append(f'<th id="practice-header" colspan={colspan} align="center" name="{date_to_remove}_{event_to_remove}">{rating_text}{value}{delete_a}{edit_a}{share_a}</th>')
             content = f'<div class="row"><div class="col-md-12" id="practice-header">{rating_text}{value}{delete_a}{edit_a}{share_a}</div></div><div class="row">{"".join(tag_divs)}</div>'
@@ -470,7 +472,7 @@ class TableMaker:
         return "".join(self.table)
 
 
-def skills_table(skills, title="Routines", expand_comments=False, rating=None, tags=[]):
+def skills_table(skills, title="Routines", expand_comments=False, rating=None, tags=[], editable=True):
     """
     Writes all trampoline skills to a table
     """
@@ -482,7 +484,7 @@ def skills_table(skills, title="Routines", expand_comments=False, rating=None, t
     total_difficulty = 0
     total_skills = 0
     skills_table = TableMaker(border=1, align="center", width="30%")
-    skills_table.new_header(title, colspan=most_cols+8, rating=rating, tags=tags)
+    skills_table.new_header(title, colspan=most_cols+8, rating=rating, tags=tags, editable=editable)
     total_turn_num = 0
     
     for turn_num, turn in enumerate(skills):
