@@ -91,6 +91,15 @@
             <div class="col"><input type="text" id="notes" name="notes" placeholder="Enter notes" value="" style="width:90%"
                 class="form-control"></div>
           </div>
+          <div class="form-row">
+            <div class="col-sm-3"><label for="notes">Tags:</label></div>
+            <div class="col tags-section">
+              {% for tag in tags %}
+              <div class="tag-box" onclick="this.classList.toggle('selected')">{{tag}}</div>
+              {% endfor %}
+            </div>
+            <input type="hidden" id="selected-tags" name="selected_tags" value="">
+          </div>
 
           <button id="submit-button" type="submit" class="btn btn-primary">Submit</button>
           <div class="spinner-container">
@@ -294,11 +303,17 @@
             <button class="btn btn-secondary" type="button" id="search-practice">Search Practice</button>
           </form>
         </li>
-        <li class="nav-item">
+        <li class="nav-item text-white">Rating:
           <button id="search-rating-3" class="btn btn-info">😊</button>
           <button id="search-rating-2" class="btn btn-info">😐</button>
           <button id="search-rating-1" class="btn btn-info">😞</button>
           <button id="search-rating-0" class="btn btn-info">Reset</button>
+        </li>
+        <li class="nav-item text-white">Tags:
+          {% for tag in tags %}
+          <button id="search-tag" class="btn btn-info">{{tag}}</button>
+          {% endfor %}
+          <button id="search-tag" class="btn btn-info">Reset</button>
         </li>
       </ul>
       <!-- Links -->

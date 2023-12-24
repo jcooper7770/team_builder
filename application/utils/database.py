@@ -60,14 +60,19 @@ def set_table_name(table_name):
     TABLE_NAME = table_name
 
 
-def create_engine(table_name=None):
+def create_engine(table_name=None, timeout=60):
     table_name = table_name or TABLE_NAME
     global ENGINE
     global DB_TABLE
     url = "itsflippincoop.com" if table_name == "test_data" else "127.0.0.1"
     db_name = "tramp" if os.environ.get("FLASK_ENV", "prod") == "prod" else "test_tramp"
     print(f"Using db: {db_name}")
-    engine = sqlalchemy.create_engine(f'mysql+pymysql://itsflippincoop:password@itsflippincoop.com:3306/{db_name}', echo=True)
+    engine = sqlalchemy.create_engine(
+        f'mysql+pymysql://itsflippincoop:password@itsflippincoop.com:3306/{db_name}',
+        echo=True,
+        connect_args={'connect_timeout': timeout},
+        pool_recycle=1800
+    )
     ENGINE = engine
     metadata = sqlalchemy.MetaData()
     table = sqlalchemy.Table(table_name, metadata, autoload=True, autoload_with=engine)
@@ -118,7 +123,7 @@ def get_user(user):
     }
 
 
-def add_to_db(turns, user, event, practice_date, table=None):
+def add_to_db(turns, user, event, practice_date, table=None, tags=[]):
     table = table or TABLE_NAME
     engine = create_engine(table)
     if DB_TABLE is None:
@@ -131,7 +136,8 @@ def add_to_db(turns, user, event, practice_date, table=None):
                 turn=turn_str,
                 event=event,
                 user=user,
-                date=practice_date
+                date=practice_date,
+                tags=','.join(tags)
             )
             engine.execute(ins)
     elif isinstance(turns, dict):
@@ -143,7 +149,8 @@ def add_to_db(turns, user, event, practice_date, table=None):
                 event=event,
                 user=user,
                 date=practice_date,
-                note=turn['note']
+                note=turn['note'],
+                tags=','.join(tags)
             )
             engine.execute(ins)
 

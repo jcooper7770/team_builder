@@ -193,3 +193,30 @@
     background-color: #fff; /* Ensure the background color covers the lines */
     background-attachment: local; /* Move the background with the text when scrolling */
 }
+
+/* tag */
+.tags-section {
+    margin-top: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.tag-box {
+    background-color: #fff;
+    padding: 5px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.tag-box.selected {
+    background-color: #6fa9e5;
+    color: #fff;
+}
+
+.practice-tag {
+    background-color: #fff;
+    padding: 5px;
+    border-radius: 20px;
+    color: black;
+}

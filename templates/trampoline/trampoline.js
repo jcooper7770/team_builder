@@ -534,7 +534,7 @@ $("[id^=search-rating]").click(function(e) {
                 continue
             }
             var thead = table.children[0];
-            var table_rating_element = thead.children[0].children[0].firstChild;
+            var table_rating_element = thead.children[0].children[0].firstChild.firstChild.firstChild;
             const table_rating = table_rating_element.getAttribute("name");
             if (table_rating != rating) {
                 table.style.display = "none";
@@ -545,6 +545,40 @@ $("[id^=search-rating]").click(function(e) {
     document.querySelector('.spinner-container').style.display = "none";
 
 });
+
+
+$("[id^=search-tag]").click(function(e) {
+    document.querySelectorAll("[id^=search-tag]").forEach(x => {
+        x.style.background = "";
+    });
+    const tag = e.target.textContent;
+    e.target.style.background = "blue";
+    showSpinner("Searching by tag...");
+
+    for(let i=0; i<paginated_practices.length; i++) {
+        var page = paginated_practices[i];
+        for (let j=0; j<page.length; j++) {
+            var container = page[j];
+            var table = container.children[0];
+
+            // re-display the table incase it was hidden
+            table.style.display = "";
+            if (tag == "Reset") {
+                continue
+            }
+            var thead = table.children[0];
+            var table_tag_elements = thead.children[0].children[0].children[1];
+            const table_tags = table_tag_elements.textContent;
+            if (!table_tags.includes(tag)) {
+                table.style.display = "none";
+            }
+
+        }
+    }
+    document.querySelector('.spinner-container').style.display = "none";
+
+});
+
 
 $("#search-practice").click(function (e) {
     showSpinner("Searching for date");
@@ -629,3 +663,18 @@ function scrollToSection(event, sectionId) {
         });
     }
 }
+
+var logSubmitBtn = document.getElementById("logger");
+function handleSubmitBtn() {
+    // Get the selected tags
+    var selectedTags = Array.from(document.querySelectorAll('.tag-box.selected'))
+                          .map(function(tagBox) {
+                              return tagBox.textContent;
+                          });
+
+    // Set the selected tags in the hidden input field
+    var tagInput = document.getElementById('selected-tags');
+    tagInput.value = selectedTags.join(',');
+    console.log(tagInput.value);
+}
+logSubmitBtn.addEventListener('submit', handleSubmitBtn);

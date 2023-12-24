@@ -307,7 +307,7 @@ class Practice:
     """
     All turns/skills done in a practice
     """
-    def __init__(self, practice_date, turns, event):
+    def __init__(self, practice_date, turns, event, tags=[]):
         """
         :type date: datetime.date
         :type turns: [Routine]
@@ -315,6 +315,7 @@ class Practice:
         self.date = practice_date
         self.turns = turns
         self.event = event
+        self.tags = tags
 
     def get_num_turns(self):
         """
@@ -347,7 +348,7 @@ class Practice:
         #add_to_db(turns, CURRENT_USER, self.event, self.date, table=TABLE_NAME)
         if replace:
             delete_from_db(self.date, user=session.get('name'), event=self.event)
-        add_to_db(turns, user, self.event, self.date, table=TABLE_NAME)
+        add_to_db(turns, user, self.event, self.date, table=TABLE_NAME, tags=self.tags)
 
         # save to the file
         #user_dir = os.path.join("practices", CURRENT_USER)
@@ -413,13 +414,19 @@ class Practice:
         practices = {}
         turns = get_from_db(user=user, date=date, skills=skills)
         for turn in turns:
+            tags = set()
             practice_date = turn[2]
             if practice_date not in practices:
                 practices[practice_date] = {}
             event = turn[4]
             if event not in practices[practice_date]:
                 practices[practice_date][event] = {}
-
+            if "tags" not in practices[practice_date][event]:
+                practices[practice_date][event]["tags"] = set()
+            if turn[6]:
+                for tag in turn[6].split(','):
+                    practices[practice_date][event]["tags"].add(tag)
+            
             # {'1': '801o', '2': ...}
             #practices[practice_date][event][turn[0]] = turn[1]
 
@@ -430,6 +437,7 @@ class Practice:
         for practice_date, event_data in practices.items():
             for event, turns in event_data.items():# turns = [{0: {'skills': '801o', 'note': 'dsfd'}}...]
                 skill_class = TumblingSkill if event == "tumbling" else Skill
+                tags = sorted(list(turns.pop('tags')))
                 turns_list = [y[1] for y in sorted(turns.items(), key=lambda x: x[0])]
                 # make routines for practice object
                 routines = []
@@ -453,7 +461,8 @@ class Practice:
                 p = Practice(
                     practice_date,
                     routines,
-                    event
+                    event,
+                    tags=tags
                 )
                 return_vals.append(p)
         return return_vals
