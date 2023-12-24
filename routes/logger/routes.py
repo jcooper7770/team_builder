@@ -27,6 +27,8 @@ def _save_trampoline_data(request):
     event = request.form.get('event', None) or current_event()
     notes = request.form.get('notes', None)
     tags = request.form.get('selected_tags', '').split(',')
+    custom_tags = request.form.get("custom_tags", "").split(',')
+    tags.extend(custom_tags)
     set_current_event(event)
     set_current_user(username)
     set_current_athlete(username)

@@ -97,6 +97,7 @@
               {% for tag in tags %}
               <div class="tag-box" onclick="this.classList.toggle('selected')">{{tag}}</div>
               {% endfor %}
+              <input placeholder="custom,tags" type="text" name="custom_tags">
             </div>
             <input type="hidden" id="selected-tags" name="selected_tags" value="">
           </div>
