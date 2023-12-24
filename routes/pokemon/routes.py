@@ -22,12 +22,13 @@ openai.api_key = "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";
 openai.api_key = "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"
 openai.api_key = os.environ.get("OPENAI_KEY")
 
-def get_new_data(league, num_days_start, num_days_end, rating):
+def get_new_data(league, num_days_start, num_days_end, rating, exponent):
     diff_league = CACHE.get("results", {}).get(league) is None
     diff_days_start = CACHE.get("num_days_start") != num_days_start
     diff_days_end = CACHE.get("num_days_end") != num_days_end
     diff_rating = CACHE.get("rating") != rating
-    return diff_league or diff_days_start or diff_days_end or diff_rating
+    diff_exponent = CACHE.get("exponent") != exponent
+    return diff_league or diff_days_start or diff_days_end or diff_rating or diff_exponent
 
 
 def make_recommended_teams(team_maker, chosen_pokemon, chosen_league, chosen_position):
@@ -132,18 +133,19 @@ def run():
     use_tooltip = bool(request.args.get('tooltips', False))
     use_weighted_values(bool(request.args.get('weights', False)))
     N_TEAMS = int(request.args.get('num_teams', N_TEAMS))
+    exponent = int(request.args.get('exponent', 1))
     html = []
     error_text = ""
 
     print("----- Refreshed -----")
     # Data tables from cache
-    if get_refresh() or get_new_data(chosen_league, num_days_start, num_days_end, rating):
+    if get_refresh() or get_new_data(chosen_league, num_days_start, num_days_end, rating, exponent):
         try:
             #results, team_maker, data_error = get_counters_for_rating(rating, chosen_league, days_back=num_days)
-            results, team_maker, data_error = get_counters_for_rating(rating, chosen_league, days_back_start=num_days_start, days_back_end=num_days_end)
+            results, team_maker, data_error = get_counters_for_rating(rating, chosen_league, days_back_start=num_days_start, days_back_end=num_days_end, exponent=exponent)
         except NoPokemonFound as exc:
             error_text = f"ERROR: Could not get data because: {str(exc)}. Using all data instead"
-            results, team_maker = get_counters_for_rating(None, chosen_league, days_back_start=None, days_back_end=None)
+            results, team_maker = get_counters_for_rating(None, chosen_league, days_back_start=None, days_back_end=None, exponent=exponent)
         if data_error:
             error_text = f"ERROR: could not get data because: {data_error}. Using all data instead"
     else:
@@ -160,6 +162,7 @@ def run():
     update_cache('num_days_end', num_days_end)
     update_cache('rating', rating)
     update_cache('league', chosen_league)
+    update_cache('exponent', exponent)
 
     # Recommended teams
     #  make N_TEAMS unique teams. But try 2*N_TEAMS times to make unique teams

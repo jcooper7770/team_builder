@@ -599,7 +599,7 @@ class MetaTeamDestroyer:
         print(weighted_list)
         return weighted_list
 
-    def get_reccommended_counters(self, pokemon_list):
+    def get_reccommended_counters(self, pokemon_list, exponent=2):
         """ 
         Returns recommended counters to the list of pokemon
 
@@ -618,7 +618,6 @@ class MetaTeamDestroyer:
         total_reported_pokemon = 0
         recommended_mons = defaultdict(int)
         total_squared_mons = 0
-        exponent = 1
         #pokemon_list = self.create_real_pokemon_list(pokemon_list)
         for lead in pokemon_list:
             #counters = list(self.get_counters(lead[0]))
@@ -913,7 +912,7 @@ def pretty_print_counters(counter_list, min_counters=None, use_percent=True):
     print()
     return return_text
 
-def get_counters_for_rating(rating, league="ULP", days_back_start=None, days_back_end=None):
+def get_counters_for_rating(rating, league="ULP", days_back_start=None, days_back_end=None, exponent=2):
     """ Prints the lead, safe swap, and back line counters at the given rating """
     if league not in LEAGUES_LIST.league_names:
         return f"Did not find league '{league}'", None, ""
@@ -934,14 +933,14 @@ def get_counters_for_rating(rating, league="ULP", days_back_start=None, days_bac
 
     print(f"---------- Counters at {rating or 'all'} rating---------")
     print("Leads:")
-    lead_counters = team_maker.get_reccommended_counters(team_maker.leads_list)
+    lead_counters = team_maker.get_reccommended_counters(team_maker.leads_list, exponent=exponent)
     lead_counter_text = pretty_print_counters(lead_counters, MIN_COUNTERS)
 
     print("\nCurrent Meta Leads:")
     lead_text = pretty_print_counters(team_maker.leads_list, use_percent=False)
 
     print("-----\nSafe swaps")
-    ss_counters = team_maker.get_reccommended_counters(team_maker.safeswaps_list)
+    ss_counters = team_maker.get_reccommended_counters(team_maker.safeswaps_list, exponent=exponent)
     ss_counter_text = pretty_print_counters(ss_counters, MIN_COUNTERS)
 
 
@@ -949,7 +948,7 @@ def get_counters_for_rating(rating, league="ULP", days_back_start=None, days_bac
     ss_text = pretty_print_counters(team_maker.safeswaps_list, use_percent=False)
     
     print("-----\nBack:")
-    back_counters = team_maker.get_reccommended_counters(team_maker.backs_list)
+    back_counters = team_maker.get_reccommended_counters(team_maker.backs_list, exponent=exponent)
     back_counter_text = pretty_print_counters(back_counters, MIN_COUNTERS)
 
     print("\nCurrent Meta Back:")
