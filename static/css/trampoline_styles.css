@@ -170,3 +170,26 @@
   font-size: 24px;
   z-index: 1;
 }
+
+/* Notepad for logging */
+#col-skill {
+    background-color: #fff;
+    border: 1px solid #ccc;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+}
+
+#log {
+    width: 100%;
+    height: 300px;
+    resize: none;
+    border: none;
+    outline: none;
+    font-size: 14px;
+    line-height: 20px; /* Adjust the line height as needed */
+    background-image: repeating-linear-gradient(transparent, transparent 19px, #ddd 19px, #ddd 20px);
+    background-position: 0 7px; /* Adjust the vertical position */
+    padding: 10px; /* Adjust padding to center text within lines */
+    background-color: #fff; /* Ensure the background color covers the lines */
+    background-attachment: local; /* Move the background with the text when scrolling */
+}

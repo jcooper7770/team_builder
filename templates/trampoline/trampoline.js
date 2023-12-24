@@ -616,3 +616,16 @@ function showSpinner(text) {
     spinnerContainer.style.display = "none";
   });
 }
+
+function scrollToSection(event, sectionId) {
+    event.preventDefault(); // Prevent the default anchor behavior
+    var section = document.getElementById(sectionId);
+    if (section) {
+        var offset = 0; // Adjust this value based on your fixed navbar height
+        var sectionPosition = section.getBoundingClientRect().top + window.scrollY;
+        window.scrollTo({
+            top: sectionPosition - offset,
+            behavior: 'smooth'
+        });
+    }
+}
