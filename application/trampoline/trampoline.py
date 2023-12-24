@@ -316,6 +316,12 @@ class Practice:
         self.turns = turns
         self.event = event
 
+    def get_num_turns(self):
+        """
+        Returns the number of actual turns in the practice
+        """
+        return len([turn for turn in self.turns if not turn.note])
+
     def save(self, replace=False):
         """
         Save the current practice

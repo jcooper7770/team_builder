@@ -163,7 +163,8 @@ def trampoline_log():
         # Add the turns into a table for that practice
         title_date = practice.date.strftime("%A %m/%d/%Y")
         rating_date = practice.date.strftime("%m-%d-%Y")
-        title = f"{title_date} ({practice.event})"
+        num_turns = practice.get_num_turns()
+        title = f"{title_date} ({practice.event}) ({num_turns} {'turns' if num_turns > 1 else 'turn'})"
         practice_rating = all_ratings.get(f"{rating_date}_{practice.event}", 0)
         print(f"practice {title} rating: {practice_rating}")
         practice_table = skills_table(practice.turns, title=title, expand_comments=user.get("expand_comments", False), rating=practice_rating)
@@ -357,7 +358,8 @@ def trampoline_user_practices(username):
 
         # Add the turns into a table for that practice
         title_date = practice.date.strftime("%A %m/%d/%Y")
-        title = f"{title_date} ({practice.event})"
+        num_turns = practice.get_num_turns()
+        title = f"{title_date} ({practice.event}) ({num_turns} {'turns' if num_turns > 1 else 'turn'})"
         practice_rating = all_ratings.get(f"{title_date}_{practice.event}", 0)
         print(f"practice {title} rating: {practice_rating}")
         practice_table = skills_table(practice.turns, title=title, expand_comments=user.get("expand_comments", False), rating=practice_rating)
