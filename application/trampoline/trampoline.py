@@ -321,7 +321,7 @@ class Practice:
         """
         Returns the number of actual turns in the practice
         """
-        return len([turn for turn in self.turns if not turn.note])
+        return len([turn for turn in self.turns if turn.skills])
 
     def save(self, replace=False):
         """
