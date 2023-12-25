@@ -243,11 +243,10 @@ function addRecSkill() {
             recc[0].parentNode.removeChild(recc[0]);
         }
 
+        var bottom = document.getElementById("logger-bottom")
         // add new recommended
         console.log("recommended: " + next_skill);
         // add a button with the skill under the log
-        var new_line = document.createElement("br");
-        new_line.className = "recc-skill";
         for(let i=0; i<next_skill.length; i++){
             n_skill = next_skill[i];
             var new_link = document.createElement('a');
@@ -255,10 +254,8 @@ function addRecSkill() {
             new_link.value = "skill" + n_skill;
             new_link.textContent = n_skill;
             new_link.className = "recc-skill btn btn-info"
-            logger = document.getElementById("log");
-            logger.parentNode.insertBefore(new_link, logger.nextSibling);
+            bottom.appendChild(new_link);
         }
-        logger.parentNode.insertBefore(new_line, logger.nextSibling);
 
         // automatically add to log
         //$('#log').val(skill_text + ' ' + next_skill);

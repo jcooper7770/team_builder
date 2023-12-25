@@ -57,43 +57,42 @@
               <!-- Log textarea -->
               <textarea id="log" name="log" rows="5" form="logger"
                 placeholder="Input your routines here">{{routine_text|safe}}</textarea>
-            </div>
-          </div>
-          <!-- button skills -->
-          <div class="form-row">
-            <div class="col-sm-3"></div>
-            <div class="col-sm-5" style="width:90%;">
-              {% for flips, skills in all_skills.items() %}
-              <div class="dropdown" style="display:inline-block">
-                <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton"
-                  data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                  {{flips}}
-                </button>
-                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton" style="overflow-y: auto; max-height:200px; min-width: 90vw;">
-                  {% for skill in skills %}
-                  {% for pos in ['t', 'p', 's'] %}
-                  <a class="dropdown-item" href="#" id="skill{{skill}}{{pos}}"
-                    value="skill{{skill}}{{pos}}" style="display: inline-block; width: auto; border: 1px solid;" data-keepopenonclick>{{skill}}{{pos
-                    | replace("t", "o") | replace("p", "<") | replace("s", "/" )}}</a>
-                  {% endfor %}
-                  {% endfor %}
+
+              <div id="logger-bottom" >
+                <!-- button skills -->
+                {% for flips, skills in all_skills.items() %}
+                <div class="dropdown" style="display:inline-block">
+                  <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton"
+                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    {{flips}}
+                  </button>
+                  <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton" style="overflow-y: auto; max-height:200px; min-width: 90vw;">
+                    {% for skill in skills %}
+                    {% for pos in ['t', 'p', 's'] %}
+                    <a class="dropdown-item" href="#" id="skill{{skill}}{{pos}}"
+                      value="skill{{skill}}{{pos}}" style="display: inline-block; width: auto; border: 1px solid;" data-keepopenonclick>{{skill}}{{pos
+                      | replace("t", "o") | replace("p", "<") | replace("s", "/" )}}</a>
+                    {% endfor %}
+                    {% endfor %}
+                  </div>
                 </div>
+                {% endfor %}
+                <!--<span id="num_skills">Number of skills: 0</span>-->
+                <div id="recc-skill"></div>
               </div>
-              {% endfor %}
-              <!--<span id="num_skills">Number of skills: 0</span>-->
-              <div id="recc-skill"></div>
-            </div>
-            <div class="col-sm">
-              <a id="repeat-skills" title="repeat skills" href="#"><span class="fa fa-repeat ml-3 mr-1 float-right" aria-hidden='true'></span></a>
-              <a id="next-line" title="add a new line" href="#"><span class="fa fa-level-down ml-3 mr-1 float-right" aria-hidden='true'></span></a>
+
+
             </div>
           </div>
+
           <!-- Notes -->
           <div class="form-row">
             <div class="col-sm-3"><label for="notes">Notes:</label></div>
             <div class="col"><input type="text" id="notes" name="notes" placeholder="Enter notes" value="" style="width:90%"
                 class="form-control"></div>
           </div>
+
+          <!-- Tags -->
           <div class="form-row">
             <div class="col-sm-3"><label for="notes">Tags:</label></div>
             <div class="col tags-section">
@@ -105,6 +104,7 @@
             <input type="hidden" id="selected-tags" name="selected_tags" value="">
           </div>
 
+          <!-- Submit -->
           <button id="submit-button" type="submit" class="btn btn-primary">Submit</button>
           <div class="spinner-container">
             <div class="spinner"></div>
