@@ -678,3 +678,15 @@ function handleSubmitBtn() {
     console.log(tagInput.value);
 }
 logSubmitBtn.addEventListener('submit', handleSubmitBtn);
+
+// Function to toggle full-screen mode
+function toggleFullScreen() {
+    var notepad = document.querySelector('#col-skill');
+    var textarea = document.getElementById('log');
+
+    notepad.classList.toggle('full-screen');
+    textarea.classList.toggle('full-screen');
+}
+
+// Attach functions to the corresponding events
+document.getElementById('fullScreenBtn').addEventListener('click', toggleFullScreen);
