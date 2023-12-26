@@ -495,7 +495,7 @@ function handleRatingSelection(option) {
   option.parentNode.parentNode.parentNode.firstChild.textContent = selectedRating;
   option.parentNode.parentNode.parentNode.firstChild.setAttribute("name", rating);
 
-  var practice_name = option.parentNode.parentNode.parentNode.getAttribute("name");
+  var practice_name = option.parentNode.parentNode.parentNode.parentNode.parentNode.getAttribute("name")
   // save the rating by sending a POST
   const data = {rating: rating, date: practice_name}
   $.ajax({
