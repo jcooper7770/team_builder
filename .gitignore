@@ -8,6 +8,7 @@ flask_session/
 
 # ignore pokemon images
 pokemon_images/*
+static/images/pokemon_images/*
 
 # Ignore algorithm plots
 algo_plots/*

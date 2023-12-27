@@ -8,7 +8,7 @@ from passlib.hash import sha256_crypt
 import openai
 
 from application.pokemon.leagues import LEAGUES_LIST
-from application.pokemon.move_counts import get_move_counts, make_image, get_all_rankings
+from application.pokemon.move_counts import get_move_counts, make_image, get_all_rankings, download_pokemon_image
 from application.pokemon.team_building import MetaTeamDestroyer, PokemonUser, get_counters_for_rating, NoPokemonFound, get_recent_league,\
     use_weighted_values, get_refresh, create_table_from_results, set_refresh
 from application.utils.utils import *
@@ -177,6 +177,13 @@ def run():
     #tc = TeamCreater(team_maker)
     #html.append(create_table_from_results(results, pokemon=chosen_pokemon, width='75%', tc=tc, tooltip=use_tooltip))
     #html.append("</div>")
+
+    # Download all pokemon images
+    for pokemon in team_maker.all_pokemon:
+        pokemon_species = pokemon.get('speciesId')
+        if "_shadow" in pokemon_species:
+            pokemon_species = pokemon_species[:-7]
+        download_pokemon_image(pokemon_species)
 
     # make a list of pokemon from the teams
     teams_pokemon = set()

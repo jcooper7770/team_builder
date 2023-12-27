@@ -184,11 +184,13 @@ def get_all_rankings(reset_data=False):
     }
 
     # If no rankings saved yet then query the db once  
-    engine = create_engine()
+    engine = create_engine(timeout=120)
     all_rankings = []
 
     # make a single query for all leagues 
     sql_query = 'SELECT * from `pokemon_data`;'
+    #result = engine.execute('SHOW GLOBAL VARIABLES LIKE "wait_timeout";')
+    #print([x for x in result])
     query_results = engine.execute(sql_query)
     results = [result for result in query_results]
     for result in results:
@@ -396,10 +398,13 @@ def make_image(pokemon_list, number_per_row=5, reset_data=False):
         img2 = None
 
         # Download image
+        download_pokemon_image(pokemon)
+        '''
         if not os.path.exists(pokemon_image):
             img_data = requests.get(url).content
             with open(f"pokemon_images/{pokemon}.png", 'wb') as handler:
                 handler.write(img_data)
+        '''
 
         # Paste image in canvas
         try:
@@ -468,6 +473,35 @@ def draw_text(imgText, position, text, font, anchor="ms"):
         fill=(0, 0, 0),
         anchor=anchor
     )
+
+def download_pokemon_image(pokemon):
+    pokemon_image = f"static/images/pokemon_images/{pokemon}.png" if pokemon != "logo" else "static/newFlippinCoopLogo.png"
+    image_url = "https://img.pokemondb.net/sprites/go/normal/{pokemon}.png"
+    url = image_url.format(pokemon=pokemon.replace("_", "-"))
+    if not os.path.exists(pokemon_image):
+        resp = requests.get(url)
+        if resp.status_code in [304, 404]:
+            return
+        img_data = resp.content
+        with open(pokemon_image, 'wb') as handler:
+            handler.write(img_data)
+        
+        # make img have transparent background
+        img = Image.open(pokemon_image)
+        img.convert("RGBA")
+        datas = img.getdata()
+        newData = []
+
+        for item in datas:
+            if item[0] == 255 and item[1] == 255 and item[2] == 255:
+                newData.append((255,255,255, 0))
+            else:
+                newData.append(item)
+        img.putdata(newData)
+        img.save(pokemon_image)
+
+
+
 
 if __name__ == '__main__':
     pokemon_list = ["bulbasaur", "venusaur", "charizard", "rapidash", "raichu", "walrein", "magnezone", "swampert", "pikachu"]
