@@ -2,11 +2,7 @@
 
 {% block content %}
 <script type="text/javascript">
-function fillPokemonCharts2(data, chartId, poke_win_rates) {
-  console.log("!!!!");
-  console.log(data);
-  console.log(chartId);
-
+function fillPokemonCharts(data, chartId, poke_win_rates) {
   const chartElement = document.getElementById(chartId);
 
   for(let i=0; i< data.length; i++) {
@@ -15,13 +11,16 @@ function fillPokemonCharts2(data, chartId, poke_win_rates) {
     outerDiv.className = "pokemon-chart-container";
     
     const pokemonData = data[i];
+    if (pokemonData[1] < {{min_percentage}}) {
+      continue;
+    }
     
     // first row
     const firstRowDiv = document.createElement("div");
     firstRowDiv.className = "row";
 
     const firstColDiv = document.createElement("div");
-    firstColDiv.className = "col-md-6";
+    firstColDiv.className = "col-6";
 
     const pieChart = document.createElement("div");
     pieChart.className = "pie";
@@ -36,7 +35,7 @@ function fillPokemonCharts2(data, chartId, poke_win_rates) {
     firstColDiv.appendChild(pieChart);
   
     const secondColDiv = document.createElement("div");
-    secondColDiv.className = "pokemon-image-container col-md-6";
+    secondColDiv.className = "pokemon-image-container col-6";
    
     var content = '';
     if (pokemonData[0].includes("shadow")) {
@@ -186,8 +185,8 @@ function fillPokemonCharts2(data, chartId, poke_win_rates) {
 
           <!-- Leads Tab -->
           <div class="tab-pane fade show active" id="nav-leads" role="tabpanel" aria-labelledby="nav-leads-tab">
-            <table class="table my-0 table-striped" border="1" style="background-color: white;">
-              <thead class="thead-dark">
+            <table class="my-0 table-striped" border="1" style="background-color: white;">
+              <thead class="bg-dark text-white">
                 <th colspan="2" class="text-center">Leads</th>
               </thead>
               <tbody>
@@ -236,7 +235,7 @@ function fillPokemonCharts2(data, chartId, poke_win_rates) {
                           <td style="border:none;padding-top:1px;padding-bottom:0px"><b><u>Predicted win rate</u></b></td>
                         </tr>
                       {% for lead in result_data.good_leads %}
-                        {% if lead[1] >= 15 %}
+                        {% if lead[1] >= min_percentage %}
                         <tr border="0">
                           <td style="border:none;padding-top:1px;padding-bottom:0px">
                             {{ lead[0] | pokemonColor(current_pokemon, current_league) | safe }} ({{poke_win_rates['leads'][lead[0]]}})
@@ -251,41 +250,8 @@ function fillPokemonCharts2(data, chartId, poke_win_rates) {
                       </table>
                       <div class="all-pokemon-charts" id="pokemon-lead-charts">
                         <script type="text/javascript">
-                          fillPokemonCharts2({{result_data.good_leads | tojson | safe}}, 'pokemon-lead-charts', {{poke_win_rates["leads"] | tojson | safe}});
+                          fillPokemonCharts({{result_data.good_leads | tojson | safe}}, 'pokemon-lead-charts', {{poke_win_rates["leads"] | tojson | safe}});
                         </script>
-                        <!--
-                        {% for lead in result_data.good_leads %}
-                        {% if lead[1] > 15 %}
-                        <div class="pokemon-chart-container">
-                          <div class="row">
-                            <div class="col-md-6">
-                              <div class="pie" style="--p: {{lead[1]}}; --b: 10px; --c: {% if lead[1]>50 %}green{% elif lead[1]>30 %}blue{% else %}red{% endif %}; --w: 100%;">
-                                <div class="percentage">{{ "%.2f" | format(lead[1]) }}%</div>
-                              </div>
-                            </div>
-                            <div class="pokemon-image-container col-md-6">
-                              {% if "shadow" in lead[0] %}
-                              <div style="position: relative;">
-                                <img src="/images/pokemon_images/{{lead[0][:-7]}}.png" class="pokemon-image" style="z-index: 2; position: relative;" alt="{{lead[0]}}">
-                                <img src="/images/shadow_fire.png" style="max-width: 100%; max-height: 50px; position: absolute; left: 0px; bottom: 10px;">
-                              </div>
-                              {% else %}
-                              <img src="/images/pokemon_images/{{lead[0]}}.png" class="pokemon-image" alt="{{lead[0]}}" >
-                              {% endif %}
-                            </div>
-                          </div>
-                          <div class="clearfix text-center">
-                            <p style="margin: 0px;"><b>{{ lead[0] | pokemonColor(current_pokemon, current_league) | safe }}</b></p>
-                            {% if poke_win_rates['leads'][lead[0]] %}
-                            <p style="font-size: 10px; margin: 0px;">({{poke_win_rates['leads'][lead[0]]}})</p>
-                            {% else %}
-                            <p></p>
-                            {% endif %}
-                          </div>
-                        </div>
-                        {% endif %}
-                        {% endfor %}
-                      -->
                       </div>
                     </div>
                   </td>
@@ -296,8 +262,8 @@ function fillPokemonCharts2(data, chartId, poke_win_rates) {
 
           <!-- Second pokemon Tab -->
           <div class="tab-pane fade" id="nav-ss" role="tabpanel" aria-labelledby="nav-ss-tab">
-            <table class="table my-0 table-striped" border="1" style="background-color: white;">
-              <thead class="thead-dark">
+            <table class="my-0 table-striped" border="1" style="background-color: white;">
+              <thead class="bg-dark text-white">
                 <th colspan="2" class="text-center">Second Pokemon</th>
               </thead>
               <tbody>
@@ -345,7 +311,7 @@ function fillPokemonCharts2(data, chartId, poke_win_rates) {
                           <td style="border:none;padding-top:1px;padding-bottom:0px"><b><u>Predicted win rate</u></b></td>
                         </tr>
                       {% for ss in result_data.good_ss %}
-                        {% if ss[1] >= 15 %}
+                        {% if ss[1] >= min_percentage %}
                         <tr border="0">
                           <td style="border:none;padding-top:1px;padding-bottom:0px">
                             {{ ss[0] | pokemonColor(current_pokemon, current_league) }} ({{poke_win_rates['ss'][ss[0]]}})
@@ -359,41 +325,8 @@ function fillPokemonCharts2(data, chartId, poke_win_rates) {
                       </table>
                       <div class="all-pokemon-charts" id="pokemon-ss-charts">
                         <script type="text/javascript">
-                          fillPokemonCharts2({{result_data.good_ss | tojson | safe}}, 'pokemon-ss-charts', {{poke_win_rates["ss"] | tojson | safe}});
+                          fillPokemonCharts({{result_data.good_ss | tojson | safe}}, 'pokemon-ss-charts', {{poke_win_rates["ss"] | tojson | safe}});
                         </script>
-                        <!--
-                        {% for ss in result_data.good_ss %}
-                        {% if ss[1] > 15 %}
-                        <div class="pokemon-chart-container">
-                          <div class="row">
-                            <div class="col-md-6">
-                              <div class="pie" style="--p: {{ss[1]}}; --b: 10px; --c: {% if ss[1]>50 %}green{% elif ss[1]>30 %}blue{% else %}red{% endif %}; --w: 100%;">
-                                <div class="percentage">{{ "%.2f" | format(ss[1]) }}%</div>
-                              </div>
-                            </div>
-                            <div class="pokemon-image-container col-md-6">
-                              {% if "shadow" in ss[0] %}
-                              <div style="position: relative;">
-                                <img src="/images/pokemon_images/{{ss[0][:-7]}}.png" class="pokemon-image" style="z-index: 2; position: relative;" alt="{{ss[0]}}">
-                                <img src="/images/shadow_fire.png" style="max-width: 100%; max-height: 50px; position: absolute; left: 0px; bottom: 10px;">
-                              </div>
-                              {% else %}
-                              <img src="/images/pokemon_images/{{ss[0]}}.png" class="pokemon-image" alt="{{ss[0]}}" >
-                              {% endif %}
-                            </div>
-                          </div>
-                          <div class="clearfix text-center">
-                            <p style="margin: 0px;"><b>{{ ss[0] | pokemonColor(current_pokemon, current_league) | safe }}</b></p>
-                            {% if poke_win_rates['ss'][ss[0]] %}
-                            <p style="font-size: 10px; margin: 0px;">({{poke_win_rates['ss'][ss[0]]}})</p>
-                            {% else %}
-                            <p></p>
-                            {% endif %}
-                          </div>
-                        </div>
-                        {% endif %}
-                        {% endfor %}
-                      -->
                       </div>
                     </div>
                   </td>
@@ -404,8 +337,8 @@ function fillPokemonCharts2(data, chartId, poke_win_rates) {
 
           <!-- Third pokemon Tab -->
           <div class="tab-pane fade" id="nav-back" role="tabpanel" aria-labelledby="nav-back-tab">
-            <table class="table my-0 table-striped" border="1" style="background-color: white;">
-              <thead class="thead-dark">
+            <table class="my-0 table-striped" border="1" style="background-color: white;">
+              <thead class="bg-dark text-white">
                 <th colspan="2" class="text-center">Third Pokemon</th>
               </thead>
               <tbody>
@@ -453,7 +386,7 @@ function fillPokemonCharts2(data, chartId, poke_win_rates) {
                           <td style="border:none;padding-top:1px;padding-bottom:0px"><b><u>Predicted win rate</u></b></td>
                         </tr>
                       {% for back in result_data.good_backs %}
-                        {% if back[1] >= 15 %}
+                        {% if back[1] >= min_percentage %}
                         <tr border="0">
                           <td style="border:none;padding-top:1px;padding-bottom:0px">
                             {{ back[0] | pokemonColor(current_pokemon, current_league) }} ({{ poke_win_rates['back'][back[0]]}})
@@ -467,41 +400,8 @@ function fillPokemonCharts2(data, chartId, poke_win_rates) {
                       </table>
                       <div class="all-pokemon-charts" id="pokemon-back-charts">
                         <script type="text/javascript">
-                          fillPokemonCharts2({{result_data.good_backs | tojson | safe}}, 'pokemon-back-charts', {{poke_win_rates["back"] | tojson | safe}});
+                          fillPokemonCharts({{result_data.good_backs | tojson | safe}}, 'pokemon-back-charts', {{poke_win_rates["back"] | tojson | safe}});
                         </script>
-                        <!--
-                        {% for back in result_data.good_backs %}
-                        {% if back[1] > 15 %}
-                        <div class="pokemon-chart-container">
-                          <div class="row">
-                            <div class="col-md-6">
-                              <div class="pie" style="--p: {{back[1]}}; --b: 10px; --c: {% if back[1]>50 %}green{% elif back[1]>30 %}blue{% else %}red{% endif %}; --w: 100%;">
-                                <div class="percentage">{{ "%.2f" | format(back[1]) }}%</div>
-                              </div>
-                            </div>
-                            <div class="pokemon-image-container col-md-6">
-                              {% if "shadow" in back[0] %}
-                              <div style="position: relative;">
-                                <img src="/images/pokemon_images/{{back[0][:-7]}}.png" class="pokemon-image" style="z-index: 2; position: relative;" alt="{{back[0]}}">
-                                <img src="/images/shadow_fire.png" style="max-width: 100%; max-height: 50px; position: absolute; left: 0px; bottom: 10px;">
-                              </div>
-                              {% else %}
-                              <img src="/images/pokemon_images/{{back[0]}}.png" class="pokemon-image" alt="{{back[0]}}" >
-                              {% endif %}
-                            </div>
-                          </div>
-                          <div class="clearfix text-center">
-                            <p style="margin: 0px;"><b>{{ back[0] | pokemonColor(current_pokemon, current_league) | safe }}</b></p>
-                            {% if poke_win_rates['back'][back[0]] %}
-                            <p style="font-size: 10px; margin: 0px;">({{poke_win_rates['back'][back[0]]}})</p>
-                            {% else %}
-                            <p></p>
-                            {% endif %}
-                          </div>
-                        </div>
-                        {% endif %}
-                        {% endfor %}
-                      -->
                       </div>
                     </div>
                   </td>
@@ -648,17 +548,5 @@ const optionsMenu = document.querySelector('.options-menu');
 
 optionsMenu.style.top = navbar.getBoundingClientRect().height + 'px';
 
-
-// filling the pokemon charts
-function fillPokemonCharts(data) {
-  console.log("loaded");
-  console.log(data);
-}
-function fillPokemonCharts2() {
-  console.log("!!!!");
-}
-
-const chartSection = document.getElementsByClassName("all-pokemon-charts")[0]
-chartSection.addEventListener('load', fillPokemonCharts)
 </script>
 {% endblock %}

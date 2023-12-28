@@ -269,3 +269,10 @@ input[type=number]::-webkit-outer-spin-button {
   align-content: flex-start;
   /*display: none;*/
 }
+
+/* Styles for mobile */
+@media all and (min-width:0px) and (max-width: 650px) {
+  .pokemon-chart-container {
+    width: 100%;
+  }
+}

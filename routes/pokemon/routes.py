@@ -134,6 +134,7 @@ def run():
     use_weighted_values(bool(request.args.get('weights', False)))
     N_TEAMS = int(request.args.get('num_teams', N_TEAMS))
     exponent = int(request.args.get('exponent', 1))
+    min_percentage = int(request.args.get('min_percentage', 15))
     html = []
     error_text = ""
 
@@ -217,7 +218,8 @@ def run():
         current_rating=rating,
         last_refreshed=team_maker.last_fetched.get(f"all_pokemon_{chosen_league}", ""),
         admin_user=user.is_admin if user else False,
-        subscribed_user=user.subscribed if user else False
+        subscribed_user=user.subscribed if user else False,
+        min_percentage=min_percentage
     )
 
 @poke_bp.route("/pokemon/login", methods=["GET", "POST"])
