@@ -1,6 +1,77 @@
 {% extends "pokemon/base.html" %}
 
 {% block content %}
+<script type="text/javascript">
+function fillPokemonCharts2(data, chartId, poke_win_rates) {
+  console.log("!!!!");
+  console.log(data);
+  console.log(chartId);
+
+  const chartElement = document.getElementById(chartId);
+
+  for(let i=0; i< data.length; i++) {
+    // outer div
+    const outerDiv = document.createElement("div");
+    outerDiv.className = "pokemon-chart-container";
+    
+    const pokemonData = data[i];
+    
+    // first row
+    const firstRowDiv = document.createElement("div");
+    firstRowDiv.className = "row";
+
+    const firstColDiv = document.createElement("div");
+    firstColDiv.className = "col-md-6";
+
+    const pieChart = document.createElement("div");
+    pieChart.className = "pie";
+    pieChart.style.setProperty("--p", pokemonData[1]);
+    pieChart.style.setProperty("--b", "10px");
+    pieChart.style.setProperty("--w", "100%");
+
+    const percentDiv = document.createElement("div");
+    percentDiv.className = "percentage";
+    percentDiv.innerText = `${Number(pokemonData[1]).toFixed(2)}%`;
+    pieChart.appendChild(percentDiv);
+    firstColDiv.appendChild(pieChart);
+  
+    const secondColDiv = document.createElement("div");
+    secondColDiv.className = "pokemon-image-container col-md-6";
+   
+    var content = '';
+    if (pokemonData[0].includes("shadow")) {
+      const pokemonName = pokemonData[0].slice(0, -7);
+      content = `<div style="position: relative;">
+        <img src="/images/pokemon_images/${pokemonName}.png" class="pokemon-image" style="z-index: 2; position: relative;" alt="${pokemonData[0]}">
+        <img src="/images/shadow_fire.png" style="max-width: 100%; max-height: 50px; position: absolute; left: 0px; bottom: 10px;">
+      </div>`
+    } else {
+      content = `<img src="/images/pokemon_images/${pokemonData[0]}.png" class="pokemon-image" alt="${pokemonData[0]}" >`
+    }
+    secondColDiv.innerHTML = content;
+    firstRowDiv.appendChild(firstColDiv);
+    firstRowDiv.appendChild(secondColDiv);
+
+    const secondRowDiv = document.createElement("div");
+    secondRowDiv.className = "clearfix text-center";
+    var rowContent1 =  `<p style="margin: 0px;"><b>${pokemonData[0]}</b></p>`; // TODO: convert to title case
+
+    var rowContent2 = ``;
+    if (poke_win_rates[pokemonData[0]]) {
+      rowContent2 = `<p style="font-size: 10px; margin: 0px;">(${poke_win_rates[pokemonData[0]]})</p>`;
+    } else {
+      rowContent2 = `<p></p>`;
+    }
+    secondRowDiv.innerHTML = rowContent1 + rowContent2;
+    
+    outerDiv.appendChild(firstRowDiv);
+    outerDiv.appendChild(secondRowDiv);
+
+    chartElement.appendChild(outerDiv);
+  }
+}
+</script>
+
 <div class="outside">
   <div class="options-menu">
     <button class="options-menu-button my-auto">Options <i class="fa fa-angle-double-right"></i></button>
@@ -178,7 +249,11 @@
                         {% endif %}
                       {% endfor %}
                       </table>
-                      <div class="all-pokemon-charts">
+                      <div class="all-pokemon-charts" id="pokemon-lead-charts">
+                        <script type="text/javascript">
+                          fillPokemonCharts2({{result_data.good_leads | tojson | safe}}, 'pokemon-lead-charts', {{poke_win_rates["leads"] | tojson | safe}});
+                        </script>
+                        <!--
                         {% for lead in result_data.good_leads %}
                         {% if lead[1] > 15 %}
                         <div class="pokemon-chart-container">
@@ -210,6 +285,7 @@
                         </div>
                         {% endif %}
                         {% endfor %}
+                      -->
                       </div>
                     </div>
                   </td>
@@ -281,7 +357,11 @@
                         {% endif %}
                       {% endfor %}
                       </table>
-                      <div class="all-pokemon-charts">
+                      <div class="all-pokemon-charts" id="pokemon-ss-charts">
+                        <script type="text/javascript">
+                          fillPokemonCharts2({{result_data.good_ss | tojson | safe}}, 'pokemon-ss-charts', {{poke_win_rates["ss"] | tojson | safe}});
+                        </script>
+                        <!--
                         {% for ss in result_data.good_ss %}
                         {% if ss[1] > 15 %}
                         <div class="pokemon-chart-container">
@@ -313,6 +393,7 @@
                         </div>
                         {% endif %}
                         {% endfor %}
+                      -->
                       </div>
                     </div>
                   </td>
@@ -384,7 +465,11 @@
                         {% endif %}
                       {% endfor %}
                       </table>
-                      <div class="all-pokemon-charts">
+                      <div class="all-pokemon-charts" id="pokemon-back-charts">
+                        <script type="text/javascript">
+                          fillPokemonCharts2({{result_data.good_backs | tojson | safe}}, 'pokemon-back-charts', {{poke_win_rates["back"] | tojson | safe}});
+                        </script>
+                        <!--
                         {% for back in result_data.good_backs %}
                         {% if back[1] > 15 %}
                         <div class="pokemon-chart-container">
@@ -416,6 +501,7 @@
                         </div>
                         {% endif %}
                         {% endfor %}
+                      -->
                       </div>
                     </div>
                   </td>
@@ -562,5 +648,17 @@ const optionsMenu = document.querySelector('.options-menu');
 
 optionsMenu.style.top = navbar.getBoundingClientRect().height + 'px';
 
+
+// filling the pokemon charts
+function fillPokemonCharts(data) {
+  console.log("loaded");
+  console.log(data);
+}
+function fillPokemonCharts2() {
+  console.log("!!!!");
+}
+
+const chartSection = document.getElementsByClassName("all-pokemon-charts")[0]
+chartSection.addEventListener('load', fillPokemonCharts)
 </script>
 {% endblock %}

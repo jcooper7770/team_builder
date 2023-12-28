@@ -257,7 +257,7 @@ input[type=number]::-webkit-outer-spin-button {
   justify-content: space-between;*/
   border: 1px solid;
   /*width: 20%;*/
-  width: 175px;
+  width: 165px;
 }
 
 .all-pokemon-charts {
@@ -267,5 +267,5 @@ input[type=number]::-webkit-outer-spin-button {
   justify-content: flex-start;
   align-items: stretch;
   align-content: flex-start;
-  display: none;
+  /*display: none;*/
 }
