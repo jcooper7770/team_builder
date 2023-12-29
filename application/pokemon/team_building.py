@@ -361,6 +361,7 @@ class MetaTeamDestroyer:
         self.pokemon_teams = OrderedDict()
         sorted_teams = sorted(pokemon_teams.items(), key=lambda x: [len(x[1]), x[1].count(True)], reverse=True) # sort based on # games
         num_teams = min(30, len(sorted_teams))
+        num_teams = len(sorted_teams)
         for team, wins in sorted_teams[:num_teams]:
             self.pokemon_teams[team] = f'{wins.count(True)}/{len(wins)} || {100*wins.count(True)/len(wins):.2f}%'
 
