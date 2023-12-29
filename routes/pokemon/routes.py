@@ -186,10 +186,10 @@ def run():
             pokemon_species = pokemon_species[:-7]
         download_pokemon_image(pokemon_species)
 
-    # make a list of pokemon from the teams
+    # make a list of pokemon from the top 30 teams
     teams_pokemon = set()
-    for team in team_maker.pokemon_teams:
-        for pokemon in team.split('-'):
+    for team in list(team_maker.pokemon_teams.items())[:30]:
+        for pokemon in team[0].split('-'):
             teams_pokemon.add(pokemon)
     return render_template(
         "pokemon/index.html",
@@ -211,7 +211,7 @@ def run():
         back_move_count_string=','.join(pokemon[0] for pokemon in team_maker.result_data['meta_backs']),
         teams_move_count_string=','.join(teams_pokemon),
         poke_win_rates=team_maker.pokemon_win_rates,
-        team_win_rates=team_maker.pokemon_teams,
+        team_win_rates=list(team_maker.pokemon_teams.items()),
         n_teams=sum([p[1] for p in team_maker.result_data['meta_leads']]),
         user=session.get("name", ""),
         ratings=sorted(team_maker.all_ratings),
