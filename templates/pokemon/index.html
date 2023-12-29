@@ -628,7 +628,7 @@ searchButton.addEventListener("click", function(e){
         var andTerms = searchValues[i].split("&");
         var termMatches = true;
         for (var j=0; j < andTerms.length; j++) {
-          if (rowText.indexOf(andTerms[j]) === -1) {
+          if (rowText.toLowerCase().indexOf(andTerms[j].toLowerCase()) === -1) {
             termMatches = false;
             break;
           }
