@@ -471,7 +471,7 @@ def login():
             athlete.first_login = False
             athlete.save()
             print("First login for {username}")
-            return redirect(url_for('about_trampoline'))
+            return redirect(url_for('trampoline.about_trampoline'))
         return redirect(url_for(session.get('previous_page', 'trampoline.trampoline_log')))
     return render_template("trampoline/login.html", user=session.get("name"), error_text=session.get('error'))
 

@@ -2,47 +2,70 @@
 
 {% block content %}
 <br><br>
-<div class="container">
-  <div class="card border-primary">
+<div class="container d-flex align-items-center justify-content-center">
+    <div class="card border-primary" style="width: 500px; overflow: hidden;">
     <div class="card-header text-center">
-      <h2>Login</h2>
+      <h2 id="header-text">Login</h2>
     </div>
-    <div class="row card-body">
-      <div class="col-sm">
+    <div class="row card-body d-flex flex-column" style="width: 500px; height: 300px; overflow: hidden;">
+      <div class="col-sm" id="login-form" style="height: 300px; transition: all 0.3s ease">
 
         <form method="POST" action="{{ url_for('pokemon.pokemon_login') }}" id="login">
 
           <!-- Username -->
-          <div class="form-group row">
-            <div class="col-sm-1">
-              <label for="username">Username: </label>
-            </div>
-            <div class="col-sm-4">
-              <input class="form-control" type="text" id="username" name="username" placeholder="Username" \>
-            </div>
+          <div class="d-flex flex-column">
+            <p class="m-0">Username:</p>
+            <input class="form-control" type="text" id="username" name="username" placeholder="Username">
           </div>
-
+          
           <!-- Password -->
-          <div class="form-group row">
-            <div class="col-sm-1">
-              <label for="password">Password: </label>
-            </div>
-            <div class="col-sm-4">
-              <input class="form-control" type="password" id="password" name="password" placeholder="Password" >
-            </div>
+          <div class="d-flex flex-column">
+            <p class="m-0">Password:</p>
+            <input class="form-control" type="password" id="password" name="password" placeholder="Password" >
           </div>
 
           <!-- Submit and sign-up -->
-          <div class="form-group row">
-            <div class="col-sm-1">
-            </div>
-            <div class="col-sm-6">
-              <button id="submit-login" type="submit" class="btn btn-primary float-left">Login</button>
-              <a class="btn btn-primary float-left mx-2" href="/pokemon/sign_up">Sign-Up</a>
-            </div>
+          <div style="margin-top: 20px;">
+            <button id="submit-login" style="border: 1px solid; border-radius: 10px; width: 100%; font-size: 20px; font-weight: bold; background: #E0E0E0;" type="submit">Login</button>
+          </div>
+          <div class="text-center" style="margin-top: 5px;">
+            <p>New user? <a href="#" id="signup-button">Sign Up</a></p>
+          </div>
+
+        </form>
+      </div>
+      <!-- Sign-up form (to slide up) -->
+      <div id="sign-up-form" style="position: absolute; top: 100%; z-index: 1; transition: all 0.3s ease" class="col-sm">
+        <form method="POST" action="{{ url_for('pokemon.pokemon_sign_up') }}" id="sign_up">
+
+          <!-- Username -->
+          <div class="d-flex flex-column">
+            <p class="m-0">Username:</p>
+            <input class="form-control" type="text" id="username" name="username" placeholder="Username">
+          </div>
+          
+          <!-- Password -->
+          <div class="d-flex flex-column">
+            <p class="m-0">Password:</p>
+            <input class="form-control" type="password" id="password" name="password" placeholder="Password" >
+          </div>
+
+          <!-- Confirm password-->
+          <div class="d-flex flex-column">
+            <p class="m-0">Confirm Password:</p>
+            <input class="form-control" type="password" id="confirm" name="confirm" placeholder="Confirm Password" >
+          </div>
+         
+          <!-- Submit and sign-up -->
+          <div style="margin-top: 20px;">
+            <button id="submit-login" style="border: 1px solid; border-radius: 10px; width: 100%; font-size: 20px; font-weight: bold; background: #E0E0E0;" type="submit">Sign-Up</button>
+          </div>
+          <div class="text-center" style="margin-top: 5px;">
+            <p>Already have an account? <a href="#" id="login-button">Login</a></p>
           </div>
         </form>
       </div>
+
     </div>
   </div>
 </div>
@@ -53,6 +76,25 @@ submit.addEventListener("click", function() {
   var spinnerContainer = document.querySelector(".spinner-container");
   spinnerContainer.style.display = "flex";
 });
+
+const signupButton = document.getElementById("signup-button");
+const loginButton = document.getElementById("login-button");
+const signupForm = document.getElementById("sign-up-form");
+const loginForm = document.getElementById("login-form");
+const headerText = document.getElementById("header-text");
+signupButton.addEventListener("click", function(e) {
+  e.preventDefault();
+  signupForm.style.top = "25%";
+  loginForm.style.top = "120%";
+  headerText.innerText = "Sign Up";
+});
+loginButton.addEventListener("click", function(e) {
+  e.preventDefault();
+  loginForm.style.top = "0%";
+  signupForm.style.top = "120%";
+  headerText.innerText = "Login";
+})
+
 
 </script>
 {% endblock %}
