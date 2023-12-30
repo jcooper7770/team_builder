@@ -145,7 +145,7 @@ def trampoline_log():
     try:
         user = get_user(session.get('name'))
     except:
-        session["previous_page"] = "trampoline_log"
+        session["previous_page"] = "trampoline.trampoline_log"
         return redirect(url_for('trampoline.logout'))
     
     # coaches go to coach home instead
@@ -570,7 +570,7 @@ def user_stats():
     """
     username = session.get('name')
     if not username:
-        session["previous_page"] = "user_stats"
+        session["previous_page"] = "trampoline.user_stats"
         return redirect(url_for('trampoline.login'))
     body = ""
     # Get user data
@@ -643,7 +643,7 @@ def user_stats():
 
     current_user = session.get('name')
     if not session.get("name"):
-        session["previous_page"] = "user_stats"
+        session["previous_page"] = "trampoline.user_stats"
         return redirect(url_for('trampoline.login'))
     # get user from db
     try:
@@ -735,7 +735,7 @@ def user_profile():
     """
     current_user = session.get('name')
     if not session.get("name"):
-        session["previous_page"] = "user_profile"
+        session["previous_page"] = "trampoline.user_profile"
         return redirect(url_for('trampoline.login'))
     # get user from db
     try:
