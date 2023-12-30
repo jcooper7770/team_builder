@@ -48,6 +48,26 @@
             </div>
           </div>
 
+          <!-- Notes -->
+          <div class="form-row">
+            <div class="col-sm-3"><label for="notes">Notes:</label></div>
+            <div class="col"><input type="text" id="notes" name="notes" placeholder="Enter notes" value="" style="width:90%"
+                class="form-control"></div>
+          </div>
+
+          <!-- Tags -->
+          <div class="form-row">
+            <div class="col-sm-3"><label for="notes">Tags:</label></div>
+            <div class="col tags-section">
+              {% for tag in tags %}
+              <div class="tag-box" onclick="this.classList.toggle('selected')">{{tag}}</div>
+              {% endfor %}
+              <input placeholder="custom,tags" type="text" name="custom_tags">
+            </div>
+            <input type="hidden" id="selected-tags" name="selected_tags" value="">
+          </div>
+
+
           <!-- Skills to be logged -->
           <div class="form-row" id="row-skill">
             <div class="col-sm-3">Skills:<br><a href="/logger/about" class="btn btn-light" style="border: 1px solid; border-radius: 10px;">Click here for help</a></div>
@@ -85,24 +105,6 @@
             </div>
           </div>
 
-          <!-- Notes -->
-          <div class="form-row">
-            <div class="col-sm-3"><label for="notes">Notes:</label></div>
-            <div class="col"><input type="text" id="notes" name="notes" placeholder="Enter notes" value="" style="width:90%"
-                class="form-control"></div>
-          </div>
-
-          <!-- Tags -->
-          <div class="form-row">
-            <div class="col-sm-3"><label for="notes">Tags:</label></div>
-            <div class="col tags-section">
-              {% for tag in tags %}
-              <div class="tag-box" onclick="this.classList.toggle('selected')">{{tag}}</div>
-              {% endfor %}
-              <input placeholder="custom,tags" type="text" name="custom_tags">
-            </div>
-            <input type="hidden" id="selected-tags" name="selected_tags" value="">
-          </div>
 
           <!-- Submit -->
           <button id="submit-button" type="submit" class="btn btn-primary">Submit</button>
@@ -123,7 +125,6 @@
 
   </div>
 </div>
-
 
 <!-- Goals -->
 <br><br>
