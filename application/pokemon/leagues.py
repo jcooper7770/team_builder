@@ -64,6 +64,7 @@ LEAGUES_LIST = LeagueList([
     League("Element", "500-element", "element"),
     League("ElementRemix", "500-elementremix", "elementremix"),
     League("Jungle", "500-littlejungle", "littlejungle", cup_value="littlejungle"),
+    League("LittleHoliday", "500-littleholiday", "littleholiday", cup_value="littleholiday"),
 
     # Great cups
     League("GL", "1500", "great"),
