@@ -278,28 +278,28 @@ def pokemon_sign_up():
 
         if not username:
             session["error"] = "Please enter a username"
-            return redirect(url_for('pokemon.pokemon_sign_up'))
+            return redirect(url_for('pokemon.pokemon_login'))
         try:
             PokemonUser.load(username)
             session["error"] = f"Username {username} already exists."
-            return redirect(url_for('pokemon.pokemon_sign_up'))
+            return redirect(url_for('pokemon.pokemon_login'))
         except:
             pass
         if not password:
             session["error"] = "Missing Password"
-            return redirect(url_for('pokemon.pokemon_sign_up'))
+            return redirect(url_for('pokemon.pokemon_login'))
         elif confirm != password:
             session["error"] = "Passwords do not match"
-            return redirect(url_for('pokemon.pokemon_sign_up'))
+            return redirect(url_for('pokemon.pokemon_login'))
         if session.get('error'):
-            return redirect(url_for('pokemon.pokemon_sign_up'))
+            return redirect(url_for('pokemon.pokemon_login'))
         # Create the user and go to login page
         default_teams = {"GL": {}, "UL": {}, "ML": {}, "Regionals": {}}
         hashed_password = sha256_crypt.encrypt(password)
         user = PokemonUser(username, hashed_password, "GL", default_teams)
         user.save()
         return redirect(url_for('pokemon.pokemon_login'))
-    return render_template("pokemon/sign_up.html", error_text=session.get('error'), user="")
+    return render_template("pokemon/login.html", error_text=session.get('error'), user="")
 
 
 @poke_bp.route("/data/refresh", methods=["POST"])

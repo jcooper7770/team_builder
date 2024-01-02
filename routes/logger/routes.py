@@ -407,21 +407,21 @@ def sign_up():
 
         if not username:
             session["error"] = "Please enter a username"
-            return redirect(url_for('trampoline.sign_up'))
+            return redirect(url_for('trampoline.login'))
         try:
             get_user(username)
             session["error"] = f"Username {username} already exists."
-            return redirect(url_for('trampoline.sign_up'))
+            return redirect(url_for('trampoline.login'))
         except:
             pass
         if not password:
             session["error"] = "Missing Password"
-            return redirect(url_for('trampoline.sign_up'))
+            return redirect(url_for('trampoline.login'))
         elif confirm != password:
             session["error"] = "Passwords do not match"
-            return redirect(url_for('trampoline.sign_up'))
+            return redirect(url_for('trampoline.login'))
         if session.get('error'):
-            return redirect(url_for('trampoline.sign_up'))
+            return redirect(url_for('trampoline.login'))
         # Create the user and go to login page
 
         hashed_password = sha256_crypt.encrypt(password)
@@ -432,7 +432,7 @@ def sign_up():
         athlete.save()
         session["previous_page"] = "trampoline.trampoline_log"
         return redirect(url_for('trampoline.login'))
-    return render_template("trampoline/sign_up.html", error_text=session.get('error'), user="")
+    return render_template("trampoline/login.html", error_text=session.get('error'), user="")
 
 @tramp_bp.route("/login", methods=["GET", "POST"])
 def login():
