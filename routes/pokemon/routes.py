@@ -191,6 +191,20 @@ def run():
     for team in list(team_maker.pokemon_teams.items())[:30]:
         for pokemon in team[0].split('-'):
             teams_pokemon.add(pokemon)
+
+    pokemon_moves = get_move_counts(team_maker.game_master, chosen_pokemon=list(teams_pokemon))
+    print(pokemon_moves)
+    team_counts = []
+    for team, win_rate in team_maker.pokemon_teams.items():
+        counts = {}
+        for pokemon in team.split('-'):
+            if "_shadow" in pokemon:
+                pokemon = pokemon[:-7]
+            count = pokemon_moves.get(pokemon)
+            if count:
+                counts[pokemon] = count
+        team_counts.append([team, win_rate, counts])
+
     return render_template(
         "pokemon/index.html",
         body="".join(html).replace(" table-responsive-lg", ""),
@@ -211,7 +225,8 @@ def run():
         back_move_count_string=','.join(pokemon[0] for pokemon in team_maker.result_data['meta_backs']),
         teams_move_count_string=','.join(teams_pokemon),
         poke_win_rates=team_maker.pokemon_win_rates,
-        team_win_rates=list(team_maker.pokemon_teams.items()),
+        #team_win_rates=list(team_maker.pokemon_teams.items()),
+        team_win_rates=team_counts,
         n_teams=sum([p[1] for p in team_maker.result_data['meta_leads']]),
         user=session.get("name", ""),
         ratings=sorted(team_maker.all_ratings),
@@ -219,7 +234,8 @@ def run():
         last_refreshed=team_maker.last_fetched.get(f"all_pokemon_{chosen_league}", ""),
         admin_user=user.is_admin if user else False,
         subscribed_user=user.subscribed if user else False,
-        min_percentage=min_percentage
+        min_percentage=min_percentage,
+        pokemon_move_counts=pokemon_moves
     )
 
 @poke_bp.route("/pokemon/login", methods=["GET", "POST"])

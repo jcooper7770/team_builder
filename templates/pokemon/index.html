@@ -467,7 +467,25 @@ function toggleAdvOptions(e) {
         {% for team in team_win_rates %}
         {% if "/1 ||" not in team[1] %}
         <div>
-          <div id="team">{{ team[0] }}</div>
+          <div id="team">
+            <!--<button class="btn btn-outline-primary btn-sm" id="caret-team-moves"><i id="caret-team-moves" class="fa fa-caret-down"></i></button>-->
+            <button class="fa fa-caret-down" id="caret-team-moves"></button>
+            {{ team[0] }}
+            <span style="display: none; opacity: 0; transition: all 1s ease">
+              {% for pokemon in team[2] %}
+              <table border="1" class="mx-auto">
+                <tr><th colspan="2" class="text-center">{{ pokemon }}</th></tr>
+                {% for move in team[2][pokemon] %}
+                <tr>
+                  <td>{{ move }}</td>
+                  <td>{{ team[2][pokemon][move] }}</td>
+                </tr>
+                {% endfor %}
+              </table>
+              <br>
+              {% endfor %}
+            </span>
+          </div>
           <div id="wr">{{ team[1] }}</div>
         </div>
         {% endif %}
@@ -654,5 +672,18 @@ searchButton.addEventListener("click", function(e){
   });
 });
 
+$("[id^=caret-team-moves]").click(function(e) {
+  e.preventDefault();
+  var hiddenElement = e.target.parentElement.children[1];
+  if (hiddenElement.style.display == "none") {
+    hiddenElement.style.display = "";
+    hiddenElement.style.opacity = "1";
+    e.target.className = "fa fa-caret-up";
+  } else {
+    hiddenElement.style.display = "none";
+    hiddenElement.style.opacity = "0";
+    e.target.className = "fa fa-caret-down";
+  }
+});
 </script>
 {% endblock %}

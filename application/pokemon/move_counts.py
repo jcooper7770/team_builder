@@ -100,8 +100,14 @@ def get_move_counts(game_master, chosen_pokemon=None, n_moves=5):
     moves = get_moves(game_master)
     for pokemon in game_master.get("pokemon", []):
         species_id = pokemon.get('speciesId')
-        if chosen_pokemon and chosen_pokemon not in species_id:
-            continue
+        if chosen_pokemon:
+            if isinstance(chosen_pokemon, list):
+                if species_id not in chosen_pokemon:
+                    continue
+            elif chosen_pokemon not in species_id:
+                continue
+        #if chosen_pokemon and chosen_pokemon not in species_id:
+        #    continue
         give_return = 'shadoweligible' in pokemon.get('tags', [])
         # Skip shadow pokemon
         if "_shadow" in species_id or "_mega" in species_id:
