@@ -467,9 +467,7 @@ function toggleAdvOptions(e) {
         {% for team in team_win_rates %}
         {% if "/1 ||" not in team[1] %}
         <div>
-          <div id="team">
-            <!--<button class="btn btn-outline-primary btn-sm" id="caret-team-moves"><i id="caret-team-moves" class="fa fa-caret-down"></i></button>-->
-            <button class="fa fa-caret-down" id="caret-team-moves"></button>
+          <div id="team-col" class="fa fa-caret-down">
             {{ team[0] }}
             <span style="display: none; opacity: 0; transition: all 1s ease">
               {% for pokemon in team[2] %}
@@ -672,17 +670,26 @@ searchButton.addEventListener("click", function(e){
   });
 });
 
-$("[id^=caret-team-moves]").click(function(e) {
+// Clicking on team column opens up move counts
+$("[id^=team-col]").click(function(e) {
+  // Find the team-col div from whatever was clicked on
+  var target = e.target;
+  var hiddenElement = e.target.children[0]
+  if (e.target.tagName != "DIV") {
+    target = e.target.closest("div");
+    hiddenElement = target.children[0];
+  }
   e.preventDefault();
-  var hiddenElement = e.target.parentElement.children[1];
+
+  // Toggle hiding/showing the move counts
   if (hiddenElement.style.display == "none") {
     hiddenElement.style.display = "";
     hiddenElement.style.opacity = "1";
-    e.target.className = "fa fa-caret-up";
+    target.className = "fa fa-caret-up";
   } else {
     hiddenElement.style.display = "none";
     hiddenElement.style.opacity = "0";
-    e.target.className = "fa fa-caret-down";
+    target.className = "fa fa-caret-down";
   }
 });
 </script>
