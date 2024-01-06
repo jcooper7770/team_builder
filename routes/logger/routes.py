@@ -22,6 +22,13 @@ def _save_trampoline_data(request):
     """
     # Convert form data to trampoline skills
     form_data = request.form.get('log', '')
+    logger.info(f"Form data: {form_data}")
+    form_data_list = []
+    for key in request.form.keys():
+        if key.startswith("log-"):
+            form_data_list.append(request.form.get(key))
+    form_data = "\n".join(form_data_list)
+    logger.info(f"Form data: {form_data}")
     #username = request.form.get('name', None) or current_user()
     username = request.form.get('name', None) or session.get('name')
     event = request.form.get('event', None) or current_event()

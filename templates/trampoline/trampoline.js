@@ -201,24 +201,40 @@ $("[id^=skill]").click(function (e) {
     e.preventDefault();
     var skill = event.target.id.slice(5).replace('t', 'o').replace('p', '<').replace('s', '/');
     console.log("adding " + skill);
-    var routineText = document.getElementById('log').value;
+    // type into last log
+    const logElements = document.querySelectorAll("#log");
+    const logElement = logElements[logElements.length-2];
+    //var routineText = document.getElementById('log').value;
+    var routineText = logElement.value;
     if (routineText != "") {
-        $('#log').val(routineText + ' ' + skill);
+        //$('#log').val(routineText + ' ' + skill);
+        logElement.value = routineText + ' ' + skill;
     } else {
-        $('#log').val(skill);
+        //$('#log').val(skill);
+        logElement.value = skill;
     }
     addRecSkill();
 });
 
 $("#col-skill").on('click', 'a', function (e) {
     e.preventDefault();
+    if (event.target.parentNode.className.startsWith("remove-log") || event.target.parentNode.id.startsWith("new-turn-button")) {
+        return;
+    }
     var skill = event.target.id.slice(5).replace('t', 'o').replace('p', '<').replace('s', '/');
     console.log("adding " + skill);
-    var routineText = document.getElementById('log').value;
+    // type into last log
+    const logElements = document.querySelectorAll("#log");
+    const logElement = logElements[logElements.length-2];
+
+    //var routineText = document.getElementById('log').value;
+    var routineText = logElement.value;
     if (routineText != "") {
-        $('#log').val(routineText + ' ' + skill);
+        logElement.value = routineText + ' ' + skill;
+        //$('#log').val(routineText + ' ' + skill);
     } else {
-        $('#log').val(skill);
+        logElement.value = skill;
+        //$('#log').val(skill);
     }
     addRecSkill();
 });
@@ -227,8 +243,18 @@ function updateNumSkills() {
     let num_skills = skills.length;
     document.getElementById('num_skills').textContent = "Number of skills: " + num_skills;
 }
+function clearRecs() {
+    var recc = document.getElementsByClassName("recc-skill");
+    while(recc.length > 0) {
+        recc[0].parentNode.removeChild(recc[0]);
+    }
+}
 function addRecSkill() {
-    var skill_text = $("#log").val();
+    //var skill_text = $("#log").val();
+    const logElements = document.querySelectorAll("#log");
+    const logElement = logElements[logElements.length-2];
+    console.log(logElement.value);
+    var skill_text = logElement.value;
     // ignore if last skill was a space
     if (skill_text[skill_text.length - 1] == " ") {
         return
@@ -237,11 +263,14 @@ function addRecSkill() {
     var last_skill = skills[skills.length - 1];
     var next_skill = recommendSkill(last_skill);
     if (next_skill != undefined && next_skill != "") {
-        // clear out all recommended 
+        // clear out all recommended
+        clearRecs() 
+        /*
         var recc = document.getElementsByClassName("recc-skill");
         while(recc.length > 0) {
             recc[0].parentNode.removeChild(recc[0]);
         }
+        */
 
         var bottom = document.getElementById("logger-bottom")
         // add new recommended
@@ -311,7 +340,8 @@ function recommendSkill(current_skill) {
 
 };
 
-$("#log").on('input', function (e) {
+//$("#log").on('input', function (e) {
+$("#new-turns").on('input', '#log', function (e) {
     //updateNumSkills();
     addRecSkill();
 });
@@ -370,7 +400,9 @@ $('[id^=copy-text]').click(function(e){
             }
         }
     }
-    var skills = document.getElementById('log').value;
+    const logElements = document.querySelectorAll("#log");
+    const logElement = logElements[logElements.length-2];
+    var skills = logElement.value;
     var newText = "";
     if (skills != ""){
         newText = skills + '\n' + routine;
@@ -380,11 +412,14 @@ $('[id^=copy-text]').click(function(e){
     
     // Remove extra spaces
     newText = newText.trim().replace('\n ', '\n');
-    $('#log').val(newText);
+    //$('#log').val(newText);
+    logElement.value = newText;
 });
 $('#repeat-skills').click(function (e) {
     //var skills = $('log').val();
-    var skills = document.getElementById('log').value;
+    const logElements = document.querySelectorAll("#log");
+    const logElement = logElements[logElements.length-2];
+    var skills = logElement.value;
     if (skills != "") {
         if (skills.endsWith('\n')) {
             var newText = skills + skills;
@@ -392,9 +427,11 @@ $('#repeat-skills').click(function (e) {
             var newText = skills + ' ' + skills;
         }
         nextText = newText.trim().replace('\n ', '\n');
-        $('#log').val(newText);
+        //$('#log').val(newText);
+        logElement.value = newText;
     }
-    $('#log').focus();
+    //$('#log').focus();
+    logElement.focus();
 });
 $('#next-line').click(function(e) {
     var skills = document.getElementById('log').value;
@@ -543,6 +580,55 @@ $("[id^=search-rating]").click(function(e) {
 
 });
 
+//$("[class^=remove-log]").click(function(e){
+$("#new-turns").on('click', '.remove-log', function(e){
+    e.preventDefault();
+    var parentDiv = e.target.parentNode;  
+    if (e.target.tagName == "I") {
+        parentDiv = e.target.parentNode.parentNode;
+    }
+    console.log(parentDiv);
+    const allTurnsDiv = document.getElementById("new-turns");
+    allTurnsDiv.removeChild(parentDiv);
+    const skillsDiv = document.getElementById("col-skill");
+    skillsDiv.style.height = `${skillsDiv.offsetHeight - 30}px`;
+    addRecSkill();
+});
+
+$("[id^=new-turn-button]").click(function(e) {
+    const logTurnDivs = document.querySelectorAll("[id^=log-turn]")
+    const allTurnsDiv = document.getElementById("new-turns");
+    const skillsDiv = document.getElementById("col-skill");
+
+    var newDiv = document.createElement("div");
+    newDiv.id = `log-turn-${logTurnDivs.length-1}`;
+
+    var removeButton = document.createElement("a");
+    removeButton.classList = "remove-log color-changing";
+    removeButton.href = "#";
+    removeButton.innerHTML = '<i class="fa fa-minus-square" aria-hidden="true"></i>';
+    newDiv.appendChild(removeButton);
+
+    var inputDiv = e.target.parentNode;
+    if (e.target.tagName == "I") {
+        inputDiv = e.target.parentNode.parentNode;
+    }
+    const newInput = document.createElement("textarea");
+    newInput.style.border = '0';
+    newInput.id = "log";
+    newInput.style.width = "100%";
+    newInput.style.height = "30px";
+    newInput.classList = "color-changing";
+    newInput.placeholder = "Input your turn here...";
+    newInput.name = `log-${logTurnDivs.length-1}`;
+    newDiv.appendChild(newInput);
+
+    allTurnsDiv.insertBefore(newDiv, inputDiv);
+
+
+    skillsDiv.style.height = `${skillsDiv.offsetHeight + 30}px`;
+    clearRecs();
+});
 
 $("[id^=search-tag]").click(function(e) {
     document.querySelectorAll("[id^=search-tag]").forEach(x => {

@@ -177,6 +177,7 @@
     border: 1px solid #ccc;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     padding: 20px;
+    min-height: 150px;
 }
 
 #log {
@@ -209,6 +210,11 @@
 
 #log.full-screen {
     height: calc(100vh - 70px);
+}
+
+.remove-log ,.add-log {
+  position: absolute;
+  left: 0px;
 }
 
 #fullScreenBtn {

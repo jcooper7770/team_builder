@@ -175,10 +175,11 @@
   const background = document.getElementsByClassName("area")[0];
   const darkElements = document.getElementsByClassName("bg-dark");
   const colorChangingElements = document.getElementsByClassName("color-changing");
+  //const primaryButtons = document.getElementsByClassName("btn btn-primary");
   function setDarkMode(elements, bgElement) {
     const darkHeaderColor = "#2D3250"
     for (e of elements) {
-      console.log(`element: ${e}. ${e.id} - ${e.tagName}`);
+      //console.log(`element: ${e}. ${e.id} - ${e.tagName}`);
       e.style.background = darkHeaderColor;
       if (e.tagName == "NAV") {
         e.classList.remove("bg-dark");
@@ -202,6 +203,14 @@
       if (e.tagName == "UL") {
         e.style.background = darkHeaderColor;
         e.classList.remove("bg-dark")
+      }
+      if (e.tagName == "BUTTON") {
+        e.style.background = "#F6B17A";
+        e.classList.remove("btn-primary");
+      }
+      if (e.tagName == "A") {
+        e.style.color = "#F6B17A";
+        e.style.background = "";
       }
     }
     bgElement.style.background = "#424769";
@@ -232,7 +241,14 @@
       }
       if (e.tagName == "UL") {
         e.style.background = "";
-        e.classList.add("bg-dark")
+        e.classList.add("bg-dark");
+      }
+      if (e.tagName == "BUTTON") {
+        e.style.background = "";
+        e.classList.add("btn-primary");
+      }
+      if (e.tagName == "A") {
+        e.style.color = "";
       }
 
     }
