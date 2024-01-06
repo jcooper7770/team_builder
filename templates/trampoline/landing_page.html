@@ -89,34 +89,45 @@
     <div class="card-header text-center">
       <h2>Leaderboards</h2>
     </div>
-    {% for board_type, board in leaderboard.items() %}
-    <div class="row card-body">
-      <div class="col">
-        <h3 class="text-center">{{board_type}}</h3>
-      </div>
-    </div>
-    <div class="row card-body">
-      {% for event, event_board in board.items() %}
-      <div class="col-sm">
-        <h5 class="card-title">{{event}}</h5>
-        <table border="1" class="table table-striped">
-          <thead class="thead-dark">
-            <th>User</th>
-            <th>{{board_type}}</th>
-          </thead>
-          <tbody>
-            {% for user, score in event_board.items() %}
-            <tr>
-              <td>{{user}}</td>
-              <td>{{score}}</td>
-            </tr>
+    <div>
+      <ul class="nav nav-tabs">
+        {% for board_type, board in leaderboard.items() %}
+        <li class="nav-item">
+          <a class="nav-link{% if loop.index == 1 %} active{% endif %}" data-toggle="tab" href='#{{board_type | replace(" ", "") | lower}}'>{{board_type}}</a>
+        </li>
+        {% endfor %}
+      </ul>
+      <div class="tab-content">
+        {% for board_type, board in leaderboard.items() %}
+        <div id='{{board_type | replace(" ", "") | lower}}' class="tab-pane fade{% if loop.index == 1 %} show active{% endif %}">
+          <div class="col">
+            <h3 class="text-center">{{board_type}}</h3>
+          </div>
+          <div class="row">
+            {% for event, event_board in board.items() %}
+            <div class="col-sm">
+              <h5 class="card-title">{{event}}</h5>
+              <table border="1" class="table table-striped">
+                <thead class="thead-dark">
+                  <th>User</th>
+                  <th>{{board_type}}</th>
+                </thead>
+                <tbody>
+                  {% for user, score in event_board.items() %}
+                  <tr>
+                    <td>{{user}}</td>
+                    <td>{{score}}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
             {% endfor %}
-          </tbody>
-        </table>
+          </div>
+        </div>
+        {% endfor %}
       </div>
-      {% endfor %}
     </div>
-    {% endfor %}
   </div>
 </div>
 
