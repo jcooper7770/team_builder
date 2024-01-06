@@ -187,6 +187,10 @@
       if (e.id == "col-skill") {
         e.style.backgroundColor = "#7077A1";
       }
+      if (e.tagName == "UL") {
+        e.style.background = darkHeaderColor;
+        e.classList.remove("bg-dark")
+      }
     }
     bgElement.style.background = "#424769";
   }
@@ -213,6 +217,10 @@
       }
       if (e.id == "col-skill") {
         e.style.backgroundColor = "";
+      }
+      if (e.tagName == "UL") {
+        e.style.background = "";
+        e.classList.add("bg-dark")
       }
 
     }

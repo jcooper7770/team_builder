@@ -3,360 +3,358 @@
 <br>
 {% block logging %}
 
-<div class="container mt-5" style="background: rgba(255,255,255,0.4); border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
-  <div class="card-body form-group">
-   <table align="center" width="100%">
-    <tr>
-      <td>
-        <form action="{{ url_for('trampoline.trampoline_log') }}" method="post" id="logger" name="logger" style="text-align:left;">
+<!-- Tabs at bottom-->
+<div class="bottom-tabs">
+  <ul class="nav nav-tabs fixed-bottom bg-dark color-changing">
+    <li class="nav-item">
+      <a class="nav-link active" data-toggle="tab" href="#log-tab">Logger</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" data-toggle="tab" href="#practice-tab">Practices</a>
+    </li>
+  </ul>
+</div>
 
-          <!-- Username -->
-          <div class="form-row">
-            <div class="col-sm-3"><label for="name">Username:</label></div>
-            <div class="col">
-              {% if user == "" %}
-              <input type="text" id="name" name="name" placeholder="new username" value="{{username}}"
-                class="form-control" style="width:90%"><br>
-              {% else %}
-              <input type="text" id="name" name="name" placeholder="new username" value="{{user}}" class="form-control" style="width:90%"
-                disabled>
-              {% endif %}
-            </div>
-          </div>
+<div class="tab-content">
+  <!-- Log section -->
+  <div id="log-tab" class="tab-pane fade show active">
+    <div class="container mt-5" style="background: rgba(255,255,255,0.4); border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
+      <div class="card-body form-group">
+      <table align="center" width="100%">
+        <tr>
+          <td>
+            <form action="{{ url_for('trampoline.trampoline_log') }}" method="post" id="logger" name="logger" style="text-align:left;">
 
-          <!-- Date of practice being logged -->
-          <div class="form-row">
-            <div class="col-sm-3">
-              Date:
-            </div>
-            <div class="col-sm">
-              <input type="date" name="date" class="form-control" id="logger-date" style="width:90%" \>
-            </div>
-          </div>
-
-          <!-- Event to be logged -->
-          <div class="form-row">
-            <div class="col-sm-3">
-              Event:
-            </div>
-            <div class="col">
-              <select name="event" id="event">
-                <option value="trampoline" {% if event=="trampoline" %} selected{% endif %}>Trampoline</option>
-                <option value="dmt" {% if event=="dmt" %} selected{% endif %}>Double Mini</option>
-                <option value="tumbling" {% if event=="tumbling" %} selected{% endif %}>Tumbling</option>
-              </select><br>
-            </div>
-          </div>
-
-          <!-- Notes -->
-          <div class="form-row">
-            <div class="col-sm-3"><label for="notes">Notes:</label></div>
-            <div class="col"><input type="text" id="notes" name="notes" placeholder="Enter notes" value="" style="width:90%"
-                class="form-control"></div>
-          </div>
-
-          <!-- Tags -->
-          <div class="form-row">
-            <div class="col-sm-3"><label for="notes">Tags:</label></div>
-            <div class="col tags-section">
-              {% for tag in tags %}
-              <div class="tag-box" onclick="this.classList.toggle('selected')">{{tag}}</div>
-              {% endfor %}
-              <input placeholder="custom,tags" type="text" name="custom_tags">
-            </div>
-            <input type="hidden" id="selected-tags" name="selected_tags" value="">
-          </div>
-
-
-          <!-- Skills to be logged -->
-          <div class="form-row" id="row-skill">
-            <div class="col-sm-3">Skills:<br><a href="/logger/about" class="btn btn-light" style="border: 1px solid; border-radius: 10px;">Click here for help</a></div>
-            <div class="col color-changing" id="col-skill">
-              <!-- Full Screen Button -->
-              <button type="button" id="fullScreenBtn" class="btn btn-light">Toggle Full Screen</button>
-              <!-- Log textarea -->
-              <textarea id="log" name="log" rows="5" form="logger"
-                placeholder="Input your routines here" class="color-changing">{{routine_text|safe}}</textarea>
-
-              <div id="logger-bottom" >
-                <!-- button skills -->
-                {% for flips, skills in all_skills.items() %}
-                <div class="dropdown" style="display:inline-block">
-                  <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton"
-                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    {{flips}}
-                  </button>
-                  <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton" style="overflow-y: auto; max-height:200px; min-width: 90vw;">
-                    {% for skill in skills %}
-                    {% for pos in ['t', 'p', 's'] %}
-                    <a class="dropdown-item" href="#" id="skill{{skill}}{{pos}}"
-                      value="skill{{skill}}{{pos}}" style="display: inline-block; width: auto; border: 1px solid;" data-keepopenonclick>{{skill}}{{pos
-                      | replace("t", "o") | replace("p", "<") | replace("s", "/" )}}</a>
-                    {% endfor %}
-                    {% endfor %}
-                  </div>
+              <!-- Username -->
+              <div class="form-row">
+                <div class="col-sm-3"><label for="name">Username:</label></div>
+                <div class="col">
+                  {% if user == "" %}
+                  <input type="text" id="name" name="name" placeholder="new username" value="{{username}}"
+                    class="form-control" style="width:90%"><br>
+                  {% else %}
+                  <input type="text" id="name" name="name" placeholder="new username" value="{{user}}" class="form-control" style="width:90%"
+                    disabled>
+                  {% endif %}
                 </div>
-                {% endfor %}
-                <!--<span id="num_skills">Number of skills: 0</span>-->
-                <div id="recc-skill"></div>
+              </div>
+
+              <!-- Date of practice being logged -->
+              <div class="form-row">
+                <div class="col-sm-3">
+                  Date:
+                </div>
+                <div class="col-sm">
+                  <input type="date" name="date" class="form-control" id="logger-date" style="width:90%" \>
+                </div>
+              </div>
+
+              <!-- Event to be logged -->
+              <div class="form-row">
+                <div class="col-sm-3">
+                  Event:
+                </div>
+                <div class="col">
+                  <select name="event" id="event">
+                    <option value="trampoline" {% if event=="trampoline" %} selected{% endif %}>Trampoline</option>
+                    <option value="dmt" {% if event=="dmt" %} selected{% endif %}>Double Mini</option>
+                    <option value="tumbling" {% if event=="tumbling" %} selected{% endif %}>Tumbling</option>
+                  </select><br>
+                </div>
+              </div>
+
+              <!-- Notes -->
+              <div class="form-row">
+                <div class="col-sm-3"><label for="notes">Notes:</label></div>
+                <div class="col"><input type="text" id="notes" name="notes" placeholder="Enter notes" value="" style="width:90%"
+                    class="form-control"></div>
+              </div>
+
+              <!-- Tags -->
+              <div class="form-row">
+                <div class="col-sm-3"><label for="notes">Tags:</label></div>
+                <div class="col tags-section">
+                  {% for tag in tags %}
+                  <div class="tag-box" onclick="this.classList.toggle('selected')">{{tag}}</div>
+                  {% endfor %}
+                  <input placeholder="custom,tags" type="text" name="custom_tags">
+                </div>
+                <input type="hidden" id="selected-tags" name="selected_tags" value="">
               </div>
 
 
-            </div>
-          </div>
+              <!-- Skills to be logged -->
+              <div class="form-row" id="row-skill">
+                <div class="col-sm-3">Skills:<br><a href="/logger/about" class="btn btn-light" style="border: 1px solid; border-radius: 10px;">Click here for help</a></div>
+                <div class="col color-changing" id="col-skill">
+                  <!-- Full Screen Button -->
+                  <button type="button" id="fullScreenBtn" class="btn btn-light">Toggle Full Screen</button>
+                  <!-- Log textarea -->
+                  <textarea id="log" name="log" rows="5" form="logger"
+                    placeholder="Input your routines here" class="color-changing">{{routine_text|safe}}</textarea>
+
+                  <div id="logger-bottom" >
+                    <!-- button skills -->
+                    {% for flips, skills in all_skills.items() %}
+                    <div class="dropdown" style="display:inline-block">
+                      <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton"
+                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        {{flips}}
+                      </button>
+                      <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton" style="overflow-y: auto; max-height:200px; min-width: 90vw;">
+                        {% for skill in skills %}
+                        {% for pos in ['t', 'p', 's'] %}
+                        <a class="dropdown-item" href="#" id="skill{{skill}}{{pos}}"
+                          value="skill{{skill}}{{pos}}" style="display: inline-block; width: auto; border: 1px solid;" data-keepopenonclick>{{skill}}{{pos
+                          | replace("t", "o") | replace("p", "<") | replace("s", "/" )}}</a>
+                        {% endfor %}
+                        {% endfor %}
+                      </div>
+                    </div>
+                    {% endfor %}
+                    <!--<span id="num_skills">Number of skills: 0</span>-->
+                    <div id="recc-skill"></div>
+                  </div>
 
 
-          <!-- Submit -->
-          <button id="submit-button" type="submit" class="btn btn-primary">Submit</button>
-          <div class="spinner-container">
-            <div class="spinner"></div>
-            <div class="spinner-text">Submitting data...</div>
-            <button id="spinner-close" class="spinner-close" aria-label="Close">
-              <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
-                <path d="M10.894 9l6.553-6.553a1 1 0 1 0-1.414-1.414L9.48 7.586 2.928 1.034a1 1 0 0 0-1.414 1.414L7.066 9 .514 15.553a1 1 0 0 0 1.414 1.414L9 10.414l6.553 6.553a1 1 0 0 0 1.414-1.414L10.894 9z" fill-rule="evenodd"></path>
-              </svg>
-            </button>
-          </div>
-        </form>
+                </div>
+              </div>
 
-      </td>
-    </tr>
-  </table>
 
-  </div>
-</div>
-
-<!-- Goals -->
-<br><br>
-<div class="container">
-  <form action="{{ url_for('trampoline.trampoline_log') }}" method="post" id="goals" style="text-align:left;">
-    <input type="hidden" name="goals_form" id="goals_form" value="goals_form" \>
-    <table align="center" width="30%" border=1 class="table table-striped color-changing">
-      <thead class="thead-dark">
-        <th colspan=3>
-          Goals
-          <button type="button" class="btn float-right">
-            <span class="fa fa-window-minimize" id="minimize_goals" style="color: white;"></span>
-          </button>
-        </th>
-      </thead>
-      <tbody id="goals_body">
-        <tr>
-          <td colspan=3>
-
-            <div class="form-inline">
-              <input type="text" name="goal_string" id="goal_string" placeholder="Write goal here" style="width:70%;"
-                class="form-control mr-1" \>
-              <button id="submit-goals" type="submit" class="btn btn-primary" style="display:inline-block">Submit Goal</button>
-            </div>
+              <!-- Submit -->
+              <button id="submit-button" type="submit" class="btn btn-primary">Submit</button>
+              <div class="spinner-container">
+                <div class="spinner"></div>
+                <div class="spinner-text">Submitting data...</div>
+                <button id="spinner-close" class="spinner-close" aria-label="Close">
+                  <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M10.894 9l6.553-6.553a1 1 0 1 0-1.414-1.414L9.48 7.586 2.928 1.034a1 1 0 0 0-1.414 1.414L7.066 9 .514 15.553a1 1 0 0 0 1.414 1.414L9 10.414l6.553 6.553a1 1 0 0 0 1.414-1.414L10.894 9z" fill-rule="evenodd"></path>
+                  </svg>
+                </button>
+              </div>
+            </form>
 
           </td>
         </tr>
-        <tr>
-          <td>
-            <div style="max-height: 300px; overflow-y: auto">
-              <table border="1">
-                {% for goal in goals %}
-                <tr>
-                  <td width="5%">
-                    {% if goal.done %}
-                    <input type="checkbox" id="{{ loop.index0 }}" name="{{ loop.index0 }}" checked \>
-                    {% else %}
-                    <input type="checkbox" id="{{ loop.index0 }}" name="{{ loop.index0 }}" \>
+      </table>
+
+      </div>
+    </div>
+
+    <!-- Goals -->
+    <br><br>
+    <div class="container">
+      <form action="{{ url_for('trampoline.trampoline_log') }}" method="post" id="goals" style="text-align:left;">
+        <input type="hidden" name="goals_form" id="goals_form" value="goals_form" \>
+        <table align="center" width="30%" border=1 class="table table-striped color-changing">
+          <thead class="thead-dark">
+            <th colspan=3>
+              Goals
+              <button type="button" class="btn float-right">
+                <span class="fa fa-window-minimize" id="minimize_goals" style="color: white;"></span>
+              </button>
+            </th>
+          </thead>
+          <tbody id="goals_body">
+            <tr>
+              <td colspan=3>
+
+                <div class="form-inline">
+                  <input type="text" name="goal_string" id="goal_string" placeholder="Write goal here" style="width:70%;"
+                    class="form-control mr-1" \>
+                  <button id="submit-goals" type="submit" class="btn btn-primary" style="display:inline-block">Submit Goal</button>
+                </div>
+
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div style="max-height: 300px; overflow-y: auto">
+                  <table border="1">
+                    {% for goal in goals %}
+                    <tr>
+                      <td width="5%">
+                        {% if goal.done %}
+                        <input type="checkbox" id="{{ loop.index0 }}" name="{{ loop.index0 }}" checked \>
+                        {% else %}
+                        <input type="checkbox" id="{{ loop.index0 }}" name="{{ loop.index0 }}" \>
+                        {% endif %}
+                      </td>
+                      <td>
+                        {% if goal.done %}
+                        <!--<strike>{{ goal.goal }}</strike>-->
+                        <span style="color:red">[DONE]</span> {{ goal.goal }}
+                        {% else %}
+                        {{ goal.goal }}
+                        {% endif %}
+                      </td>
+                      <td width="5%">
+                        <button type="submit" id="delete{{ loop.index0 }}" name="delete{{ loop.index0 }}" class="btn">
+                          <span class="fa fa-remove" aria-hidden='true'></span>
+                        </button>
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </table>
+                </div>
+              </td>
+            </tr>
+
+          </tbody>
+        </table>
+      </form>
+    </div>
+
+    <br><br>
+    <!-- Airtimes -->
+    <div class="container">
+      <form action="{{ url_for('trampoline.trampoline_log') }}" method="post" id="airtime" style="text-align:left;">
+        <input type="hidden" name="airtime_form" id="airtime_form" value="airtime_form" \>
+        <table align="center" width="30%" border=1 class="table table-striped color-changing">
+          <thead class="thead-dark">
+            <th colspan=3>
+              Airtimes
+              <button type="button" class="btn float-right">
+                <span class="fa fa-window-minimize" id="minimize_airtimes" style="color: white;"></span>
+              </button>
+            </th>
+          </thead>
+          <tbody style="height:100px; overflow-y:auto;" id="airtimes_body">
+            <tr>
+              <td colspan=3>
+
+                <div class="form-inline">
+                  <input type="text" name="airtime_string" id="airtime_string" placeholder="Write airtime here" style="width:70%;"
+                    class="form-control mr-1" \>
+                    <!-- add date picker field -->
+                  <input type="date" name="airtime-date" class="form-control" id="airtime-date" \>
+                  <button id="submit-airtime" type="submit" class="btn btn-primary" style="display:inline-block">Submit Airtime</button>
+                </div>
+
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <div style="max-height: 300px; overflow-y: auto">
+                  <table border="1">
+                    {% for airtime in airtimes %}
+                    {% if airtime.airtime %}
+                    <tr>
+                      <td width="20%">{{ airtime.date}}</td>
+                      <td>{{ airtime.airtime }}</td>
+                      <td width="5%">
+                        <button type="submit" id="delete{{ loop.index0 }}" name="delete{{ loop.index0 }}" class="btn">
+                          <span class="fa fa-remove" aria-hidden='true'></span>
+                        </button>
+                      </td>
+                    </tr>
                     {% endif %}
-                  </td>
-                  <td>
-                    {% if goal.done %}
-                    <!--<strike>{{ goal.goal }}</strike>-->
-                    <span style="color:red">[DONE]</span> {{ goal.goal }}
-                    {% else %}
-                    {{ goal.goal }}
-                    {% endif %}
-                  </td>
-                  <td width="5%">
-                    <button type="submit" id="delete{{ loop.index0 }}" name="delete{{ loop.index0 }}" class="btn">
-                      <span class="fa fa-remove" aria-hidden='true'></span>
-                    </button>
-                  </td>
-                </tr>
-                {% endfor %}
-              </table>
-            </div>
-          </td>
-        </tr>
-
-      </tbody>
-    </table>
-  </form>
-</div>
-
-<br><br>
-<!-- Airtimes -->
-<div class="container">
-  <form action="{{ url_for('trampoline.trampoline_log') }}" method="post" id="airtime" style="text-align:left;">
-    <input type="hidden" name="airtime_form" id="airtime_form" value="airtime_form" \>
-    <table align="center" width="30%" border=1 class="table table-striped color-changing">
-      <thead class="thead-dark">
-        <th colspan=3>
-          Airtimes
-          <button type="button" class="btn float-right">
-            <span class="fa fa-window-minimize" id="minimize_airtimes" style="color: white;"></span>
-          </button>
-        </th>
-      </thead>
-      <tbody style="height:100px; overflow-y:auto;" id="airtimes_body">
-        <tr>
-          <td colspan=3>
-
-            <div class="form-inline">
-              <input type="text" name="airtime_string" id="airtime_string" placeholder="Write airtime here" style="width:70%;"
-                class="form-control mr-1" \>
-                <!-- add date picker field -->
-              <input type="date" name="airtime-date" class="form-control" id="airtime-date" \>
-              <button id="submit-airtime" type="submit" class="btn btn-primary" style="display:inline-block">Submit Airtime</button>
-            </div>
-
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <div style="max-height: 300px; overflow-y: auto">
-              <table border="1">
-                {% for airtime in airtimes %}
-                {% if airtime.airtime %}
-                <tr>
-                  <td width="20%">{{ airtime.date}}</td>
-                  <td>{{ airtime.airtime }}</td>
-                  <td width="5%">
-                    <button type="submit" id="delete{{ loop.index0 }}" name="delete{{ loop.index0 }}" class="btn">
-                      <span class="fa fa-remove" aria-hidden='true'></span>
-                    </button>
-                  </td>
-                </tr>
-                {% endif %}
-                {% endfor %}
-              </table>
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </form>
-</div>
-
-{% endblock %}
-
-<!-- Rating drop down template-->
-<template id="dropdown-template">
-  <div class="dropdown float-right">
-    <a class="btn-rate dropdown-btn">Rate Practice</a>
-    <div class="dropdown-content">
-      <button class="rating-option" name="3">😊</button>
-      <button class="rating-option" name="2">😐</button>
-      <button class="rating-option" name="1">😞</button>
+                    {% endfor %}
+                  </table>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </form>
     </div>
   </div>
-</template>
+  {% endblock %}
 
-<br><br>
-<!--Navbar-->
-<!-- https://mdbootstrap.com/docs/b4/jquery/navigation/hamburger-menu/ -->
-<nav class="navbar navbar-dark bg-dark navbar-1 white color-changing">
+  <!-- Rating drop down template-->
+  <template id="dropdown-template">
+    <div class="dropdown float-right">
+      <a class="btn-rate dropdown-btn">Rate Practice</a>
+      <div class="dropdown-content">
+        <button class="rating-option" name="3">😊</button>
+        <button class="rating-option" name="2">😐</button>
+        <button class="rating-option" name="1">😞</button>
+      </div>
+    </div>
+  </template>
 
-  <!-- Navbar brand -->
-  <a class="navbar-brand">Filter</a>
+  <br><br>
 
-  <!-- Collapse button -->
-  <button class="navbar-toggler mr-auto" type="button" data-toggle="collapse" data-target="#navbarSupportedContent15"
-    aria-controls="navbarSupportedContent15" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+  <div id="practice-tab" class="tab-pane fade">
+    <!--Navbar-->
+    <!-- https://mdbootstrap.com/docs/b4/jquery/navigation/hamburger-menu/ -->
+    <nav class="navbar navbar-dark bg-dark navbar-1 white color-changing">
 
-  <ul class="nav navbar-nav mx-auto abs-center-x">
-    <li class="nav-item"><a class="navbar-brand">Athlete Practices</a></li>
-  </ul>
-  <ul class="nav navbar-nav ml-auto">
-    <li class="nav-item">
-      <button type="button" class="btn float-right">
+      <!-- Navbar brand -->
+      <a class="navbar-brand">Filter</a>
 
-        {% if url_for(request.endpoint) == "/logger" %}
-        <!--<span class="fa fa-window-maximize" id="minimize_practices" style="color: white;"></span>-->
-        <span class="fa fa-window-minimize" id="minimize_practices" style="color: white;"></span>
-        {% else %}
-        <span class="fa fa-window-minimize" id="minimize_practices" style="color: white;"></span>
-        {% endif %}
-      </button>
-    </li>
-  </ul>
+      <!-- Collapse button -->
+      <button class="navbar-toggler mr-auto" type="button" data-toggle="collapse" data-target="#navbarSupportedContent15"
+        aria-controls="navbarSupportedContent15" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
 
-    <!-- Collapsible content -->
-    <div class="collapse navbar-collapse" id="navbarSupportedContent15">
-
-      <!-- Links -->
-      <ul class="navbar-nav mr-auto">
+      <ul class="nav navbar-nav mx-auto abs-center-x">
+        <li class="nav-item"><a class="navbar-brand">Athlete Practices</a></li>
+      </ul>
+      <ul class="nav navbar-nav ml-auto">
         <li class="nav-item">
-          <form class="form-inline my-2" action="{{url_for('trampoline.search_skills')}}" method="POST">
-            <input class="form-control mr-sm-2 mr-auto" type="text" name="practice_skills" id="practice_skills" placeholder="Input skills/combos"{% if search_skills %} value="{{search_skills}}"{% endif %}>
-            <button id="submit-skills" class="btn btn-secondary" type="submit">Search for skills</button>
-          </form>
-        </li>
-        <li class="nav-item">
-          <form class="form-inline my-2" action="{{url_for('trampoline.search_date')}}" method="POST">
-            <!--from:-->
-            <input class="form-control mr-sm-2 mr-auto" type="date" name="practice_date" id="practice_date">
-            <!--
-            to: <input class="form-control mr-sm-2 mr-auto" type="date" name="practice_date2" id="practice_date2">
-            -->
-            <button class="btn btn-secondary" type="button" id="search-practice">Search Practice</button>
-          </form>
-        </li>
-        <li class="nav-item text-white">Rating:
-          <button id="search-rating-3" class="btn btn-info">😊</button>
-          <button id="search-rating-2" class="btn btn-info">😐</button>
-          <button id="search-rating-1" class="btn btn-info">😞</button>
-          <button id="search-rating-0" class="btn btn-info">Reset</button>
-        </li>
-        <li class="nav-item text-white">Tags:
-          {% for tag in tags %}
-          <button id="search-tag" class="btn btn-info">{{tag}}</button>
-          {% endfor %}
-          <button id="search-tag" class="btn btn-info">Reset</button>
+          <button type="button" class="btn float-right">
+
+            {% if url_for(request.endpoint) == "/logger" %}
+            <!--<span class="fa fa-window-maximize" id="minimize_practices" style="color: white;"></span>-->
+            <span class="fa fa-window-minimize" id="minimize_practices" style="color: white;"></span>
+            {% else %}
+            <span class="fa fa-window-minimize" id="minimize_practices" style="color: white;"></span>
+            {% endif %}
+          </button>
         </li>
       </ul>
-      <!-- Links -->
 
+        <!-- Collapsible content -->
+        <div class="collapse navbar-collapse" id="navbarSupportedContent15">
+
+          <!-- Links -->
+          <ul class="navbar-nav mr-auto">
+            <li class="nav-item">
+              <form class="form-inline my-2" action="{{url_for('trampoline.search_skills')}}" method="POST">
+                <input class="form-control mr-sm-2 mr-auto" type="text" name="practice_skills" id="practice_skills" placeholder="Input skills/combos"{% if search_skills %} value="{{search_skills}}"{% endif %}>
+                <button id="submit-skills" class="btn btn-secondary" type="submit">Search for skills</button>
+              </form>
+            </li>
+            <li class="nav-item">
+              <form class="form-inline my-2" action="{{url_for('trampoline.search_date')}}" method="POST">
+                <!--from:-->
+                <input class="form-control mr-sm-2 mr-auto" type="date" name="practice_date" id="practice_date">
+                <!--
+                to: <input class="form-control mr-sm-2 mr-auto" type="date" name="practice_date2" id="practice_date2">
+                -->
+                <button class="btn btn-secondary" type="button" id="search-practice">Search Practice</button>
+              </form>
+            </li>
+            <li class="nav-item text-white">Rating:
+              <button id="search-rating-3" class="btn btn-info">😊</button>
+              <button id="search-rating-2" class="btn btn-info">😐</button>
+              <button id="search-rating-1" class="btn btn-info">😞</button>
+              <button id="search-rating-0" class="btn btn-info">Reset</button>
+            </li>
+            <li class="nav-item text-white">Tags:
+              {% for tag in tags %}
+              <button id="search-tag" class="btn btn-info">{{tag}}</button>
+              {% endfor %}
+              <button id="search-tag" class="btn btn-info">Reset</button>
+            </li>
+          </ul>
+          <!-- Links -->
+
+        </div>
+      <!-- Collapsible content -->
+      </ul>
+
+    </nav>
+    <!--/.Navbar-->
+    <div id="practices_body" {% if url_for(request.endpoint) == "/logger" %}{% endif %}>
+    {{body|safe}}
     </div>
-  <!-- Collapsible content -->
-  </ul>
-
-</nav>
-<!--/.Navbar-->
-<div id="practices_body" {% if url_for(request.endpoint) == "/logger" %}{% endif %}>
-{{body|safe}}
+    <br>
+    <br><br><br>
+  </div>
 </div>
-<br>
-<br><br><br>
 
-<!-- Index for tables -->
-<!--
-<div class="container">
-  <table align='center' border=1 style='background-color:#FFFFFF;'>
-    <tr>
-      <th align='center' colspan=9>Index</th>
-    </tr>
-    <tr>
-      <td>Skill 1</td>
-      <td>Skill 2</td>
-      <td></td>
-      <td># skills in this turn</td>
-      <td># flips in this turn</td>
-      <td># total skills in practice</td>
-      <td># total flips in practice</td>
-      <td>DoD for turn</td>
-      <td>total DoD for practice</td>
-    </tr>
-  </table>
-</div>
-<br><br>
--->
+
 <script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
   crossorigin="anonymous"></script>
 

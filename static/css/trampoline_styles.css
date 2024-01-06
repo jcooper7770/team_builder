@@ -256,3 +256,11 @@
     border-radius: 20px;
     color: black;
 }
+
+.bottom-tabs {
+  bottom: 0;
+  position: fixed;
+  width: 100%;
+  z-index: 1030;
+  border-top: 1px solid #dee2e6;
+}
