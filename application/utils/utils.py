@@ -403,7 +403,7 @@ class TableMaker:
             f"border='{self.border}'",
             f"align='{self.align}'",
             #f"style='background-color:{self.bgcolor};'",
-            'class="table table-striped table-responsive-lg"'
+            'class="table table-striped table-responsive-lg table-light color-changing"'
         ]
         if self.width:
             options.append(f"width='{self.width}'")
@@ -412,7 +412,7 @@ class TableMaker:
         options_str = " ".join(options)
         self.table.append('<div class="container">')
         self.table.append(f"<table {options_str}>")
-        self.table.append("<thead class=\"thead-dark bg-dark text-white\">")
+        self.table.append("<thead class=\"thead-dark bg-dark text-white color-changing\">")
         self._row_num = 0
 
     def end_table(self):
@@ -426,7 +426,8 @@ class TableMaker:
     def end_row(self):
         self.table.append("</tr>")
         if self._row_num == 1:
-            self.table.append("</thead><tbody style=\"background: white;\">")
+            #self.table.append("</thead><tbody style=\"background: white;\">")
+            self.table.append("</thead><tbody>")
 
     def new_line(self):
         self.table.append("<br>")

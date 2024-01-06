@@ -193,6 +193,9 @@
     background-color: #fff; /* Ensure the background color covers the lines */
     background-attachment: local; /* Move the background with the text when scrolling */
 }
+.white-placeholder::-webkit-input-placeholder {
+  color: white;
+}
 
 /* Styles for full-screen mode */
 #col-skill.full-screen {

@@ -56,7 +56,7 @@
 <body style="background-color:#E5E4E2;">
 
   <!-- Grey navbar with black text -->
-  <nav class="navbar navbar-expand-sm bg-dark navbar-dark sticky">
+  <nav class="navbar navbar-expand-sm bg-dark navbar-dark sticky color-changing">
     <!-- Add the Font Awesome button for mobile view -->
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
       aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -87,6 +87,7 @@
           <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownMenuLink">
             <a class="dropdown-item" href="/logger/user">User Profile</a>
             <a class="dropdown-item" href="/logger/user/statistics">User Statistics</a>
+            <a class="dropdown-item" href="#"><input type="checkbox" id="theme-switch"><label for="theme-switch">Dark Mode</label></a>
             <a class="dropdown-item" href="/logout">Logout</a>
           </div>
         </li>
@@ -155,6 +156,87 @@
           });
       }
   }
+
+  // Dark mode
+  const themeSwitch = document.getElementById("theme-switch");
+  const currentTheme = localStorage.getItem('theme');
+  const background = document.getElementsByClassName("area")[0];
+  const darkElements = document.getElementsByClassName("bg-dark");
+  const colorChangingElements = document.getElementsByClassName("color-changing");
+  function setDarkMode(elements, bgElement) {
+    const darkHeaderColor = "#2D3250"
+    for (e of elements) {
+      console.log(`element: ${e}. ${e.id} - ${e.tagName}`);
+      e.style.background = darkHeaderColor;
+      if (e.tagName == "NAV") {
+        e.classList.remove("bg-dark");
+      }
+      if (e.tagName == "THEAD") {
+        e.classList.remove("thead-dark");
+        e.classList.remove("bg-dark");
+      }
+      if (e.tagName == "TABLE") {
+        e.classList.remove("table-light");
+        e.classList.add("table-dark");
+      }
+      if (e.tagName == "TEXTAREA" && e.id == "log") {
+        e.style.background = "repeating-linear-gradient(transparent, transparent 19px, black 19px, black 20px) #7077A1 0 9px";
+        e.style.color = "white";
+        e.classList.add("white-placeholder");
+      }
+      if (e.id == "col-skill") {
+        e.style.backgroundColor = "#7077A1";
+      }
+    }
+    bgElement.style.background = "#424769";
+  }
+  function setLightMode(elements, background) {
+    background.style.background = "#E5E4E2";
+
+    for (e of elements) {
+      e.style.background = "";
+      if (e.tagName == "NAV") {
+        e.classList.add("bg-dark");
+      }
+      if (e.tagName == "THEAD") {
+        e.classList.add("thead-dark");
+        e.classList.add("bg-dark");
+      }
+      if (e.tagName == "TABLE") {
+        e.classList.add("table-light");
+        e.classList.remove("table-dark");
+      }
+      if (e.tagName == "TEXTAREA" && e.id == "log") {
+        e.style.backgroundImage = "repeating-linear-gradient(transparent, transparent 19px, #ddd 19px, #ddd 20px)";
+        e.style.color = "";
+        e.classList.remove("white-placeholder");
+      }
+      if (e.id == "col-skill") {
+        e.style.backgroundColor = "";
+      }
+
+    }
+  }
+
+  if (currentTheme) {
+    themeSwitch.checked = currentTheme == "dark-mode";
+    if (currentTheme == "dark-mode") {
+      setDarkMode(colorChangingElements, background);
+    }
+  }
+
+  themeSwitch.addEventListener("change", function () {
+    if (themeSwitch.checked) {
+      // dark mode
+      setDarkMode(colorChangingElements, background);
+      localStorage.setItem("theme", "dark-mode");
+    } else {
+      // light mode
+      localStorage.setItem("theme", "light-mode");
+      setLightMode(colorChangingElements, background);
+    }
+  });
+
   {% block js %}{% endblock %}
   </script>
 
