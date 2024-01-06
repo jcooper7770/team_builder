@@ -1086,13 +1086,17 @@ def get_leaderboards():
     # Sort the turns and take top for each user
     top_turns = {}
     user_turns = {}
+    user_turns_this_week = {}
     user_flips = {}
+    user_flips_this_week = {}
     for event in event_turns:
         event_turns[event] = sorted(event_turns[event], key=lambda x:x["dd"], reverse=True)
 
         top_turns[event] = {}
         user_turns[event] = defaultdict(int)
+        user_turns_this_week[event] = defaultdict(int)
         user_flips[event] = defaultdict(int)
+        user_flips_this_week[event] = defaultdict(int)
         for turn in event_turns[event]:
             user = turn["user"].lower()
             #if user in top_turns[event]:
@@ -1102,6 +1106,9 @@ def get_leaderboards():
                 continue
 
             user_turns[event][user] += 1
+            if turn['date'] >= datetime.datetime.today() - datetime.timedelta(days=7):
+                user_turns_this_week[event][user] += 1
+                user_flips_this_week[event][user] += turn['flips']
             user_flips[event][user] += turn['flips']
             # Only include if there are 10 skills on trampoline or 2-3 skills on double mini
             turn_skills = turn['turn'].split()
@@ -1115,20 +1122,23 @@ def get_leaderboards():
                 top_turns[event][user] = f"{turn['dd']:.1f} ({turn_date})"
 
     # Order the user turns by number of turns per event
-    sorted_user_turns = {
-        event: OrderedDict(
-            [(result[0], result[1]) for result in sorted(user_event_turns.items(), key=lambda x: x[1], reverse=True)]
-        )
-        for event, user_event_turns in user_turns.items()
-    }
-    sorted_user_flips = {
-        event: OrderedDict(
-            [(result[0], result[1]) for result in sorted(user_event_flips.items(), key=lambda x: x[1], reverse=True)]
-        )
-        for event, user_event_flips in user_flips.items()
-    }
-    # Convert to leaderboard
-    leaderboards = {"DD": top_turns, "TURNS": sorted_user_turns, "FLIPS": sorted_user_flips}
+    data_keys = OrderedDict([
+        ("TURNS", user_turns),
+        ("TURNS THIS WEEK", user_turns_this_week),
+        ("FLIPS", user_flips),
+        ("FLIPS THIS WEEK", user_flips_this_week)
+    ])
+    all_sorted = [("DD", top_turns)]
+    for key, data in data_keys.items():
+        sorted_data = {
+            event: OrderedDict(
+                [(result[0], result[1]) for result in sorted(user_data.items(), key=lambda x: x[1], reverse=True)]
+            )
+            for event, user_data in data.items()
+        }
+        all_sorted.append((key, sorted_data))
+
+    leaderboards = OrderedDict(all_sorted)
     print(f"Leaderboard: {leaderboards}")
 
     return leaderboards
