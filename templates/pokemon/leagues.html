@@ -1,0 +1,149 @@
+{% extends "pokemon/base.html" %}
+
+{% block content %}
+<br><br>
+<div class="container d-flex flex-column" id="new-league-form" style="background: grey; width: 400px; border-radius: 10px;">
+  <table>
+    <tr>
+      <th colspan="2">Add New League</th>
+    </tr>
+    <tr>
+      <td>Name:</td>
+      <td>
+        <input id="name" type="text">
+      </td>
+    </tr>
+    <tr>
+      <td>Ranking Value:</td>
+      <td>
+        <input id="league-value" type="text">
+      </td>
+    </tr>
+    <tr>
+      <td>Data Value:</td>
+      <td>
+        <input id="cup-value" type="text">
+      </td>
+    </tr>
+    <tr>
+      <td></td>
+      <td>
+        <button class="btn btn-primary" type="submit" id="submit-new-league">Create New League</button>
+      </td>
+    </tr>
+    <tr>
+      <td></td>
+      <td>
+        <button id="refresh" class="btn btn-danger">Refresh Leagues</button>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<br><br>
+<div class="container d-flex align-items-center justify-content-center flex-column">
+  <!--
+  <table class="table table-striped bg-white" style="border: 1px solid; border-radius: 10px;">
+    <tr>
+      <th>Name</th><th>Ranking URL</th><th>Data URL</th><th>League Value</th><th>Cup Value</th><th>View Link</th>
+    </tr>
+    {% for league in leagues %}
+    <tr>
+      <td>{{league.name}}</td><td>{{league.ranking_url}}</td><td>{{league.data_url}}</td>
+      <td>{{league.league_value}}</td><td>{{league.cup_value}}</td>
+      <td>
+        <a class="btn btn-info" href="/?league={{league.name}}">View</a>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+-->
+
+  <ul class="nav nav-tabs bg-dark w-100">
+    {% for league in split_leagues %}
+    <li class="nav-item">
+    <a class="nav-link{% if loop.index == 1 %} active{% endif %}" data-toggle="tab" href="#{{league[0] | replace(' ','')}}">{{league[0]}}</a>
+    </li>
+    {% endfor %}
+  </ul>
+
+  <div class="tab-content">
+  {% for league in split_leagues %}
+
+    <div id="{{league[0] | replace(' ','')}}" class="tab-pane fade{% if loop.index==1 %} show active{% endif %}">
+  <h1>{{league[0]}}</h1>
+  <table class="table-striped bg-white" style="border: 1px solid; border-radius: 10px; border-collapse: separate; border-spacing: 0; border: 1px solid;">
+    <tr>
+      <th style="padding: 10px; border-right: 1px solid black;">Name</th>
+      <th style="padding: 10px; border-right: 1px solid black;">Ranking URL</th>
+      <th style="padding: 10px; border-right: 1px solid black;">Data URL</th>
+      <th style="padding: 10px; border-right: 1px solid black;">League Value</th>
+      <th style="padding: 10px; border-right: 1px solid black;">Cup Value</th>
+      <th style="padding: 10px;">View Link</th>
+    </tr>
+    {% for name, league in league[1] %}
+    <tr>
+      <td style="padding: 10px; border-right: 1px solid black;">{{league.name}}</td>
+      <td style="padding: 10px; border-right: 1px solid black;">{{league.ranking_url}}</td>
+      <td style="padding: 10px; border-right: 1px solid black;">{{league.data_url}}</td>
+      <td style="padding: 10px; border-right: 1px solid black;">{{league.league_value}}</td>
+      <td style="padding: 10px; border-right: 1px solid black;">{{league.cup_value}}</td>
+      <td style="padding: 10px;">
+        <a class="btn btn-info" href="/?league={{league.name}}">View</a>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+  </div>
+  {% endfor %}
+</div>
+</div>
+<br><br>
+<script type="text/javascript">
+document.getElementById("submit-new-league").addEventListener('click', function(e) {
+  e.preventDefault();
+  const name = document.getElementById("name").value;
+  const league_val = document.getElementById("league-value").value;
+  const cup_val = document.getElementById("cup-value").value;
+  const data = {
+    name: name,
+    ranking_url_value: league_val,
+    data_url_value: cup_val
+  }
+  
+  $.ajax({
+    type: 'POST',
+    url: "/pokemon/leagues/new",
+    contentType: 'application/json',
+    data: JSON.stringify(data),
+    success: function (data) {
+        if(!data.success) {
+          alert(`Failed to add new league '${name}'. Check doesn't exist or URL works`);
+        } else {
+          console.log("successfully saved data");
+          location.reload();
+        }
+    }
+  });
+});
+
+document.getElementById("refresh").addEventListener('click', function(e) {
+  e.preventDefault();
+   $.ajax({
+    type: 'POST',
+    url: "/pokemon/leagues/refresh",
+    contentType: 'application/json',
+    data: JSON.stringify({}),
+    success: function (data) {
+        if(!data.success) {
+          alert(`Failed to refresh because ${data.error}`);
+        } else {
+          console.log("successfully refreshed");
+          location.reload();
+        }
+    }
+  });
+ 
+});
+</script>
+{% endblock %}

@@ -123,7 +123,7 @@ function toggleAdvOptions(e) {
               {% for league in split_leagues %}
               <optgroup label="{{ league[0] }}">
                 {% for cup in league[1] %}
-                <option value="{{cup}}" id="option_{{cup}}"{% if current_league==cup %} selected{% endif %}>{{cup}}</option>
+                <option value="{{cup[0]}}" id="option_{{cup[0]}}"{% if current_league==cup[0] %} selected{% endif %}>{{cup[0]}}</option>
                 {% endfor %}
               </optgroup>
               {% endfor %}

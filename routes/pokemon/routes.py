@@ -104,6 +104,39 @@ def move_counts():
         subscribed_user=user.subscribed if user else False
     )
 
+@poke_bp.route("/pokemon/leagues")
+def pokemon_leagues():
+    return render_template(
+        "pokemon/leagues.html",
+        user=session.get('name'),
+        leagues=LEAGUES_LIST.to_json(),
+        split_leagues=LEAGUES_LIST.league_groups,
+    )
+
+@poke_bp.route("/pokemon/leagues/new", methods=["POST"])
+def add_pokemon_league():
+    data = request.json
+    
+    success = LEAGUES_LIST.add_league(
+        data.get("name"),
+        data.get("ranking_url_value"),
+        data.get("data_url_value")
+    )
+    return {"success": success}
+
+@poke_bp.route("/pokemon/leagues/refresh", methods=["POST"])
+def refresh_pokemon_leagues():
+    try:
+        LEAGUES_LIST.refresh()
+        return {"success": True}
+    except Exception as error:
+        return {"success": False, "error": str(error)}
+
+
+@poke_bp.route("/1234")
+def test_endpoint():
+    return str(LEAGUES_LIST.to_json())
+
 @poke_bp.route("/")
 def run():
     user = None
@@ -116,6 +149,9 @@ def run():
     global CACHE
     global N_TEAMS
     chosen_league = request.args.get("league", session.get('league'))
+    if chosen_league not in LEAGUES_LIST.league_names:
+        chosen_league = None
+        print(f"Did not find league with name '{chosen_league}'")
     if not chosen_league:
         if user and user.fav_league in LEAGUES_LIST.league_names:
             chosen_league = user.fav_league
