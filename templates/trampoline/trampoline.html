@@ -90,11 +90,24 @@
                   <!-- Full Screen Button -->
                   <button type="button" id="fullScreenBtn" class="btn btn-light">Toggle Full Screen</button>
                   <div id="new-turns">
+                    <!-- If there was an error then log lines will be re-written-->
+                    {% for log_line in log_lines %}
                     <div id="log-turn-0">
                       <a class="remove-log color-changing" class="remove-turn" href="#"><i class="fa fa-minus-square" aria-hidden="true"></i></a>
+                      <a class="copy-log-button color-changing" href="#"><i class="fa fa-clone" aria-hidden="true"></i></a>
                       <textarea id="log" style="border: 0; width: 100%; height: 30px;"
-                        rows="1" placeholder="Input your turn here..." class="color-changing" name="log-0"></textarea>
+                        rows="1" placeholder="Input your turn here..." class="color-changing" name="log-0">{{log_line}}</textarea>
                     </div>
+                    {% endfor %}
+                    <!-- else use an empty textarea -->
+                    {% if log_lines|length < 1 %}
+                    <div id="log-turn-0">
+                      <a class="remove-log color-changing" class="remove-turn" href="#"><i class="fa fa-minus-square" aria-hidden="true"></i></a>
+                      <a class="copy-log-button color-changing" href="#"><i class="fa fa-clone" aria-hidden="true"></i></a>
+                      <textarea id="log" style="border: 0; width: 100%; height: 30px;"
+                        rows="1" placeholder="Input your turn here..." class="color-changing" name="log-0">{{routine}}</textarea>
+                    </div>
+                    {% endif %}
                     <div id="log-turn-0">
                       <a href="" id="new-turn-button" href="#" class="add-log color-changing"><i class="fa fa-plus-square" aria-hidden="true"></i></a>
                     </div>

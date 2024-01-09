@@ -975,7 +975,8 @@ def convert_form_data(form_data, logger=print, event=EVENT, notes=None, get_athl
 
             try:
                 # Allow multiple of the same skill (i.e. 40o<//<o)
-                routine.add_skill(skill)
+                if skill !=  "":
+                    routine.add_skill(skill)
             except Exception as skill_err:
                 if logger:
                     logger(f"Cannot convert '{skill}' into a skill because: {skill_err}")

@@ -16,6 +16,19 @@ from application.utils.utils import *
 
 tramp_bp = Blueprint('trampoline', __name__)
 
+def get_log_data(request):
+    """
+    Returns the data from the logs as a list
+    """
+    form_data_list = []
+    for key in request.form.keys():
+        if key.startswith("log-"):
+            log_data = request.form.get(key)
+            if log_data:
+                form_data_list.append(log_data)
+    return form_data_list
+
+
 def _save_trampoline_data(request):
     """
     Saves the routine data from the forms
@@ -23,12 +36,7 @@ def _save_trampoline_data(request):
     # Convert form data to trampoline skills
     form_data = request.form.get('log', '')
     logger.info(f"Form data: {form_data}")
-    form_data_list = []
-    for key in request.form.keys():
-        if key.startswith("log-"):
-            log_data = request.form.get(key)
-            if log_data:
-                form_data_list.append(log_data)
+    form_data_list = get_log_data(request)
     form_data = "\n".join(form_data_list)
     logger.info(f"Form data: {form_data}")
     #username = request.form.get('name', None) or current_user()
@@ -144,7 +152,8 @@ def trampoline_log():
         except Exception as exception:
             session["error"] = f"Error saving log data: {exception}"
             logging.error(f"Error saving trampoline log data: {exception}")
-            return redirect(url_for('trampoline.trampoline_log', routine=request.form.get('log')))
+            log_data = get_log_data(request)
+            return redirect(url_for('trampoline.trampoline_log', routine=request.form.get('log'), log_lines=','.join(log_data)))
 
         return redirect(url_for('trampoline.trampoline_log'))
 
@@ -217,7 +226,8 @@ def trampoline_log():
         current_date=session.get('current_date').strftime("%Y-%m-%d") if session.get('current_date') else None,
         search_skills=session.get("search_skills", ""),
         user_turns=all_turns,
-        tags=["Competition", "Pit Training"]
+        tags=["Competition", "Pit Training"],
+        log_lines=request.args.get('log_lines', '').split(',')
     )
 
 

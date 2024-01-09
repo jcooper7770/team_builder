@@ -621,14 +621,25 @@ $("#new-turns").on('click', '.remove-log', function(e){
     const skillsDiv = document.getElementById("col-skill");
     addRecSkill();
 
-    
 });
 
-$("[id^=new-turn-button]").click(function(e) {
-    const themeSwitch = document.getElementById("theme-switch");
-    const logTurnDivs = document.querySelectorAll("[id^=log-turn]");
+$("#new-turns").on('click', '.copy-log-button', function(e){
+    e.preventDefault();
+    var inputDiv = e.target.parentNode;
+    if (e.target.tagName == "I") {
+        inputDiv = e.target.parentNode.parentNode;
+    }
+    const value = inputDiv.children[2].value;
+    const newLogDiv = createNewLog(e, value);
     const allTurnsDiv = document.getElementById("new-turns");
-    const skillsDiv = document.getElementById("col-skill");
+    //inputDiv.after(newLogDiv);
+    allTurnsDiv.children[allTurnsDiv.children.length-3].after(newLogDiv);
+
+});
+
+
+function createNewLog(e, value) {
+    const logTurnDivs = document.querySelectorAll("[id^=log-turn]");
 
     var newDiv = document.createElement("div");
     newDiv.id = `log-turn-${logTurnDivs.length-1}`;
@@ -637,10 +648,16 @@ $("[id^=new-turn-button]").click(function(e) {
     removeButton.classList = "remove-log color-changing";
     removeButton.href = "#";
     removeButton.innerHTML = '<i class="fa fa-minus-square" aria-hidden="true"></i>';
+    var copyButton = document.createElement("a");
+    copyButton.classList = "copy-log-button color-changing";
+    copyButton.href = "#";
+    copyButton.innerHTML = '<i class="fa fa-clone" aria-hidden="true"></i>';
     if(localStorage.getItem("theme") == "dark-mode"){
         removeButton.classList.add("dark-mode-color");
+        copyButton.classList.add('dark-mode-color');
     }
     newDiv.appendChild(removeButton);
+    newDiv.appendChild(copyButton);
 
     var inputDiv = e.target.parentNode;
     if (e.target.tagName == "I") {
@@ -653,12 +670,23 @@ $("[id^=new-turn-button]").click(function(e) {
     newInput.style.height = "30px";
     newInput.classList = "color-changing";
     newInput.placeholder = "Input your turn here...";
+    newInput.value = value;
     newInput.name = `log-${logTurnDivs.length-1}`;
     if(localStorage.getItem("theme") == "dark-mode"){
         newInput.classList.add("dark-mode-color");
     }
     newDiv.appendChild(newInput);
+    return newDiv;
+   
+}
 
+$("[id^=new-turn-button]").click(function(e) {
+    const newDiv = createNewLog(e, "");
+    const allTurnsDiv = document.getElementById("new-turns");
+    var inputDiv = e.target.parentNode;
+    if (e.target.tagName == "I") {
+        inputDiv = e.target.parentNode.parentNode;
+    }
     allTurnsDiv.insertBefore(newDiv, inputDiv);
 
     clearRecs();

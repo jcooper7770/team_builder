@@ -216,6 +216,10 @@
   position: absolute;
   left: 0px;
 }
+.copy-log-button {
+  position: absolute;
+  right: 3px;
+}
 
 #fullScreenBtn {
     position: absolute;
