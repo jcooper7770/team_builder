@@ -307,3 +307,21 @@
 .darkmode-checkbox:checked + .darkmode-checkbox-label .darkmode-ball {
   transform: translateX(24px);
 }
+
+textarea.dark-mode-color {
+  color: white;
+  background: repeating-linear-gradient(transparent, transparent 19px, black 19px, black 20px) #7077A1 0 9px;
+}
+
+textarea#log.dark-mode-color {
+  color: white;
+  background: repeating-linear-gradient(transparent, transparent 19px, black 19px, black 20px) #7077A1 0 9px;
+}
+textarea#log.dark-mode-color::placeholder {
+  color: white
+}
+
+a.dark-mode-color {
+  color: #F6B17A;
+  background: "";
+}

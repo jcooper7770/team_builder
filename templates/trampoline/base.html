@@ -179,6 +179,7 @@
   function setDarkMode(elements, bgElement) {
     const darkHeaderColor = "#2D3250"
     for (e of elements) {
+      e.classList.add("dark-mode-color");
       //console.log(`element: ${e}. ${e.id} - ${e.tagName}`);
       e.style.background = darkHeaderColor;
       if (e.tagName == "NAV") {
@@ -219,6 +220,7 @@
     background.style.background = "#E5E4E2";
 
     for (e of elements) {
+      e.classList.remove("dark-mode-color");
       e.style.background = "";
       if (e.tagName == "NAV") {
         e.classList.add("bg-dark");

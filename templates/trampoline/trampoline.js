@@ -591,12 +591,14 @@ $("#new-turns").on('click', '.remove-log', function(e){
     const allTurnsDiv = document.getElementById("new-turns");
     allTurnsDiv.removeChild(parentDiv);
     const skillsDiv = document.getElementById("col-skill");
-    //skillsDiv.style.height = `${skillsDiv.offsetHeight - 30}px`;
     addRecSkill();
+
+    
 });
 
 $("[id^=new-turn-button]").click(function(e) {
-    const logTurnDivs = document.querySelectorAll("[id^=log-turn]")
+    const themeSwitch = document.getElementById("theme-switch");
+    const logTurnDivs = document.querySelectorAll("[id^=log-turn]");
     const allTurnsDiv = document.getElementById("new-turns");
     const skillsDiv = document.getElementById("col-skill");
 
@@ -607,6 +609,9 @@ $("[id^=new-turn-button]").click(function(e) {
     removeButton.classList = "remove-log color-changing";
     removeButton.href = "#";
     removeButton.innerHTML = '<i class="fa fa-minus-square" aria-hidden="true"></i>';
+    if(localStorage.getItem("theme") == "dark-mode"){
+        removeButton.classList.add("dark-mode-color");
+    }
     newDiv.appendChild(removeButton);
 
     var inputDiv = e.target.parentNode;
@@ -621,12 +626,13 @@ $("[id^=new-turn-button]").click(function(e) {
     newInput.classList = "color-changing";
     newInput.placeholder = "Input your turn here...";
     newInput.name = `log-${logTurnDivs.length-1}`;
+    if(localStorage.getItem("theme") == "dark-mode"){
+        newInput.classList.add("dark-mode-color");
+    }
     newDiv.appendChild(newInput);
 
     allTurnsDiv.insertBefore(newDiv, inputDiv);
 
-
-    //skillsDiv.style.height = `${skillsDiv.offsetHeight + 30}px`;
     clearRecs();
 });
 
