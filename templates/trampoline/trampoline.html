@@ -104,6 +104,7 @@
                   <textarea style="display: none;" id="log" name="log" rows="5" form="logger"
                     placeholder="Input your routines here" class="color-changing">{{routine_text|safe}}</textarea>
 
+                  <button id="submit-button-full-screen" type="submit" class="btn color-changing btn-primary" style="position: absolute; bottom: 10px; right: 10px; display: none;">Submit</button>
                   <div id="logger-bottom" >
                     <!-- button skills -->
                     {% for flips, skills in all_skills.items() %}

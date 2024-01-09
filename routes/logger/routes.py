@@ -26,7 +26,9 @@ def _save_trampoline_data(request):
     form_data_list = []
     for key in request.form.keys():
         if key.startswith("log-"):
-            form_data_list.append(request.form.get(key))
+            log_data = request.form.get(key)
+            if log_data:
+                form_data_list.append(log_data)
     form_data = "\n".join(form_data_list)
     logger.info(f"Form data: {form_data}")
     #username = request.form.get('name', None) or current_user()

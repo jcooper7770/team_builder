@@ -197,6 +197,7 @@ $("[id^=unhide-note").click(function(e){
         comment.style.display = "none";
     }
 });
+
 $("[id^=skill]").click(function (e) {
     e.preventDefault();
     console.log(event.target.id)
@@ -208,6 +209,10 @@ $("[id^=skill]").click(function (e) {
     // type into last log
     const logElements = document.querySelectorAll("#log");
     const logElement = logElements[logElements.length-2];
+    if (document.activeElement.id == "log") {
+        logElement = document.activeElement;
+    }
+
     //var routineText = document.getElementById('log').value;
     var routineText = logElement.value;
     if (routineText != "") {
@@ -216,6 +221,10 @@ $("[id^=skill]").click(function (e) {
     } else {
         //$('#log').val(skill);
         logElement.value = skill;
+    }
+    // Set log height to fit text inside
+    if (logElement.scrollHeight > logElement.offsetHeight) {
+        logElement.style.height = `${logElement.scrollHeight}px`;
     }
     addRecSkill();
 });
@@ -233,6 +242,9 @@ $("#col-skill").on('click', 'a', function (e) {
     // type into last log
     const logElements = document.querySelectorAll("#log");
     const logElement = logElements[logElements.length-2];
+    if (document.activeElement.id == "log") {
+        logElement = document.activeElement;
+    }
 
     //var routineText = document.getElementById('log').value;
     var routineText = logElement.value;
@@ -242,6 +254,10 @@ $("#col-skill").on('click', 'a', function (e) {
     } else {
         logElement.value = skill;
         //$('#log').val(skill);
+    }
+    // Set log height to fit text inside
+    if (logElement.scrollHeight > logElement.offsetHeight) {
+        logElement.style.height = `${logElement.scrollHeight}px`;
     }
     addRecSkill();
 });
@@ -351,6 +367,11 @@ function recommendSkill(current_skill) {
 $("#new-turns").on('input', '#log', function (e) {
     //updateNumSkills();
     addRecSkill();
+
+    // Set log height to fit text inside
+    if (e.target.scrollHeight > e.target.offsetHeight) {
+        e.target.style.height = `${e.target.scrollHeight}px`;
+    }
 });
 
 // Get a reference to the button and spinner elements
@@ -779,9 +800,16 @@ logSubmitBtn.addEventListener('submit', handleSubmitBtn);
 function toggleFullScreen() {
     var notepad = document.querySelector('#col-skill');
     var textarea = document.getElementById('log');
+    const fullScreenSubmitButton = document.getElementById("submit-button-full-screen");
 
     notepad.classList.toggle('full-screen');
     textarea.classList.toggle('full-screen');
+
+    if (notepad.classList.contains("full-screen")) {
+        fullScreenSubmitButton.style.display = "";
+    } else {
+        fullScreenSubmitButton.style.display = "none";
+    }
 }
 
 // Attach functions to the corresponding events
