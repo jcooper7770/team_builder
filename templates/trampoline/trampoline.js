@@ -199,6 +199,10 @@ $("[id^=unhide-note").click(function(e){
 });
 $("[id^=skill]").click(function (e) {
     e.preventDefault();
+    console.log(event.target.id)
+    if (event.target.id == "new-turn-button") {
+        return
+    }
     var skill = event.target.id.slice(5).replace('t', 'o').replace('p', '<').replace('s', '/');
     console.log("adding " + skill);
     // type into last log
@@ -220,6 +224,9 @@ $("#col-skill").on('click', 'a', function (e) {
     e.preventDefault();
     if (event.target.parentNode.className.startsWith("remove-log") || event.target.parentNode.id.startsWith("new-turn-button")) {
         return;
+    }
+    if (event.target.id == "new-turn-button"){
+        return
     }
     var skill = event.target.id.slice(5).replace('t', 'o').replace('p', '<').replace('s', '/');
     console.log("adding " + skill);
