@@ -591,7 +591,7 @@ $("#new-turns").on('click', '.remove-log', function(e){
     const allTurnsDiv = document.getElementById("new-turns");
     allTurnsDiv.removeChild(parentDiv);
     const skillsDiv = document.getElementById("col-skill");
-    skillsDiv.style.height = `${skillsDiv.offsetHeight - 30}px`;
+    //skillsDiv.style.height = `${skillsDiv.offsetHeight - 30}px`;
     addRecSkill();
 });
 
@@ -626,7 +626,7 @@ $("[id^=new-turn-button]").click(function(e) {
     allTurnsDiv.insertBefore(newDiv, inputDiv);
 
 
-    skillsDiv.style.height = `${skillsDiv.offsetHeight + 30}px`;
+    //skillsDiv.style.height = `${skillsDiv.offsetHeight + 30}px`;
     clearRecs();
 });
 
