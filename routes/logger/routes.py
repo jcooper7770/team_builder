@@ -930,3 +930,7 @@ def chart():
             })
     return render_template("graph.html", user=current_user, datapts=datapts)
 
+@tramp_bp.route("/logger/social", methods=["GET"])
+def social():
+    current_user = session.get('name')
+    return render_template("trampoline/social.html", user=current_user)

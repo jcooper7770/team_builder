@@ -1,0 +1,84 @@
+{% extends "trampoline/base.html" %}
+
+{% block content %}
+<br><br>
+<div class="container">
+  <div class="container mt-5">
+    <div class="card">
+      <div class="card-body">
+        <div class="form-group">
+          <textarea id="post-text" class="form-control" rows="3"
+            placeholder="Share your routines and turns for today..."></textarea>
+        </div>
+        <button class="btn btn-success" onclick="addPost()">Post</button>
+      </div>
+    </div>
+
+    <div id="feed" class="mt-3"></div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
+    crossorigin="anonymous"></script>
+
+  <script>
+    // Sample array of previous posts
+    var previousPosts = [
+      { userName: "User1", postText: "This is the first post." },
+      { userName: "User2", postText: "Another post with multiple\nlines." },
+      // Add more posts as needed
+    ];
+
+    function addPost() {
+      var postText = document.getElementById("post-text").value;
+
+      if (postText.trim() !== "") {
+        // Get the user's name (replace this with your authentication logic)
+        var userName = "John Doe"; // Replace with your actual user's name
+
+        var currentDate = new Date();
+        var formattedDate = currentDate.toLocaleDateString() + " " + currentDate.toLocaleTimeString();
+
+        var postElement = document.createElement("div");
+        postElement.className = "card mt-3";
+        postElement.innerHTML = `
+            <div class="card-body">
+                <h6 class="card-subtitle mb-2 text-muted">${userName} - ${formattedDate}</h6>
+                <p class="card-text">${postText.replace(/\n/g, '<br>')}</p>
+            </div>
+        `;
+
+        // Insert the new post at the beginning of the feed
+        var feedContainer = document.getElementById("feed");
+        feedContainer.insertBefore(postElement, feedContainer.firstChild);
+
+        // Clear the textarea after posting
+        document.getElementById("post-text").value = "";
+      }
+    }
+
+    // Function to add posts to the feed
+    function displayPreviousPosts() {
+      var feedContainer = document.getElementById("feed");
+
+      previousPosts.forEach(function (post) {
+        var postElement = document.createElement("div");
+        postElement.className = "card mt-3";
+        postElement.innerHTML = `
+            <div class="card-body">
+                <h6 class="card-subtitle mb-2 text-muted">${post.userName} - ${post.date}</h6>
+                <p class="card-text">${post.postText.replace(/\n/g, '<br>')}</p>
+            </div>
+        `;
+
+        // Insert each previous post at the beginning of the feed
+        feedContainer.insertBefore(postElement, feedContainer.firstChild);
+      });
+    }
+
+    // Call the function to display previous posts
+    displayPreviousPosts();
+  </script>
+</div>
+{% endblock %}
