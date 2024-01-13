@@ -450,7 +450,8 @@ class TableMaker:
             content = f'<div class="row"><div class="col-md-12" id="practice-header">{rating_text}{value}{delete_a}{edit_a}{share_a}</div></div><div class="row">{"".join(tag_divs)}</div>'
             self.table.append(f'<th colspan={colspan} align="center" name="{date_to_remove}_{event_to_remove}">{content}</th>')
         except:
-            self.table.append(f'<th colspan={colspan} align="center">{value}</th>')
+            tag_divs = [f'<div class="practice-tag">{tag}</div>' for tag in tags if tag]
+            self.table.append(f'<th colspan={colspan} align="center"><div class="row">{value}</div><div class="row">{"".join(tag_divs)}</div></th>')
         self.end_row()
 
     def reset_table(self):

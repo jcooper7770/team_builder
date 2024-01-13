@@ -1,0 +1,201 @@
+{% extends "trampoline/base.html" %}
+
+{% block content %}
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+  }
+
+  header {
+    background-color: #333;
+    color: #fff;
+    padding: 10px;
+    text-align: center;
+  }
+
+  section {
+    margin: 20px;
+  }
+
+  h2 {
+    color: #333;
+  }
+
+  .user-info {
+    display: flex;
+    justify-content: space-between;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .metrics {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 20px;
+  }
+
+  @media screen and (max-width: 750px) {
+    .metrics {
+      flex-direction: column;
+    }
+  }
+
+  .highlighted-posts {
+    margin-top: 20px;
+  }
+
+  .post {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 10px;
+  }
+
+  ul#levels {
+    margin-left: 10%;
+    display: grid;
+    grid-template-columns: 1fr;
+    width: 100%;
+  }
+
+  ul#levels li {
+    list-style: none;
+  }
+
+  ul#routines {
+    margin-left: 10%;
+  }
+
+  ul#routines li {
+    list-style: none;
+  }
+
+  ul#routines li ul {
+    margin-left: 5%;
+  }
+
+  .private-message {
+    font-size: 24px;
+    color: #333;
+    font-weight: bold;
+  }
+
+  i.dark-mode-color {
+    color: white;
+  }
+
+  div.dark-mode-color div p,
+  div.dark-mode-color div ul,
+  div.dark-mode-color h4,
+  div.dark-mode-color p {
+    color: white;
+  }
+</style>
+<!-- Settings -->
+<br><br>
+<div class="container">
+  <header>
+    <h1>User Profile</h1>
+  </header>
+
+  {% if private %}
+  <section class="private-message">
+    <p><i class="fa fa-exclamation-circle" aria-hidden="true"></i>Athlete's profile is private</p>
+  </section>
+  {% endif %}
+
+  {% if private == false %}
+  <section>
+    <h2>Athlete Information</h2>
+    <div class="user-info color-changing">
+      <div>
+        <p><strong>Name: </strong>{{ name }}</p>
+        <p><strong>Age: </strong> 25</p>
+        <p><strong>Levels: </strong></p>
+        <!--
+        <table style="width: 100%; border: 1px solid black;">
+          <tr><td>Trampoline</td><td>Sr</td></tr>
+          <tr><td>Double Mini</td><td>Sr</td></tr>
+          <tr><td>Tumbling</td><td>Sr</td></tr>
+        </table>
+      -->
+        <ul id="levels">
+          <li>Trampoline: {{ tramp_level }}</li>
+          <li>Double Mini: {{ dmt_level }}</li>
+          <li>Tumbling: {{tumbling_level }}</li>
+        </ul>
+        <p><strong>Routines: </strong></p>
+        <ul id="routines">
+          <li>Trampoline:
+            <ul>
+              <li>Compulsory: {{ athlete_comp }}</li>
+              <li>Optional: {{ athlete_optional }}</li>
+            </ul>
+          </li>
+          <li>Double Mini:
+            <ul>
+              <li>Pass1: {{ dm1 }}</li>
+              <li>Pass2: {{ dm2 }}</li>
+            </ul>
+          </li>
+          <li>Tumbling: XX</li>
+        </ul>
+        <!-- Add more user information as needed -->
+      </div>
+      <div>
+        <!-- Add user profile picture using Font Awesome -->
+        <i class="fa fa-user-circle-o fa-5x color-changing"></i>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Metrics</h2>
+    <div class="metrics">
+      <div>
+        <p><strong>Turns Logged:</strong> {{ total_turns }}</p>
+      </div>
+      <div>
+        <p><strong>Flips Done:</strong> {{ total_flips }}</p>
+      </div>
+      <div>
+        <p><strong>Most Flips in One Turn:</strong> {{ biggest_flips }}</p>
+      </div>
+      <div>
+        <p><strong>Most DD in One Turn:</strong> {{ biggest_dd }}</p>
+      </div>
+      <!-- Add more metrics as needed -->
+    </div>
+  </section>
+  <section class="highlighted-posts">
+    <h2>Highlighted Posts</h2>
+    <div class="post color-changing">
+      <h4>Trampoline Tricks</h4>
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed ut perspiciatis unde omnis iste natus error sit
+        voluptatem accusantium doloremque laudantium.</p>
+    </div>
+    <div class="post color-changing">
+      <h4>Training Day Highlights</h4>
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed ut perspiciatis unde omnis iste natus error sit
+        voluptatem accusantium doloremque laudantium.</p>
+    </div>
+    <!-- Add more posts as needed -->
+  </section>
+
+  {% endif %}
+  <br><br>
+</div>
+
+
+<script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
+  crossorigin="anonymous"></script>
+
+<script type="text/javascript">
+</script>
+{% endblock %}

@@ -934,3 +934,47 @@ def chart():
 def social():
     current_user = session.get('name')
     return render_template("trampoline/social.html", user=current_user)
+
+
+@tramp_bp.route("/logger/user/<name>", methods=["GET"])
+def user_page(name):
+    current_user = session.get('name')
+    event_turns, user_data = get_turn_dds()
+    try:
+        user = Athlete.load(name)
+        name = user.name
+    except:
+        name = ""
+    
+    turns, _ = get_turn_dds(name)
+    total_flips, total_turns, biggest_flips, biggest_dd = 0, 0, 0, 0
+    for event, event_turns in turns.items():
+        for turn in event_turns:
+            n_flips = turn["flips"]
+            total_flips += n_flips
+            total_turns += 1
+
+            if n_flips > biggest_flips:
+                biggest_flips = n_flips
+            
+            n_dd = turn['dd']
+            if n_dd > biggest_dd:
+                biggest_dd = n_dd
+    
+    return render_template(
+        "trampoline/user_page.html",
+        user=current_user,
+        name=name,
+        athlete_comp=user.compulsory if name != "" else "",
+        athlete_optional=user.optional if name != "" else "",
+        dm1=user.dm_prelim1 if name != "" else "",
+        dm2=user.dm_prelim2 if name != "" else "",
+        private=user.private if name != "" else True,
+        tramp_level=user.levels[0] if name != "" else "",
+        dmt_level=user.levels[1] if name != "" else "",
+        tumbling_level=user.levels[2] if name != "" else "",
+        total_flips=total_flips,
+        total_turns=total_turns,
+        biggest_flips=biggest_flips,
+        biggest_dd=biggest_dd
+    )

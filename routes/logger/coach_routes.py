@@ -36,7 +36,8 @@ def coach_home():
         # Add the turns into a table for that practice
         title_date = practice['practice'].date.strftime("%A %m/%d/%Y")
         title = f"{practice['athlete']}: {title_date} ({practice['practice'].event})"
-        practice_table = skills_table(practice['practice'].turns, title=title, expand_comments=False)
+        print(practice["practice"].__dict__)
+        practice_table = skills_table(practice['practice'].turns, title=title, expand_comments=False, tags=practice['practice'].tags)
         practice_tables.append(practice_table)
 
     all_practice_tables = "<br><br>".join(practice_tables)
@@ -61,7 +62,8 @@ def coach_home():
         error_text=session.get('error'),
         search_date=session.get("search_date").strftime("%Y-%m-%d") if session.get("search_date") else None,
         search_skills=session.get("search_skills", ""),
-        user_turns=[]
+        user_turns=[],
+        tags=["Competition", "Pit Training"],
     )
 
 @coach_bp.route("/logger/coach/settings", methods=["GET", "POST"])

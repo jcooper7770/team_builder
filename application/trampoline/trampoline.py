@@ -1036,7 +1036,7 @@ def get_user_turns(user, from_date="", to_date=""):
     return sorted(user_turns, key=lambda turn: turn[2])
 
 
-def get_turn_dds():
+def get_turn_dds(user=None):
     """
     Returns all turns and their dds for each event
 
@@ -1053,6 +1053,8 @@ def get_turn_dds():
     # Gather all turns
     event_turns = {}
     for turn in all_turns:
+        if user and turn[3] != user:
+            continue
         event = turn[4]
         if event not in event_turns:
             event_turns[event] = []
