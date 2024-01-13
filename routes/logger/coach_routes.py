@@ -3,7 +3,7 @@ import datetime
 from flask import Blueprint, render_template, request, session, redirect, url_for
 
 from application.trampoline.trampoline import Practice, current_user, Athlete
-from application.utils.database import get_users_and_turns
+from application.utils.database import get_users_and_turns, get_user_goals
 from application.utils.utils import *
 
 coach_bp = Blueprint('coach', __name__)

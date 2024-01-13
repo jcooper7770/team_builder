@@ -1,7 +1,6 @@
 {% extends "trampoline/base.html" %}
 {% block content %}
 <br>
-{% block logging %}
 
 <!-- Tabs at bottom-->
 <div class="bottom-tabs">
@@ -17,7 +16,12 @@
 
 <div class="tab-content">
   <!-- Log section -->
+{% block logging %}
+  {% if request.endpoint != "coach.coach_home" %}
   <div id="log-tab" class="tab-pane fade show active">
+  {% else %}
+  <div id="log-tab" style="display: none;">
+  {% endif %}
     <div class="container mt-5" style="background: rgba(255,255,255,0.4); border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
       <div class="card-body form-group">
       <table align="center" width="100%">
