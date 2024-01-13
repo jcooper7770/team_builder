@@ -155,6 +155,39 @@ def add_to_db(turns, user, event, practice_date, table=None, tags=[]):
             engine.execute(ins)
 
 
+def add_post_to_db(user, date, post):
+    """
+    Adds the pose to athlete_posts
+    """
+    engine = create_engine()
+    metadata = sqlalchemy.MetaData()
+    try:
+        table = sqlalchemy.Table("athlete_posts", metadata, autoload=True, autoload_with=engine)
+    except:
+        table = MockTable()
+    ins = table.insert().values(
+        name=user,
+        date=date,
+        post=post
+    )
+    engine.execute(ins)
+
+
+def get_posts_from_db():
+    """
+    Returns all posts from db
+    """
+    engine = create_engine()
+    result = engine.execute('SELECT * from `athlete_posts`;')
+    posts = [post for post in result]
+    all_posts = []
+    # TODO: sort
+    for post in posts:
+        all_posts.append({"name": post[0], "date": post[1], "post": post[2]})
+    return all_posts
+
+
+
 def add_airtime_to_db(user, airtime, date_str):
     """
     Add goal to db for user
@@ -171,6 +204,7 @@ def add_airtime_to_db(user, airtime, date_str):
         date=date_str
     )
     engine.execute(ins)
+
 
 def get_user_airtimes(user):
     """

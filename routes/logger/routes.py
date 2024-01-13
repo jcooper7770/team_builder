@@ -11,7 +11,7 @@ from application.trampoline.trampoline import convert_form_data, get_leaderboard
      ALL_SKILLS, get_leaderboards, Athlete, get_user_turns, get_turn_dds
 from application.utils.database import get_users_and_turns, insert_goal_to_db, get_user_goals, complete_goal,\
     delete_goal_from_db, get_user, add_airtime_to_db, get_user_airtimes, delete_airtime_from_db,\
-    rate_practice_in_db, get_ratings
+    rate_practice_in_db, get_ratings, add_post_to_db, get_posts_from_db
 from application.utils.utils import *
 
 tramp_bp = Blueprint('trampoline', __name__)
@@ -541,6 +541,20 @@ def landing_page():
     return render_template("trampoline/landing_page.html", user=session.get("name"), leaderboard=leaderboard)
 
 
+@tramp_bp.route('/logger/social/post', methods=["POST"])
+def make_post():
+    """
+    Adds a post to the db
+    """
+    #current_user = Athlete.load(session.get('name'))
+    name = session.get('name')
+    post = request.json.get("post")
+    date = request.json.get("date")
+    add_post_to_db(name, date, post)
+    return {"success": True}
+
+
+
 @tramp_bp.route('/logger/athlete/messages', methods=["POST"])
 def athlete_message():
     """
@@ -933,7 +947,10 @@ def chart():
 @tramp_bp.route("/logger/social", methods=["GET"])
 def social():
     current_user = session.get('name')
-    return render_template("trampoline/social.html", user=current_user)
+    all_posts = get_posts_from_db()
+    # Sort posts by date
+    all_posts = sorted(all_posts, key=lambda x: datetime.datetime.strptime(x['date'], "%m/%d/%Y %H:%M:%S %p"))
+    return render_template("trampoline/social.html", user=current_user, all_posts=all_posts)
 
 
 @tramp_bp.route("/logger/user/<name>", methods=["GET"])

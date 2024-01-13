@@ -1,16 +1,25 @@
 {% extends "trampoline/base.html" %}
 
 {% block content %}
+<style>
+  .profile-pic {
+    font-size: 20px;
+  }
+
+  p.dark-mode-color {
+    color: white;
+  }
+</style>
 <br><br>
 <div class="container">
   <div class="container mt-5">
-    <div class="card">
+    <div class="card color-changing">
       <div class="card-body">
         <div class="form-group">
-          <textarea id="post-text" class="form-control" rows="3"
+          <textarea id="post-text" class="form-control color-changing" rows="3"
             placeholder="Share your routines and turns for today..."></textarea>
         </div>
-        <button class="btn btn-success" onclick="addPost()">Post</button>
+        <button class="btn btn-success color-changing" onclick="addPost()">Post</button>
       </div>
     </div>
 
@@ -25,13 +34,15 @@
   <script>
     // Sample array of previous posts
     var previousPosts = [
-      { userName: "User1", postText: "This is the first post." },
-      { userName: "User2", postText: "Another post with multiple\nlines." },
+      {% for post in all_posts %}
+      { userName: "{{post.name}}", postText: "{{post.post}}", "date": "{{post.date}}" },
+      {% endfor %}
       // Add more posts as needed
     ];
 
     function addPost() {
       var postText = document.getElementById("post-text").value;
+      var feedContainer = document.getElementById("feed");
 
       if (postText.trim() !== "") {
         // Get the user's name (replace this with your authentication logic)
@@ -39,46 +50,55 @@
 
         var currentDate = new Date();
         var formattedDate = currentDate.toLocaleDateString() + " " + currentDate.toLocaleTimeString();
-
-        var postElement = document.createElement("div");
-        postElement.className = "card mt-3";
-        postElement.innerHTML = `
-            <div class="card-body">
-                <h6 class="card-subtitle mb-2 text-muted">${userName} - ${formattedDate}</h6>
-                <p class="card-text">${postText.replace(/\n/g, '<br>')}</p>
-            </div>
-        `;
-
-        // Insert the new post at the beginning of the feed
-        var feedContainer = document.getElementById("feed");
-        feedContainer.insertBefore(postElement, feedContainer.firstChild);
+        addPostWithDetails(feedContainer, userName, formattedDate, postText);
 
         // Clear the textarea after posting
         document.getElementById("post-text").value = "";
+        addPostToDB(userName, formattedDate, postText);
       }
+    }
+
+    // Modified addPost function to accept details and insert post at the beginning of the feed
+    function addPostWithDetails(container, userName, formattedDate, postText) {
+      var postElement = document.createElement("div");
+      postElement.className = "card mt-3";
+      postElement.innerHTML = `
+        <div class="card-body color-changing">
+            <h6 class="card-subtitle mb-2 text-muted"><a href="/logger/user/${userName}"><i class="fa fa-user-circle-o fa-5x color-changing profile-pic"></i> ${userName}</a> - ${formattedDate}</h6>
+            <p class="card-text color-changing">${postText.replace(/\n/g, '<br>')}</p>
+        </div>
+    `;
+
+      // Insert the new post at the beginning of the feed
+      container.insertBefore(postElement, container.firstChild);
     }
 
     // Function to add posts to the feed
     function displayPreviousPosts() {
       var feedContainer = document.getElementById("feed");
-
       previousPosts.forEach(function (post) {
-        var postElement = document.createElement("div");
-        postElement.className = "card mt-3";
-        postElement.innerHTML = `
-            <div class="card-body">
-                <h6 class="card-subtitle mb-2 text-muted">${post.userName} - ${post.date}</h6>
-                <p class="card-text">${post.postText.replace(/\n/g, '<br>')}</p>
-            </div>
-        `;
-
-        // Insert each previous post at the beginning of the feed
-        feedContainer.insertBefore(postElement, feedContainer.firstChild);
+        addPostWithDetails(feedContainer, post.userName, post.date, post.postText, post.date);
       });
     }
 
     // Call the function to display previous posts
     displayPreviousPosts();
+
+    function addPostToDB(name, date, post) {
+      const data = { name: name, date: date, post: post }
+      $.ajax({
+        type: 'POST',
+        url: "/logger/social/post",
+        contentType: 'application/json',
+        data: JSON.stringify(data),
+        success: function (data) {
+          if (data.success) {
+            console.log("successfully saved data");
+            alert("Success");
+          }
+        }
+      });
+    }
   </script>
 </div>
 {% endblock %}
