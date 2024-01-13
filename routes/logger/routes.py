@@ -960,7 +960,11 @@ def user_page(name):
             n_dd = turn['dd']
             if n_dd > biggest_dd:
                 biggest_dd = n_dd
-    
+
+
+    private_profile = user.private if name != "" else True
+    if name == current_user:
+        private_profile = False
     return render_template(
         "trampoline/user_page.html",
         user=current_user,
@@ -969,7 +973,7 @@ def user_page(name):
         athlete_optional=user.optional if name != "" else "",
         dm1=user.dm_prelim1 if name != "" else "",
         dm2=user.dm_prelim2 if name != "" else "",
-        private=user.private if name != "" else True,
+        private=private_profile,
         tramp_level=user.levels[0] if name != "" else "",
         dmt_level=user.levels[1] if name != "" else "",
         tumbling_level=user.levels[2] if name != "" else "",
