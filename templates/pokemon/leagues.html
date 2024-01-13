@@ -42,22 +42,6 @@
 
 <br><br>
 <div class="container d-flex align-items-center justify-content-center flex-column">
-  <!--
-  <table class="table table-striped bg-white" style="border: 1px solid; border-radius: 10px;">
-    <tr>
-      <th>Name</th><th>Ranking URL</th><th>Data URL</th><th>League Value</th><th>Cup Value</th><th>View Link</th>
-    </tr>
-    {% for league in leagues %}
-    <tr>
-      <td>{{league.name}}</td><td>{{league.ranking_url}}</td><td>{{league.data_url}}</td>
-      <td>{{league.league_value}}</td><td>{{league.cup_value}}</td>
-      <td>
-        <a class="btn btn-info" href="/?league={{league.name}}">View</a>
-      </td>
-    </tr>
-    {% endfor %}
-  </table>
--->
 
   <ul class="nav nav-tabs bg-dark w-100">
     {% for league in split_leagues %}

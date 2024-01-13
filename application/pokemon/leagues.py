@@ -118,6 +118,7 @@ def refresh_leagues():
         League("Spring", "1500-spring", "great-spring"),
         League("Sunshine", "1500-sunshine", "great-sunshine"),
         League("GLSingleType", "1500-single", "great-single"),
+        League("Fantasy", "1500-fantasy", "great-fantasy"),
 
         # Ultra cups
         League("UL", "2500", "ultra"),
