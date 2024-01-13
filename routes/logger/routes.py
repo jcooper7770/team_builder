@@ -944,6 +944,7 @@ def chart():
             })
     return render_template("graph.html", user=current_user, datapts=datapts)
 
+
 @tramp_bp.route("/logger/social", methods=["GET"])
 def social():
     current_user = session.get('name')
@@ -957,6 +958,10 @@ def social():
 def user_page(name):
     current_user = session.get('name')
     event_turns, user_data = get_turn_dds()
+    all_posts = get_posts_from_db()
+    user_posts = [post for post in all_posts if post.get('name') == current_user]
+    # Sort posts by date
+    user_posts = sorted(user_posts, key=lambda x: datetime.datetime.strptime(x['date'], "%m/%d/%Y %H:%M:%S %p"), reverse=True)
     try:
         user = Athlete.load(name)
         name = user.name
@@ -997,5 +1002,6 @@ def user_page(name):
         total_flips=total_flips,
         total_turns=total_turns,
         biggest_flips=biggest_flips,
-        biggest_dd=biggest_dd
+        biggest_dd=biggest_dd,
+        user_posts=user_posts
     )

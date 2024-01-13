@@ -86,6 +86,15 @@
     font-weight: bold;
   }
 
+  .post-date {
+    font-size: 12px;
+    margin-top: 0px;
+  }
+  .post-title {
+    padding: 0px;
+    margin-bottom: 0px;
+  }
+
   i.dark-mode-color {
     color: white;
   }
@@ -175,6 +184,13 @@
   </section>
   <section class="highlighted-posts">
     <h2>Highlighted Posts</h2>
+    {% for post in user_posts %}
+    <div class="post color-changing">
+      <h4 class="post-title">Social Post</h4>
+      <p class="post-date">{{post.date}}</p>
+      <p>{{post.post}}</p>
+    </div>
+    {% endfor %}
     <div class="post color-changing">
       <h4>Trampoline Tricks</h4>
       <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed ut perspiciatis unde omnis iste natus error sit
