@@ -2,22 +2,28 @@ var curr_page = 1;
 var paginated_practices = [];
 $(document).ready(function() {
     // Set logger date to current local date if a search date isn't chosen
-    {% if url_for(request.endpoint) == "/logger" %}
+    {% if url_for(request.endpoint) == "/logger" or request.endpoint == "coach.coach_home" %}
     {% if not search_date %}
     {% if not current_date %}
     var date = new Date();
     date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
     document.getElementById("logger-date").value = date.toJSON().slice(0,10);
+    {% if request.endpoint != "coach.coach_home" %}
     document.getElementById("airtime-date").value = date.toJSON().slice(0,10);
+    {% endif %}
     {% else %}
     document.getElementById("logger-date").value = "{{current_date}}";
+    {% if request.endpoint != "coach.coach_home" %}
     document.getElementById("airtime-date").value = "{{current_date}}";
     document.getElementById("practice_date").value = "{{current_date}}";
     {% endif %}
+    {% endif %}
     {% else %}
     document.getElementById("logger-date").value = "{{search_date}}";
+    {% if request.endpoint != "coach.coach_home" %}
     document.getElementById("airtime-date").value = "{{search_date}}";
     document.getElementById("practice_date").value = "{{search_date}}";
+    {% endif %}
     {% endif %}
     {% endif %}
     paginate();

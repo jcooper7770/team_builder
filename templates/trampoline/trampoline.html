@@ -2,6 +2,19 @@
 {% block content %}
 <br>
 
+<style>
+  .page-desc {
+    background: rgba(255, 255, 255, 0.4);
+    border-radius: 10px;
+  }
+  .page-desc h4 {
+    margin-bottom: 0px;
+  }
+  .page-desc p {
+    font-size: 12px;
+  }
+</style>
+
 <!-- Tabs at bottom-->
 <div class="bottom-tabs">
   <ul class="nav nav-tabs fixed-bottom bg-dark color-changing">
@@ -16,12 +29,11 @@
 
 <div class="tab-content">
   <!-- Log section -->
-{% block logging %}
-  {% if request.endpoint != "coach.coach_home" %}
   <div id="log-tab" class="tab-pane fade show active">
-  {% else %}
-  <div id="log-tab" style="display: none;">
-  {% endif %}
+    <div class="container page-desc">
+      <h4>Log practice turns</h4>
+      <p>Here you can input your turns during your training</p>
+    </div>
     <div class="container mt-5" style="background: rgba(255,255,255,0.4); border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
       <div class="card-body form-group">
       <table align="center" width="100%">
@@ -37,8 +49,18 @@
                   <input type="text" id="name" name="name" placeholder="new username" value="{{username}}"
                     class="form-control" style="width:90%"><br>
                   {% else %}
+                  {% if request.endpoint != "coach.coach_home" %}
                   <input type="text" id="name" name="name" placeholder="new username" value="{{user}}" class="form-control" style="width:90%"
                     disabled>
+                    <input type="hidden" id="endpoint" name="endpoint" value="athlete">
+                    {% else %}
+                    <select name="name" class="form-control">
+                      {% for athlete in athletes %}
+                      <option value="{{athlete}}">{{athlete}}</option>
+                      {% endfor %}
+                    </select>
+                    <input type="hidden" id="endpoint" name="endpoint" value="coach">
+                    {% endif %}
                   {% endif %}
                 </div>
               </div>
@@ -170,6 +192,7 @@
       </div>
     </div>
 
+  {% if request.endpoint != "coach.coach_home" %}
     <!-- Goals -->
     <br><br>
     <div class="container">
@@ -287,8 +310,9 @@
         </table>
       </form>
     </div>
+  {% endif %}
+  <br><br>
   </div>
-  {% endblock %}
 
   <!-- Rating drop down template-->
   <template id="dropdown-template">
@@ -302,9 +326,13 @@
     </div>
   </template>
 
-  <br><br>
-
   <div id="practice-tab" class="tab-pane fade">
+    <div class="container page-desc">
+      <h4>View practice turns</h4>
+      <p>Here you can view all previous practices logged</p>
+    </div>
+{% block logging %}
+{% endblock %}
     <!--Navbar-->
     <!-- https://mdbootstrap.com/docs/b4/jquery/navigation/hamburger-menu/ -->
     <nav class="navbar navbar-dark bg-dark navbar-1 white color-changing">

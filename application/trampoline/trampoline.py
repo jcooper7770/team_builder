@@ -323,7 +323,7 @@ class Practice:
         """
         return len([turn for turn in self.turns if turn.skills])
 
-    def save(self, replace=False):
+    def save(self, replace=False, user=None):
         """
         Save the current practice
 
@@ -332,7 +332,7 @@ class Practice:
         """
         # save to the db
         #user_data = get_from_db(user=CURRENT_USER)
-        user = session.get('name')
+        user = user or session.get('name')
         user_data = get_from_db(user=user)
         try:
             last_turn_num = max([data[0] for data in user_data if data[2].date() == self.date and data[4] == self.event])

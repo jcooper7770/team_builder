@@ -2,7 +2,7 @@ import datetime
 
 from flask import Blueprint, render_template, request, session, redirect, url_for
 
-from application.trampoline.trampoline import Practice, current_user, Athlete
+from application.trampoline.trampoline import Practice, current_user, Athlete, ALL_SKILLS
 from application.utils.database import get_users_and_turns, get_user_goals
 from application.utils.utils import *
 
@@ -57,6 +57,7 @@ def coach_home():
         body=body,
         athletes=coach.athletes,
         current_athlete=current_athlete,
+        current_date=session.get('current_date').strftime("%Y-%m-%d") if session.get('current_date') else None,
         user=session.get('name'),
         goals=get_user_goals(current_user()),
         error_text=session.get('error'),
@@ -64,6 +65,7 @@ def coach_home():
         search_skills=session.get("search_skills", ""),
         user_turns=[],
         tags=["Competition", "Pit Training"],
+        all_skills=ALL_SKILLS
     )
 
 @coach_bp.route("/logger/coach/settings", methods=["GET", "POST"])

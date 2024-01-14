@@ -47,7 +47,7 @@ def _save_trampoline_data(request):
     custom_tags = request.form.get("custom_tags", "").split(',')
     tags.extend(custom_tags)
     set_current_event(event)
-    set_current_user(username)
+    #set_current_user(username)
     set_current_athlete(username)
     logger.info(f"Username: {username}")
     routines = convert_form_data(form_data, event=event, notes=notes)
@@ -112,7 +112,7 @@ def _save_trampoline_data(request):
     practice = Practice(form_date.date(), routines, event, tags)
     replace_practice = session.get('log', {}).get(form_date.strftime('%m-%d-%Y')) is not None
     print(f"~~~~~~~~~~~~replace: {replace_practice} - log {session.get('log')} - date {form_date.strftime('%m-%d-%Y')}")
-    saved_practice = practice.save(replace=replace_practice)
+    saved_practice = practice.save(replace=replace_practice, user=username)
     session['log'] = {}
 
     # Log the turns to the log file
@@ -146,6 +146,8 @@ def _save_trampoline_data(request):
 def trampoline_log():
     # POST/Redirect/GET to avoid resubmitting form on refresh
     if request.method == "POST":
+        endpoint = request.form.get("endpoint")
+        get_endpoint = "coach.coach_home" if endpoint == "coach" else "trampoline.trampoline_log"
         session["error"] = None
         try:
             _save_trampoline_data(request)
@@ -153,9 +155,10 @@ def trampoline_log():
             session["error"] = f"Error saving log data: {exception}"
             logging.error(f"Error saving trampoline log data: {exception}")
             log_data = get_log_data(request)
-            return redirect(url_for('trampoline.trampoline_log', routine=request.form.get('log'), log_lines=','.join(log_data)))
+            return redirect(url_for(get_endpoint, routine=request.form.get('log'), log_lines=','.join(log_data)))
 
-        return redirect(url_for('trampoline.trampoline_log'))
+        return redirect(url_for(get_endpoint))
+
 
     # Require user to be logged in to use the app
     if not session.get("name"):
@@ -213,7 +216,7 @@ def trampoline_log():
     else:
         log_text = request.args.get('routine', '')
     return render_template(
-        "trampoline/trampoline.html",
+        f"trampoline/trampoline.html",
         body=body, username=username,
         event=event,
         routine_text=log_text,

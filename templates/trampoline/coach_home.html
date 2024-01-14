@@ -12,7 +12,8 @@
 </div>
 
 <br>
-<div class="form-group tab-pane fade show active" align="center" id="log-tab">
+<div class="container form-group tab-pane fade show active" align="center" id="form" style="background: rgba(255,255,255,0.4); border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
+>
         <!--<form action="{{ url_for('trampoline.trampoline_log') }}" method="post" id="logger" name="logger" style="text-align:left;">-->
 
   <div class="form-row">
@@ -97,8 +98,7 @@ function changeView() {
               continue
             }
             var thead = table.children[0];
-            var title = thead.children[0].children[0].innerHTML;
-
+            var title = thead.children[0].children[0].children[0].innerHTML;
             var includes = false;
             for(ath of selected) {
               if(title.includes(ath)) {
