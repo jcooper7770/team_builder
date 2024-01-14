@@ -557,6 +557,29 @@ def make_post():
     return {"success": True}
 
 
+@tramp_bp.route('/logger/practice/post', methods=["POST"])
+def make_practice_post():
+    """
+    Adds a post to the db
+    """
+    #current_user = Athlete.load(session.get('name'))
+    name = session.get('name')
+    turns, _ = get_turn_dds(name)
+    practice = request.json.get('practice')
+    date, event = practice.split('_')
+    practice_turns = [turn for turn in turns[event] if turn['date'].strftime("%m-%d-%Y")==date]
+    total_flips = sum([turn['flips'] for turn in practice_turns])
+    #month, day, year = date.split("-")
+    #formatted_date = f"{month}/{day}/{year} 00:00:00 AM"
+    now = datetime.datetime.now()
+    formatted_date = now.strftime('%m/%d/%Y %H:%M:%S %p')
+    post = f"Posting practice from {date} on {event}"
+    post = f"[{event}] I submitted a practice (on {date}) with {total_flips} flips!"
+    add_post_to_db(name, formatted_date, post)
+    return {"success": True}
+
+
+
 
 @tramp_bp.route('/logger/athlete/messages', methods=["POST"])
 def athlete_message():
@@ -960,7 +983,7 @@ def social():
 @tramp_bp.route("/logger/user/<name>", methods=["GET"])
 def user_page(name):
     current_user = session.get('name')
-    event_turns, user_data = get_turn_dds()
+    #event_turns, user_data = get_turn_dds()
     all_posts = get_posts_from_db()
     user_posts = [post for post in all_posts if post.get('name') == current_user]
     # Sort posts by date

@@ -532,10 +532,36 @@ function addDropdownToTableHeader(tableHeader) {
   tableHeader.appendChild(dropdown);
 }
 
+// Add post button
+function addPostToTableHeader(header) {
+    const button = document.createElement("button");
+    button.classList = "btn btn-primary";
+    button.innerText = "Post To Feed"
+    button.addEventListener("click", function(e) {
+        e.preventDefault();
+        const name = e.target.parentNode.parentNode.parentNode.getAttribute("name");
+        const data = {practice: name}
+        $.ajax({
+            type: 'POST',
+            url: "/logger/practice/post",
+            contentType: 'application/json',
+            data: JSON.stringify(data),
+            success: function (data) {
+                console.log("successfully saved data");
+                alert("Post successful");
+            }
+        });
+    });
+    header.appendChild(button);
+}
+
 // Get all table headers and add the dropdown menu to each one
 const tableHeaders = document.querySelectorAll('#practice-header');
 tableHeaders.forEach(function (header) {
   addDropdownToTableHeader(header);
+
+  // add post option also
+  addPostToTableHeader(header);
 });
 
 // Event delegation for dynamically added rating options

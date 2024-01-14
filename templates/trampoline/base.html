@@ -74,13 +74,16 @@
     </a>
     <div id="navbarNav" class="collapse navbar-collapse top-nav">
       <ul class="navbar-nav main-nav">
-        <li class="nav-item{%if request.endpoint=='trampoline_log' %} active{% endif %}">
+        <li class="nav-item{%if request.endpoint=='trampoline.trampoline_log' %} active{% endif %}">
           <a class="nav-link" href="/logger">Logger</a>
         </li>
-        <li class="nav-item{%if request.endpoint=='about_trampoline' %} active{% endif %}">
+        <li class="nav-item{%if request.endpoint=='trampoline.social' %} active{% endif %}">
+          <a class="nav-link" href="/logger/social">Feed</a>
+        </li>
+        <li class="nav-item{%if request.endpoint=='trampoline.about_trampoline' %} active{% endif %}">
           <a class="nav-link" href="/logger/about">About</a>
         </li>
-        <li class="nav-item{%if request.endpoint=='resource_trampoline' %} active{% endif %}">
+        <li class="nav-item{%if request.endpoint=='trampoline.resource_trampoline' %} active{% endif %}">
           <a class="nav-link" href="/logger/resources">Resources</a>
         </li>
       </ul>

@@ -931,7 +931,7 @@ def convert_form_data(form_data, logger=print, event=EVENT, notes=None, get_athl
         re.findall("(\d+[o</]+)", turn) if not is_comment(turn, event) else turn.split(" ")
         for turn in turns
     ]
-    print(f"Regex split turns: {turn_skills}")
+    #print(f"Regex split turns: {turn_skills}")
     #turn_skills = [turn.split(' ') for turn in turns]
     #print(f"String split turns: {turn_skills}")
     if logger:
