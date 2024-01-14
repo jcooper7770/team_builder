@@ -2,11 +2,12 @@ flask
 Flask-Session
 requests
 #flask-login
-SQLAlchemy
+SQLAlchemy==1.4
 pymysql
 passlib
 Pillow
 PyMuPDF
+openai
 # had to run "pip3 install --upgrade pip setuptools wheel" before
 #opencv-contrib-python
 # for testing

@@ -872,6 +872,16 @@ def get_skill_difficulty(skill):
            + (0.1 if skill.flips == 3 else 0) # extra 0.1 for a triple flip
 
 
+def is_comment(string):
+    """
+    A turn written is a comment if it starts with "-" or "#"
+    """
+    for symbol in ["-", "#"]:
+        if string.startswith(symbol):
+            return True
+    return False
+
+
 def convert_form_data(form_data, logger=print, event=EVENT, notes=None, get_athlete=True):
     """
     Converts the data from the form into trampoline routines
@@ -916,7 +926,13 @@ def convert_form_data(form_data, logger=print, event=EVENT, notes=None, get_athl
     # Split by spaces for each skill
     #turns = form_data.split('\r\n')
     turns = form_data.splitlines()
-    turn_skills = [turn.split(' ') for turn in turns]
+    turn_skills = [
+        re.findall("(\d+[o</]+)", turn) if not is_comment(turn) else turn.split(" ")
+        for turn in turns
+    ]
+    print(f"Regex split turns: {turn_skills}")
+    #turn_skills = [turn.split(' ') for turn in turns]
+    #print(f"String split turns: {turn_skills}")
     if logger:
         logger(f"turn_skills: {turn_skills}")
 

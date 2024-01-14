@@ -36,7 +36,7 @@ from flask_session import Session
 from application.pokemon.subscription import sub_bp
 from application.pokemon.team_building import TeamCreater
 from application.pokemon.battle_sim import sim_battle
-from application.utils.database import set_table_name, get_simmed_battle, add_simmed_battle
+from application.utils.database import set_table_name, get_simmed_battle, add_simmed_battle, create_engine
 from application.utils.utils import *
 
 from routes.logger.routes import tramp_bp
