@@ -45,6 +45,13 @@
             <input class="form-control" type="text" id="username" name="username" placeholder="Username">
           </div>
           
+          <!-- Username -->
+          <div class="d-flex flex-column">
+            <p class="m-0">Name:</p>
+            <input class="form-control" type="text" id="firstname" name="first_name" placeholder="First Name">
+            <input class="form-control" type="text" id="lastname" name="last_name" placeholder="Last Name">
+          </div>
+
           <!-- Password -->
           <div class="d-flex flex-column">
             <p class="m-0">Password:</p>
@@ -115,7 +122,7 @@ signupButton.addEventListener("click", function(e) {
   signupForm.style.top = "15%";
   loginForm.style.top = "120%";
   headerText.innerText = "Sign Up";
-  cardBody.style.height = "450px";
+  cardBody.style.height = "550px";
 });
 loginButton.addEventListener("click", function(e) {
   e.preventDefault();

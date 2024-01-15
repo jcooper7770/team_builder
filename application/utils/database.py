@@ -75,6 +75,7 @@ def create_engine(table_name=None, timeout=60):
     )
     ENGINE = engine
     metadata = sqlalchemy.MetaData()
+    #table = sqlalchemy.Table(table_name, metadata, autoload_with=engine)
     table = sqlalchemy.Table(table_name, metadata, autoload=True, autoload_with=engine)
     try:
         table = sqlalchemy.Table(table_name, metadata, autoload=True, autoload_with=engine)
@@ -119,7 +120,8 @@ def get_user(user):
         'dm_finals1': user[13],
         'dm_finals2': user[14],
         'levels': json.loads(user[15]),
-        "coach_requests": json.loads(user[16])
+        "coach_requests": json.loads(user[16]),
+        'details': json.loads(user[17])
     }
 
 
@@ -422,7 +424,8 @@ def save_athlete(athlete):
             dm_prelims2=' '.join(athlete.dm_prelim2) if isinstance(athlete.dm_prelim2, list) else athlete.dm_prelim2,
             dm_finals1=' '.join(athlete.dm_finals1) if isinstance(athlete.dm_finals1, list) else athlete.dm_finals1,
             dm_finals2=' '.join(athlete.dm_finals2) if isinstance(athlete.dm_finals2, list) else athlete.dm_finals2,
-            levels=json.dumps(athlete.levels)
+            levels=json.dumps(athlete.levels),
+            details=json.dumps(athlete.details)
         )
         engine.execute(ins)
     else:
@@ -443,7 +446,8 @@ def save_athlete(athlete):
             dm_prelims2=' '.join(athlete.dm_prelim2) if isinstance(athlete.dm_prelim2, list) else athlete.dm_prelim2,
             dm_finals1=' '.join(athlete.dm_finals1) if isinstance(athlete.dm_finals1, list) else athlete.dm_finals1,
             dm_finals2=' '.join(athlete.dm_finals2) if isinstance(athlete.dm_finals2, list) else athlete.dm_finals2,
-            levels=json.dumps(athlete.levels)
+            levels=json.dumps(athlete.levels),
+            details=json.dumps(athlete.details)
         )
         engine.execute(update)
     

@@ -421,6 +421,8 @@ def sign_up():
     """
     if request.method == "POST":
         session["error"] = ""
+        first_name = request.form.get('first_name', '')
+        last_name = request.form.get('last_name', '')
         username = request.form.get("username", "")
         password = request.form.get("password", "")
         confirm = request.form.get("confirm", "")
@@ -449,7 +451,8 @@ def sign_up():
         hashed_password = sha256_crypt.encrypt(password)
         athlete = Athlete(
             username, private, password=hashed_password,
-            is_coach=is_coach, first_login=True, signup_date=datetime.datetime.today()
+            is_coach=is_coach, first_login=True, signup_date=datetime.datetime.today(),
+            first_name=first_name, last_name=last_name
         )
         athlete.save()
         session["previous_page"] = "trampoline.trampoline_log"
@@ -870,6 +873,8 @@ def update_user():
     optional = request.form.get("optional")
     pass1 = request.form.get('pass1')
     pass2 = request.form.get('pass2')
+    first_name = request.form.get('first_name')
+    last_name = request.form.get('last_name')
     tu_pass1 = request.form.get('tu-pass1')
     tu_pass2 = request.form.get('tu-pass2')
     tramp_level = request.form.get('level-tramp')
@@ -899,6 +904,8 @@ def update_user():
     athlete.tu_prelim1 = [skill for skill in tu_pass1.split()]
     athlete.tu_prelim2 = [skill for skill in tu_pass2.split()]
     athlete.levels = [tramp_level, dmt_level, tumbling_level]
+    athlete.details['first_name'] = first_name
+    athlete.details['last_name'] = last_name
     athlete.save()
     return redirect(url_for("trampoline.user_profile"))
 

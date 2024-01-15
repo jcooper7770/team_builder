@@ -134,7 +134,7 @@ class Athlete(User):
             password="", expand_comments=False, is_coach=False, athletes=[],
             first_login=False, signup_date=None, messages=[],
             tu_prelims1=[], tu_prelims2=[], tramp_level=10, dmt_level=10, tumbling_level=10,
-            coach_requests=[]
+            coach_requests=[], first_name="", last_name=""
         ):
         self.name = name
         self.compulsory = compulsory
@@ -155,6 +155,10 @@ class Athlete(User):
         self.messages = messages
         self.levels = [tramp_level, dmt_level, tumbling_level]
         self.coach_requests = coach_requests
+        self.details = {
+            "first_name": first_name,
+            "last_name": last_name
+        }
 
     def set_comp(self, skills):
         """
@@ -174,7 +178,10 @@ class Athlete(User):
         """
         Saves the user's routines onto a comp card
         """
-        comp_card_data = {'level': str(self.levels[0])}
+        comp_card_data = {
+            'level': str(self.levels[0]),
+            'name': f'{self.details.get("first_name")} {self.details.get("last_name")}'
+        }
 
         # compulsory
         total_dd = 0
@@ -203,7 +210,10 @@ class Athlete(User):
         """
         Save the user's double mini comp card
         """
-        comp_card_data = {'level': str(self.levels[1])}
+        comp_card_data = {
+            'level': str(self.levels[1]),
+            'name': f'{self.details.get("first_name")} {self.details.get("last_name")}'
+        }
 
         dmt_passes = {
             'prelims': [self.dm_prelim1.split(), self.dm_prelim2.split()],
@@ -249,7 +259,8 @@ class Athlete(User):
             'coach_requests': self.coach_requests,
             'first_login': self.first_login,
             'signup_date': str(self.signup_date),
-            'messages': self.messages
+            'messages': self.messages,
+            'details': json.dumps(self.details)
         }
         with open(file_name, 'w') as athlete_file:
             json.dump(athlete_data, athlete_file)
@@ -276,7 +287,9 @@ class Athlete(User):
                 signup_date=signup_date, messages=user['messages'],
                 dm_prelims1=user['dm_prelim1'], dm_prelims2=user['dm_prelim2'], dm_finals1=user['dm_finals1'], dm_finals2=user['dm_finals2'],
                 tramp_level=user['levels'][0], dmt_level=user['levels'][1], tumbling_level=user['levels'][2],
-                coach_requests=user['coach_requests']
+                coach_requests=user['coach_requests'],
+                first_name=user['details'].get('first_name', ''),
+                last_name=user['details'].get('last_name', ''),
             )
         except Exception as error:
             print(f"Error loading user '{name}' because: {error}")
