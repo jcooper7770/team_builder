@@ -16,10 +16,15 @@
     <div class="card color-changing">
       <div class="card-body">
         <div class="form-group">
+          {% if user %}
           <textarea id="post-text" class="form-control color-changing" rows="3"
             placeholder="Share your routines and turns for today..."></textarea>
+          {% else %}
+          <textarea id="post-text" class="form-control color-changing" rows="3"
+            placeholder="Login to Post" disabled></textarea>
+          {% endif %}
         </div>
-        <button class="btn btn-success color-changing" onclick="addPost()">Post</button>
+        <button class="btn btn-success color-changing" onclick="addPost()"{% if user !="" %} disabled{% endif %}>Post</button>
       </div>
     </div>
 
