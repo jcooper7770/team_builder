@@ -52,6 +52,9 @@ app.config["SESSION_TYPE"] = "filesystem"
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
 app.config["SQLALCHEMY_POOL_RECYCLE"] = 59 # for timing out queries
 app.secret_key = 'your_secret_key'
+UPLOAD_FOLDER = "static/uploads"
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 Session(app)
 
 app.register_blueprint(sub_bp, url_prefix="/sub")

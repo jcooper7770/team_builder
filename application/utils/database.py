@@ -157,7 +157,7 @@ def add_to_db(turns, user, event, practice_date, table=None, tags=[]):
             engine.execute(ins)
 
 
-def add_post_to_db(user, date, post):
+def add_post_to_db(user, date, post, filename):
     """
     Adds the pose to athlete_posts
     """
@@ -170,7 +170,8 @@ def add_post_to_db(user, date, post):
     ins = table.insert().values(
         name=user,
         date=date,
-        post=post
+        post=post,
+        filename=filename
     )
     engine.execute(ins)
 
@@ -185,7 +186,7 @@ def get_posts_from_db():
     all_posts = []
     # TODO: sort
     for post in posts:
-        all_posts.append({"name": post[0], "date": post[1], "post": post[2]})
+        all_posts.append({"name": post[0], "date": post[1], "post": post[2], "filename": post[3]})
     return all_posts
 
 

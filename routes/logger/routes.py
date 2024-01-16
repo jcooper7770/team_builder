@@ -2,9 +2,10 @@ import datetime
 import os
 from collections import defaultdict, OrderedDict
 
-from flask import Blueprint, jsonify, render_template, request, session, redirect, send_file, url_for
+from flask import Blueprint, jsonify, render_template, request, session, redirect, send_file, url_for, flash
 import subprocess
 from passlib.hash import sha256_crypt
+from werkzeug.utils import secure_filename
 
 from application.trampoline.trampoline import convert_form_data, get_leaderboards, pretty_print, Practice, current_user, set_current_user,\
      current_event, set_current_event, set_current_athlete,\
@@ -15,6 +16,8 @@ from application.utils.database import get_users_and_turns, insert_goal_to_db, g
 from application.utils.utils import *
 
 tramp_bp = Blueprint('trampoline', __name__)
+UPLOAD_FOLDER = os.path.join("static", "uploads")
+
 
 def get_log_data(request):
     """
@@ -554,9 +557,16 @@ def make_post():
     """
     #current_user = Athlete.load(session.get('name'))
     name = session.get('name')
-    post = request.json.get("post")
-    date = request.json.get("date")
-    add_post_to_db(name, date, post)
+    #post = request.json.get("post")
+    #date = request.json.get("date")
+    post = request.form.get('post')
+    date = request.form.get('date')
+    #post_file = request.json.get('file')
+    post_file = request.files.get('file')
+    print(f"file: {post_file}")
+    filename = os.path.join(UPLOAD_FOLDER, post_file.filename)
+    post_file.save(filename)
+    add_post_to_db(name, date, post, filename)
     return {"success": True}
 
 
@@ -577,11 +587,32 @@ def make_practice_post():
     now = datetime.datetime.now()
     formatted_date = now.strftime('%m/%d/%Y %H:%M:%S %p')
     post = f"Posting practice from {date} on {event}"
-    post = f"[{event}] I submitted a practice (on {date}) with {total_flips} flips!"
+    post = f"[{event}] I submitted a practice (on {date}) with {len(practice_turns)} turns, totaling {total_flips} flips!"
     add_post_to_db(name, formatted_date, post)
     return {"success": True}
 
 
+@tramp_bp.route('/logger/social/video/post', methods=['POST'])
+def upload_video():
+    if 'file' not in request.files:
+        flash('No file part')
+        return redirect(url_for('trampoline.social'))
+    file = request.files['file']
+    if file.filename == '':
+        flash('No image selected for uploading')
+        return redirect(url_for('trampoline.social'))
+    else:
+        filename = secure_filename(file.filename)
+        file.save(os.path.join(UPLOAD_FOLDER, filename))
+        #print('upload_video filename: ' + filename)
+        flash('Video successfully uploaded and displayed below')
+        return redirect(url_for('trampoline.social'))
+
+
+@tramp_bp.route('/display/<filename>')
+def display_video(filename):
+	#print('display_video filename: ' + filename)
+	return redirect(url_for('static', filename='uploads/' + filename), code=301)
 
 
 @tramp_bp.route('/logger/athlete/messages', methods=["POST"])
@@ -980,7 +1011,7 @@ def chart():
 
 @tramp_bp.route("/logger/social", methods=["GET"])
 def social():
-    current_user = session.get('name')
+    current_user = session.get('name', '')
     all_posts = get_posts_from_db()
     # Sort posts by date
     all_posts = sorted(all_posts, key=lambda x: datetime.datetime.strptime(x['date'], "%m/%d/%Y %H:%M:%S %p"))
@@ -1026,6 +1057,7 @@ def user_page(name):
         name=name,
         athlete_comp=user.compulsory if name != "" else "",
         athlete_optional=user.optional if name != "" else "",
+        athlete_details=user.details if name != "" else {},
         dm1=user.dm_prelim1 if name != "" else "",
         dm2=user.dm_prelim2 if name != "" else "",
         private=private_profile,
@@ -1036,5 +1068,5 @@ def user_page(name):
         total_turns=total_turns,
         biggest_flips=biggest_flips,
         biggest_dd=biggest_dd,
-        user_posts=user_posts
+        user_posts=user_posts,
     )

@@ -9,26 +9,48 @@
   p.dark-mode-color {
     color: white;
   }
+  .img-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .img-post {
+    height: 200px;
+  }
 </style>
 <br><br>
 <div class="container">
   <div class="container mt-5">
     <div class="card color-changing">
       <div class="card-body">
+        <p>
+          {% with messages = get_flashed_messages() %}
+          {% if messages %}
+        <ul>
+          {% for message in messages %}
+          <li>{{ message }}</li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+        {% endwith %}
+        </p>
         <div class="form-group">
           {% if user %}
           <textarea id="post-text" class="form-control color-changing" rows="3"
             placeholder="Share your routines and turns for today..."></textarea>
           {% else %}
-          <textarea id="post-text" class="form-control color-changing" rows="3"
-            placeholder="Login to Post" disabled></textarea>
+          <textarea id="post-text" class="form-control color-changing" rows="3" placeholder="Login to Post"
+            disabled></textarea>
           {% endif %}
         </div>
-        <button class="btn btn-success color-changing" onclick="addPost()"{% if user !="" %} disabled{% endif %}>Post</button>
+        <input id="post-file" type="file" name="file" autocomplete="off">
+        <button class="btn btn-success color-changing" onclick="addPost()" {% if user=="" %} disabled{% endif
+          %}>Post</button>
       </div>
     </div>
 
     <div id="feed" class="mt-3"></div>
+    <br><br>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
@@ -40,13 +62,18 @@
     // Sample array of previous posts
     var previousPosts = [
       {% for post in all_posts %}
-      { userName: "{{post.name}}", postText: "{{post.post}}", "date": "{{post.date}}" },
-      {% endfor %}
+    { userName: "{{post.name}}", postText: "{{post.post}}", date: "{{post.date}}", filename: '{{post.filename | replace("\\", "/")}}' },
+    {% endfor %}
       // Add more posts as needed
     ];
 
     function addPost() {
       var postText = document.getElementById("post-text").value;
+      var files = document.getElementById('post-file').files;
+      var filename = "";
+      if (files.length > 0){
+        filename = `/static/upload/${files[0].name}`;
+      }
       var feedContainer = document.getElementById("feed");
 
       if (postText.trim() !== "") {
@@ -55,7 +82,7 @@
 
         var currentDate = new Date();
         var formattedDate = currentDate.toLocaleDateString() + " " + currentDate.toLocaleTimeString();
-        addPostWithDetails(feedContainer, userName, formattedDate, postText);
+        addPostWithDetails(feedContainer, userName, formattedDate, postText, filename);
 
         // Clear the textarea after posting
         document.getElementById("post-text").value = "";
@@ -64,12 +91,27 @@
     }
 
     // Modified addPost function to accept details and insert post at the beginning of the feed
-    function addPostWithDetails(container, userName, formattedDate, postText) {
+    function addPostWithDetails(container, userName, formattedDate, postText, filename) {
       var postElement = document.createElement("div");
+      var fileElement = "";
+      if (filename != "") {
+        console.log(`filename: ${filename}`);
+        var filepath = `{{ url_for('static', filename='uploads/${filename}')}}`;
+        filepath = `/uploads/${filename.slice(15)}`;
+        if (filepath.endsWith(".mp4")) {
+          fileElement = `<video class="post-img" id="video" width="100%" controls>
+                <source src="${filepath}" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>`;
+        } else {
+          fileElement = `<div class="img-container"><img class="img-post" src="${filepath}"></div>`
+        }
+      }
       postElement.className = "card mt-3";
       postElement.innerHTML = `
         <div class="card-body color-changing">
             <h6 class="card-subtitle mb-2 text-muted"><a href="/logger/user/${userName}"><i class="fa fa-user-circle-o fa-5x color-changing profile-pic"></i> ${userName}</a> - ${formattedDate}</h6>
+            ${fileElement}
             <p class="card-text color-changing">${postText.replace(/\n/g, '<br>')}</p>
         </div>
     `;
@@ -82,7 +124,7 @@
     function displayPreviousPosts() {
       var feedContainer = document.getElementById("feed");
       previousPosts.forEach(function (post) {
-        addPostWithDetails(feedContainer, post.userName, post.date, post.postText, post.date);
+        addPostWithDetails(feedContainer, post.userName, post.date, post.postText, post.filename);
       });
     }
 
@@ -90,12 +132,33 @@
     displayPreviousPosts();
 
     function addPostToDB(name, date, post) {
-      const data = { name: name, date: date, post: post }
+      const files = document.getElementById('post-file').files;
+      var selectedFile;
+      if (files.length > 0) {
+        selectedFile = files[0];
+      } else {
+        selectedFile = null;
+      }
+      console.log(selectedFile);
+      const reader = new FileReader();
+      const content = reader.readAsDataURL(selectedFile);
+      const xxx = reader.result;
+      console.log(xxx);
+
+      var formData = new FormData();
+      formData.append('file', selectedFile)
+      formData.append('name', name);
+      formData.append('date', date);
+      formData.append('post', post);
+
+      /*
+      const data = { name: name, date: date, post: post, file: selectedFile }
       $.ajax({
         type: 'POST',
         url: "/logger/social/post",
         contentType: 'application/json',
-        data: JSON.stringify(data),
+        //data: JSON.stringify(data),
+        data: formData,
         success: function (data) {
           if (data.success) {
             console.log("successfully saved data");
@@ -103,6 +166,23 @@
           }
         }
       });
+      */
+      fetch('/logger/social/post', {
+        method: 'POST',
+        body: formData
+      })
+        .then(response => response.json())
+        .then(data => {
+          // Handle the response data
+          if (data.success){
+            console.log("Successfully saved data");
+            alert("Success");
+          }
+        })
+        .catch(error => {
+          // Handle errors
+          console.error('Error:', error);
+        });
     }
   </script>
 </div>
