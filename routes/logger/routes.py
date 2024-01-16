@@ -588,7 +588,7 @@ def make_practice_post():
     formatted_date = now.strftime('%m/%d/%Y %H:%M:%S %p')
     post = f"Posting practice from {date} on {event}"
     post = f"[{event}] I submitted a practice (on {date}) with {len(practice_turns)} turns, totaling {total_flips} flips!"
-    add_post_to_db(name, formatted_date, post)
+    add_post_to_db(name, formatted_date, post, filename="")
     return {"success": True}
 
 
