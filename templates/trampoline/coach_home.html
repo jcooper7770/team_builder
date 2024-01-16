@@ -19,10 +19,12 @@
     <div class="col-sm-4"><label>Athletes shown:</label></div>
     <div class="col">
       <ul id="shown_athletes" class="athlete-list mx-auto text-left">
-        {% for athlete in athletes %}
+        {% for athlete, athlete_data in users.items() %}
+        {% if not athlete_data.is_coach and athlete in athletes and athlete not in requests %}
         <li id="athlete_{{athlete}}">
-          <input type="checkbox" id="show_{{athlete}}" \>  {{athlete}}
+          <input type="checkbox" id="show_{{athlete}}" \>  {{athlete}} ({{athlete_data.details.first_name}} {{athlete_data.details.last_name}})
         </li>
+        {% endif %}
         {% endfor %}
       </ul>
     </div>
@@ -75,12 +77,23 @@ function sortAthletes(listId) {
 
 function changeView() {
     var selected = [];
+    const usernameRegex = /^(\w+)\s+\(.*\)$/;
+
+
     const athletesSelect = document.getElementById("after");
     const shownList = document.getElementById("shown_athletes");
     for (listItem of shownList.children) {
       const athleteName = listItem.innerText.trim();
       if (athleteName != "") {
-        selected.push(athleteName);
+        var athleteUsername = "";
+        console.log(`name: ${athleteName}`);
+        // Use the regex to extract the username
+        const match = athleteName.match(usernameRegex);
+        if (match && match.length > 1) {
+          athleteUsername = match[1];
+          console.log(`username: ${athleteUsername}`);
+          selected.push(athleteUsername);
+        } 
       }
     }
 

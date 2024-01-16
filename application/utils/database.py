@@ -470,7 +470,7 @@ def get_users_and_turns(only_users=False):
     user_result = engine.execute("SELECT * from `users`")
     conn = engine.connect()
     user_data = {
-        user[0].lower(): {"private": user[1], "is_coach": user[6], "athletes": json.loads(user[7])}
+        user[0].lower(): {"private": user[1], "is_coach": user[6], "athletes": json.loads(user[7]), 'details': json.loads(user[17])}
         for user in user_result
     }
     user_result.close()

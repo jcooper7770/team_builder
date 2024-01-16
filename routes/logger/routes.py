@@ -218,6 +218,7 @@ def trampoline_log():
         log_text = session.get('log', {}).get(date_to_use.strftime("%m-%d-%Y")) or request.args.get('routine', '')
     else:
         log_text = request.args.get('routine', '')
+    users, _ = get_users_and_turns(only_users=True)
     return render_template(
         f"trampoline/trampoline.html",
         body=body, username=username,
@@ -233,7 +234,8 @@ def trampoline_log():
         search_skills=session.get("search_skills", ""),
         user_turns=all_turns,
         tags=["Competition", "Pit Training"],
-        log_lines=request.args.get('log_lines', '').split(',')
+        log_lines=request.args.get('log_lines', '').split(','),
+        users=users
     )
 
 

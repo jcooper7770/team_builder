@@ -23,7 +23,7 @@
                 <select class="form-control" id="athletes_before" style="width: 100%;" multiple>
                   {% for athlete, athlete_data in users.items() %}
                   {% if not athlete_data.is_coach and athlete not in athletes and athlete not in requests %}
-                  <option value="{{athlete}}" id="option_{{athlete}}">{{athlete}}</option>
+                  <option value="{{athlete}}" id="option_{{athlete}}">{{athlete}} ({{athlete_data.details.first_name}} {{athlete_data.details.last_name}})</option>
                   {% endif %}
                   {% endfor %}
                 </select>
@@ -35,8 +35,10 @@
               </div>
               <div class="row">
                 <select class="form-control" name="coach_athletes" id="athletes_after" style="width: 100%;" multiple>
-                  {% for athlete in athletes %}
-                  <option value="{{athlete}}" id="option_{{athlete}}">{{athlete}}</option>
+                  {% for athlete, athlete_data in users.items() %}
+                  {% if not athlete_data.is_coach and athlete in athletes and athlete not in requests %}
+                  <option value="{{athlete}}" id="option_{{athlete}}">{{athlete}} ({{athlete_data.details.first_name}} {{athlete_data.details.last_name}})</option>
+                  {% endif %}
                   {% endfor %}
                 </select>
               </div>
@@ -45,8 +47,10 @@
               </div>
               <div class="row">
                 <ul id="athlete-list">
-                  {% for athlete in athletes %}
-                  <li>{{athlete}}</li>
+                  {% for athlete, athlete_data in users.items() %}
+                  {% if not athlete_data.is_coach and athlete in athletes and athlete not in requests %}
+                  <li>{{athlete}} ({{athlete_data.details.first_name}} {{athlete_data.details.last_name}})</li>
+                  {% endif %}
                   {% endfor %}
                 </ul>
               </div>
@@ -64,8 +68,10 @@
             <div class="col-sm-2">Pending athlete requests:</div>
             <div class="col-sm-10">
                 <select class="form-control" id="athletes_before" style="width: 100%;" multiple>
-                  {% for request in requests %}
-                  <option id="request_{{request}}">{{ request }}</option>
+                  {% for athlete, athlete_data in users.items() %}
+                  {% if not athlete_data.is_coach and athlete not in athletes and athlete in requests %}
+                  <option id="request_{{athlete}}">{{ athlete }} ({{athlete_data.details.first_name}} {{athlete_data.details.last_name}})</option>
+                  {% endif %}
                   {% endfor %}
                 </select>
             </div>

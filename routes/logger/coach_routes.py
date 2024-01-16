@@ -1,4 +1,5 @@
 import datetime
+import re
 
 from flask import Blueprint, render_template, request, session, redirect, url_for
 
@@ -51,6 +52,7 @@ def coach_home():
     body = "".join(html) if all_practice_tables else ""
 
     logging.info(f"error: {session.get('error', '')}")
+    users, _ = get_users_and_turns(only_users=True)
 
     return render_template(
         "trampoline/coach_home.html",
@@ -65,7 +67,8 @@ def coach_home():
         search_skills=session.get("search_skills", ""),
         user_turns=[],
         tags=["Competition", "Pit Training"],
-        all_skills=ALL_SKILLS
+        all_skills=ALL_SKILLS,
+        users=users
     )
 
 @coach_bp.route("/logger/coach/settings", methods=["GET", "POST"])
@@ -94,11 +97,11 @@ def coach_settings():
         athletes = request.form.getlist("coach_athletes")
         current_user = Athlete.load(session.get('name'))
         new_athletes, new_requests = [], []
-        for athlete in athletes:
-            if athlete in current_user.athletes:
-                new_athletes.append(athlete)
+        for athlete_username in athletes:
+            if athlete_username in current_user.athletes:
+                new_athletes.append(athlete_username)
             else:
-                new_requests.append(athlete)
+                new_requests.append(athlete_username)
 
         #current_user.athletes = sorted(athletes)
         current_user.athletes = sorted(new_athletes)

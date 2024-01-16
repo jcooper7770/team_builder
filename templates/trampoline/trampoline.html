@@ -59,8 +59,10 @@
                     <input type="hidden" id="endpoint" name="endpoint" value="athlete">
                     {% else %}
                     <select name="name" class="form-control">
-                      {% for athlete in athletes %}
-                      <option value="{{athlete}}">{{athlete}}</option>
+                      {% for athlete, athlete_data in users.items() %}
+                      {% if not athlete_data.is_coach and athlete in athletes and athlete not in requests %}
+                      <option value="{{athlete}}">{{athlete}} ({{athlete_data.details.first_name}} {{athlete_data.details.last_name}})</option>
+                      {% endif %}
                       {% endfor %}
                     </select>
                     <input type="hidden" id="endpoint" name="endpoint" value="coach">
