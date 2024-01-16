@@ -98,7 +98,7 @@
         console.log(`filename: ${filename}`);
         var filepath = `{{ url_for('static', filename='uploads/${filename}')}}`;
         filepath = `/uploads/${filename.slice(15)}`;
-        if (filepath.endsWith(".mp4")) {
+        if (filepath.endsWith(".mp4") || filepath.endsWith(".mov")) {
           fileElement = `<video class="post-img" id="video" width="100%" controls>
                 <source src="${filepath}" type="video/mp4">
                 Your browser does not support the video tag.
