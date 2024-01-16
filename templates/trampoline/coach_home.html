@@ -20,7 +20,7 @@
     <div class="col">
       <ul id="shown_athletes" class="athlete-list mx-auto text-left">
         {% for athlete, athlete_data in users.items() %}
-        {% if not athlete_data.is_coach and athlete in athletes and athlete not in requests %}
+        {% if not athlete_data.is_coach and athlete in athletes %}
         <li id="athlete_{{athlete}}">
           <input type="checkbox" id="show_{{athlete}}" \>  {{athlete}} ({{athlete_data.details.first_name}} {{athlete_data.details.last_name}})
         </li>
