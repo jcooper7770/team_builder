@@ -41,6 +41,11 @@
       list-style-position: inside;
     }
 
+    .main-nav .nav-item.active {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 10px;
+    }
+
     /* @import url("templates/background.css");*/
   </style>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/background.css')}}" type="text/css" />
@@ -74,7 +79,7 @@
     </a>
     <div id="navbarNav" class="collapse navbar-collapse top-nav">
       <ul class="navbar-nav main-nav">
-        <li class="nav-item{%if request.endpoint=='trampoline.trampoline_log' %} active{% endif %}">
+        <li class="nav-item{%if request.endpoint=='trampoline.trampoline_log' or request.endpoint=='coach.coach_home' %} active{% endif %}">
           <a class="nav-link" href="/logger">Logger</a>
         </li>
         <li class="nav-item{%if request.endpoint=='trampoline.social' %} active{% endif %}">

@@ -59,6 +59,10 @@
     crossorigin="anonymous"></script>
 
   <script>
+    var MAX_VID_DURATION = 60;
+    var ALLOWED_UPLOAD_EXTS = [
+      ".mp4", ".mov", ".jpg", ".png"
+    ];
     // Sample array of previous posts
     var previousPosts = [
       {% for post in all_posts %}
@@ -67,27 +71,68 @@
       // Add more posts as needed
     ];
 
+    function checkUploadExt(filename) {
+      var allowed = false;
+      ALLOWED_UPLOAD_EXTS.forEach((ext) => {
+        if (filename.endsWith(ext)) {
+          allowed = true;
+          return
+        }
+      });
+      return allowed;
+    }
+
     function addPost() {
       var postText = document.getElementById("post-text").value;
       var files = document.getElementById('post-file').files;
       var filename = "";
+      var videoDuration = 0;
       if (files.length > 0){
         filename = `/static/upload/${files[0].name}`;
+        console.log(`filename: ${filename}`);
+        console.log(`file type: ${files[0].type}`);
+        if (!checkUploadExt(filename)) {
+          alert("Unsupported filetype uploaded");
+          return
+        }
+        // Set video duration
+        if (files[0].type.startsWith("video/")){
+          const vidElement = document.createElement("video");
+          vidElement.src = URL.createObjectURL(files[0]);
+          vidElement.ondurationchange = function() {
+            console.log(`duration: ${vidElement.duration}`);
+            videoDuration = vidElement.duration;
+          }
+        }
       }
       var feedContainer = document.getElementById("feed");
 
       if (postText.trim() !== "") {
-        // Get the user's name (replace this with your authentication logic)
-        var userName = "{{ user }}"; // Replace with your actual user's name
-
-        var currentDate = new Date();
-        var formattedDate = currentDate.toLocaleDateString() + " " + currentDate.toLocaleTimeString();
-        addPostWithDetails(feedContainer, userName, formattedDate, postText, filename);
-
-        // Clear the textarea after posting
-        document.getElementById("post-text").value = "";
-        addPostToDB(userName, formattedDate, postText);
+        // wait 300ms for  video duration to set
+        setTimeout(function() {
+          console.log(`vid dur: ${videoDuration}`);
+          if (videoDuration > MAX_VID_DURATION) {
+            alert(`Video too long (${videoDuration}s). Must be <60s`);
+          } else {
+            addPostElements(feedContainer, postText, filename);
+          }
+        }, 300);
+      } else {
+        alert("Please enter text for your post");
       }
+    }
+
+    function addPostElements(feedContainer, postText, filename) {
+      // Get the user's name (replace this with your authentication logic)
+      var userName = "{{ user }}"; // Replace with your actual user's name
+
+      var currentDate = new Date();
+      var formattedDate = currentDate.toLocaleDateString() + " " + currentDate.toLocaleTimeString();
+      addPostWithDetails(feedContainer, userName, formattedDate, postText, filename);
+
+      // Clear the textarea after posting
+      document.getElementById("post-text").value = "";
+      addPostToDB(userName, formattedDate, postText);
     }
 
     // Modified addPost function to accept details and insert post at the beginning of the feed
