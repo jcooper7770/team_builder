@@ -581,6 +581,7 @@ def make_practice_post():
     name = session.get('name')
     turns, _ = get_turn_dds(name)
     practice = request.json.get('practice')
+    tags = request.json.get('tags', [])
     date, event = practice.split('_')
     practice_turns = [turn for turn in turns[event] if turn['date'].strftime("%m-%d-%Y")==date]
     total_flips = sum([turn['flips'] for turn in practice_turns])
@@ -590,6 +591,9 @@ def make_practice_post():
     formatted_date = now.strftime('%m/%d/%Y %H:%M:%S %p')
     post = f"Posting practice from {date} on {event}"
     post = f"[{event}] I submitted a practice (on {date}) with {len(practice_turns)} turns, totaling {total_flips} flips!"
+    tagsText = " ".join(f"#{tag}" for tag in tags)
+    post = f"""[{event}] I submitted a practice (on {date}) with {len(practice_turns)} turns, totaling {total_flips} flips!
+    {tagsText}"""
     add_post_to_db(name, formatted_date, post, filename="")
     return {"success": True}
 

@@ -540,7 +540,15 @@ function addPostToTableHeader(header) {
     button.addEventListener("click", function(e) {
         e.preventDefault();
         const name = e.target.parentNode.parentNode.parentNode.getAttribute("name");
-        const data = {practice: name}
+        console.log(e.target.parentNode.parentNode.nextSibling);
+        const tagDivs = e.target.parentNode.parentNode.nextSibling.childNodes;
+        const tags = [];
+        tagDivs.forEach((div) => {
+            tags.push(div.innerText);
+        })
+        console.log(tagDivs);
+        console.log(tags);
+        const data = {practice: name, tags: tags}
         $.ajax({
             type: 'POST',
             url: "/logger/practice/post",
