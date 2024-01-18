@@ -896,9 +896,10 @@ $('[class^="expand-turn"]').click(function (e) {
     const turnDetailsDiv = e.target.parentNode.lastElementChild;
     if (turnDetailsDiv.style.display == "none") {
         turnDetailsDiv.style.display = "";
-        e.target.classList = "expand-tab fa fa-caret-up";
+        //e.target.classList = "expand-tab fa fa-caret-up";
+        e.target.classList = "expand-tab fa fa-minus";
     } else {
-        e.target.classList = "expand-tab fa fa-caret-down";
+        e.target.classList = "expand-tab fa fa-plus";
         turnDetailsDiv.style.display = "none";
     }
 });

@@ -528,7 +528,8 @@ def skills_table(skills, title="Routines", expand_comments=False, rating=None, t
         # Add hidden row
         #skills_table.new_row()
         #skills_table.add_cell(f"<b><a id='copy-text' title='Copy text' href='#'>{total_turn_num}</a></b>{note_html}")
-        skills_table.add_cell(f'<i class="expand-turn fa fa-caret-down"></i>{cell_value}{note_html}<br><div style="display: none"><u><b>Turn:</b></u> {next_line}<br><b><u>Total:</u></b> {totals_line}</div>', colspan=most_cols)
+        #skills_table.add_cell(f'<i class="expand-turn fa fa-caret-down"></i>{cell_value}{note_html}<br><div style="display: none"><u><b>Turn:</b></u> {next_line}<br><b><u>Total:</u></b> {totals_line}</div>', colspan=most_cols)
+        skills_table.add_cell(f'<i class="expand-turn fa fa-plus"></i>{cell_value}{note_html}<br><div style="display: none"><u><b>Turn:</b></u> {next_line}<br><b><u>Total:</u></b> {totals_line}</div>', colspan=most_cols)
         skills_table.end_row()
     skills_table.end_table()
     return skills_table.render()
