@@ -219,6 +219,17 @@ def trampoline_log():
     else:
         log_text = request.args.get('routine', '')
     users, _ = get_users_and_turns(only_users=True)
+
+    # stats page stuff
+    # Get user data
+    user_turns = get_user_turns(username)
+    airtimes = get_user_airtimes(username)
+    print(f"user turns: {len(user_turns)}")
+
+    # Make tables and datapts
+    all_skills_ordered, dmt_passes_ordered, tumbling_skills_ordered = create_skill_tables(user_turns)
+    datapts = create_user_stats(request, airtimes)
+
     return render_template(
         f"trampoline/trampoline.html",
         body=body, username=username,
@@ -226,7 +237,7 @@ def trampoline_log():
         routine_text=log_text,
         user=session.get('name'),
         goals=get_user_goals(current_user()),
-        airtimes=get_user_airtimes(current_user()),
+        airtimes=airtimes,
         all_skills=ALL_SKILLS,
         error_text=session.get('error'),
         search_date=session.get("search_date").strftime("%Y-%m-%d") if session.get("search_date") else None,
@@ -235,7 +246,14 @@ def trampoline_log():
         user_turns=all_turns,
         tags=["Competition", "Pit Training"],
         log_lines=request.args.get('log_lines', '').split(','),
-        users=users
+        users=users,
+        # user stats stuff
+        datapts=datapts,
+        chart_start=request.args.get('chart_start', ""),
+        chart_end=request.args.get('chart_end', ""),
+        all_skills_table=all_skills_ordered,
+        dmt_passes=dmt_passes_ordered,
+        tumbling_skills=tumbling_skills_ordered
     )
 
 
@@ -685,12 +703,43 @@ def user_stats():
         session["previous_page"] = "trampoline.user_stats"
         return redirect(url_for('trampoline.login'))
     body = ""
+
+    # get user from db
+    try:
+        user_data = get_user(username)
+    except Exception as exc:
+        logger.error(f"Exception: {exc}")
+        user_data = {}
+
+    if user_data.get("is_coach", False):
+        return redirect(url_for("coach.coach_settings"))
+
     # Get user data
     user_turns = get_user_turns(username)
     airtimes = get_user_airtimes(username)
     print(f"user turns: {len(user_turns)}")
 
-    # Collect all skills
+    # Make tables and datapts
+    all_skills_ordered, dmt_passes_ordered, tumbling_skills_ordered = create_skill_tables(user_turns)
+    datapts = create_user_stats(request, airtimes)
+    return render_template(
+        "trampoline/user_statistics.html",
+        body=body,
+        user=session.get('name'),
+        datapts=datapts,
+        chart_start=request.args.get('chart_start', ""),
+        chart_end=request.args.get('chart_end', ""),
+        error_text=session.get('error'),
+        all_skills=all_skills_ordered,
+        dmt_passes=dmt_passes_ordered,
+        tumbling_skills=tumbling_skills_ordered
+    )
+
+
+def create_skill_tables(user_turns):
+    """
+    Create the data for the skill tables on stats page
+    """
     all_skills = defaultdict(lambda: {'all': 0, 'trampoline': 0, 'dmt': 0, 'tumbling': 0})
     dmt_passes = defaultdict(lambda: {'all': 0, 'trampoline': 0, 'dmt': 0, 'tumbling': 0})
     tumbling_skills = defaultdict(lambda: {'all': 0, 'trampoline': 0, 'dmt': 0, 'tumbling': 0})
@@ -724,9 +773,9 @@ def user_stats():
             dmt_passes[dmt_pass]['dmt'] += 1
             dmt_passes[dmt_pass]['all'] += 1
 
-    print(f"---- dmt passes: {dmt_passes}") 
+    #print(f"---- dmt passes: {dmt_passes}") 
     # print the tables
-    tables = []
+    #tables = []
     
     all_skills_ordered = OrderedDict()
     print(all_skills.keys())
@@ -743,29 +792,20 @@ def user_stats():
     for key in sorted(tumbling_skills.keys(), key=lambda x: (len(x), x)):
         tumbling_skills_ordered[key] = tumbling_skills[key]
     print(all_skills_ordered)
+    return all_skills_ordered, dmt_passes_ordered, tumbling_skills_ordered
 
-    body = ""
-    # User charts
+
+def create_user_stats(request, airtimes):
+    """
+    Create all datapoints for user stats
+    """
+    current_user = session.get('name')
     start_date = request.args.get('chart_start')
     if start_date:
         start_date = datetime.datetime.strptime(start_date, "%m/%d/%Y")
     end_date = request.args.get('chart_end')
     if end_date:
         end_date = datetime.datetime.strptime(end_date, "%m/%d/%Y")
-
-    current_user = session.get('name')
-    if not session.get("name"):
-        session["previous_page"] = "trampoline.user_stats"
-        return redirect(url_for('trampoline.login'))
-    # get user from db
-    try:
-        user_data = get_user(current_user)
-    except Exception as exc:
-        logger.error(f"Exception: {exc}")
-        user_data = {}
-
-    if user_data["is_coach"]:
-        return redirect(url_for("coach.coach_settings"))
 
     event_turns, _ = get_turn_dds()
     datapts = {}
@@ -796,6 +836,7 @@ def user_stats():
             # skip other users
             if current_user and turn['user'].lower() != current_user:
                 continue 
+            
             turn_date = str(turn['date']).split()[0]
             if start_date and turn['date'] < start_date:
                 continue
@@ -826,18 +867,7 @@ def user_stats():
 
     # airtimes data
     datapts['airtimes'] = [{'x': airtime['date'], 'y': float(airtime['airtime'])} for airtime in airtimes if airtime['airtime']]
-    return render_template(
-        "trampoline/user_statistics.html",
-        body=body,
-        user=session.get('name'),
-        datapts=datapts,
-        chart_start=request.args.get('chart_start', ""),
-        chart_end=request.args.get('chart_end', ""),
-        error_text=session.get('error'),
-        all_skills=all_skills_ordered,
-        dmt_passes=dmt_passes_ordered,
-        tumbling_skills=tumbling_skills_ordered
-    )
+    return datapts
 
 
 @tramp_bp.route("/logger/user")
