@@ -28,6 +28,7 @@
   .hashtag:hover {
     text-decoration: underline;
     /* Add any other styling as needed */
+    cursor: pointer;
   }
 
   .search-div {
@@ -47,6 +48,10 @@
     border: none;
     background: none;
     margin-left: 5px;
+  }
+  .post-header {
+    display: flex;
+    justify-content: space-between;
   }
 </style>
 <div class="">
@@ -212,11 +217,18 @@
       }
       postElement.className = "card mt-3";
       const formattedText = formatPost(postText);
+      var deleteButton = "";
+      if (userName == "{{user}}") {
+        deleteButton  = `<button class="btn btn-danger delete-button">Delete</button>`
+      }
       postElement.innerHTML = `
-        <div class="card-body color-changing">
-            <h6 class="card-subtitle mb-2 text-muted"><a href="/logger/user/${userName}"><i class="fa fa-user-circle-o fa-5x color-changing profile-pic"></i> ${userName}</a> - ${formattedDate}</h6>
-            ${fileElement}
-            <p class="card-text color-changing">${formattedText.replace(/\n/g, '<br>')}</p>
+        <div class="card-body color-changing post-card">
+          <div class="card-subtitle mb-2 post-header">
+            <h6 class="text-muted"><a href="/logger/user/${userName}"><i class="fa fa-user-circle-o fa-5x color-changing profile-pic"></i> ${userName}</a> - ${formattedDate}</h6>
+            ${deleteButton}
+          </div>
+          ${fileElement}
+          <p class="card-text color-changing">${formattedText.replace(/\n/g, '<br>')}</p>
         </div>
     `;
 
@@ -313,6 +325,14 @@
       const searchText = e.target.innerText;
       searchInput.value = searchText;
       searchForText(searchText);
+     });
+
+     $(document).on('click', '.delete-button', function(e) {
+      const name = e.target.previousElementSibling.firstElementChild.innerText;
+      console.log(name);
+      if (name == " {{ user }}") {
+        console.log("!!")
+      }
      });
 
   </script>
