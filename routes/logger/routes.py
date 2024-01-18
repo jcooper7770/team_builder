@@ -12,7 +12,7 @@ from application.trampoline.trampoline import convert_form_data, get_leaderboard
      ALL_SKILLS, get_leaderboards, Athlete, get_user_turns, get_turn_dds
 from application.utils.database import get_users_and_turns, insert_goal_to_db, get_user_goals, complete_goal,\
     delete_goal_from_db, get_user, add_airtime_to_db, get_user_airtimes, delete_airtime_from_db,\
-    rate_practice_in_db, get_ratings, add_post_to_db, get_posts_from_db
+    rate_practice_in_db, get_ratings, add_post_to_db, get_posts_from_db, delete_post_from_db
 from application.utils.utils import *
 
 tramp_bp = Blueprint('trampoline', __name__)
@@ -552,11 +552,22 @@ def landing_page():
     return render_template("trampoline/landing_page.html", user=session.get("name"), leaderboard=leaderboard)
 
 
-@tramp_bp.route('/logger/social/post', methods=["POST"])
+@tramp_bp.route('/logger/social/post', methods=["POST", "DELETE"])
 def make_post():
     """
     Adds a post to the db
     """
+    if request.method == "DELETE":
+        print("testing")
+        name = request.json.get('name')
+        date = request.json.get('date').split('-')[1].strip()
+        file_to_delete = request.json.get('file')
+        try:
+            print(delete_post_from_db(name.strip(), date))
+            os.remove(file_to_delete)
+            return {"success": True}
+        except Exception as error:
+            return {"success": False, "error": str(error)}
     #current_user = Athlete.load(session.get('name'))
     name = session.get('name')
     #post = request.json.get("post")

@@ -49,9 +49,14 @@
     background: none;
     margin-left: 5px;
   }
+
   .post-header {
     display: flex;
     justify-content: space-between;
+  }
+
+  .delete-button {
+    font-size: 15px;
   }
 </style>
 <div class="">
@@ -219,7 +224,7 @@
       const formattedText = formatPost(postText);
       var deleteButton = "";
       if (userName == "{{user}}") {
-        deleteButton  = `<button class="btn btn-danger delete-button">Delete</button>`
+        deleteButton = `<button class="btn btn-danger delete-button" onclick="deletePost(this)"><i class="fa fa-trash" aria-hidden="true"></i></button>`
       }
       postElement.innerHTML = `
         <div class="card-body color-changing post-card">
@@ -256,14 +261,6 @@
 
       return formattedText;
     }
-    /*
-    function formatPost(postText) {
-      // Format hashtags to be inside spans
-      const regex = /#(\w+)/g;
-      const formattedText = postText.replace(regex, '<span class="hashtag">#$1</span' >);
-      return formattedText;
-    }
-    */
 
     function addPostToDB(name, date, post) {
       const files = document.getElementById('post-file').files;
@@ -287,54 +284,78 @@
       formData.append('date', date);
       formData.append('post', post);
 
-      /*
-      const data = { name: name, date: date, post: post, file: selectedFile }
-      $.ajax({
-        type: 'POST',
-        url: "/logger/social/post",
-        contentType: 'application/json',
-        //data: JSON.stringify(data),
-        data: formData,
-        success: function (data) {
-          if (data.success) {
-            console.log("successfully saved data");
-            alert("Success");
-          }
-        }
-      });
-      */
       fetch('/logger/social/post', {
         method: 'POST',
         body: formData
       })
-        .then(response => response.json())
-        .then(data => {
-          // Handle the response data
-          if (data.success) {
-            console.log("Successfully saved data");
-            alert("Success");
-          }
-        })
-        .catch(error => {
-          // Handle errors
-          console.error('Error:', error);
-        });
-     }
+      .then(response => response.json())
+      .then(data => {
+        // Handle the response data
+        if (data.success) {
+          console.log("Successfully saved data");
+          alert("Success");
+        }
+      })
+      .catch(error => {
+        // Handle errors
+        console.error('Error:', error);
+      });
+    }
 
-     $(document).on('click', '.hashtag', function(e){
+    $(document).on('click', '.hashtag', function (e) {
       const searchText = e.target.innerText;
       searchInput.value = searchText;
       searchForText(searchText);
-     });
+    });
 
-     $(document).on('click', '.delete-button', function(e) {
+    $(document).on('click', '.delete-button', function (e) {
       const name = e.target.previousElementSibling.firstElementChild.innerText;
       console.log(name);
       if (name == " {{ user }}") {
         console.log("!!")
       }
-     });
+    });
 
+    function deletePost(e) { 
+      console.log(e);
+      const name = e.previousElementSibling.firstElementChild.innerText;
+      const date = e.previousElementSibling.innerText;
+      console.log(`Deleting name: '${name}' - date: '${date}'`);
+      // TODO: Replace with bootstrap modal
+      if (confirm(`Are you sure you want to delete this post?`)) {
+        console.log("deleted");
+        const sibling = e.parentNode.nextElementSibling;
+        var fullFilename = "";
+        if (sibling.className == "img-container") {
+          const src = sibling.firstElementChild.src;
+          const filename = src.split("/")[4];
+          fullFilename = `static/uploads/${filename}`;
+        }
+        const data = {
+          name: name,
+          date: date,
+          file: fullFilename,
+        }
+
+        $.ajax({
+          type: 'DELETE',
+          url: "/logger/social/post",
+          contentType: 'application/json',
+          data: JSON.stringify(data),
+          success: function (data) {
+            if (data.success) {
+              console.log("Successfully deleted data");
+              alert("Success");
+              const card = e.parentNode.parentNode.parentNode;
+              const feed = e.parentNode.parentNode.parentNode.parentNode;
+              feed.removeChild(card);
+            } else {
+              console.error(data.error)
+            }
+          }
+        });
+      }
+    }
   </script>
 </div>
 {% endblock %}
