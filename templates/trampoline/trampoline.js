@@ -535,7 +535,7 @@ function addDropdownToTableHeader(tableHeader) {
 // Add post button
 function addPostToTableHeader(header) {
     const button = document.createElement("button");
-    button.classList = "btn btn-primary";
+    button.classList = "btn btn-primary color-changing";
     button.innerText = "Post To Feed"
     button.addEventListener("click", function(e) {
         e.preventDefault();

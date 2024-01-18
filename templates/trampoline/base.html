@@ -209,8 +209,14 @@
           e.classList.remove("table-light");
           e.classList.add("table-dark");
         }
-        if (e.tagName == "TEXTAREA" && e.id == "log") {
-          e.style.background = "repeating-linear-gradient(transparent, transparent 19px, black 19px, black 20px) #7077A1 0 9px";
+        if (e.tagName == "TEXTAREA") {
+          e.style.color = "white";
+          e.classList.add("white-placeholder");
+          if (e.id == "log") {
+            e.style.background = "repeating-linear-gradient(transparent, transparent 19px, black 19px, black 20px) #7077A1 0 9px";
+          }
+        }
+        if (e.tagName == "INPUT") {
           e.style.color = "white";
           e.classList.add("white-placeholder");
         }
@@ -249,8 +255,14 @@
           e.classList.add("table-light");
           e.classList.remove("table-dark");
         }
-        if (e.tagName == "TEXTAREA" && e.id == "log") {
-          e.style.backgroundImage = "repeating-linear-gradient(transparent, transparent 19px, #ddd 19px, #ddd 20px)";
+        if (e.tagName == "TEXTAREA") {
+          e.style.color = "";
+          e.classList.remove("white-placeholder");
+          if (e.id == "log") {
+            e.style.backgroundImage = "repeating-linear-gradient(transparent, transparent 19px, #ddd 19px, #ddd 20px)";
+          }
+        }
+        if (e.tagName == "INPUT") {
           e.style.color = "";
           e.classList.remove("white-placeholder");
         }
