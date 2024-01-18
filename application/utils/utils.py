@@ -507,8 +507,10 @@ def skills_table(skills, title="Routines", expand_comments=False, rating=None, t
         note_html = ""
         if turn.note:
             display = "none" if not expand_comments else "inline"
-            note_html = f' <i title="toggle comment" class="fa fa-comments" id="unhide-note"></i> <span id="hidden-note" style="display:{display};">{turn.note}</span>'
-        skills_table.add_cell(f"<b><a id='copy-text' title='Copy text' href='#'>{total_turn_num}</a></b>{note_html}")
+            hidden_note = f'<span id="hidden-note" style="display:{display};"><br><i>{turn.note}</i></span>'
+            note_html = f' <i title="toggle comment" class="fa fa-comments" id="unhide-note"></i> {hidden_note}'
+        #skills_table.add_cell(f"<b><a id='copy-text' title='Copy text' href='#'>{total_turn_num}</a></b>{note_html}")
+        skills_table.add_cell(f"<b><a id='copy-text' title='Copy text' href='#'>{total_turn_num}</a></b>", width="10px")
 
         num_skills = len([skill for skill in turn.skills if skill.shorthand not in NON_SKILLS])
         total_skills += num_skills
@@ -526,7 +528,7 @@ def skills_table(skills, title="Routines", expand_comments=False, rating=None, t
         # Add hidden row
         #skills_table.new_row()
         #skills_table.add_cell(f"<b><a id='copy-text' title='Copy text' href='#'>{total_turn_num}</a></b>{note_html}")
-        skills_table.add_cell(f'<i class="expand-turn fa fa-caret-down"></i>{cell_value}<br><div style="display: none"><u><b>Turn:</b></u> {next_line}<br><b><u>Total:</u></b> {totals_line}</div>', colspan=most_cols)
+        skills_table.add_cell(f'<i class="expand-turn fa fa-caret-down"></i>{cell_value}{note_html}<br><div style="display: none"><u><b>Turn:</b></u> {next_line}<br><b><u>Total:</u></b> {totals_line}</div>', colspan=most_cols)
         skills_table.end_row()
     skills_table.end_table()
     return skills_table.render()
