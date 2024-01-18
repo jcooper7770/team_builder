@@ -10,6 +10,23 @@ flask_session/
 pokemon_images/*
 static/images/pokemon_images/*
 
+# Ignore test paypal files
+application/pokemon/paypal.py
+application/pokemon/subscription.py
+routes/pokemon/paypal_routes.py
+templates/pokemon/paypal_app.js
+templates/pokemon/paypal.html
+templates/pokemon/subscription.html
+templates/pokemon/subscription.js
+
+# Ignore test images
+static/stadium.jpg
+static/images/pvp_battle.jpg
+static/images/website_preview2.png
+
+# Ignore saved data
+data/latest*.json
+
 # Ignore algorithm plots
 algo_plots/*
 
@@ -38,3 +55,5 @@ image.png
 Comp_cards.zip
 leaderboard.png
 newFlippinCoopLogo.png
+comp_card_tumbling.pdf
+final_comp_card.pdf
