@@ -175,6 +175,15 @@ def add_post_to_db(user, date, post, filename):
     )
     engine.execute(ins)
 
+def delete_post_from_db(name, date):
+    """
+    Deletes the post from the database
+    """
+    metadata = sqlalchemy.MetaData()
+    table = sqlalchemy.Table("athlete_posts", metadata, autoload=True, autoload_with=ENGINE)
+    delete = table.delete().where(table.c.name==name).where(table.c.date==date)
+    return ENGINE.execute(delete)
+
 
 def get_posts_from_db():
     """
