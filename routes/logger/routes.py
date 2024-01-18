@@ -566,8 +566,10 @@ def make_post():
     #post_file = request.json.get('file')
     post_file = request.files.get('file')
     print(f"file: {post_file}")
-    filename = os.path.join(UPLOAD_FOLDER, post_file.filename)
-    post_file.save(filename)
+    filename = ""
+    if post_file:
+        filename = os.path.join(UPLOAD_FOLDER, post_file.filename)
+        post_file.save(filename)
     add_post_to_db(name, date, post, filename)
     return {"success": True}
 
@@ -591,7 +593,7 @@ def make_practice_post():
     formatted_date = now.strftime('%m/%d/%Y %H:%M:%S %p')
     post = f"Posting practice from {date} on {event}"
     post = f"[{event}] I submitted a practice (on {date}) with {len(practice_turns)} turns, totaling {total_flips} flips!"
-    tagsText = " ".join(f"#{tag}" for tag in tags)
+    tagsText = " ".join(f"#{tag.replace(' ', '')}" for tag in tags)
     post = f"""[{event}] I submitted a practice (on {date}) with {len(practice_turns)} turns, totaling {total_flips} flips!
     {tagsText}"""
     add_post_to_db(name, formatted_date, post, filename="")

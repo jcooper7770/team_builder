@@ -9,18 +9,49 @@
   p.dark-mode-color {
     color: white;
   }
+
   .img-container {
     display: flex;
     justify-content: center;
     align-items: center;
   }
+
   .img-post {
     height: 200px;
   }
+
+  .hashtag {
+    color: blue;
+    font-weight: bold;
+  }
+
+  .hashtag:hover {
+    text-decoration: underline;
+    /* Add any other styling as needed */
+  }
+  .search-div {
+    display: flex;
+    flex-direction: row;
+    background: white;
+    border-radius: 10px;
+    width: fit-content;
+    padding: 10px;
+  }
+  .search-button {
+    color: black;
+  }
+  .search-input {
+    border: none;
+    background: none;
+    margin-left: 5px;
+  }
 </style>
-<br><br>
-<div class="container">
+<div class="">
   <div class="container mt-5">
+    <div class="search-div color-changing ml-auto">
+      <a class="search-button" id="search-button" href="#"><i class="fa fa-search" aria-hidden="true"></i></a>
+      <input class="search-input color-changing" id="search-input" type="text" placeholder="Search...">
+    </div>
     <div class="card color-changing">
       <div class="card-body">
         <p>
@@ -71,6 +102,26 @@
       // Add more posts as needed
     ];
 
+    const searchBtn = document.getElementById("search-button");
+    const searchInput = document.getElementById("search-input");
+    searchBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      const searchText = searchInput.value;
+      console.log(searchText);
+      //searchInput.value = "";
+      const feed = document.getElementById("feed");
+      const postCards = feed.children;
+      for(var i=0; i < postCards.length; i++) {
+        const card = postCards[i];
+        const postText = card.children[0].lastElementChild.innerText;
+        if(!postText.includes(searchText)) {
+          card.style.display = "none";
+        } else {
+          card.style.display = "";
+        }
+      }
+    });
+
     function checkUploadExt(filename) {
       var allowed = false;
       ALLOWED_UPLOAD_EXTS.forEach((ext) => {
@@ -87,7 +138,7 @@
       var files = document.getElementById('post-file').files;
       var filename = "";
       var videoDuration = 0;
-      if (files.length > 0){
+      if (files.length > 0) {
         filename = `/static/upload/${files[0].name}`;
         console.log(`filename: ${filename}`);
         console.log(`file type: ${files[0].type}`);
@@ -96,10 +147,10 @@
           return
         }
         // Set video duration
-        if (files[0].type.startsWith("video/")){
+        if (files[0].type.startsWith("video/")) {
           const vidElement = document.createElement("video");
           vidElement.src = URL.createObjectURL(files[0]);
-          vidElement.ondurationchange = function() {
+          vidElement.ondurationchange = function () {
             console.log(`duration: ${vidElement.duration}`);
             videoDuration = vidElement.duration;
           }
@@ -109,7 +160,7 @@
 
       if (postText.trim() !== "") {
         // wait 300ms for  video duration to set
-        setTimeout(function() {
+        setTimeout(function () {
           console.log(`vid dur: ${videoDuration}`);
           if (videoDuration > MAX_VID_DURATION) {
             alert(`Video too long (${videoDuration}s). Must be <60s`);
@@ -153,11 +204,12 @@
         }
       }
       postElement.className = "card mt-3";
+      const formattedText = formatPost(postText);
       postElement.innerHTML = `
         <div class="card-body color-changing">
             <h6 class="card-subtitle mb-2 text-muted"><a href="/logger/user/${userName}"><i class="fa fa-user-circle-o fa-5x color-changing profile-pic"></i> ${userName}</a> - ${formattedDate}</h6>
             ${fileElement}
-            <p class="card-text color-changing">${postText.replace(/\n/g, '<br>')}</p>
+            <p class="card-text color-changing">${formattedText.replace(/\n/g, '<br>')}</p>
         </div>
     `;
 
@@ -176,6 +228,24 @@
     // Call the function to display previous posts
     displayPreviousPosts();
 
+    function formatPost(postText) {
+      // Use a regular expression to find hashtags in the post text
+      const regex = /#(\w+)/g;
+
+      // Replace hashtags with span elements containing the hashtag
+      const formattedText = postText.replace(regex, '<span class="hashtag">#$1</span>');
+
+      return formattedText;
+    }
+    /*
+    function formatPost(postText) {
+      // Format hashtags to be inside spans
+      const regex = /#(\w+)/g;
+      const formattedText = postText.replace(regex, '<span class="hashtag">#$1</span' >);
+      return formattedText;
+    }
+    */
+
     function addPostToDB(name, date, post) {
       const files = document.getElementById('post-file').files;
       var selectedFile;
@@ -186,12 +256,14 @@
       }
       console.log(selectedFile);
       const reader = new FileReader();
-      const content = reader.readAsDataURL(selectedFile);
-      const xxx = reader.result;
-      console.log(xxx);
-
       var formData = new FormData();
-      formData.append('file', selectedFile)
+      if (selectedFile) {
+        const content = reader.readAsDataURL(selectedFile);
+        const xxx = reader.result;
+        console.log(xxx);
+        formData.append('file', selectedFile)
+      }
+
       formData.append('name', name);
       formData.append('date', date);
       formData.append('post', post);
@@ -219,7 +291,7 @@
         .then(response => response.json())
         .then(data => {
           // Handle the response data
-          if (data.success){
+          if (data.success) {
             console.log("Successfully saved data");
             alert("Success");
           }
