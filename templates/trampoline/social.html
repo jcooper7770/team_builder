@@ -29,6 +29,7 @@
     text-decoration: underline;
     /* Add any other styling as needed */
   }
+
   .search-div {
     display: flex;
     flex-direction: row;
@@ -37,9 +38,11 @@
     width: fit-content;
     padding: 10px;
   }
+
   .search-button {
     color: black;
   }
+
   .search-input {
     border: none;
     background: none;
@@ -102,24 +105,27 @@
       // Add more posts as needed
     ];
 
-    const searchBtn = document.getElementById("search-button");
-    const searchInput = document.getElementById("search-input");
-    searchBtn.addEventListener('click', function(e) {
-      e.preventDefault();
-      const searchText = searchInput.value;
-      console.log(searchText);
-      //searchInput.value = "";
+    function searchForText(searchText) {
       const feed = document.getElementById("feed");
       const postCards = feed.children;
-      for(var i=0; i < postCards.length; i++) {
+      for (var i = 0; i < postCards.length; i++) {
         const card = postCards[i];
         const postText = card.children[0].lastElementChild.innerText;
-        if(!postText.includes(searchText)) {
+        if (!postText.includes(searchText)) {
           card.style.display = "none";
         } else {
           card.style.display = "";
         }
       }
+    }
+
+    const searchBtn = document.getElementById("search-button");
+    const searchInput = document.getElementById("search-input");
+    searchBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      const searchText = searchInput.value;
+      //searchInput.value = "";
+      searchForText(searchText);
     });
 
     function checkUploadExt(filename) {
@@ -178,7 +184,8 @@
       var userName = "{{ user }}"; // Replace with your actual user's name
 
       var currentDate = new Date();
-      var formattedDate = currentDate.toLocaleDateString() + " " + currentDate.toLocaleTimeString();
+      const ampm = currentDate.getHours() >= 12 ? "PM" : "AM";
+      var formattedDate = currentDate.toLocaleDateString() + " " + currentDate.toLocaleTimeString('en-GB') + " " + ampm;
       addPostWithDetails(feedContainer, userName, formattedDate, postText, filename);
 
       // Clear the textarea after posting
@@ -300,7 +307,14 @@
           // Handle errors
           console.error('Error:', error);
         });
-    }
+     }
+
+     $(document).on('click', '.hashtag', function(e){
+      const searchText = e.target.innerText;
+      searchInput.value = searchText;
+      searchForText(searchText);
+     });
+
   </script>
 </div>
 {% endblock %}
