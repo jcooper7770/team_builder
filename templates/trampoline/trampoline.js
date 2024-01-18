@@ -423,15 +423,23 @@ $('[id^=copy-text]').click(function(e){
     var routine = "";
     for (var i=0; i<tds.length; i++){
         var td = tds[i];
-        if (td == undefined || td.firstChild == null){
+        if (td == undefined || td.children.length == 0) {
+        //if (td == undefined || td.firstChild == null){
             break;
         }    
         else {
+            for(var j=1; j<td.children.length; j++) {
+                if (td.children[j].innerText != "") {
+                    routine = routine + " " + td.innerText;
+                }
+            }
+            /*
             if (td.firstChild.tagName == undefined){
                 var doc = new DOMParser().parseFromString(td.innerHTML, "text/html");
                 var elementText = doc.documentElement.textContent;
                 routine = routine + " " + elementText;
             }
+            */
         }
     }
     const logElements = document.querySelectorAll("#log");
@@ -882,3 +890,15 @@ function toggleFullScreen() {
 
 // Attach functions to the corresponding events
 document.getElementById('fullScreenBtn').addEventListener('click', toggleFullScreen);
+
+// expand the turn to get into
+$('[class^="expand-turn"]').click(function (e) {
+    const turnDetailsDiv = e.target.parentNode.lastElementChild;
+    if (turnDetailsDiv.style.display == "none") {
+        turnDetailsDiv.style.display = "";
+        e.target.classList = "expand-tab fa fa-caret-up";
+    } else {
+        e.target.classList = "expand-tab fa fa-caret-down";
+        turnDetailsDiv.style.display = "none";
+    }
+});
