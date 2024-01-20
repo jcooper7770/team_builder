@@ -17,6 +17,8 @@
     display: flex;
     flex-direction: column;
   }
+  {% block extra_styles %}
+  {% endblock %}
 </style>
 
 <!-- Tabs at bottom-->
@@ -28,6 +30,8 @@
     <li class="nav-item">
       <a class="nav-link" data-toggle="tab" href="#practice-tab">Practices</a>
     </li>
+    {% block additional_bottom_tabs %}
+    {% endblock %}
     {% if request.endpoint != "coach.coach_home" %}
     <li class="nav-item">
       <a class="nav-link" data-toggle="tab" href="#stats-tab">Statistics</a>
@@ -420,9 +424,15 @@
     <br>
     <br><br><br>
   </div>
+  {% block additional_tabs %}
+  {% endblock %}
   {% if request.endpoint != "coach.coach_home" %}
   <div id="stats-tab" class="tab-pane fade">
 
+    <div class="container page-desc">
+      <h4>View practice statistics</h4>
+      <p>View statistics based on practices, including skill tables and practice graphs</p>
+    </div>
     <!-- User chart tabs-->
     <div class="container">
       <div class="card border-primary">
