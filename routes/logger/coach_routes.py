@@ -1,10 +1,11 @@
 import datetime
 import re
+import json
 
 from flask import Blueprint, render_template, request, session, redirect, url_for
 
 from application.trampoline.trampoline import Practice, current_user, Athlete, ALL_SKILLS
-from application.utils.database import get_users_and_turns, get_user_goals
+from application.utils.database import get_users_and_turns, get_user_goals, add_lesson_to_db, get_lessons_from_db, delete_lesson_from_db
 from application.utils.utils import *
 
 coach_bp = Blueprint('coach', __name__)
@@ -14,7 +15,8 @@ def coach_home():
     """
     Home for coaches
     """
-    coach = Athlete.load(session.get('name'))
+    username = session.get('name')
+    coach = Athlete.load(username)
     #current_athlete = request.args.get('athlete') or session.get('current_athlete', '')
     current_athlete = request.args.get('athlete')
     session["current_athlete"] = current_athlete
@@ -54,6 +56,8 @@ def coach_home():
     logging.info(f"error: {session.get('error', '')}")
     users, _ = get_users_and_turns(only_users=True)
 
+    lesson_plans = get_lessons_from_db(username)
+
     return render_template(
         "trampoline/coach_home.html",
         body=body,
@@ -68,7 +72,8 @@ def coach_home():
         user_turns=[],
         tags=["Competition", "Pit Training"],
         all_skills=ALL_SKILLS,
-        users=users
+        users=users,
+        lesson_plans=lesson_plans
     )
 
 @coach_bp.route("/logger/coach/settings", methods=["GET", "POST"])
@@ -158,4 +163,21 @@ def coach_message():
     return redirect(url_for('coach.coach_settings'))
 
 
+@coach_bp.route('/logger/coach/lesson', methods=["POST", "DELETE"])
+def new_lesson_plan():
+    """
+    Make or delete a new lesson plan
+    """
+    coach = session.get('name')
+    title = request.json.get('title')
+    date = request.json.get('date')
+    if request.method == "DELETE":
+        delete_lesson_from_db(coach, title, date)
+        return {"success": True}
 
+    description = request.json.get('description')
+    plans = json.dumps(request.json.get('plans'))
+    add_lesson_to_db(title, description, date, coach, plans)
+    return {
+        'success': True
+    }

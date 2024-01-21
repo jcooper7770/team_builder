@@ -67,12 +67,26 @@
     <form id="lessonForm">
       <div class="form-group">
         <label for="title">Lesson Title:</label>
-        <input type="text" class="form-control color-changing" id="title" name="title" placeholder="Give the lesson plan a title" required>
+        <input type="text" class="form-control color-changing" id="title" name="title"
+          placeholder="Give the lesson plan a title" required>
       </div>
 
       <div class="form-group">
         <label for="description">Lesson Description:</label>
-        <textarea class="form-control color-changing" id="description" name="description" rows="4" placeholder="Type the lesson plan here..." required></textarea>
+        <textarea class="form-control color-changing" id="description" name="description" rows="4"
+          placeholder="Type the lesson plan here..." required></textarea>
+      </div>
+      <div id="lessonInputs" class="lesson-input-group">
+        <label for="description">Lesson Plan:</label>
+        <div class="input-group">
+          <input type="text" class="form-control" name="description[]" required>
+          <div class="input-group-append">
+            <button class="btn btn-outline-secondary" type="button" onclick="removeDescriptionInput(this)">-</button>
+          </div>
+        </div>
+        <div class="add-button" id="lesson-desc-add">
+          <button class="btn btn-outline-secondary" type="button" onclick="addDescriptionInput()">+ Add</button>
+        </div>
       </div>
 
       <div class="form-group">
@@ -96,6 +110,15 @@
 
 {% block javascript %}
 <script type="text/javascript">
+  // Add in lesson plans
+  var lessonPlansObj = [
+    {% for lesson in lesson_plans %}
+  { title: "{{lesson.title}}", description: `{{lesson.description}}`, date: "{{lesson.date}}", plans: {{ lesson.plans | safe }} },
+  {% endfor %}
+  ]
+  lessonPlansObj.forEach((lesson) => {
+    addSingleLesson(lesson.title, lesson.description, lesson.date, lesson.plans);
+  })
   // Update tables on the fly
   $("[id^=show_]").click(function (e) {
     if (e.target.parentElement.parentElement.id == "shown_athletes") {
@@ -169,11 +192,35 @@
     }
     repaginate();
   }
+
+  function addSingleLesson(title, description, date, plans) {
+    // Display the lesson plan using Bootstrap alert
+    const lessonPlansDiv = document.getElementById('lessonPlans');
+    const newLessonPlanDiv = document.createElement('div');
+    newLessonPlanDiv.classList.add('alert', 'alert-success');
+    newLessonPlanDiv.innerHTML = `<div class="lesson-plan">
+                                    <div class="lesson-plan-header">
+                                      <strong>${title}</strong>
+                                      <div class="action-btns">
+                                        <button class="btn btn-warning btn-sm" onclick="editLessonPlan(this)"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button>
+                                        <button class="btn btn-warning btn-sm" onclick="deleteLesson(this)"><i class="fa fa-trash-o" aria-hidden="true"></i></button>
+                                      </div>
+                                    </div>
+                                    <p>Date: ${date}</p>
+                                    <p><i>${description.replace(/\n/g, '<br>')}</i></p>
+                                    <p><u>Plans</u></p>
+                                    <ul>${plans.map(plan => `<li>${plan}</li>`).join('')}</ul>
+                                  </div>
+                                    <hr>`;
+    lessonPlansDiv.appendChild(newLessonPlanDiv);
+  }
+
   function addLessonPlan() {
     // Get form values
     const title = document.getElementById('title').value;
     const description = document.getElementById('description').value;
     const date = document.getElementById('date').value;
+    const plans = Array.from(document.getElementsByName('description[]')).map(input => input.value);
 
     if (title == "" || description == "" | date == "") {
       alert("Please finish filling out form");
@@ -184,34 +231,35 @@
     const lessonPlan = {
       title: title,
       description: description,
-      date: date
+      date: date,
+      plans: plans
     };
 
-    // Display the lesson plan using Bootstrap alert
-    const lessonPlansDiv = document.getElementById('lessonPlans');
-    const newLessonPlanDiv = document.createElement('div');
-    newLessonPlanDiv.classList.add('alert', 'alert-success');
-    newLessonPlanDiv.innerHTML = `<div class="lesson-plan">
-                                    <div class="lesson-plan-header">
-                                      <strong>${title}</strong>
-                                      <button class="btn btn-warning btn-sm" onclick="editLessonPlan(this)"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button>
-                                      </div>
-                                    <p>Date: ${date}</p>
-                                    <p>${description}</p>
-                                  </div>
-                                    <hr>`;
-    lessonPlansDiv.appendChild(newLessonPlanDiv);
-
+    addSingleLesson(title, description, date, plans)
     // You can also send the lesson plan object to your server or store it in a database
     // For simplicity, we are just displaying it here
+    $.ajax({
+      type: 'POST',
+      url: "/logger/coach/lesson",
+      contentType: 'application/json',
+      data: JSON.stringify(lessonPlan),
+      success: function (data) {
+        if (data.success) {
+          console.log("successfully saved data");
+          alert("Created new lesson plan");
+        } else {
+          console.log("error");
+        }
+      }
+    });
 
     // Clear the form after adding the lesson plan
     document.getElementById('lessonForm').reset();
   }
 
-  function editLessonPlan(button) {
+  function getLessonDetails(button) {
     // Get the parent container of the lesson plan
-    var lessonPlanContainer = button.parentNode.parentNode;
+    var lessonPlanContainer = button.parentNode.parentNode.parentNode;
     if (button.tagName == "I") {
       lessonPlanContainer = lessonPlanContainer.parentNode;
     }
@@ -220,14 +268,90 @@
     const title = lessonPlanContainer.children[0].children[0].textContent;
     const description = lessonPlanContainer.children[2].textContent;
     const date = lessonPlanContainer.children[1].textContent.replace('Date: ', '');
+    const plans = Array.from(lessonPlanContainer.querySelectorAll('ul li')).map(li => li.textContent);
+
+    return {
+      container: lessonPlanContainer,
+      title: title,
+      description: description,
+      date: date,
+      plans: plans
+    }
+  }
+
+  function editLessonPlan(button) {
+    var lessonDetails = getLessonDetails(button);
 
     // Populate the form with the current details
-    document.getElementById('title').value = title;
-    document.getElementById('description').value = description;
-    document.getElementById('date').value = date;
+    document.getElementById('title').value = lessonDetails.title;
+    document.getElementById('description').value = lessonDetails.description;
+    document.getElementById('date').value = lessonDetails.date;
 
+
+    // Populate the form with description inputs
+    for (const plan of lessonDetails.plans) {
+      addDescriptionInput(plan);
+    }
     // Remove the edited lesson plan from the display
-    lessonPlanContainer.parentNode.remove();
+    lessonDetails.container.parentNode.remove();
+
+    // remove the first input
+    document.getElementsByName("description[]")[0].parentNode.remove()
+  }
+
+  function deleteLesson(button) {
+    var lessonDetails = getLessonDetails(button);
+    if (confirm(`Are you sure you want to delete the lesson plan titled ${lessonDetails.title} for ${lessonDetails.date}?`)) {
+      console.log("deleted");
+
+      const data = {
+        title: lessonDetails.title,
+        date: lessonDetails.date
+      }
+      $.ajax({
+        type: 'DELETE',
+        url: "/logger/coach/lesson",
+        contentType: 'application/json',
+        data: JSON.stringify(data),
+        success: function (data) {
+          if (data.success) {
+            console.log("Successfully deleted date");
+            alert("Success");
+            // Remove the edited lesson plan from the display
+            lessonDetails.container.parentNode.remove();
+          } else {
+            console.error(data.error)
+          }
+        }
+      });
+    }
+  }
+
+  function addDescriptionInput(value = '') {
+    // Create a new description input group
+    const lessonInputsDiv = document.getElementById('lessonInputs');
+    const newInputGroup = document.createElement('div');
+    newInputGroup.classList.add('lesson-input-group', 'input-group');
+    newInputGroup.innerHTML = `<input type="text" class="form-control" name="description[]" value="${value}" required>
+                                <div class="input-group-append">
+                                  <button class="btn btn-outline-secondary" type="button" onclick="removeDescriptionInput(this)">-</button>
+                                </div>`;
+    //lessonInputsDiv.insertBefore(newInputGroup, lessonInputsDiv.lastChild);
+
+    const addBtn = document.getElementById("lesson-desc-add");
+    lessonInputsDiv.insertBefore(newInputGroup, addBtn);
+  }
+
+  function removeDescriptionInput(button) {
+    // Remove the parent input group when the '-' button is clicked
+    button.parentNode.parentNode.remove();
+  }
+
+  function resetLessonForm() {
+    // Reset the lesson form by clearing values and re-adding the initial description input
+    document.getElementById('lessonForm').reset();
+    document.getElementById('lessonInputs').innerHTML = '';
+    addDescriptionInput();
   }
 </script>
 {% endblock %}

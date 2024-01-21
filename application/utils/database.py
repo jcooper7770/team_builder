@@ -564,3 +564,49 @@ def add_simmed_battle(pokemon1, pokemon2, battle_text, winner, leftover_health, 
         engine.execute(ins)
     conn.close()
     engine.dispose()
+
+def add_lesson_to_db(title, description, date, coach, plans):
+    """
+    Add lesson plan to db for coach
+    """
+    engine = create_engine()
+    metadata = sqlalchemy.MetaData()
+    try:
+        table = sqlalchemy.Table("lessons", metadata, autoload=True, autoload_with=engine)
+    except:
+        table = MockTable()
+    ins = table.insert().values(
+        title=title,
+        description=description,
+        date=date,
+        coach=coach,
+        plans=plans
+    )
+    engine.execute(ins)
+
+
+def get_lessons_from_db(coach):
+    """
+    Returns all lessons from db
+    """
+    engine = create_engine()
+    result = engine.execute(f'SELECT * from `lessons` WHERE LOWER(`coach`)="{coach.lower()}"')
+    lessons = []
+    for lesson in result:
+        lessons.append({
+            "title": lesson[0],
+            "description": lesson[1],
+            "date": lesson[2],
+            "plans": json.loads(lesson[4])
+        })
+    return lessons
+
+
+def delete_lesson_from_db(coach, title, date):
+    """
+    Deletes the lesson from the db
+    """
+    metadata = sqlalchemy.MetaData()
+    table = sqlalchemy.Table("lessons", metadata, autoload=True, autoload_with=ENGINE)
+    delete = table.delete().where(table.c.coach==coach).where(table.c.date==date).where(table.c.title==title)
+    return ENGINE.execute(delete)
