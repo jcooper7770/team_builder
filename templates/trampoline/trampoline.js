@@ -903,3 +903,103 @@ $('[class^="expand-turn"]').click(function (e) {
         turnDetailsDiv.style.display = "none";
     }
 });
+
+// Add in lesson plans
+var lessonPlansObj = [
+    {% for lesson in lesson_plans %}
+    { title: "{{lesson.title}}", description: `{{lesson.description}}`, date: "{{lesson.date}}", plans: {{ lesson.plans | safe }}, finished: {{ lesson.athletes_completed | safe }} },
+    {% endfor %}
+]
+lessonPlansObj.forEach((lesson) => {
+    addSingleLesson(lesson.title, lesson.description, lesson.date, lesson.plans, lesson.finished);
+})
+
+function addSingleLesson(title, description, date, plans, finished) {
+// Display the lesson plan using Bootstrap alert
+const lessonPlansDiv = document.getElementById('lessonPlans');
+const newLessonPlanDiv = document.createElement('div');
+newLessonPlanDiv.classList.add('alert', 'alert-success');
+
+//<ul>${plans.map(plan => `<li style="list-style: none;"><input type="checkbox" style="margin-right: 5px;"\>${plan}</li>`).join('')}</ul>
+
+var inputs = [];
+{% if request.endpoint != "coach.coach_home" %}
+for (let i=0; i<plans.length; i++) {
+    const plan = plans[i];
+    var checked = "";
+    if (finished.{{user}}.includes(plan)) {
+        checked = " checked";
+    }
+    inputs.push(`<li style="list-style: none;"><input${checked} type="checkbox" style="margin-right: 5px;" \>${plan}</li>`);
+}
+{% else %}
+for (let i=0; i<plans.length; i++) {
+    const plan = plans[i];
+    var finishedAthletes = [];
+    for (const [key, value] of Object.entries(finished)) {
+        if (value.includes(plan)) {
+            finishedAthletes.push(key);
+        }
+    }
+    inputs.push(`<li>${plan} (${finishedAthletes.join(', ')})</li>`);
+}
+{% endif %}
+newLessonPlanDiv.innerHTML = `<div class="lesson-plan">
+<div class="lesson-plan-header">
+    <strong>${title}</strong>
+    <div class="action-btns">
+        {% if request.endpoint == "coach.coach_home" %}
+        <button class="btn btn-warning btn-sm" onclick="editLessonPlan(this)"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button>
+        <button class="btn btn-warning btn-sm" onclick="deleteLesson(this)"><i class="fa fa-trash-o" aria-hidden="true"></i></button>
+        {% endif %}
+    </div>
+</div>
+<p>Date: ${date}</p>
+<p><i>${description.replace(/\n/g, '<br>')}</i></p>
+<p><u>Plans</u></p>
+
+{% if request.endpoint == "coach.coach_home" %}
+<ul>${inputs.join(' ')}</ul>
+{% else %}
+<ul>${inputs.join(' ')}</ul>
+<button class="btn btn-primary ml-auto" id="save-lesson">Save</button>
+{% endif %}
+</div>
+<hr>`;
+lessonPlansDiv.appendChild(newLessonPlanDiv);
+}
+
+$("[id^=save-lesson]").click(function (e) {
+    e.preventDefault();
+
+    // Get all checboxes that are checked
+    var checkedTurns = [];
+    const listElements = e.target.parentNode.children[4].children;
+    for(let i=0; i<listElements.length; i++){
+        const listElement = listElements[i];
+        if (listElement.children[0].checked) {
+            checkedTurns.push(listElement.textContent);
+        }
+    }
+    console.log(checkedTurns);
+
+    // Save
+    const data = {
+        finishedTurns: checkedTurns,
+        name: "{{ user }}",
+        title: e.target.parentNode.querySelector("strong").textContent,
+        date: e.target.parentNode.children[1].textContent.replace("Date: ", "")
+    }
+    console.log(data);
+    $.ajax({
+        type: 'POST',
+        url: "/logger/lessons/complete",
+        contentType: 'application/json',
+        data: JSON.stringify(data),
+        success: function (data) {
+            console.log("successfully saved data");
+            alert("Post successful");
+        }
+    });
+
+});

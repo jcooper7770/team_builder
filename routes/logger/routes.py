@@ -12,7 +12,8 @@ from application.trampoline.trampoline import convert_form_data, get_leaderboard
      ALL_SKILLS, get_leaderboards, Athlete, get_user_turns, get_turn_dds
 from application.utils.database import get_users_and_turns, insert_goal_to_db, get_user_goals, complete_goal,\
     delete_goal_from_db, get_user, add_airtime_to_db, get_user_airtimes, delete_airtime_from_db,\
-    rate_practice_in_db, get_ratings, add_post_to_db, get_posts_from_db, delete_post_from_db
+    rate_practice_in_db, get_ratings, add_post_to_db, get_posts_from_db, delete_post_from_db,\
+    get_lessons_from_db, update_lesson
 from application.utils.utils import *
 
 tramp_bp = Blueprint('trampoline', __name__)
@@ -230,6 +231,18 @@ def trampoline_log():
     all_skills_ordered, dmt_passes_ordered, tumbling_skills_ordered = create_skill_tables(user_turns)
     datapts = create_user_stats(request, airtimes)
 
+    # get coaches
+    coaches = []
+    for coach_name, user_details in users.items():
+        if not user_details.get('is_coach'):
+            continue
+        if username in user_details.get('athletes'):
+            coaches.append(coach_name)
+    
+    all_lesson_plans = get_lessons_from_db(None)
+    lesson_plans = [lesson_plan for lesson_plan in all_lesson_plans if lesson_plan.get('coach') in coaches]
+
+
     return render_template(
         f"trampoline/trampoline.html",
         body=body, username=username,
@@ -253,7 +266,8 @@ def trampoline_log():
         chart_end=request.args.get('chart_end', ""),
         all_skills_table=all_skills_ordered,
         dmt_passes=dmt_passes_ordered,
-        tumbling_skills=tumbling_skills_ordered
+        tumbling_skills=tumbling_skills_ordered,
+        lesson_plans=lesson_plans
     )
 
 
@@ -492,14 +506,35 @@ def login():
         session["error"] = ""
         username = request.form.get("username", "").lower()
         password = request.form.get("password")
+        user = get_user(username)
+        print(f"login user0: {user}")
+        # if empty password then save as fake password
+        if not user["password"]:
+            print(f"login user1: {user}")
+            hashed_password = sha256_crypt.encrypt("password")
+            athlete = Athlete.load(username)
+            print(f"login user2: {user}")
+            athlete.password = hashed_password
+            athlete.save()
+            print(f"login user3: {user}")
+            user["password"] = hashed_password
+        if not sha256_crypt.verify(password, user["password"]):
+            session["error"] = f"Incorrect password for user {username}"
+            return redirect(url_for('trampoline.login'))
+
+        '''
         try:
             user = get_user(username)
+            print(f"login user0: {user}")
             # if empty password then save as fake password
             if not user["password"]:
+                print(f"login user1: {user}")
                 hashed_password = sha256_crypt.encrypt("password")
                 athlete = Athlete.load(username)
+                print(f"login user2: {user}")
                 athlete.password = hashed_password
                 athlete.save()
+                print(f"login user3: {user}")
                 user["password"] = hashed_password
             if not sha256_crypt.verify(password, user["password"]):
                 session["error"] = f"Incorrect password for user {username}"
@@ -507,6 +542,7 @@ def login():
         except Exception as login_err:
             session["error"] = f"Username {username} does not exists. {login_err}"
             return redirect(url_for('trampoline.login'))
+        '''
         session["name"] = username
         if session.get('name'):
             set_current_user(username)
@@ -1119,3 +1155,24 @@ def user_page(name):
         biggest_dd=biggest_dd,
         user_posts=user_posts,
     )
+
+@tramp_bp.route('/logger/lessons/complete', methods=["POST"])
+def complete_lesson():
+    """
+    Complete a lesson for an athlete
+    """
+    #current_user = Athlete.load(session.get('name'))
+    name = session.get('name')
+    title = request.json.get('title')
+    finished_turns = request.json.get('finishedTurns')
+    date = request.json.get('date')
+
+    lessons = get_lessons_from_db(None)
+    all_finished_turns = {name: []}
+    for lesson in lessons:
+        if lesson['title'] == title and lesson['date'] == date:
+            all_finished_turns = lesson['athletes_completed']
+            break
+    all_finished_turns[name] = finished_turns
+    update_lesson(title, date, all_finished_turns)
+    return {"success": True}

@@ -6,6 +6,8 @@ Database operations
 from ast import Return
 import sqlalchemy
 
+from application.utils.mock_database import MockEngine2, MockTable2
+
 import json
 import os
 import datetime
@@ -65,6 +67,12 @@ def create_engine(table_name=None, timeout=60):
     global ENGINE
     global DB_TABLE
     url = "itsflippincoop.com" if table_name == "test_data" else "127.0.0.1"
+    mock_data = True if os.environ.get("MOCK_DATA", "prod") == "test" else False
+    if mock_data:
+        print("~Using mock data~")
+        DB_TABLE = MockTable2()
+        return MockEngine2()
+
     db_name = "tramp" if os.environ.get("FLASK_ENV", "prod") == "prod" else "test_tramp"
     print(f"Using db: {db_name}")
     engine = sqlalchemy.create_engine(
@@ -95,8 +103,12 @@ def get_user(user):
 
     # First check if user exists
     result = engine.execute(f'SELECT * from `users` WHERE LOWER(`user`)="{user.lower()}"')
+    
     if result.rowcount == 0:
         raise Exception(f"No user in db by name of {user}")
+
+    if os.environ.get("MOCK_DATA", "") == "test":
+        print(f"user: {[x for x in result]}. rowcount: {result.rowcount}")
 
     user = [res for res in result][0]
     print(f"user: {user}")
@@ -413,6 +425,8 @@ def save_athlete(athlete):
         table = sqlalchemy.Table("users", metadata, autoload=True, autoload_with=engine)
     except:
         table = MockTable()
+    if os.environ.get("MOCK_DATA") == "test":
+        table = MockTable2()
     # First check if user exists
     result = engine.execute(f'SELECT * from `users` WHERE `user`="{athlete.name}"')
     if result.rowcount == 0:
@@ -470,6 +484,7 @@ def get_users_and_turns(only_users=False):
     """
     Returns all user and turn data from the db
     """
+    print(f"~~table name: {TABLE_NAME}")
     engine = create_engine()
     all_turns = []
     if not only_users:
@@ -478,6 +493,10 @@ def get_users_and_turns(only_users=False):
         result.close()
     user_result = engine.execute("SELECT * from `users`")
     conn = engine.connect()
+    if os.environ.get("MOCK_DATA", "") == "test":
+        y = [x for x in user_result]
+        print(len(y), y)
+        print({user[0]: user for user in user_result})
     user_data = {
         user[0].lower(): {"private": user[1], "is_coach": user[6], "athletes": json.loads(user[7]), 'details': json.loads(user[17])}
         for user in user_result
@@ -580,9 +599,22 @@ def add_lesson_to_db(title, description, date, coach, plans):
         description=description,
         date=date,
         coach=coach,
-        plans=plans
+        plans=plans,
+        athletes_completed=json.dumps("{}")
     )
     engine.execute(ins)
+
+
+def update_lesson(title, date, finished_turns):
+    """
+    Update the lesson for the athlete
+    """
+    metadata = sqlalchemy.MetaData()
+    table = sqlalchemy.Table("lessons", metadata, autoload=True, autoload_with=ENGINE)
+    update = table.update().where(table.c.title==title).where(table.c.date==date).values(
+        athletes_completed=json.dumps(finished_turns)
+    )
+    ENGINE.execute(update)
 
 
 def get_lessons_from_db(coach):
@@ -590,16 +622,21 @@ def get_lessons_from_db(coach):
     Returns all lessons from db
     """
     engine = create_engine()
-    result = engine.execute(f'SELECT * from `lessons` WHERE LOWER(`coach`)="{coach.lower()}"')
+    if coach:
+        result = engine.execute(f'SELECT * from `lessons` WHERE LOWER(`coach`)="{coach.lower()}"')
+    else:
+        result = engine.execute(f'SELECT * from `lessons`;')
     lessons = []
     for lesson in result:
         lessons.append({
             "title": lesson[0],
             "description": lesson[1],
             "date": lesson[2],
-            "plans": json.loads(lesson[4])
+            "coach": lesson[3],
+            "plans": json.loads(lesson[4]),
+            "athletes_completed": json.loads(lesson[5])
         })
-    return lessons
+    return sorted(lessons, key=lambda lesson: lesson['date'])
 
 
 def delete_lesson_from_db(coach, title, date):

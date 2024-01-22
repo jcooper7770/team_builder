@@ -276,6 +276,25 @@ class Athlete(User):
         """
         Loads in an athlete
         """
+        user = get_user(name)
+        print("***1")
+        signup_date = datetime.datetime.strptime(user.get('signup_date'), '%Y-%m-%d') if user.get('signup_date') else None
+        print("***2")
+        athlete = Athlete(
+            user['name'], user["private"], user['compulsory'], user['optional'],
+            password=user['password'], expand_comments=user.get('expand_comments', False),
+            is_coach=user["is_coach"], athletes=user["athletes"], first_login=user['first_login'],
+            signup_date=signup_date, messages=user['messages'],
+            dm_prelims1=user['dm_prelim1'], dm_prelims2=user['dm_prelim2'], dm_finals1=user['dm_finals1'], dm_finals2=user['dm_finals2'],
+            tramp_level=user['levels'][0], dmt_level=user['levels'][1], tumbling_level=user['levels'][2],
+            coach_requests=user['coach_requests'],
+            first_name=user['details'].get('first_name', ''),
+            last_name=user['details'].get('last_name', ''),
+        )
+        print("***3")
+        print(athlete)
+
+        '''    
         # First check if user exists
         try:
             user = get_user(name)
@@ -294,11 +313,14 @@ class Athlete(User):
         except Exception as error:
             print(f"Error loading user '{name}' because: {error}")
             athlete = None
-
+        '''
         if athlete:
+            print("***4")
             return athlete
 
+        print("***5")
         file_path = os.path.join("athletes", f'{name}.json')
+        print("***6")
 
         if not os.path.exists(file_path):
             return Athlete(name)

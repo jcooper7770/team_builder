@@ -36,6 +36,9 @@
     <li class="nav-item">
       <a class="nav-link" data-toggle="tab" href="#stats-tab">Statistics</a>
     </li>
+    <li class="nav-item">
+      <a class="nav-link" data-toggle="tab" href="#lessons-tab">Lesson Plans</a>
+    </li>
     {% endif %}
   </ul>
 </div>
@@ -427,6 +430,15 @@
   {% block additional_tabs %}
   {% endblock %}
   {% if request.endpoint != "coach.coach_home" %}
+  <div id="lessons-tab" class="tab-pane fade">
+    <div class="container page-desc">
+      <h4>View lesson plans</h4>
+      <p>View lesson plans from your coaches</p>
+    </div>
+    <div class="container">
+      <div id="lessonPlans"></div>
+    </div>
+  </div>
   <div id="stats-tab" class="tab-pane fade">
 
     <div class="container page-desc">
@@ -558,8 +570,10 @@
 
   </div>
   {% endif %}
-</div>
+  <div></div>
 
+</div>
+</div>
 
 <script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
   crossorigin="anonymous"></script>

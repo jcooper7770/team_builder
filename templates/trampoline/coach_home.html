@@ -110,15 +110,6 @@
 
 {% block javascript %}
 <script type="text/javascript">
-  // Add in lesson plans
-  var lessonPlansObj = [
-    {% for lesson in lesson_plans %}
-  { title: "{{lesson.title}}", description: `{{lesson.description}}`, date: "{{lesson.date}}", plans: {{ lesson.plans | safe }} },
-  {% endfor %}
-  ]
-  lessonPlansObj.forEach((lesson) => {
-    addSingleLesson(lesson.title, lesson.description, lesson.date, lesson.plans);
-  })
   // Update tables on the fly
   $("[id^=show_]").click(function (e) {
     if (e.target.parentElement.parentElement.id == "shown_athletes") {
@@ -193,28 +184,6 @@
     repaginate();
   }
 
-  function addSingleLesson(title, description, date, plans) {
-    // Display the lesson plan using Bootstrap alert
-    const lessonPlansDiv = document.getElementById('lessonPlans');
-    const newLessonPlanDiv = document.createElement('div');
-    newLessonPlanDiv.classList.add('alert', 'alert-success');
-    newLessonPlanDiv.innerHTML = `<div class="lesson-plan">
-                                    <div class="lesson-plan-header">
-                                      <strong>${title}</strong>
-                                      <div class="action-btns">
-                                        <button class="btn btn-warning btn-sm" onclick="editLessonPlan(this)"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button>
-                                        <button class="btn btn-warning btn-sm" onclick="deleteLesson(this)"><i class="fa fa-trash-o" aria-hidden="true"></i></button>
-                                      </div>
-                                    </div>
-                                    <p>Date: ${date}</p>
-                                    <p><i>${description.replace(/\n/g, '<br>')}</i></p>
-                                    <p><u>Plans</u></p>
-                                    <ul>${plans.map(plan => `<li>${plan}</li>`).join('')}</ul>
-                                  </div>
-                                    <hr>`;
-    lessonPlansDiv.appendChild(newLessonPlanDiv);
-  }
-
   function addLessonPlan() {
     // Get form values
     const title = document.getElementById('title').value;
@@ -235,7 +204,7 @@
       plans: plans
     };
 
-    addSingleLesson(title, description, date, plans)
+    addSingleLesson(title, description, date, plans, {})
     // You can also send the lesson plan object to your server or store it in a database
     // For simplicity, we are just displaying it here
     $.ajax({
