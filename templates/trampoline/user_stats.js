@@ -154,14 +154,14 @@ $.each(rows, function(index, row) {
 var f_sl = 1;
 var f_nm = 1;
 // highlight header on hover
-$("[id^=col]").mouseover(function(){
+$("th[id^=col_]").mouseover(function(){
 $(this).css({"background-color": "lightgray", "cursor": "pointer"});
 });
-$("[id^=col]").mouseout(function(){
+$("th[id^=col_]").mouseout(function(){
 $(this).css({"background-color": "gray", "cursor": "pointer"});
 });
 // sort column on click
-$("[id^=col]").click(function(){
+$("th[id^=col_]").click(function(){
     f_sl *= -1;
     table = $(this).closest("table")[0].id;
     console.log(table);
