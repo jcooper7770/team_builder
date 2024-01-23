@@ -204,7 +204,7 @@ $("[id^=unhide-note").click(function(e){
     }
 });
 
-$("[id^=skill]").click(function (e) {
+$("a[id^=skill]").click(function (e) {
     e.preventDefault();
     console.log(event.target.id)
     if (event.target.id == "new-turn-button") {
