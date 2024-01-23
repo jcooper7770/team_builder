@@ -438,3 +438,10 @@ a.dark-mode-color {
 .desc-btn {
   width: 100%;
 }
+
+.finished-athletes-hidden {
+  display: none;
+}
+.finished-athletes-show {
+  margin-left: 20px;
+}

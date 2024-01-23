@@ -584,7 +584,7 @@ def add_simmed_battle(pokemon1, pokemon2, battle_text, winner, leftover_health, 
     conn.close()
     engine.dispose()
 
-def add_lesson_to_db(title, description, date, coach, plans):
+def add_lesson_to_db(title, description, date, coach, plans, new=True):
     """
     Add lesson plan to db for coach
     """
@@ -594,14 +594,20 @@ def add_lesson_to_db(title, description, date, coach, plans):
         table = sqlalchemy.Table("lessons", metadata, autoload=True, autoload_with=engine)
     except:
         table = MockTable()
-    ins = table.insert().values(
-        title=title,
-        description=description,
-        date=date,
-        coach=coach,
-        plans=plans,
-        athletes_completed=json.dumps("{}")
-    )
+    if new:
+        ins = table.insert().values(
+            title=title,
+            description=description,
+            date=date,
+            coach=coach,
+            plans=plans,
+            athletes_completed=json.dumps("{}")
+        )
+    else:
+        ins = table.update().where(table.c.title==title).where(table.c.date==date).where(table.c.coach==coach).values(
+            plans=plans,
+            description=description
+        )
     engine.execute(ins)
 
 

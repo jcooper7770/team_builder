@@ -927,8 +927,10 @@ var inputs = [];
 for (let i=0; i<plans.length; i++) {
     const plan = plans[i];
     var checked = "";
-    if (finished.{{user}}.includes(plan)) {
-        checked = " checked";
+    if (Object.keys(finished).includes("{{user}}")) {
+        if (finished.{{user}}.includes(plan)) {
+            checked = " checked";
+        }
     }
     inputs.push(`<li style="list-style: none;"><input${checked} type="checkbox" style="margin-right: 5px;" \>${plan}</li>`);
 }
@@ -941,7 +943,11 @@ for (let i=0; i<plans.length; i++) {
             finishedAthletes.push(key);
         }
     }
-    inputs.push(`<li>${plan} (${finishedAthletes.join(', ')})</li>`);
+    var finishedStr = finishedStr = `<div class="finished-athletes-hidden"><b>Athletes finished:</b> None</div>`
+    if (finishedAthletes.length > 0) {
+        finishedStr = `<div class="finished-athletes-hidden"><b>Athletes finished:</b> ${finishedAthletes.join(', ')}</div>`
+    }
+    inputs.push(`<li>${plan}${finishedStr}</li>`);
 }
 {% endif %}
 newLessonPlanDiv.innerHTML = `<div class="lesson-plan">
@@ -960,6 +966,7 @@ newLessonPlanDiv.innerHTML = `<div class="lesson-plan">
 
 {% if request.endpoint == "coach.coach_home" %}
 <ul>${inputs.join(' ')}</ul>
+<button class="btn btn-primary ml-auto" id="view-finished-athletes">Toggle Finished Athletes</button>
 {% else %}
 <ul>${inputs.join(' ')}</ul>
 <button class="btn btn-primary ml-auto" id="save-lesson">Save</button>
@@ -969,9 +976,23 @@ newLessonPlanDiv.innerHTML = `<div class="lesson-plan">
 lessonPlansDiv.appendChild(newLessonPlanDiv);
 }
 
+$("[id^=view-finished-athletes]").click(function (e) {
+    e.preventDefault();
+
+    // Get all checboxes that are checked
+    const listElements = e.target.parentNode.children[4].children;
+    for(let i=0; i<listElements.length; i++){
+        const listElement = listElements[i];
+        const finishedAthletesEle = listElement.children[0]
+        finishedAthletesEle.classList.toggle("finished-athletes-hidden");
+        finishedAthletesEle.classList.toggle("finished-athletes-show");
+    }
+
+});
 $("[id^=save-lesson]").click(function (e) {
     e.preventDefault();
 
+    showSpinner("Saving Lesson...")
     // Get all checboxes that are checked
     var checkedTurns = [];
     const listElements = e.target.parentNode.children[4].children;
@@ -998,7 +1019,8 @@ $("[id^=save-lesson]").click(function (e) {
         data: JSON.stringify(data),
         success: function (data) {
             console.log("successfully saved data");
-            alert("Post successful");
+            alert("Saved lesson");
+            document.querySelector('.spinner-container').style.display = "none";
         }
     });
 

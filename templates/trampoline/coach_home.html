@@ -65,9 +65,10 @@
   </div>
   <div class="container">
     <form id="lessonForm">
+      <input type="hidden" value="new" id="lesson-save-type">
       <div class="form-group">
-        <label for="title">Lesson Title:</label>
-        <input type="text" class="form-control color-changing" id="title" name="title"
+        <label for="lesson-title">Lesson Title:</label>
+        <input type="text" class="form-control color-changing" id="lesson-title" name="lesson-title"
           placeholder="Give the lesson plan a title" required>
       </div>
 
@@ -90,11 +91,11 @@
       </div>
 
       <div class="form-group">
-        <label for="date">Lesson Date:</label>
-        <input type="date" class="form-control color-changing" id="date" name="date" required>
+        <label for="lesson-date">Lesson Date:</label>
+        <input type="date" class="form-control color-changing" id="lesson-date" name="lesson-date" required>
       </div>
 
-      <button type="button" class="btn btn-primary color-changing" onclick="addLessonPlan()">Add Lesson Plan</button>
+      <button type="button" class="btn btn-primary color-changing" onclick="addLessonPlan()" id="lesson-add">Add Lesson Plan</button>
     </form>
 
     <div id="lessonPlans" class="mt-4">
@@ -186,9 +187,10 @@
 
   function addLessonPlan() {
     // Get form values
-    const title = document.getElementById('title').value;
+    const title = document.getElementById('lesson-title').value;
     const description = document.getElementById('description').value;
-    const date = document.getElementById('date').value;
+    const date = document.getElementById('lesson-date').value;
+    const saveType = document.getElementById("lesson-save-type").value;
     const plans = Array.from(document.getElementsByName('description[]')).map(input => input.value);
 
     if (title == "" || description == "" | date == "") {
@@ -201,10 +203,11 @@
       title: title,
       description: description,
       date: date,
-      plans: plans
+      plans: plans,
+      saveType: saveType
     };
 
-    addSingleLesson(title, description, date, plans, {})
+    showSpinner("Submitting Lesson...")
     // You can also send the lesson plan object to your server or store it in a database
     // For simplicity, we are just displaying it here
     $.ajax({
@@ -216,14 +219,28 @@
         if (data.success) {
           console.log("successfully saved data");
           alert("Created new lesson plan");
+          clearLessonForm();
+          addSingleLesson(title, description, date, plans, {})
+          document.querySelector('.spinner-container').style.display = "none";
         } else {
+          alert(`Error: ${data.error}`);
           console.log("error");
+          document.querySelector('.spinner-container').style.display = "none";
         }
       }
     });
 
     // Clear the form after adding the lesson plan
+
+  function clearLessonForm() {
     document.getElementById('lessonForm').reset();
+    document.getElementById("lesson-save-type").value = "new";
+    document.querySelectorAll(".lesson-input-group.input-group").forEach((x) => x.remove());
+    document.getElementById("lesson-title").disabled = false;
+    document.getElementById("lesson-date").disabled = false;
+    document.getElementById("lesson-add").innerText = "Add Lesson Plan";
+  }
+
   }
 
   function getLessonDetails(button) {
@@ -237,7 +254,7 @@
     const title = lessonPlanContainer.children[0].children[0].textContent;
     const description = lessonPlanContainer.children[2].textContent;
     const date = lessonPlanContainer.children[1].textContent.replace('Date: ', '');
-    const plans = Array.from(lessonPlanContainer.querySelectorAll('ul li')).map(li => li.textContent);
+    const plans = Array.from(lessonPlanContainer.querySelectorAll('ul li')).map(li => li.childNodes[0].textContent);
 
     return {
       container: lessonPlanContainer,
@@ -252,10 +269,9 @@
     var lessonDetails = getLessonDetails(button);
 
     // Populate the form with the current details
-    document.getElementById('title').value = lessonDetails.title;
+    document.getElementById('lesson-title').value = lessonDetails.title;
     document.getElementById('description').value = lessonDetails.description;
-    document.getElementById('date').value = lessonDetails.date;
-
+    document.getElementById('lesson-date').value = lessonDetails.date;
 
     // Populate the form with description inputs
     for (const plan of lessonDetails.plans) {
@@ -266,6 +282,10 @@
 
     // remove the first input
     document.getElementsByName("description[]")[0].parentNode.remove()
+    document.getElementById("lesson-save-type").value = "edit";
+    document.getElementById("lesson-title").disabled = true;
+    document.getElementById("lesson-date").disabled = true;
+    document.getElementById("lesson-add").innerText = "Edit Lesson Plan";
   }
 
   function deleteLesson(button) {
@@ -277,6 +297,7 @@
         title: lessonDetails.title,
         date: lessonDetails.date
       }
+      showSpinner("Deleting Lesson...")
       $.ajax({
         type: 'DELETE',
         url: "/logger/coach/lesson",
@@ -288,8 +309,10 @@
             alert("Success");
             // Remove the edited lesson plan from the display
             lessonDetails.container.parentNode.remove();
+            document.querySelector('.spinner-container').style.display = "none";
           } else {
             console.error(data.error)
+            document.querySelector('.spinner-container').style.display = "none";
           }
         }
       });

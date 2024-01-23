@@ -175,9 +175,15 @@ def new_lesson_plan():
         delete_lesson_from_db(coach, title, date)
         return {"success": True}
 
+    # Check if lesson plan already exists
+    lesson_plans = get_lessons_from_db(session.get('name'))
+    existing = [plan for plan in lesson_plans if plan.get('title') == title and plan.get('date') == date]
+    if existing:
+        return {"success": False, "error": "A lesson plan already exists by this title for this date"}
     description = request.json.get('description')
     plans = json.dumps(request.json.get('plans'))
-    add_lesson_to_db(title, description, date, coach, plans)
+    save_type = request.json.get('saveType', 'new')
+    add_lesson_to_db(title, description, date, coach, plans, new=save_type == "new")
     return {
         'success': True
     }

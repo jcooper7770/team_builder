@@ -20,6 +20,15 @@
   {% block extra_styles %}
   {% endblock %}
 </style>
+<div class="spinner-container">
+  <div class="spinner"></div>
+  <div class="spinner-text">Submitting data...</div>
+  <button id="spinner-close" class="spinner-close" aria-label="Close">
+    <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+      <path d="M10.894 9l6.553-6.553a1 1 0 1 0-1.414-1.414L9.48 7.586 2.928 1.034a1 1 0 0 0-1.414 1.414L7.066 9 .514 15.553a1 1 0 0 0 1.414 1.414L9 10.414l6.553 6.553a1 1 0 0 0 1.414-1.414L10.894 9z" fill-rule="evenodd"></path>
+    </svg>
+  </button>
+</div>
 
 <!-- Tabs at bottom-->
 <div class="bottom-tabs">
@@ -192,15 +201,6 @@
 
               <!-- Submit -->
               <button id="submit-button" type="submit" class="btn btn-primary color-changing">Submit</button>
-              <div class="spinner-container">
-                <div class="spinner"></div>
-                <div class="spinner-text">Submitting data...</div>
-                <button id="spinner-close" class="spinner-close" aria-label="Close">
-                  <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M10.894 9l6.553-6.553a1 1 0 1 0-1.414-1.414L9.48 7.586 2.928 1.034a1 1 0 0 0-1.414 1.414L7.066 9 .514 15.553a1 1 0 0 0 1.414 1.414L9 10.414l6.553 6.553a1 1 0 0 0 1.414-1.414L10.894 9z" fill-rule="evenodd"></path>
-                  </svg>
-                </button>
-              </div>
             </form>
 
           </td>
