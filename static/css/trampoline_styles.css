@@ -175,11 +175,30 @@
 .hero-img {
   border-radius: 50%;
 }
-
+.key-features {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  justify-content: center;
+}
+.key-feature{
+  display: flex;
+  flex-direction: column;
+  border: 1px solid blue;
+  border-radius: 10px;
+  width: 90%;
+}
+.feature-desc.hide {
+  display: none;
+}
 /* Responsive for mobile */
 @media screen and (max-width: 400px) {
 
   /* Hero section */
+  .hero-section {
+    align-items: start;
+    height: calc(100vh - 70px);
+  }
   .hero-text p,
   .hero-text ul li {
     font-size: 15px;

@@ -9,17 +9,82 @@
     </div>
     <div class="col-md-4 hero-text">
       <p>
+      Welcome to the Trampolone Practice Logger, your ultimate companion 
+      for precision training in Trampoline and Tumbling. 
+      Say goodbye to the manual hassle of documenting every skill during practice 
+      and calculating metrics like the Degree of Difficulty (DD) – we've got you covered!
+      <br>Are you ready to evelate your skills, track your progress, and excel like never before?</p>
+      <p class="text-center"><b>Key Features:</b></p>
+      <ul class="key-features" style="list-style-type: none;">
+        <li class="key-feature">
+          <div class="feature-title">
+            <i class="fa fa-book"></i> <b>Effortless Lesson Planning</b>
+          </div> 
+          <div class="feature-desc hide">
+          Create and seamlessly follow detailed lesson plans tailored to your training needs
+          </div>
+        </li>
+        <li class="key-feature">
+          <div class="feature-title">
+            <i class="fa fa-book"></i> <b>Centralized Training Hub</b>
+          </div>
+          <div class="feature-desc hide">
+            All your previous training sessions neatly 
+        organized in one place, providing a comprehensive overview of your progress
+          </div>
+        </li> 
+        <li class="key-feature">
+          <div class="feature-title">
+          <i class="fa fa-book"></i> <b>Streamlined Data Input</b>
+          </div>
+          <div class="feature-desc hide">
+            Easily input single or multiple turns, 
+      saving you valuable time and ensuring accurate documentation
+          </div>
+        </li>
+        <li class="key-feature">
+          <div class="feature-title">
+            <i class="fa fa-book"></i> <b>Automated Comp Cards</b>
+          </div>
+          <div class="feature-desc hide">
+            Effortlessly generate competition cards 
+        which can be used in USAG competitions
+          </div>
+        </li>
+        <li class="key-feature">
+          <div class="feature-title">
+            <i class="fa fa-book"></i> <b>Intelligent Search Functionality</b>
+          </div>
+          <div class="feature-desc hide">
+            Quick and easy retrieval of specific 
+        training sessions, making it a breeze to revisit and analyze past performances
+          </div>
+        </li>
+        <li class="key-feature">
+          <div class="feature-title">
+            <i class="fa fa-book"></i> <b>Metrics Galore</b>
+          </div>
+          <div class="feature-desc hide">
+            From the number of each skill done to the total 
+        difficulty of your turns and practices, this app calculates and presents insightful metrics for your every turn
+          </div>
+        </li>
+      </ul>
+
+      <!--
+      <p>
         How often do you find yourself manually handwriting each and every skill you do at practice then spending time
         to calculate metrics like the Degree of Difficulty (DD) of your turn? Well now there is an app you can use for
         that!
       </p>
       <p>Things that this tool can do:</p>
       <ul style="list-style-type: none;">
-        <li><i class="fa fa-book"></i> Stores all previous trainings in one place</i></li>
-        <li><i class="fa fa-book"></i> Easy input of a single turn or multiple turns</i></li>
-        <li><i class="fa fa-book"></i> Automatic creation of comp cards</i></li>
-        <li><i class="fa fa-book"></i> Simple search functionality to go back to a certain training</li>
-        <li><i class="fa fa-book"></i> Caluclates metrics per turn and practice like:
+        <li><i class="fa fa-book"></i> Creates and follows <b>lesson plans</b></li>
+        <li><i class="fa fa-book"></i> Stores all <b>previous trainings</b> in one place</li>
+        <li><i class="fa fa-book"></i> <b>Easy input</b> of a single turn or multiple turns</li>
+        <li><i class="fa fa-book"></i> Automatic creation of <b>comp cards</b></li>
+        <li><i class="fa fa-book"></i> Simple <b>search</b> functionality to go back to a certain training</li>
+        <li><i class="fa fa-book"></i> Caluclates <b>metrics</b> per turn and practice like:
           <ul style="list-style-type: none; margin-left: 20px;">
             <li><i class="fa fa-book"></i> Number of skills</li>
             <li><i class="fa fa-book"></i> Number of flips</li>
@@ -27,6 +92,7 @@
           </ul>
         </li>
       </ul>
+    -->
       {% if user == None %}
       <p\>Try it today!</p>
       <a href="/login" class="btn btn-primary">Login</a>
@@ -41,50 +107,9 @@
   </div>
 </div>
 
-<!--
-<br><br>
-<div class="container" id="outside">
-  <div class="card border-primary">
-    <div class="card-header text-center">
-      <h2>Trampoline Practice Logger</h2>
-    </div>
-    <div class="row card-body">
-      <div class="col-sm-3">
-        <img class="col-sm" src="/images/flipLogo.png" alt="logo" />
-      </div>
-      <div class="col-sm-9">
-        <p class="card-text">
-          How often do you find yourself manually handwriting each and every skill you do at practice then spending time
-          to calculate metrics like the Degree of Difficulty (DD) of your turn? Well now there is an app you can use for
-          that!
-        </p>
-        <p class="card-text">Things that this tool can do:</p>
-        <ul style="list-style-type: none;">
-          <li><i class="fa fa-book"></i> Stores all previous trainings in one place</i></li>
-          <li><i class="fa fa-book"></i> Easy input of a single turn or multiple turns</i></li>
-          <li><i class="fa fa-book"></i> Automatic creation of comp cards</i></li>
-          <li><i class="fa fa-book"></i> Simple search functionality to go back to a certain training</li>
-          <li><i class="fa fa-book"></i> Caluclates metrics per turn and practice like:
-            <ul style="list-style-type: none; margin-left: 20px;">
-              <li><i class="fa fa-book"></i> Number of skills</li>
-              <li><i class="fa fa-book"></i> Number of flips</li>
-              <li><i class="fa fa-book"></i> Total Difficulty</li>
-            </ul>
-          </li>
-        </ul>
-        {% if user == None %}
-        <p class="card-text">Try it today!</p>
-        <a href="/login" class="btn btn-primary">Login</a>
-        {% endif %}
-      </div>
-    </div>
-  </div>
-</div>
--->
-
 <!-- Leaderboards -->
-<br><br>
 <div class="container" id="leaderboard">
+<br><br>
   <div class="card border-primary">
     <div class="card-header text-center">
       <h2>Leaderboards</h2>
@@ -132,4 +157,10 @@
 </div>
 
 <br><br>
+<script>
+$('.key-feature').on('click', function(e) {
+  e.target.closest('.key-feature').children[1].classList.toggle("hide");
+
+});
+</script>
 {% endblock %}
