@@ -18,10 +18,22 @@
     flex-direction: column;
   }
 
+  .stats-tabs {
+    display: inline-block;
+    white-space: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    width: 100%;
+  }
+  .stats-tabs li {
+    display: inline-block;
+  }
+
   @media screen and (max-width: 400px) {
     /* scrollable bottom tabs */
     .bottom-tabs ul {
       overflow-x: auto;
+      overflow-y: hidden;
       display: inline-block;
     }
     .bottom-tabs ul li {
@@ -467,7 +479,7 @@
           <h2>Practice Graphs</h2>
         </div>
         <div class="card-header">
-          <ul class="nav nav-tabs card-header-tabs" id="charts-list" role="tablist">
+          <ul class="nav nav-tabs card-header-tabs stats-tabs" id="charts-list" role="tablist">
             {% for event in datapts.keys() %}
             <li class="nav-item">
               <a class="nav-link{% if loop.first %} active{% endif %}" href="#{{event}}" id="{{event}}-tab" data-toggle="tab" aria-controls="{{event}}" role="tab" aria-selected="{% if loop.first %}true{% else %}false{% endif %}">{{ event.replace('_', ' ').capitalize() }}</a>
