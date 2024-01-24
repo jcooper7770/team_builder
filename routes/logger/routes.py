@@ -26,6 +26,7 @@ def get_log_data(request):
     """
     form_data_list = []
     for key in request.form.keys():
+        print(key)
         if key.startswith("log-"):
             log_data = request.form.get(key)
             if log_data:
@@ -50,6 +51,7 @@ def _save_trampoline_data(request):
     tags = request.form.get('selected_tags', '').split(',')
     custom_tags = request.form.get("custom_tags", "").split(',')
     tags.extend(custom_tags)
+    save_type = request.form.get("save-type", "new")
     set_current_event(event)
     #set_current_user(username)
     set_current_athlete(username)
@@ -114,7 +116,8 @@ def _save_trampoline_data(request):
         print(f"search: {session.get('search_date')} - current: {session.get('current_date')}")
         session['search_date'] = None
     practice = Practice(form_date.date(), routines, event, tags)
-    replace_practice = session.get('log', {}).get(form_date.strftime('%m-%d-%Y')) is not None
+    #replace_practice = session.get('log', {}).get(form_date.strftime('%m-%d-%Y')) is not None
+    replace_practice = save_type == "edit"
     print(f"~~~~~~~~~~~~replace: {replace_practice} - log {session.get('log')} - date {form_date.strftime('%m-%d-%Y')}")
     saved_practice = practice.save(replace=replace_practice, user=username)
     session['log'] = {}

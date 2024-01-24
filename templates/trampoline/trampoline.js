@@ -503,8 +503,30 @@ $("[id^=edit_]").click(function (e) {
     var event_to_edit = event.target.id.split("_")[2];
     let confirmText = "".concat("Are you sure you want to edit ", date_to_edit, " ", event_to_edit, "?");
     if (confirm(confirmText) == true) {
-        var url = "/logger/edit/" + date_to_edit + "/" + event_to_edit;
-        location.href = encodeURI(url);
+        // Change event and date
+        document.getElementById("event").value = event_to_edit;
+        const date_parts = date_to_edit.split('-');
+        document.getElementById("logger-date").value = `${date_parts[2]}-${date_parts[0]}-${date_parts[1]}`;
+
+        // Add practice as turns
+        var turns = [];
+        const rows = event.target.closest(".table").children[1].children;
+        for (var row of rows ) {
+            const turn = row.children[1].childNodes[1].textContent;
+            turns.push(turn);
+        }
+        console.log(`Turns: ${turns}`);
+    
+        const allTurnsDiv = document.getElementById("new-turns");
+        for (var turn of turns) {
+            const newDiv = createNewLog(e, turn);
+            allTurnsDiv.children[allTurnsDiv.children.length-3].after(newDiv);
+        }
+        document.getElementById("new-turns").children[0].remove();
+        document.getElementById("log-save-type").value = "edit";
+        for (let i=(allTurnsDiv.children.length - 3) - turns.length; i>=0; i--) {
+            allTurnsDiv.children[i].remove();
+        }
     }
 });
 $("[id^=remove_]").click(function (e) {
@@ -689,6 +711,11 @@ $("#new-turns").on('click', '.copy-log-button', function(e){
 function createNewLog(e, value) {
     const logTurnDivs = document.querySelectorAll("[id^=log-turn]");
 
+    // fix the names
+    for (let i=0; i<logTurnDivs.length-1; i++) {
+        logTurnDivs[i].children[2].name = `log-${i+1}`;
+    }
+
     var newDiv = document.createElement("div");
     newDiv.id = `log-turn-${logTurnDivs.length-1}`;
 
@@ -719,7 +746,7 @@ function createNewLog(e, value) {
     newInput.classList = "color-changing";
     newInput.placeholder = "Input your turn here...";
     newInput.value = value;
-    newInput.name = `log-${logTurnDivs.length-1}`;
+    newInput.name = `log-${logTurnDivs.length}`;
     if(localStorage.getItem("theme") == "dark-mode"){
         newInput.classList.add("dark-mode-color");
     }
