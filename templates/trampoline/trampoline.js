@@ -516,7 +516,7 @@ $("[id^=edit_]").click(function (e) {
             if (row.children.length > 1) {
                 turn = row.children[1].childNodes[1].textContent;
                 turns.push(turn);
-            } else if (row.children.length == 1) {
+            } else if (row.children.length == 1 && row.children[0].classList == "comment-row") {
                 turn = row.children[0].childNodes[1].textContent;
                 turns.push(`- ${turn}`);
             } 
@@ -533,6 +533,14 @@ $("[id^=edit_]").click(function (e) {
         for (let i=(allTurnsDiv.children.length - 3) - turns.length; i>=0; i--) {
             allTurnsDiv.children[i].remove();
         }
+
+        // Set tags
+        var tagList = [];
+        const tags = event.target.closest('th').children[1].children;
+        for(var tag of tags) {
+            tagList.push(tag.textContent)
+        }
+        document.querySelector('[name="custom_tags"]').value = tagList.join(',')
 
         // Switch to the log tab
         document.getElementById("log-tab").classList.add("show");

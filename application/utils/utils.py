@@ -446,13 +446,14 @@ class TableMaker:
                 share_a=f"<a href='/logger/_current_/practices?start={share_date}&end={share_date}' class='btn-rate float-right' target='_blank' title='share practice'>Share</a>"
                 edit_a = f'<button type="button" class="btn float-right"><a title="edit day" href="#"><span id="edit_{date_to_remove}_{event_to_remove}" class="fa fa-pencil-square-o" aria-hidden=\'true\'></span></button>'
                 delete_a = f'<button type="button" class="btn float-right" id="delete-button"><a title="remove day" href="#"><span id="remove_{date_to_remove}_{event_to_remove}" class="fa fa-remove" aria-hidden=\'true\'></span></button>'
+            options_div = f'<div style="display: none;" class="extra-options">{edit_a}{share_a}</div>'
             tag_divs = [f'<div class="practice-tag">{tag}</div>' for tag in tags if tag]
             #self.table.append(f'<th id="practice-header" colspan={colspan} align="center" name="{date_to_remove}_{event_to_remove}">{rating_text}{value}{delete_a}{edit_a}{share_a}</th>')
             content = f'<div class="row"><div class="col-md-12" id="practice-header">{rating_text}{value}{delete_a}{edit_a}{share_a}</div></div><div class="row">{"".join(tag_divs)}</div>'
             self.table.append(f'<th colspan={colspan} align="center" name="{date_to_remove}_{event_to_remove}">{content}</th>')
         except:
             tag_divs = [f'<div class="practice-tag">{tag}</div>' for tag in tags if tag]
-            self.table.append(f'<th colspan={colspan} align="center"><div class="row">{value}</div><div class="row">{"".join(tag_divs)}</div></th>')
+            self.table.append(f'<th colspan={colspan} align="center"><div class="row">{value}</div><div class="row tags-row">{"".join(tag_divs)}</div></th>')
         self.end_row()
 
     def reset_table(self):
@@ -465,11 +466,12 @@ class TableMaker:
             
         self.first_table = False
 
-    def add_cell(self, value, colspan=None, align=None, width=None):
+    def add_cell(self, value, colspan=None, align=None, width=None, classList=None):
         colspan_text = f" colspan={colspan}" if colspan else ""
         align_text = f" align='{align}'" if align else ""
         width_text = f" width='{width}'" if width else ""
-        self.table.append(f"<td{colspan_text}{align_text}{width_text}>{value}</td>")
+        class_text = f' class="{classList}"' if classList else ""
+        self.table.append(f"<td{colspan_text}{align_text}{width_text}{class_text}>{value}</td>")
 
     def render(self):
         return "".join(self.table)
@@ -494,7 +496,7 @@ def skills_table(skills, title="Routines", expand_comments=False, rating=None, t
         skills_table.new_row()
         if turn.note and not turn.skills:
             cell = f'<i class="fa fa-comments"></i> {turn.note}'
-            skills_table.add_cell(cell, colspan=most_cols+8)
+            skills_table.add_cell(cell, colspan=most_cols+8, classList="comment-row")
             skills_table.new_row()
         if not turn.skills:
             continue
@@ -531,6 +533,9 @@ def skills_table(skills, title="Routines", expand_comments=False, rating=None, t
         #skills_table.add_cell(f'<i class="expand-turn fa fa-caret-down"></i>{cell_value}{note_html}<br><div style="display: none"><u><b>Turn:</b></u> {next_line}<br><b><u>Total:</u></b> {totals_line}</div>', colspan=most_cols)
         skills_table.add_cell(f'<i class="expand-turn fa fa-plus"></i>{cell_value}{note_html}<br><div style="display: none"><u><b>Turn:</b></u> {next_line}<br><b><u>Total:</u></b> {totals_line}</div>', colspan=most_cols)
         skills_table.end_row()
+    skills_table.new_row()
+    skills_table.add_cell(totals_line, colspan=most_cols+8, align="center")
+    skills_table.end_row()
     skills_table.end_table()
     return skills_table.render()
 
