@@ -527,6 +527,13 @@ $("[id^=edit_]").click(function (e) {
         for (let i=(allTurnsDiv.children.length - 3) - turns.length; i>=0; i--) {
             allTurnsDiv.children[i].remove();
         }
+
+        // Switch to the log tab
+        document.getElementById("log-tab").classList.add("show");
+        document.getElementById("log-tab").classList.add("active");
+        document.getElementById("practice-tab").classList.remove("active");
+        document.querySelector('[href="#log-tab"]').classList.add('active');
+        document.querySelector('[href="#practice-tab"]').classList.remove('active');
     }
 });
 $("[id^=remove_]").click(function (e) {
