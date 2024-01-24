@@ -512,8 +512,14 @@ $("[id^=edit_]").click(function (e) {
         var turns = [];
         const rows = event.target.closest(".table").children[1].children;
         for (var row of rows ) {
-            const turn = row.children[1].childNodes[1].textContent;
-            turns.push(turn);
+            var turn = ""
+            if (row.children.length > 1) {
+                turn = row.children[1].childNodes[1].textContent;
+                turns.push(turn);
+            } else if (row.children.length == 1) {
+                turn = row.children[0].childNodes[1].textContent;
+                turns.push(`- ${turn}`);
+            } 
         }
         console.log(`Turns: ${turns}`);
     
