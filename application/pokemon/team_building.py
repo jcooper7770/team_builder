@@ -401,7 +401,7 @@ class MetaTeamDestroyer:
         logger.info(f"refresh data: {REFRESH_DATA}")
     
         fetch_new = False
-        # first check if in db andf if data is older than today
+        # first check if in db and if data is older than today
         engine = create_engine()
         metadata = sqlalchemy.MetaData()
         table = sqlalchemy.Table("pokemon_data", metadata, autoload=True, autoload_with=engine)
@@ -414,6 +414,7 @@ class MetaTeamDestroyer:
             league_data = results[0]
             last_fetched_date = league_data[2]
             logger.info(f'{league} data was last fetched: {last_fetched_date}')
+            logger.info(type(league_data[1]))
             latest_info = json.loads(league_data[1])
 
             same_date = True
@@ -424,7 +425,8 @@ class MetaTeamDestroyer:
             if not REFRESH_DATA and same_date:
                 self.last_fetched[league] = last_fetched_date
                 logger.info(f"Using data refreshed at: {self.last_fetched}")
-                return json.loads(latest_info)
+                logger.info(type(latest_info))
+                return json.loads(latest_info) if type(latest_info) == str else latest_info
         else:
             ins = table.insert().values(
                 league=league,
