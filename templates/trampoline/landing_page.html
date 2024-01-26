@@ -9,7 +9,7 @@
     </div>
     <div class="col-md-4 hero-text">
       <p>
-      Welcome to the Trampolone Practice Logger, your ultimate companion 
+      Welcome to the Trampoline Practice Logger, your ultimate companion 
       for precision training in Trampoline and Tumbling. 
       Say goodbye to the manual hassle of documenting every skill during practice 
       and calculating metrics like the Degree of Difficulty (DD) – we've got you covered!
@@ -96,6 +96,8 @@
       {% if user == None %}
       <p\>Try it today!</p>
       <a href="/login" class="btn btn-primary">Login</a>
+      {% else %}
+      <a href="/logger" class="btn btn-primary">Start Now</a>
       {% endif %}
     </div>
     <div class="col-md-1"></div>
