@@ -171,7 +171,7 @@ body {
 
 /* Hero section */
 .hero-section {
-  height: 100vh;
+  min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -220,7 +220,7 @@ body {
   /* Hero section */
   .hero-section {
     align-items: start;
-    height: calc(100vh - 70px);
+    min-height: calc(100vh - 70px);
   }
   .hero-text {
     background: none;
@@ -231,6 +231,7 @@ body {
   }
   .hero-text a {
     width: 100%;
+    margin-bottom: 20px;
   }
 
   .hero-img {
