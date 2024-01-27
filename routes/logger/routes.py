@@ -834,11 +834,55 @@ def create_skill_tables(user_turns):
     return all_skills_ordered, dmt_passes_ordered, tumbling_skills_ordered
 
 
-def create_user_stats(request, airtimes):
+def get_user_prestige(username):
+    """
+    Return's the user's total points
+    """
+    class MockReq:
+        args = {}
+    mock_request = MockReq()
+    stats = create_user_stats(mock_request, [], username=username)
+    tramp_day_points = 0 # number of points for logging days
+    last_date = None
+    combo = 1 # combo for # days in a row
+    for datapt in stats.get("trampoline_flips_per_day", []):
+        date = datetime.datetime.strptime(datapt['x'], "%Y-%m-%d")
+        #start_date = datetime.datetime.strptime(start_date, "%m/%d/%Y")
+        if not last_date:
+            tramp_day_points += 1
+            print(f"prestige calc: {date} === {tramp_day_points}")
+            last_date = date
+            continue
+        if (date - last_date).days == 1:
+            combo += 1
+            
+            points_added = 1
+            if 2 <= combo < 7:
+                print("combo 2-6 days! - +2 pts")
+                points_added = 2
+            elif combo >= 7:
+                print("combo 7+ days! - +4 pts")
+                points_added = 4
+
+            tramp_day_points += points_added
+            print(f"prestige calc: {date} === {tramp_day_points}")
+            last_date = date
+            continue
+        # no longer consecutive days so combo goes back to 1
+        combo = 1
+        tramp_day_points += 1
+        print(f"prestige calc: {date} === {tramp_day_points}")
+        last_date = date
+    return {
+        "trampoline": tramp_day_points
+    }
+
+
+def create_user_stats(request, airtimes, username=None):
     """
     Create all datapoints for user stats
     """
-    current_user = session.get('name')
+    current_user = username or session.get('name')
     start_date = request.args.get('chart_start')
     if start_date:
         start_date = datetime.datetime.strptime(start_date, "%m/%d/%Y")
@@ -1120,6 +1164,7 @@ def user_page(name):
     except:
         name = ""
     
+    prestige = get_user_prestige(name)
     turns, _ = get_turn_dds(name)
     total_flips, total_turns, biggest_flips, biggest_dd = 0, 0, 0, 0
     for event, event_turns in turns.items():

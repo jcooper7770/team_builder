@@ -96,6 +96,35 @@ STRAIGHT_POS = "/"
 POSITIONS = [
     TUCK_POS, PIKE_POS, STRAIGHT_POS
 ]
+E_TRAMP = "trampoline"
+E_DMT = "dmt"
+E_TUMBLING = "tumbling"
+EVENTS = [E_TRAMP, E_DMT, E_TUMBLING]
+
+PRESTIGE_SYSTEM = {
+    "point_options": {
+        "days_logged": {
+            "description": "The number of days a user has logged",
+            "title": "Logged Days",
+            "multipliers": {
+                "2": 2, # 2 days in a row gives double points
+                "7": 3, # 7 days in a row gives triple points
+            },
+            "points": 1, # 1 point for every practice logged
+        },
+        "routines": {
+            "description": "The number of routines the user has logged",
+            "title": "Logged routines",
+            "points": 1, # 1 point for every routine/pass logged
+            "multipliers": {
+                "2": 2, # 2 routines in a row gives double points
+            }
+        }
+    },
+    "categories": [
+        *EVENTS
+    ]
+}
 
 ENGINE = None
 DB_TABLE = None
@@ -134,7 +163,7 @@ class Athlete(User):
             password="", expand_comments=False, is_coach=False, athletes=[],
             first_login=False, signup_date=None, messages=[],
             tu_prelims1=[], tu_prelims2=[], tramp_level=10, dmt_level=10, tumbling_level=10,
-            coach_requests=[], first_name="", last_name=""
+            coach_requests=[], first_name="", last_name="", points={}
         ):
         self.name = name
         self.compulsory = compulsory
@@ -155,9 +184,11 @@ class Athlete(User):
         self.messages = messages
         self.levels = [tramp_level, dmt_level, tumbling_level]
         self.coach_requests = coach_requests
+        points = points or {event: 0 for event in EVENTS}
         self.details = {
             "first_name": first_name,
-            "last_name": last_name
+            "last_name": last_name,
+            "points": points # split prestige by event
         }
 
     def set_comp(self, skills):
