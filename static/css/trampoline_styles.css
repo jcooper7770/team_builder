@@ -227,7 +227,7 @@ body {
   }
   .hero-text p,
   .hero-text ul li {
-    font-size: 15px;
+    font-size: 12px;
   }
   .hero-text a {
     width: 100%;
@@ -240,7 +240,7 @@ body {
   }
 
   .hero-img img {
-    height: 250px;
+    height: 200px;
   }
 
   .down-arrow {
