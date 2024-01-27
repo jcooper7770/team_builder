@@ -14,14 +14,21 @@
           <p class="card-text">Type your skills into the text area which says "Input your routines here"</p>
           <p class="card-text"><u>Some tips for recording your turns:</u></p>
           <ul class="list-group-flush">
-            <li class="list-group-item list-group-item-info">Input multiple skills by separating skill by spaces. i.e. 40o 40<</li>
-            <li class="list-group-item list-group-item-primary">Use '%' or '--' to indicate the jumps were stopped but restarted the same turn</li>
-            <li class="list-group-item list-group-item-info">Input multiple turns at once by entering each turn on a separate line</li>
-            <li class="list-group-item list-group-item-primary">Add a comment on a turn by adding a new line and starting the comment with "#" or '-' (See below example)</li>
+            <li class="list-group-item list-group-item-info">Input multiple skills by separating skill by spaces. i.e.
+              40o 40<< /li>
+            <li class="list-group-item list-group-item-primary">Use '%' or '--' to indicate the jumps were stopped but
+              restarted the same turn</li>
+            <li class="list-group-item list-group-item-info">Input multiple turns at once by entering each turn on a
+              separate line</li>
+            <li class="list-group-item list-group-item-primary">Add a comment on a turn by adding a new line and
+              starting the comment with "#" or '-' (See below example)</li>
             <li class="list-group-item list-group-item-info">Utilize the shortucts (see next section below).</li>
-            <li class="list-group-item list-group-item-primary">Copy a previously written turn by clicking on the number next to to the turn <img src="/images/tutorial3.png" width="75" height="50" /></li>
-            <li class="list-group-item list-group-item-info">Use the dropdowns to choose skills <img src="/images/tutorial4.png" width="75" height="50" /></li>
-            <li class="list-group-item list-group-item-primary">Use the recommended skills which show up below the log input field by clicking on them.</li>
+            <li class="list-group-item list-group-item-primary">Copy a previously written turn by clicking on the number
+              next to to the turn <img src="/images/tutorial3.png" width="75" height="50" /></li>
+            <li class="list-group-item list-group-item-info">Use the dropdowns to choose skills <img
+                src="/images/tutorial4.png" width="75" height="50" /></li>
+            <li class="list-group-item list-group-item-primary">Use the recommended skills which show up below the log
+              input field by clicking on them.</li>
           </ul>
           <center><img src="/images/tutorial2.png" class="card-img-bottom" /></center>
         </div>
@@ -100,12 +107,17 @@
         <div class="col-sm">
           <p class="card-text">To save routines for a user from the logger page:</p>
           <ul class="list-group-flush">
-            <li class="list-group-item list-group-item-primary">Complusory: Type "comp:routine skills". i.e. <span style="color:red">comp:40o 41o 40< 41<</span></li>
-            <li class="list-group-item list-group-item-info">Optional: Type "opt:routine skills". i.e. <span style="color:red">opt:12001< 811< 12001o 813<</span></li>
+            <li class="list-group-item list-group-item-primary">Complusory: Type "comp:routine skills". i.e. <span
+                style="color:red">comp:40o 41o 40< 41<</span>
+            </li>
+            <li class="list-group-item list-group-item-info">Optional: Type "opt:routine skills". i.e. <span
+                style="color:red">opt:12001< 811< 12001o 813<</span>
+            </li>
           </ul>
           <p class="card-text">Then to use them:</p>
           <ul class="list-group-flush">
-            <li class="list-group-item list-group-item-primary">Compulsory: Type <span style="color:red">compulsory</span></li>
+            <li class="list-group-item list-group-item-primary">Compulsory: Type <span
+                style="color:red">compulsory</span></li>
             <li class="list-group-item list-group-item-info">Optional: Type <span style="color:red">optional</span></li>
           </ul>
           <p class="card-text">You can also save routines in the user profile by clicking on your username in the
@@ -120,4 +132,44 @@
 <div class="container">
   <p style="text-align:center">Current commit: {{commit_hash}}</p>
 </div>
+
+<!-- Feedback Modal -->
+<div class="modal fade" id="feedbackModal" tabindex="-1" role="dialog" aria-labelledby="feedbackModalLabel"
+  aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="feedbackModalLabel">Feedback</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <!-- Your feedback form goes here -->
+        <p>For optimal communication and privacy, we encourage you to share your valuable feedback through a private message on our official Instagram account 
+        <a href="https://www.instagram.com/cacoop7770/">@cacoop7770</a>. 
+          Your insights are highly valued, and we appreciate the time you take to provide us with your feedback.</p>
+        <p>Thank you for contributing to the enhancement of our platform.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer class="text-center">
+  <div class="footer-top">
+    <p>&copy; Trampoline Practice Logger</p>
+  </div>
+  <div class="footer-bottom">
+    <p>Contact Us: <a href="https://www.instagram.com/cacoop7770/"><i class="fa fa-instagram" aria-hidden="true"></i> cacoop7770</a></p>
+    <p>|</p>
+    <a href="#" id="feedbackLink">Give Feedback</a>
+  </div>
+</footer>
+
+<script>
+  // JavaScript to trigger the feedback modal
+  document.getElementById('feedbackLink').addEventListener('click', function () {
+    $('#feedbackModal').modal('show');
+  });
+</script>
 {% endblock %}
