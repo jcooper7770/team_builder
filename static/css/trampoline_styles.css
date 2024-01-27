@@ -216,6 +216,11 @@ body {
 }
 /* Responsive for mobile */
 @media screen and (max-width: 400px) {
+  .bottom-tabs {
+    font-family: 'Single Day', cursive;
+    font-size: 17px;
+  }
+
 
   /* Hero section */
   .hero-section {
@@ -273,7 +278,7 @@ body {
   }
 
   #navbarNav ul li a {
-    font-size: 15px;
+    font-size: 20px;
     font-family: 'Single Day', cursive;
   }
 
