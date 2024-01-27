@@ -180,18 +180,26 @@ body {
   /*background-color:  rgba(0, 0, 0, 0.5);*/
   background: linear-gradient(to left, rgba(0, 0, 0, 0.5), rgba(255, 255, 255, 0.5));
 }
-
 .hero-img {
   border-radius: 50%;
 }
+.hero-img img{
+  height: 400px;
+}
+
 .hero-text {
   background: rgba(0, 0, 0, 0.1);
   border-radius: 20px;
   font-family: 'Poppins', sans-serif;
+  text-align: center;
+  font-size: 15px;
 }
 .key-features {
-  display: flex;
-  flex-direction: column;
+  /*display: flex;
+  flex-direction: column;*/
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: start;
   gap: 10px;
   justify-content: center;
 }
