@@ -100,9 +100,12 @@ def coach_settings():
         )
     if request.method == "POST":
         athletes = request.form.getlist("coach_athletes")
+        non_athletes = request.form.getlist("non_coach_athletes")
         current_user = Athlete.load(session.get('name'))
         new_athletes, new_requests = [], []
-        for athlete_full_username in athletes:
+
+        all_athletes = athletes + non_athletes
+        for athlete_full_username in all_athletes:
             print(f"full name: {athlete_full_username}")
 
             matches = re.findall(r"(.*) \(", athlete_full_username)
