@@ -403,7 +403,8 @@ class TableMaker:
             f"border='{self.border}'",
             f"align='{self.align}'",
             #f"style='background-color:{self.bgcolor};'",
-            'class="table table-striped table-responsive-lg table-light color-changing"'
+            #'class="table table-striped table-responsive-lg table-light color-changing"' # removing table-responsive-lg because it was formatting table strangely
+            'class="table table-striped table-light color-changing"'
         ]
         if self.width:
             options.append(f"width='{self.width}'")
@@ -453,7 +454,7 @@ class TableMaker:
             self.table.append(f'<th colspan={colspan} align="center" name="{date_to_remove}_{event_to_remove}">{content}</th>')
         except:
             tag_divs = [f'<div class="practice-tag">{tag}</div>' for tag in tags if tag]
-            self.table.append(f'<th colspan={colspan} align="center"><div class="row">{value}</div><div class="row tags-row">{"".join(tag_divs)}</div></th>')
+            self.table.append(f'<th colspan={colspan} align="center"><div class="row mx-1">{value}</div><div class="row tags-row">{"".join(tag_divs)}</div></th>')
         self.end_row()
 
     def reset_table(self):
