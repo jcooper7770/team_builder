@@ -102,7 +102,12 @@ def coach_settings():
         athletes = request.form.getlist("coach_athletes")
         current_user = Athlete.load(session.get('name'))
         new_athletes, new_requests = [], []
-        for athlete_username in athletes:
+        for athlete_full_username in athletes:
+            print(f"full name: {athlete_full_username}")
+
+            matches = re.findall(r"(.*) \(", athlete_full_username)
+            #print(f"matches: {matches}")
+            athlete_username = athlete_full_username
             if athlete_username in current_user.athletes:
                 new_athletes.append(athlete_username)
             else:

@@ -23,7 +23,8 @@
                 <select class="form-control" id="athletes_before" style="width: 100%;" multiple>
                   {% for athlete, athlete_data in users.items() %}
                   {% if not athlete_data.is_coach and athlete not in athletes and athlete not in requests %}
-                  <option value="{{athlete}}" id="option_{{athlete}}">{{athlete}} ({{athlete_data.details.first_name}} {{athlete_data.details.last_name}})</option>
+                  <!--<option value="{{athlete}}" id="option_{{athlete}}">{{athlete}} ({{athlete_data.details.first_name}} {{athlete_data.details.last_name}})</option>-->
+                  <option value="{{athlete}}" id="option_{{athlete}}" label="{{athlete}} ({{athlete_data.details.first_name}} {{athlete_data.details.last_name}})">{{athlete}} ({{athlete_data.details.first_name}} {{athlete_data.details.last_name}})</option>
                   {% endif %}
                   {% endfor %}
                 </select>
@@ -37,7 +38,7 @@
                 <select class="form-control" name="coach_athletes" id="athletes_after" style="width: 100%;" multiple>
                   {% for athlete, athlete_data in users.items() %}
                   {% if not athlete_data.is_coach and athlete in athletes and athlete not in requests %}
-                  <option value="{{athlete}}" id="option_{{athlete}}">{{athlete}} ({{athlete_data.details.first_name}} {{athlete_data.details.last_name}})</option>
+                  <option value="{{athlete}}" id="option_{{athlete}}" label="{{athlete}} ({{athlete_data.details.first_name}} {{athlete_data.details.last_name}})">{{athlete}} ({{athlete_data.details.first_name}} {{athlete_data.details.last_name}})</option>
                   {% endif %}
                   {% endfor %}
                 </select>
@@ -128,15 +129,34 @@
 // Move the athletes over to the other list
 $("[id^=option_").click(function(e){
   option_element = document.getElementById(e.target.id);
+  console.log(`Adding athlete ${option_element.id}`);
+  console.log(option_element);
+  console.log(option_element.parentElement.id);
   
   if (option_element.parentElement.id == "athletes_before") {
+    console.log("Adding");
     select = document.getElementById("athletes_after")
     option_element.selected = false;
     select.appendChild(option_element);
+    
+    // Add to list
+    var list = document.getElementById('athlete-list');
+    var athlete_name = document.createElement('li')
+    athlete_name.innerText = option_element.label;
+    list.appendChild(athlete_name);
   } else {
+    console.log("Removing");
     select = document.getElementById("athletes_before")
     option_element.selected = false;
     select.appendChild(option_element);
+
+    // Remove from list
+    var athlete_name = option_element.label;
+    $('#athlete-list').children().each(function(){
+      if(this.innerText == athlete_name){
+        this.remove();
+      }
+    });
   }
 });
 
@@ -153,7 +173,9 @@ $('#submit').click(function(e){
     this.selected = true;
   }); 
 })
+/*
 $('#athletes_before').change(function(e){
+  console.log("!!")
   $('#athletes_before').children().each(function(){
     if (this.selected){
       select = document.getElementById("athletes_after")
@@ -163,18 +185,19 @@ $('#athletes_before').change(function(e){
       // Add to list
       var list = document.getElementById('athlete-list');
       var athlete_name = document.createElement('li')
-      athlete_name.innerText = this.value;
+      athlete_name.innerText = this.label;
       list.appendChild(athlete_name);
     }
   });
 
 })
 $('#athletes_after').change(function(e){
+  console.log("???")
   $('#athletes_after').children().each(function(){
     if (this.selected){
       select = document.getElementById("athletes_before")
       this.selected = false;
-      var athlete_name = this.value;
+      var athlete_name = this.label;
       select.appendChild(this);
 
       // Remove from list
@@ -187,6 +210,7 @@ $('#athletes_after').change(function(e){
     }
   });
  })
+*/
  $('#comp-cards').click(function(e) {
     console.log("Making comp cards")
     e.preventDefault();
