@@ -509,6 +509,7 @@ def login():
         session["error"] = ""
         username = request.form.get("username", "").lower()
         password = request.form.get("password")
+        '''
         user = get_user(username)
         print(f"login user0: {user}")
         # if empty password then save as fake password
@@ -524,7 +525,6 @@ def login():
         if not sha256_crypt.verify(password, user["password"]):
             session["error"] = f"Incorrect password for user {username}"
             return redirect(url_for('trampoline.login'))
-
         '''
         try:
             user = get_user(username)
@@ -545,7 +545,6 @@ def login():
         except Exception as login_err:
             session["error"] = f"Username {username} does not exists. {login_err}"
             return redirect(url_for('trampoline.login'))
-        '''
         session["name"] = username
         if session.get('name'):
             set_current_user(username)
@@ -1218,9 +1217,11 @@ def complete_lesson():
     lessons = get_lessons_from_db(None)
     all_finished_turns = {name: []}
     for lesson in lessons:
+        print(f"lesson: {lesson}")
         if lesson['title'] == title and lesson['date'] == date:
             all_finished_turns = lesson['athletes_completed']
             break
+    print(all_finished_turns)
     all_finished_turns[name] = finished_turns
     update_lesson(title, date, all_finished_turns)
     return {"success": True}

@@ -601,7 +601,7 @@ def add_lesson_to_db(title, description, date, coach, plans, new=True):
             date=date,
             coach=coach,
             plans=plans,
-            athletes_completed=json.dumps("{}")
+            athletes_completed=json.dumps({})
         )
     else:
         ins = table.update().where(table.c.title==title).where(table.c.date==date).where(table.c.coach==coach).values(
@@ -634,13 +634,16 @@ def get_lessons_from_db(coach):
         result = engine.execute(f'SELECT * from `lessons`;')
     lessons = []
     for lesson in result:
+        athletes_completed = lesson[5]
+        if athletes_completed == '"{}"':
+            athletes_completed = "{}"
         lessons.append({
             "title": lesson[0],
             "description": lesson[1],
             "date": lesson[2],
             "coach": lesson[3],
             "plans": json.loads(lesson[4]),
-            "athletes_completed": json.loads(lesson[5])
+            "athletes_completed": json.loads(athletes_completed)
         })
     return sorted(lessons, key=lambda lesson: lesson['date'])
 
