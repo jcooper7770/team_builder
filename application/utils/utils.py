@@ -411,7 +411,7 @@ class TableMaker:
             # This is the correct way to do it but this breaks the home page
             #options.append(f"style='width:{self.width}'")
         options_str = " ".join(options)
-        self.table.append('<div class="container">')
+        self.table.append('<div class="">')
         self.table.append(f"<table {options_str}>")
         self.table.append("<thead class=\"thead-dark bg-dark text-white color-changing\">")
         self._row_num = 0
@@ -444,13 +444,17 @@ class TableMaker:
             share_date = f"{date_to_remove.split('-')[2]}-{date_to_remove.split('-')[0]}-{date_to_remove.split('-')[1]}"
             share_a, edit_a, delete_a = "", "", ""
             if editable:
-                share_a=f"<a href='/logger/_current_/practices?start={share_date}&end={share_date}' class='btn-rate float-right' target='_blank' title='share practice'>Share</a>"
-                edit_a = f'<button type="button" class="btn float-right"><a title="edit day" href="#"><span id="edit_{date_to_remove}_{event_to_remove}" class="fa fa-pencil-square-o" aria-hidden=\'true\'></span></button>'
-                delete_a = f'<button type="button" class="btn float-right" id="delete-button"><a title="remove day" href="#"><span id="remove_{date_to_remove}_{event_to_remove}" class="fa fa-remove" aria-hidden=\'true\'></span></button>'
+                share_a=f"<a href='/logger/_current_/practices?start={share_date}&end={share_date}' class='float-right btn btn-primary' target='_blank' title='share practice'>Share</a>"
+                edit_a = f'<button type="button" class="btn float-right edit-btn"><a title="edit day" href="#"><span id="edit_{date_to_remove}_{event_to_remove}" class="fa fa-pencil-square-o" aria-hidden=\'true\'></span></button>'
+                delete_a = f'<button type="button" class="btn float-right delete-btn" id="delete-button"><a title="remove day" href="#"><span id="remove_{date_to_remove}_{event_to_remove}" class="fa fa-remove" aria-hidden=\'true\'></span></button>'
             options_div = f'<div style="display: none;" class="extra-options">{edit_a}{share_a}</div>'
             tag_divs = [f'<div class="practice-tag">{tag}</div>' for tag in tags if tag]
             #self.table.append(f'<th id="practice-header" colspan={colspan} align="center" name="{date_to_remove}_{event_to_remove}">{rating_text}{value}{delete_a}{edit_a}{share_a}</th>')
-            content = f'<div class="row"><div class="col-md-12" id="practice-header">{rating_text}{value}{delete_a}{edit_a}{share_a}</div></div><div class="row">{"".join(tag_divs)}</div>'
+            #content = f'<div class="row"><div class="col-md-12" id="practice-header">{rating_text}{value}{delete_a}{edit_a}{share_a}</div></div><div class="row">{"".join(tag_divs)}</div>'
+            header_top = f"<div class='practice-header-top'>{rating_text}{value}</div>"
+            header_bottom = f"<div class='practice-header-bottom'>{delete_a}{edit_a}{share_a}</div>"
+            header_tags = f"<div class='practice-tags'>{''.join(tag_divs)}</div>"
+            content = f'<div class="practice-header" id="practice-header">{header_top}{header_bottom}{header_tags}</div>'
             self.table.append(f'<th colspan={colspan} align="center" name="{date_to_remove}_{event_to_remove}">{content}</th>')
         except:
             tag_divs = [f'<div class="practice-tag">{tag}</div>' for tag in tags if tag]

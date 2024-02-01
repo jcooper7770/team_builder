@@ -208,7 +208,8 @@ def trampoline_log():
     html = [
         #"<h1 style='text-align:center;' class=\"header\">Previous Practices</h1>",
         # Div for practices so they are scrollable
-        "<div id='practices' class='practices'><br><br>",
+        #"<div id='practices' class='practices'><br><br>",
+        "<div id='practices' class=''><br><br>",
         all_practice_tables,
         "</div>"
     ]

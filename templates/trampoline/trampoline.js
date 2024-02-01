@@ -536,7 +536,8 @@ $("[id^=edit_]").click(function (e) {
 
         // Set tags
         var tagList = [];
-        const tags = event.target.closest('th').children[1].children;
+        //const tags = event.target.closest('th').children[1].children;
+        const tags = event.target.closest('th').children[0].children[2].children;
         for(var tag of tags) {
             tagList.push(tag.textContent)
         }
@@ -586,13 +587,15 @@ function addDropdownToTableHeader(tableHeader) {
 // Add post button
 function addPostToTableHeader(header) {
     const button = document.createElement("button");
-    button.classList = "btn btn-primary color-changing";
-    button.innerText = "Post To Feed"
+    button.classList = "btn btn-primary color-changing post-btn";
+    //button.innerText = "Post To Feed"
+    button.innerText = "Post"
     button.addEventListener("click", function(e) {
         e.preventDefault();
         const name = e.target.parentNode.parentNode.parentNode.getAttribute("name");
         console.log(e.target.parentNode.parentNode.nextSibling);
-        const tagDivs = e.target.parentNode.parentNode.nextSibling.childNodes;
+        //const tagDivs = e.target.parentNode.parentNode.nextSibling.childNodes;
+        const tagDivs = e.target.parentNode.parentNode.childNodes[2].childNodes;
         const tags = [];
         tagDivs.forEach((div) => {
             tags.push(div.innerText);
@@ -615,7 +618,8 @@ function addPostToTableHeader(header) {
 }
 
 // Get all table headers and add the dropdown menu to each one
-const tableHeaders = document.querySelectorAll('#practice-header');
+//const tableHeaders = document.querySelectorAll('#practice-header');
+const tableHeaders = document.querySelectorAll('.practice-header-bottom');
 tableHeaders.forEach(function (header) {
   addDropdownToTableHeader(header);
 
@@ -648,8 +652,10 @@ function handleRatingSelection(option) {
 
   // Perform any desired action with the selected rating
   console.log('Selected rating:', selectedRating);
-  option.parentNode.parentNode.parentNode.firstChild.textContent = selectedRating;
-  option.parentNode.parentNode.parentNode.firstChild.setAttribute("name", rating);
+  //option.parentNode.parentNode.parentNode.firstChild.textContent = selectedRating;
+  option.parentNode.parentNode.parentNode.parentNode.firstChild.firstChild.textContent = selectedRating;
+  option.parentNode.parentNode.parentNode.parentNode.firstChild.firstChild.setAttribute("name", rating);
+  //option.parentNode.parentNode.parentNode.firstChild.setAttribute("name", rating);
 
   var practice_name = option.parentNode.parentNode.parentNode.parentNode.parentNode.getAttribute("name")
   // save the rating by sending a POST

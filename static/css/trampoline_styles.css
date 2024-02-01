@@ -293,6 +293,36 @@ body {
   #user-menu a {
     font-size: 15px;
   }
+
+  /* Practices */
+  .rating-btn {
+    font-size: 10px;
+  }
+  .share-btn {
+    font-size: 10px;
+  }
+  .practice-post-btn {
+    font-size: 10px;
+  }
+  .practice-header {
+    display: flex;
+    flex-direction: column;
+  }
+  .practice-header-top {
+    font-size: 14px;
+  }
+  .practice-header-bottom {
+    display: flex;
+    flex-direction: row-reverse;
+    margin-left: auto;
+    gap: 10px;
+  }
+  .practice-tag {
+    font-size: 15px; 
+  }
+  .btn-rate {
+    border-radius: 10px;
+  }
 }
 
 .down-arrow {
@@ -400,7 +430,15 @@ body {
   background-color: #6fa9e5;
   color: #fff;
 }
+.practice-header-top {
+  display: flex;
+  justify-content: center;
+}
 
+.practice-tags {
+  display: flex;
+  flex-direction: row;
+}
 .practice-tag {
   background-color: #fff;
   padding: 5px;
