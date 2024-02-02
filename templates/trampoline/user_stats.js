@@ -106,6 +106,7 @@ const myChart{{event}} = new Chart(ctx{{event}}, {
     },
     options: {
         responsive: true,
+        maintainAspectRatio: false,
         scales: {
             xAxes: [{
                 type: 'time',

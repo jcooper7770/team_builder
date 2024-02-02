@@ -474,15 +474,15 @@
     </div>
     <!-- User chart tabs-->
     <div class="container">
-      <div class="card border-primary">
+      <div class="card border-primary practice-graphs">
         <div class="card-header text-center">
-          <h2>Practice Graphs</h2>
+          <h2 class="graphs-title">Practice Graphs</h2>
         </div>
         <div class="card-header">
           <ul class="nav nav-tabs card-header-tabs stats-tabs" id="charts-list" role="tablist">
             {% for event in datapts.keys() %}
             <li class="nav-item">
-              <a class="nav-link{% if loop.first %} active{% endif %}" href="#{{event}}" id="{{event}}-tab" data-toggle="tab" aria-controls="{{event}}" role="tab" aria-selected="{% if loop.first %}true{% else %}false{% endif %}">{{ event.replace('_', ' ').capitalize() }}</a>
+              <a class="nav-link{% if loop.first %} active{% endif %} graphs-title" href="#{{event}}" id="{{event}}-tab" data-toggle="tab" aria-controls="{{event}}" role="tab" aria-selected="{% if loop.first %}true{% else %}false{% endif %}">{{ event.replace('_', ' ').capitalize() }}</a>
             </li>
             {% endfor %}
           </ul>
@@ -492,7 +492,7 @@
         <div class="tab-content">
           {% for event in datapts.keys() %}
           <div class="tab-pane fade{% if loop.first %}show active{% endif %}" id="{{ event }}" role="tabpanel" aria-labelledby="{{ event }}-tab">
-            <canvas class="mx-auto" id="{{event}}Canvas" width="900" height="500"></canvas>
+            <canvas class="mx-auto graph-canvas" id="{{event}}Canvas" ></canvas>
           </div>
           {% endfor %}
         <br>
