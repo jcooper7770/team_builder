@@ -172,7 +172,10 @@ def get_game_master():
     engine = create_engine()
     query_results = engine.execute('SELECT * from `pokemon_data` WHERE pokemon_data.league="game_master";')
     results = [result for result in query_results]
-    game_master = json.loads(json.loads(results[0][1]))
+    game_master = json.loads(results[0][1])
+    if isinstance(game_master, str):
+        game_master = json.loads(game_master)
+    #game_master = json.loads(json.loads(results[0][1]))
     GAME_MASTER = game_master
     return game_master
 
