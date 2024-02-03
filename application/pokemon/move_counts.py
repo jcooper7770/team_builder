@@ -39,6 +39,16 @@ GAME_MASTER = {}
 LATEST_DATA = {}
 
 
+def load_data(data):
+    """
+    Returns the data loaded from the db
+    """
+    result = json.loads(data)
+    if isinstance(result, str):
+        result = json.loads(result)
+    return result
+    
+
 def get_popular_moves(league="GL", days_back=0):
     """
     Gets all the popular moves from the database per pokemon
@@ -48,7 +58,7 @@ def get_popular_moves(league="GL", days_back=0):
         engine = create_engine()
         query_results = engine.execute(f'SELECT * from `pokemon_data` WHERE pokemon_data.league="{league}";')
         results = [result for result in query_results]
-        latest_data = json.loads(json.loads(results[0][1]))
+        latest_data = load_data(results[0][1])
         LATEST_DATA = latest_data
     pokemon_moves = {}
     start_time = time.time()
@@ -172,10 +182,7 @@ def get_game_master():
     engine = create_engine()
     query_results = engine.execute('SELECT * from `pokemon_data` WHERE pokemon_data.league="game_master";')
     results = [result for result in query_results]
-    game_master = json.loads(results[0][1])
-    if isinstance(game_master, str):
-        game_master = json.loads(game_master)
-    #game_master = json.loads(json.loads(results[0][1]))
+    game_master = load_data(results[0][1])
     GAME_MASTER = game_master
     return game_master
 
@@ -205,7 +212,9 @@ def get_all_rankings(reset_data=False):
     for result in results:
         if not result[0].startswith('all_pokemon_'):
             continue
-        all_rankings.extend(json.loads(json.loads(result[1])))
+        all_rankings.extend(
+            load_data(result[1])
+        )
     ALL_RANKINGS = all_rankings
     return {
         pokemon['speciesId']: pokemon
