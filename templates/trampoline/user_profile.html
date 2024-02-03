@@ -1,6 +1,28 @@
 {% extends "trampoline/base.html" %}
 
 {% block content %}
+<style>
+  .dict-row {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    margin-bottom: 10px;
+  }
+  .dict-row input {
+    width: 100%;
+  }
+
+  @media screen and (max-width: 400px) {
+    .dict-row {
+      flex-direction: column;
+      border-bottom: 1px solid black;
+      padding-bottom: 5px;
+    }
+    h1 {
+      font-size: 20px;
+    }
+  }
+</style>
 <!-- Settings -->
 <br><br>
 <div class="container">
@@ -280,6 +302,30 @@
           </div>
           <hr>
           <div class="row">
+            <h1 style="text-decoration: underline;">Personal Dictionary:</h1>
+          </div>
+          <div class="row">
+            <p>Create a personal dictionary of skills which get converted when logging.</p>
+          </div>
+          <div class="row" id="dicts">
+            {% for dict_key, dict_item in user_data.details.personal_dict.items() %}
+            <div class="dict-row">
+              <a class="btn btn-primary" id="remove-dict"><i class="fa fa-minus"></i></a>
+              <input class="form-control" placeholder="Ex: swingtime" type="text" name="dict_name{{loop.index}}" value="{{dict_key}}">
+              <input class="form-control" placeholder="Ex: 40o 41o 40< 41< 40/ 41/" type="text" name="dict_skill{{loop.index}}" value="{{dict_item}}">
+            </div>
+            {% endfor %}
+            <div class="dict-row">
+              <a class="btn btn-primary" id="remove-dict"><i class="fa fa-minus"></i></a>
+              <input class="form-control" placeholder="Ex: swingtime" type="text" name="dict_name{{user_data.details.personal_dict | length + 1}}">
+              <input class="form-control" placeholder="Ex: 40o 41o 40< 41< 40/ 41/" type="text" name="dict_skill{{user_data.details.personal_dict | length + 1}}">
+            </div>
+          </div>
+          <div class="row">
+            <button class="btn btn-primary" id="new-dict" style="width: 100%; margin-top: 10px;">Add New Dictionary Item</button>
+          </div>
+          <hr>
+          <div class="row">
             <div class="col">
               <button type="submit" class="btn btn-primary">Save</button>
             </div>
@@ -438,5 +484,27 @@
       }
     }
   })
+
+  const dictAddBtn = document.getElementById("new-dict");
+  dictAddBtn.addEventListener('click', function(e) {
+    e.preventDefault();
+    const dictItemsDiv = document.getElementById("dicts");
+    const dictNum = dictItemsDiv.children.length;
+    const newDiv = document.createElement("div");
+    newDiv.classList = "dict-row";
+    newDiv.innerHTML = `
+    <a class="btn btn-primary" id="remove-dict"><i class="fa fa-minus"></i></a>
+    <input class="form-control" placeholder="Ex: swingtime" type="text" name="dict_name${dictNum+1}">
+    <input class="form-control" placeholder="Ex: 40o 41o 40< 41< 40/ 41/" type="text" name="dict_skill${dictNum+1}">`;
+    dictItemsDiv.appendChild(newDiv);
+  });
+
+  $("#dicts").on('click', '#remove-dict', function(e){
+    e.preventDefault();
+    if (confirm("Are you sure you want to remove the dictionary item?")) {
+      const row = e.target.closest("div");
+      row.parentNode.removeChild(row);
+    }
+  });
 </script>
 {% endblock %}

@@ -56,7 +56,14 @@ def _save_trampoline_data(request):
     #set_current_user(username)
     set_current_athlete(username)
     logger.info(f"Username: {username}")
-    routines = convert_form_data(form_data, event=event, notes=notes)
+    '''
+    user_data = get_user(username)
+    personal_dict = user_data.get('details', {}).get('personal_dict', {})
+    print(f"Personal dict: {personal_dict}")
+    print(user_data)
+    routines = convert_form_data(form_data, event=event, notes=notes, athlete_dict=personal_dict)
+    '''
+    routines = convert_form_data(form_data, event=event, notes=notes, athlete_dict={})
     logger.info(request.form.get('log', 'None').split('\r\n'))
 
     # Save new goal
@@ -271,7 +278,8 @@ def trampoline_log():
         all_skills_table=all_skills_ordered,
         dmt_passes=dmt_passes_ordered,
         tumbling_skills=tumbling_skills_ordered,
-        lesson_plans=lesson_plans
+        lesson_plans=lesson_plans,
+        athlete_dict=user['details'].get('personal_dict', {})
     )
 
 
@@ -1043,6 +1051,11 @@ def update_user():
     tramp_level = request.form.get('level-tramp')
     dmt_level = request.form.get('level-dmt')
     tumbling_level = request.form.get('level-tu')
+    dict_keys = [value for key, value in request.form.items() if key.startswith("dict_name") and value != ""]
+    dict_values = [value for key, value in request.form.items() if key.startswith("dict_skill") and value != ""]
+    print(f"keys: {dict_keys} - values: {dict_values}")
+    athlete_dict = dict(zip(dict_keys, dict_values))
+    print(athlete_dict)
     athlete = Athlete.load(session.get("name"))
 
     # update password
@@ -1069,6 +1082,7 @@ def update_user():
     athlete.levels = [tramp_level, dmt_level, tumbling_level]
     athlete.details['first_name'] = first_name
     athlete.details['last_name'] = last_name
+    athlete.details["personal_dict"] = athlete_dict
     athlete.save()
     return redirect(url_for("trampoline.user_profile"))
 

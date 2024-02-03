@@ -163,7 +163,7 @@ class Athlete(User):
             password="", expand_comments=False, is_coach=False, athletes=[],
             first_login=False, signup_date=None, messages=[],
             tu_prelims1=[], tu_prelims2=[], tramp_level=10, dmt_level=10, tumbling_level=10,
-            coach_requests=[], first_name="", last_name="", points={}
+            coach_requests=[], first_name="", last_name="", points={}, personal_dict={}
         ):
         self.name = name
         self.compulsory = compulsory
@@ -188,7 +188,8 @@ class Athlete(User):
         self.details = {
             "first_name": first_name,
             "last_name": last_name,
-            "points": points # split prestige by event
+            "points": points, # split prestige by event
+            "personal_dict": personal_dict
         }
 
     def set_comp(self, skills):
@@ -321,6 +322,7 @@ class Athlete(User):
             coach_requests=user['coach_requests'],
             first_name=user['details'].get('first_name', ''),
             last_name=user['details'].get('last_name', ''),
+            personal_dict=user['details'].get('personal_dict', {})
         )
         print("***3")
         print(athlete)
@@ -949,11 +951,12 @@ def is_comment(string, event):
     return False
 
 
-def convert_form_data(form_data, logger=print, event=EVENT, notes=None, get_athlete=True):
+def convert_form_data(form_data, logger=print, event=EVENT, notes=None, get_athlete=True, athlete_dict={}):
     """
     Converts the data from the form into trampoline routines
     and returns a list of Routine objs
     """
+    #COMMON_ROUTINES.update(athlete_dict)
     if get_athlete:
         athlete = Athlete.load(session.get('name')) 
 
@@ -989,6 +992,10 @@ def convert_form_data(form_data, logger=print, event=EVENT, notes=None, get_athl
         form_data = form_data.replace('compulsory', ' '.join(athlete.compulsory))
         form_data = form_data.replace('optional', ' '.join(athlete.optional))
     '''
+
+    # Replace athlete dictionary
+    for common_name, common_routine in athlete_dict.items():
+        form_data = form_data.replace(common_name, common_routine)
     
     # Split by spaces for each skill
     #turns = form_data.split('\r\n')

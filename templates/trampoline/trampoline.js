@@ -374,11 +374,24 @@ $("#new-turns").on('input', '#log', function (e) {
     //updateNumSkills();
     addRecSkill();
 
+    replaceDict()
     // Set log height to fit text inside
     if (e.target.scrollHeight > e.target.offsetHeight) {
         e.target.style.height = `${e.target.scrollHeight}px`;
     }
 });
+
+function replaceDict() {
+    const logElements = document.querySelectorAll("#log");
+    const logElement = logElements[logElements.length-2];
+    console.log(logElement.value);
+    //const athleteDict = JSON.parse('{{athlete_dict | tojson }}');
+    const athleteDict = {{athlete_dict | tojson }}
+    for(var key of Object.keys(athleteDict)) {
+        var value = athleteDict[key];
+        logElement.value = logElement.value.replace(key, value)
+    }
+}
 
 // Get a reference to the button and spinner elements
 const button = document.getElementById("submit-button");
