@@ -308,6 +308,7 @@
             <p>Create a personal dictionary of skills which get converted when logging.</p>
           </div>
           <div class="row" id="dicts">
+            {% if 'personal_dict' in user_data.details %}
             {% for dict_key, dict_item in user_data.details.personal_dict.items() %}
             <div class="dict-row">
               <a class="btn btn-primary" id="remove-dict"><i class="fa fa-minus"></i></a>
@@ -315,6 +316,7 @@
               <input class="form-control" placeholder="Ex: 40o 41o 40< 41< 40/ 41/" type="text" name="dict_skill{{loop.index}}" value="{{dict_item}}">
             </div>
             {% endfor %}
+            {% endif %}
             <div class="dict-row">
               <a class="btn btn-primary" id="remove-dict"><i class="fa fa-minus"></i></a>
               <input class="form-control" placeholder="Ex: swingtime" type="text" name="dict_name{{user_data.details.personal_dict | length + 1}}">
