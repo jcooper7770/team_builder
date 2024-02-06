@@ -253,6 +253,15 @@ def trampoline_log():
     all_lesson_plans = get_lessons_from_db(None)
     lesson_plans = [lesson_plan for lesson_plan in all_lesson_plans if lesson_plan.get('coach') in coaches]
 
+    # mark full lesson as complete if all done
+    for lesson_num in range(len(lesson_plans)):
+        all_done = False
+        if username in lesson_plans[lesson_num].get('athletes_completed', {}):
+            all_done = len(lesson_plans[lesson_num]['athletes_completed'][username]) == len(lesson_plans[lesson_num]['plans'])
+
+        lesson_plans[lesson_num]['completed'] = all_done
+    print(lesson_plans)
+
 
     return render_template(
         f"trampoline/trampoline.html",

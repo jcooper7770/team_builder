@@ -340,6 +340,11 @@ body {
   .btn-rate {
     border-radius: 10px;
   }
+
+  /* lesson plans */
+  #lessonPlans {
+    padding-bottom: 70px;
+  }
 }
 
 .down-arrow {
@@ -533,10 +538,58 @@ a.dark-mode-color {
 
 
 /* Lesson plans */
+@media screen and (min-width: 700px) {
+  #lessonPlans {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding-bottom: 70px;
+  }
+}
+@media screen and (min-width: 900px) {
+  #lessonPlans {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+  }
+}
+.single-plan {
+  border-radius: 10px;
+  background-color: rgba(173, 216, 230, 1);
+}
+.single-plan.completed {
+  background-color: rgba(173, 216, 230, 0.5);
+}
 .lesson-plan-header {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
+}
+.lesson-plan-header strong {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  align-items: center;
+}
+
+.lesson-plan-header span.completed {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+
+.lesson-plan-header span.completed p {
+  color: red;
+  background-color: white;
+  border-radius: 10px;
+  padding: 2px;
+}
+
+.plan-details.completed,
+.lesson-plan-header span,
+.plan-details + button.completed {
+  display: none;
 }
 
 .lesson-plan {

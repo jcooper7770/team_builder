@@ -974,18 +974,34 @@ $('[class^="expand-turn"]').click(function (e) {
 // Add in lesson plans
 var lessonPlansObj = [
     {% for lesson in lesson_plans %}
-    { title: "{{lesson.title}}", description: `{{lesson.description}}`, date: "{{lesson.date}}", plans: {{ lesson.plans | safe }}, finished: {{ lesson.athletes_completed | safe }} },
+    {
+        title: "{{lesson.title}}",
+        description: `{{lesson.description}}`,
+        date: "{{lesson.date}}",
+        plans: {{ lesson.plans | safe }},
+        finished: {{ lesson.athletes_completed | safe }},
+        {% if lesson.completed %}
+        completed: true
+        {% else %}
+        completed: false
+        {% endif %}
+    },
     {% endfor %}
 ]
 lessonPlansObj.forEach((lesson) => {
-    addSingleLesson(lesson.title, lesson.description, lesson.date, lesson.plans, lesson.finished);
+    addSingleLesson(lesson.title, lesson.description, lesson.date, lesson.plans, lesson.finished, lesson.completed);
 })
 
-function addSingleLesson(title, description, date, plans, finished) {
+function addSingleLesson(title, description, date, plans, finished, completed) {
 // Display the lesson plan using Bootstrap alert
 const lessonPlansDiv = document.getElementById('lessonPlans');
 const newLessonPlanDiv = document.createElement('div');
-newLessonPlanDiv.classList.add('alert', 'alert-success');
+newLessonPlanDiv.classList.add('alert', 'single-plan');
+if (completed) {
+    newLessonPlanDiv.classList.add('completed')
+} else {
+    newLessonPlanDiv.classList.add('alert-success');
+}
 
 //<ul>${plans.map(plan => `<li style="list-style: none;"><input type="checkbox" style="margin-right: 5px;"\>${plan}</li>`).join('')}</ul>
 
@@ -1017,9 +1033,11 @@ for (let i=0; i<plans.length; i++) {
     inputs.push(`<li>${plan}${finishedStr}</li>`);
 }
 {% endif %}
+console.log(`${date} completed: ${completed}`)
+var completedStr = completed ? " completed": ""
 newLessonPlanDiv.innerHTML = `<div class="lesson-plan">
 <div class="lesson-plan-header">
-    <strong>${title}</strong>
+    <strong><div class="title">${title}</div><span class="${completedStr}"><p>COMPLETED</p><button class="btn btn-success" id="toggle-lesson-details">Toggle</button></span></strong>
     <div class="action-btns">
         {% if request.endpoint == "coach.coach_home" %}
         <button class="btn btn-warning btn-sm" onclick="editLessonPlan(this)"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button>
@@ -1028,15 +1046,17 @@ newLessonPlanDiv.innerHTML = `<div class="lesson-plan">
     </div>
 </div>
 <p>Date: ${date}</p>
-<p><i>${description.replace(/\n/g, '<br>')}</i></p>
-<p><u>Plans</u></p>
+<div class="plan-details${completedStr}">
+    <p><i>${description.replace(/\n/g, '<br>')}</i></p>
+    <p><u>Plans</u></p>
 
-{% if request.endpoint == "coach.coach_home" %}
-<ul>${inputs.join(' ')}</ul>
-<button class="btn btn-primary ml-auto" id="view-finished-athletes">Toggle Finished Athletes</button>
-{% else %}
-<ul>${inputs.join(' ')}</ul>
-<button class="btn btn-primary ml-auto" id="save-lesson">Save</button>
+    {% if request.endpoint == "coach.coach_home" %}
+    <ul>${inputs.join(' ')}</ul>
+    <button class="btn btn-primary ml-auto" id="view-finished-athletes">Toggle Finished Athletes</button>
+    {% else %}
+    <ul>${inputs.join(' ')}</ul>
+</div>
+<button class="btn btn-primary ml-auto${completedStr}" id="save-lesson">Save</button>
 {% endif %}
 </div>
 <hr>`;
@@ -1047,7 +1067,7 @@ $("[id^=view-finished-athletes]").click(function (e) {
     e.preventDefault();
 
     // Get all checboxes that are checked
-    const listElements = e.target.parentNode.children[4].children;
+    const listElements = e.target.parentNode.children[2].children;
     for(let i=0; i<listElements.length; i++){
         const listElement = listElements[i];
         const finishedAthletesEle = listElement.children[0]
@@ -1056,13 +1076,21 @@ $("[id^=view-finished-athletes]").click(function (e) {
     }
 
 });
+$("[id^=toggle-lesson-details]").click(function (e) {
+    e.preventDefault();
+    console.log(e.target);
+    const details = e.target.parentNode.parentNode.parentNode.parentNode.children[2];
+    details.classList.toggle("completed");
+    const saveBtn = e.target.parentNode.parentNode.parentNode.parentNode.children[3];
+    saveBtn.classList.toggle("completed");
+});
 $("[id^=save-lesson]").click(function (e) {
     e.preventDefault();
 
     showSpinner("Saving Lesson...")
     // Get all checboxes that are checked
     var checkedTurns = [];
-    const listElements = e.target.parentNode.children[4].children;
+    const listElements = e.target.parentNode.children[2].children[2].children;
     for(let i=0; i<listElements.length; i++){
         const listElement = listElements[i];
         if (listElement.children[0].checked) {
@@ -1075,7 +1103,7 @@ $("[id^=save-lesson]").click(function (e) {
     const data = {
         finishedTurns: checkedTurns,
         name: "{{ user }}",
-        title: e.target.parentNode.querySelector("strong").textContent,
+        title: e.target.parentNode.querySelector("strong div.title").textContent,
         date: e.target.parentNode.children[1].textContent.replace("Date: ", "")
     }
     console.log(data);

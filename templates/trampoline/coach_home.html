@@ -251,8 +251,8 @@
     }
 
     // Extract the current details
-    const title = lessonPlanContainer.children[0].children[0].textContent;
-    const description = lessonPlanContainer.children[2].textContent;
+    const title = lessonPlanContainer.children[0].children[0].children[0].textContent;
+    const description = lessonPlanContainer.children[2].children[0].textContent;
     const date = lessonPlanContainer.children[1].textContent.replace('Date: ', '');
     const plans = Array.from(lessonPlanContainer.querySelectorAll('ul li')).map(li => li.childNodes[0].textContent);
 

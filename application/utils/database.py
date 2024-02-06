@@ -643,7 +643,8 @@ def get_lessons_from_db(coach):
             "date": lesson[2],
             "coach": lesson[3],
             "plans": json.loads(lesson[4]),
-            "athletes_completed": json.loads(athletes_completed)
+            "athletes_completed": json.loads(athletes_completed),
+            "completed": False
         })
     return sorted(lessons, key=lambda lesson: lesson['date'])
 
