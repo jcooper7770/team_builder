@@ -73,7 +73,8 @@ def coach_home():
         tags=["Competition", "Pit Training"],
         all_skills=ALL_SKILLS,
         users=users,
-        lesson_plans=lesson_plans
+        lesson_plans=lesson_plans,
+        athlete_dict={}
     )
 
 @coach_bp.route("/logger/coach/settings", methods=["GET", "POST"])
