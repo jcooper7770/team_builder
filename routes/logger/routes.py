@@ -254,10 +254,11 @@ def trampoline_log():
     lesson_plans = [lesson_plan for lesson_plan in all_lesson_plans if lesson_plan.get('coach') in coaches]
 
     # mark full lesson as complete if all done
-    for lesson_num in range(len(lesson_plans)):
+    for lesson_num, lesson_plan in enumerate(lesson_plans):
         all_done = False
         if username in lesson_plans[lesson_num].get('athletes_completed', {}):
-            all_done = len(lesson_plans[lesson_num]['athletes_completed'][username]) == len(lesson_plans[lesson_num]['plans'])
+            all_done = len(set(lesson_plan['plans']) - set(lesson_plan['athletes_completed'][username])) == 0
+            #all_done = len(lesson_plans[lesson_num]['athletes_completed'][username]) == len(lesson_plans[lesson_num]['plans'])
 
         lesson_plans[lesson_num]['completed'] = all_done
     print(lesson_plans)

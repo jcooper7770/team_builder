@@ -180,6 +180,7 @@ def new_lesson_plan():
     coach = session.get('name')
     title = request.json.get('title')
     date = request.json.get('date')
+    save_type = request.json.get('saveType', 'new')
     if request.method == "DELETE":
         delete_lesson_from_db(coach, title, date)
         return {"success": True}
@@ -187,11 +188,10 @@ def new_lesson_plan():
     # Check if lesson plan already exists
     lesson_plans = get_lessons_from_db(session.get('name'))
     existing = [plan for plan in lesson_plans if plan.get('title') == title and plan.get('date') == date]
-    if existing:
+    if save_type == "new" and existing:
         return {"success": False, "error": "A lesson plan already exists by this title for this date"}
     description = request.json.get('description')
     plans = json.dumps(request.json.get('plans'))
-    save_type = request.json.get('saveType', 'new')
     add_lesson_to_db(title, description, date, coach, plans, new=save_type == "new")
     return {
         'success': True

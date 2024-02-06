@@ -999,8 +999,6 @@ const newLessonPlanDiv = document.createElement('div');
 newLessonPlanDiv.classList.add('alert', 'single-plan');
 if (completed) {
     newLessonPlanDiv.classList.add('completed')
-} else {
-    newLessonPlanDiv.classList.add('alert-success');
 }
 
 //<ul>${plans.map(plan => `<li style="list-style: none;"><input type="checkbox" style="margin-right: 5px;"\>${plan}</li>`).join('')}</ul>
@@ -1052,6 +1050,7 @@ newLessonPlanDiv.innerHTML = `<div class="lesson-plan">
 
     {% if request.endpoint == "coach.coach_home" %}
     <ul>${inputs.join(' ')}</ul>
+</div>
     <button class="btn btn-primary ml-auto" id="view-finished-athletes">Toggle Finished Athletes</button>
     {% else %}
     <ul>${inputs.join(' ')}</ul>
@@ -1067,7 +1066,7 @@ $("[id^=view-finished-athletes]").click(function (e) {
     e.preventDefault();
 
     // Get all checboxes that are checked
-    const listElements = e.target.parentNode.children[2].children;
+    const listElements = e.target.parentNode.children[2].children[2].children;
     for(let i=0; i<listElements.length; i++){
         const listElement = listElements[i];
         const finishedAthletesEle = listElement.children[0]

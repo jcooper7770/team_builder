@@ -230,6 +230,7 @@
       }
     });
 
+  }
     // Clear the form after adding the lesson plan
 
   function clearLessonForm() {
@@ -239,9 +240,11 @@
     document.getElementById("lesson-title").disabled = false;
     document.getElementById("lesson-date").disabled = false;
     document.getElementById("lesson-add").innerText = "Add Lesson Plan";
+    if (document.querySelector("#lessonInputs .input-group") == null) {
+      addDescriptionInput("");
+    }
   }
 
-  }
 
   function getLessonDetails(button) {
     // Get the parent container of the lesson plan
@@ -266,6 +269,7 @@
   }
 
   function editLessonPlan(button) {
+    clearLessonForm();
     var lessonDetails = getLessonDetails(button);
 
     // Populate the form with the current details
