@@ -639,3 +639,12 @@ footer {
   -moz-appearance: none;
   appearance: none;
 }
+
+/* Practice tables */
+div.practice-table.closed {
+  height: 100px;
+}
+div.practice-table {
+  overflow: hidden;
+  transition: height 0.3s ease;
+}

@@ -210,7 +210,7 @@ def trampoline_log():
         for turn in practice.turns:
             all_turns.append([skill.shorthand for skill in turn.skills])
 
-    all_practice_tables = "<br><br>".join(practice_tables)
+    all_practice_tables = "".join(practice_tables)
     
     html = [
         #"<h1 style='text-align:center;' class=\"header\">Previous Practices</h1>",
@@ -450,7 +450,7 @@ def trampoline_user_practices(username):
         practice_table = skills_table(practice.turns, title=title, expand_comments=user.get("expand_comments", False), rating=practice_rating, tags=practice.tags, editable=False)
         practice_tables.append(practice_table)
 
-    all_practice_tables = "<br><br>".join(practice_tables)
+    all_practice_tables = "".join(practice_tables)
    
     html = [
         # Div for practices so they are scrollable

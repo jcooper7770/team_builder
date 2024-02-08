@@ -1119,3 +1119,17 @@ $("[id^=save-lesson]").click(function (e) {
     });
 
 });
+
+$('[class^="practice-table"]').click(function(e) {
+    console.log(e.target);
+    const table = e.target.closest("table.table");
+    const tableDiv = table.parentNode;
+    console.log(table);
+    if (tableDiv.classList.contains('closed')) {
+        tableDiv.style.height = table.offsetHeight + 'px';
+    } else {
+        tableDiv.style.height = '';
+    }
+    tableDiv.classList.toggle("closed");
+
+});

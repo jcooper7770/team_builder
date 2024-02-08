@@ -393,6 +393,7 @@ class TableMaker:
         self.align = align
         self.bgcolor = bgcolor
         self.table = []
+        self.div_table = []
         self.width = width
         self.first_table = True
         self.new_table()
@@ -411,22 +412,32 @@ class TableMaker:
             # This is the correct way to do it but this breaks the home page
             #options.append(f"style='width:{self.width}'")
         options_str = " ".join(options)
-        self.table.append('<div class="">')
+        self.table.append('<div class="practice-table closed">')
         self.table.append(f"<table {options_str}>")
         self.table.append("<thead class=\"thead-dark bg-dark text-white color-changing\">")
         self._row_num = 0
+
+        div_options = [
+            f"border: {self.border};",
+            f"width: {self.width};"            
+        ]
+        self.div_table.append(f"""<div class="practice-table" style="{''.join(div_options)}">""")
 
     def end_table(self):
         self.table.append("</tbody></table></div>")
         self._row_num = 0
 
+        self.div_table.append("</div>")
+
     def new_row(self, styles=""):           
         styles_text = f' styles="{styles}"' if styles else ''
         self.table.append(f"<tr{styles_text}>")
         self._row_num += 1
+        self.div_table.append(f"<div class='practice-table-row'{styles_text}>")
 
     def end_row(self):
         self.table.append("</tr>")
+        self.div_table.append("</div>")
         if self._row_num == 1:
             #self.table.append("</thead><tbody style=\"background: white;\">")
             self.table.append("</thead><tbody>")
@@ -437,6 +448,7 @@ class TableMaker:
     def new_header(self, value, colspan, rating=None, tags=[], editable=True):
         ratings_dict ={"3": "😊", "2": "😐", "1": "😞", "0": ""}
         self.new_row()
+        self.div_table.append(f"<div class='practice-table-header thead-dark bg-dark text-white color-changing'>{value}</div>")
         try:
             rating_text = f'<span id="practice-rating" name="{rating}">{ratings_dict.get(str(rating)) if rating else ""}</span>'
             date_to_remove = value.split()[1].replace("/", '-')
@@ -477,6 +489,7 @@ class TableMaker:
         width_text = f" width='{width}'" if width else ""
         class_text = f' class="{classList}"' if classList else ""
         self.table.append(f"<td{colspan_text}{align_text}{width_text}{class_text}>{value}</td>")
+        self.div_table.append(f"<div class='practice-table-cell'>{value}</div>")
 
     def render(self):
         return "".join(self.table)

@@ -43,7 +43,7 @@ def coach_home():
         practice_table = skills_table(practice['practice'].turns, title=title, expand_comments=False, tags=practice['practice'].tags)
         practice_tables.append(practice_table)
 
-    all_practice_tables = "<br><br>".join(practice_tables)
+    all_practice_tables = "".join(practice_tables)
 
     html = [
         # Div for practices so they are scrollable
