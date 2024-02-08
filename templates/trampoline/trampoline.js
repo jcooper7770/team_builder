@@ -1120,15 +1120,17 @@ $("[id^=save-lesson]").click(function (e) {
 
 });
 
-$('[class^="practice-table"]').click(function(e) {
-    console.log(e.target);
-    const table = e.target.closest("table.table");
+//$('[class^="practice-table"]').click(function(e) {
+$('[class^="table-open-btn"]').click(function(e) {
+    const button = e.target.closest("button.table-open-btn");
+    const table = button.nextElementSibling;
     const tableDiv = table.parentNode;
-    console.log(table);
     if (tableDiv.classList.contains('closed')) {
         tableDiv.style.height = table.offsetHeight + 'px';
+        button.childNodes[0].classList = "fa fa-chevron-up";
     } else {
         tableDiv.style.height = '';
+        button.childNodes[0].classList = "fa fa-chevron-down";
     }
     tableDiv.classList.toggle("closed");
 

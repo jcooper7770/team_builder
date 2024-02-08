@@ -413,6 +413,7 @@ class TableMaker:
             #options.append(f"style='width:{self.width}'")
         options_str = " ".join(options)
         self.table.append('<div class="practice-table closed">')
+        self.table.append('<button class="table-open-btn dfsdfsd"><i class="fa fa-chevron-down" aria-hidden="true"></i></button>')
         self.table.append(f"<table {options_str}>")
         self.table.append("<thead class=\"thead-dark bg-dark text-white color-changing\">")
         self._row_num = 0
@@ -467,10 +468,11 @@ class TableMaker:
             header_bottom = f"<div class='practice-header-bottom'>{delete_a}{edit_a}{share_a}</div>"
             header_tags = f"<div class='practice-tags'>{''.join(tag_divs)}</div>"
             content = f'<div class="practice-header" id="practice-header">{header_top}{header_bottom}{header_tags}</div>'
-            self.table.append(f'<th colspan={colspan} align="center" name="{date_to_remove}_{event_to_remove}">{content}</th>')
+            classname = "athlete-practice-header" if editable else "coach-practice-header"
+            self.table.append(f'<th class="{classname}" colspan={colspan} align="center" name="{date_to_remove}_{event_to_remove}">{content}</th>')
         except:
             tag_divs = [f'<div class="practice-tag">{tag}</div>' for tag in tags if tag]
-            self.table.append(f'<th colspan={colspan} align="center"><div class="row mx-1">{value}</div><div class="row tags-row">{"".join(tag_divs)}</div></th>')
+            self.table.append(f'<th class="coach-practice-header" colspan={colspan} align="center"><div class="row mx-1">{value}</div><div class="row tags-row">{"".join(tag_divs)}</div></th>')
         self.end_row()
 
     def reset_table(self):

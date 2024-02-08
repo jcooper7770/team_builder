@@ -641,10 +641,33 @@ footer {
 }
 
 /* Practice tables */
+div.practice-table.closed:has(.coach-practice-header) { /* coach practice tables have .coach-practice-header class */
+  height: 70px;
+}
 div.practice-table.closed {
   height: 100px;
 }
 div.practice-table {
   overflow: hidden;
   transition: height 0.3s ease;
+  position: relative;
+}
+
+.coach-practice-header {
+  height: 50px;
+  width: 100%;
+}
+
+div.practice-table:has(.coach-practice-header) > .table-open-btn {
+  top: 70px;
+}
+
+.table-open-btn {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  left: 50%;
+  top: 100px;
+  border-radius: 50%;
+  width: 30px;
+  background: lightblue;
 }

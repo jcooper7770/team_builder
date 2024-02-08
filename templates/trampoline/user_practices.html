@@ -29,7 +29,7 @@
 {% endblock %}
 <script type="text/javascript">
   // unhide the hidden notes by clicking the comment button
-  $("[id^=unhide-note").click(function(e){
+  $("[id^=unhide-note").click(function (e) {
     var comment = $(this).siblings('span')[0];
     if (comment.style.display === "none") {
       comment.style.display = "inline";
@@ -40,18 +40,33 @@
   $("[id^=remove_]").click(function (e) {
     alert("Cannot delete practice from user practice page");
   });
-$('[class^="expand-turn"]').click(function (e) {
+  $('[class^="expand-turn"]').click(function (e) {
     const turnDetailsDiv = e.target.parentNode.lastElementChild;
     if (turnDetailsDiv.style.display == "none") {
-        turnDetailsDiv.style.display = "";
-        //e.target.classList = "expand-tab fa fa-caret-up";
-        e.target.classList = "expand-tab fa fa-minus";
+      turnDetailsDiv.style.display = "";
+      //e.target.classList = "expand-tab fa fa-caret-up";
+      e.target.classList = "expand-tab fa fa-minus";
     } else {
-        //e.target.classList = "expand-tab fa fa-caret-down";
-        e.target.classList = "expand-tab fa fa-plus";
-        turnDetailsDiv.style.display = "none";
+      //e.target.classList = "expand-tab fa fa-caret-down";
+      e.target.classList = "expand-tab fa fa-plus";
+      turnDetailsDiv.style.display = "none";
     }
-});
+  });
+
+  $('[class^="table-open-btn"]').click(function (e) {
+    const button = e.target.closest("button.table-open-btn");
+    const table = button.nextElementSibling;
+    const tableDiv = table.parentNode;
+    if (tableDiv.classList.contains('closed')) {
+      tableDiv.style.height = table.offsetHeight + 'px';
+      button.childNodes[0].classList = "fa fa-chevron-up";
+    } else {
+      tableDiv.style.height = '';
+      button.childNodes[0].classList = "fa fa-chevron-down";
+    }
+    tableDiv.classList.toggle("closed");
+
+  });
 </script>
 
 {% endblock %}
