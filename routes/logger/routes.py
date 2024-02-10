@@ -256,11 +256,14 @@ def trampoline_log():
     # mark full lesson as complete if all done
     for lesson_num, lesson_plan in enumerate(lesson_plans):
         all_done = False
+        complete_percent = 0
         if username in lesson_plans[lesson_num].get('athletes_completed', {}):
-            all_done = len(set(lesson_plan['plans']) - set(lesson_plan['athletes_completed'][username])) == 0
-            #all_done = len(lesson_plans[lesson_num]['athletes_completed'][username]) == len(lesson_plans[lesson_num]['plans'])
+            remaining_turns = set(lesson_plan['plans']) - set(lesson_plan['athletes_completed'][username])
+            all_done = len(remaining_turns) == 0
+            complete_percent = (len(lesson_plan['plans']) - len(remaining_turns)) / len(lesson_plan['plans']) * 100
 
         lesson_plans[lesson_num]['completed'] = all_done
+        lesson_plans[lesson_num]['percent_complete'] = f"{complete_percent:0.2f}"
     print(lesson_plans)
 
 

@@ -1005,6 +1005,7 @@ var lessonPlansObj = [
         date: "{{lesson.date}}",
         plans: {{ lesson.plans | safe }},
         finished: {{ lesson.athletes_completed | safe }},
+        percent_complete: {{ lesson.percent_complete if 'percent_complete' in lesson else "0"}},
         {% if lesson.completed %}
         completed: true
         {% else %}
@@ -1014,10 +1015,10 @@ var lessonPlansObj = [
     {% endfor %}
 ]
 lessonPlansObj.forEach((lesson) => {
-    addSingleLesson(lesson.title, lesson.description, lesson.date, lesson.plans, lesson.finished, lesson.completed);
+    addSingleLesson(lesson.title, lesson.description, lesson.date, lesson.plans, lesson.finished, lesson.completed, lesson.percent_complete);
 })
 
-function addSingleLesson(title, description, date, plans, finished, completed) {
+function addSingleLesson(title, description, date, plans, finished, completed, percent) {
 // Display the lesson plan using Bootstrap alert
 const lessonPlansDiv = document.getElementById('lessonPlans');
 const newLessonPlanDiv = document.createElement('div');
@@ -1040,6 +1041,8 @@ for (let i=0; i<plans.length; i++) {
     }
     inputs.push(`<li style="list-style: none;"><input${checked} type="checkbox" style="margin-right: 5px;" \>${plan}</li>`);
 }
+var percentCompleteStyle = percent == "100" ? "display: none;" : ""
+var percentCompleteStr = `<div class="complete-percent" style="${percentCompleteStyle}">(${percent}% Complete)</div>`
 {% else %}
 for (let i=0; i<plans.length; i++) {
     const plan = plans[i];
@@ -1055,12 +1058,18 @@ for (let i=0; i<plans.length; i++) {
     }
     inputs.push(`<li>${plan}${finishedStr}</li>`);
 }
+var percentCompleteStr = ""
 {% endif %}
 console.log(`${date} completed: ${completed}`)
+console.log(`${percent}`)
 var completedStr = completed ? " completed": ""
 newLessonPlanDiv.innerHTML = `<div class="lesson-plan">
 <div class="lesson-plan-header">
-    <strong><div class="title">${title}</div><span class="${completedStr}"><p>COMPLETED</p><button class="btn btn-success" id="toggle-lesson-details">Toggle</button></span></strong>
+    <strong>
+        <div class="title">${title}</div>
+        ${percentCompleteStr}
+        <span class="${completedStr}"><p>COMPLETED</p><button class="btn btn-success" id="toggle-lesson-details">Toggle</button></span>
+    </strong>
     <div class="action-btns">
         {% if request.endpoint == "coach.coach_home" %}
         <button class="btn btn-warning btn-sm" onclick="editLessonPlan(this)"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button>
