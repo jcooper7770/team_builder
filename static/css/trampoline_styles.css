@@ -671,3 +671,8 @@ div.practice-table:has(.coach-practice-header) > .table-open-btn {
   width: 30px;
   background: lightblue;
 }
+
+#expand-practices-btn {
+  width: 100%;
+  margin-block: 10px;
+}

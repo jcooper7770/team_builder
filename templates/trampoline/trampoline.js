@@ -105,6 +105,14 @@ const createPageButtons = function () {
     page_buttons.prepend(prev_page);
     practices_div.append(page_buttons);
 
+    // Add expand all button
+    const expand_btn = document.createElement("button");
+    expand_btn.classList = "btn btn-primary";
+    expand_btn.id = "expand-practices-btn";
+    expand_btn.innerText = "Expand All";
+    expand_btn.onclick = expandPractices;
+    practices_div.append(expand_btn);
+
 }
 
 const repaginate = function() {
@@ -199,7 +207,11 @@ $("[id^=unhide-note").click(function(e){
     var comment = $(this).siblings('span')[0];
     if (comment.style.display === "none") {
         comment.style.display = "inline";
+        const tableDiv = e.target.parentNode.parentNode.parentNode.parentNode.parentNode;
+        tableDiv.style.height = tableDiv.offsetHeight + comment.offsetHeight + 'px';
     } else {
+        const tableDiv = e.target.parentNode.parentNode.parentNode.parentNode.parentNode;
+        tableDiv.style.height = tableDiv.offsetHeight - comment.offsetHeight + 'px';
         comment.style.display = "none";
     }
 });
@@ -965,7 +977,11 @@ $('[class^="expand-turn"]').click(function (e) {
         turnDetailsDiv.style.display = "";
         //e.target.classList = "expand-tab fa fa-caret-up";
         e.target.classList = "expand-tab fa fa-minus";
+        const tableDiv = e.target.parentNode.parentNode.parentNode.parentNode.parentNode;
+        tableDiv.style.height = tableDiv.offsetHeight + turnDetailsDiv.offsetHeight + 'px';
     } else {
+        const tableDiv = e.target.parentNode.parentNode.parentNode.parentNode.parentNode;
+        tableDiv.style.height = tableDiv.offsetHeight - turnDetailsDiv.offsetHeight + 'px';
         e.target.classList = "expand-tab fa fa-plus";
         turnDetailsDiv.style.display = "none";
     }
@@ -1135,3 +1151,39 @@ $('[class^="table-open-btn"]').click(function(e) {
     tableDiv.classList.toggle("closed");
 
 });
+
+function expandPractices() {
+    console.log("2!!");
+    const expandBtn = document.getElementById("expand-practices-btn");
+    var expand = true;
+    if (expandBtn.innerText == "Expand All") {
+        expandBtn.innerText = "Collapse All";
+    } else {
+        expandBtn.innerText = "Expand All";
+        expand = false;
+    }
+
+    // open all tables
+    const allTables = document.querySelectorAll(".practice-table.closed");
+    for(const table of allTables) {
+        table.classList.remove("closed");
+    }
+
+    for (const page of paginated_practices) {
+        for (const table of page) {
+            if (expand) {
+                if (table.classList.contains("closed")) {
+                    table.classList.remove("closed");
+                }
+                const chevron = table.children[0].children[0];
+                chevron.classList = "fa fa-chevron-up";
+            } else {
+                table.classList.add("closed");
+                const chevron = table.children[0].children[0];
+                chevron.classList = "fa fa-chevron-down";
+            }
+        }
+    }
+
+
+}

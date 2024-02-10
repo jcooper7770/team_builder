@@ -28,12 +28,26 @@
 {% block javascript %}
 {% endblock %}
 <script type="text/javascript">
+  // expand all tables
+  const tables = document.getElementsByClassName("practice-table");
+  for(const table of tables) {
+    table.classList.remove("closed");
+  }
+  const expandBtns = document.getElementsByClassName("fa-chevron-down");
+  for(const btn of expandBtns) {
+    btn.classList = "fa fa-chevron-up";
+  }
+
   // unhide the hidden notes by clicking the comment button
   $("[id^=unhide-note").click(function (e) {
     var comment = $(this).siblings('span')[0];
     if (comment.style.display === "none") {
       comment.style.display = "inline";
+      const tableDiv = e.target.parentNode.parentNode.parentNode.parentNode.parentNode;
+      tableDiv.style.height = tableDiv.offsetHeight + comment.offsetHeight + 'px';
     } else {
+      const tableDiv = e.target.parentNode.parentNode.parentNode.parentNode.parentNode;
+      tableDiv.style.height = tableDiv.offsetHeight - comment.offsetHeight + 'px';
       comment.style.display = "none";
     }
   });
@@ -46,7 +60,11 @@
       turnDetailsDiv.style.display = "";
       //e.target.classList = "expand-tab fa fa-caret-up";
       e.target.classList = "expand-tab fa fa-minus";
+      const tableDiv = e.target.parentNode.parentNode.parentNode.parentNode.parentNode;
+      tableDiv.style.height = tableDiv.offsetHeight + turnDetailsDiv.offsetHeight + 'px';
     } else {
+      const tableDiv = e.target.parentNode.parentNode.parentNode.parentNode.parentNode;
+      tableDiv.style.height = tableDiv.offsetHeight - turnDetailsDiv.offsetHeight + 'px';
       //e.target.classList = "expand-tab fa fa-caret-down";
       e.target.classList = "expand-tab fa fa-plus";
       turnDetailsDiv.style.display = "none";
