@@ -82,8 +82,9 @@ const createPageButtons = function () {
 
     var next_page = document.createElement("button");
     next_page.innerHTML = "Next >>";
-    next_page.style = "padding:0 10px; curdor: pointer;"
+    next_page.style = "padding:0 10px; cursor: pointer;"
     next_page.id = "page_next";
+    next_page.classList = "page-btn"
     next_page.onclick = changePage;
     //practices_div.prepend(next_page);
     page_buttons.prepend(next_page);
@@ -92,7 +93,8 @@ const createPageButtons = function () {
         new_page.innerHTML = page;
         new_page.id = "page_"+page;
         new_page.onclick = changePage;
-        new_page.style = "padding:0 10px; curdor: pointer;"
+        new_page.classList = "page-btn";
+        new_page.style = "padding:0 10px; cursor: pointer;"
         //practices_div.prepend(new_page)
         page_buttons.prepend(new_page)
     }
@@ -100,6 +102,7 @@ const createPageButtons = function () {
     prev_page.innerHTML = "<< Prev";
     prev_page.style = "padding:0 10px; curdor: pointer;"
     prev_page.id = "page_prev";
+    prev_page.classList = "page-btn"
     prev_page.onclick = changePage;
     //practices_div.prepend(prev_page);
     page_buttons.prepend(prev_page);
@@ -182,10 +185,12 @@ const changePage = function() {
     }
     curr_page_id = "page_"+curr_page;
     document.getElementById(curr_page_id).style.background = "#FFFFFF";
+    document.getElementById(curr_page_id).classList = "page-btn";
     
     curr_page = parseInt(page);
     curr_page_id = "page_"+curr_page;
     document.getElementById(curr_page_id).style.background = "#0000FF";
+    document.getElementById(curr_page_id).classList = "page-btn selected";
     var practices_page = document.getElementById("practices_page");
     practices_page.innerHTML = "";
     for(element of paginated_practices[curr_page-1]){
