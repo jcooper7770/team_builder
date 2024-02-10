@@ -93,7 +93,11 @@ const createPageButtons = function () {
         new_page.innerHTML = page;
         new_page.id = "page_"+page;
         new_page.onclick = changePage;
-        new_page.classList = "page-btn";
+        if (page != 1) {
+            new_page.classList = "page-btn";
+        } else {
+            new_page.classList = "page-btn selected";
+        }
         new_page.style = "padding:0 10px; cursor: pointer;"
         //practices_div.prepend(new_page)
         page_buttons.prepend(new_page)
@@ -184,12 +188,12 @@ const changePage = function() {
         }
     }
     curr_page_id = "page_"+curr_page;
-    document.getElementById(curr_page_id).style.background = "#FFFFFF";
+    //document.getElementById(curr_page_id).style.background = "#FFFFFF";
     document.getElementById(curr_page_id).classList = "page-btn";
     
     curr_page = parseInt(page);
     curr_page_id = "page_"+curr_page;
-    document.getElementById(curr_page_id).style.background = "#0000FF";
+    //document.getElementById(curr_page_id).style.background = "#0000FF";
     document.getElementById(curr_page_id).classList = "page-btn selected";
     var practices_page = document.getElementById("practices_page");
     practices_page.innerHTML = "";

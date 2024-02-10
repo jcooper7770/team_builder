@@ -679,8 +679,10 @@ div.practice-table:has(.coach-practice-header) > .table-open-btn {
 
 .page-btn {
   border-radius: 10px;
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid black;
 }
 .page-btn.selected {
-  background: blue;
+  background: rgb(28, 169, 255, 0.8);
   color: white;
 }
