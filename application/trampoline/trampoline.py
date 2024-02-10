@@ -206,10 +206,11 @@ class Athlete(User):
         self.optional = skills
         self.save()
 
-    def save_comp_card(self, filename=""):
+    def save_comp_card(self, filename="", routines=[]):
         """
         Saves the user's routines onto a comp card
         """
+        routines = routines or [self.compulsory, self.optional]
         comp_card_data = {
             'level': str(self.levels[0]),
             'name': f'{self.details.get("first_name")} {self.details.get("last_name")}'
@@ -217,7 +218,7 @@ class Athlete(User):
 
         # compulsory
         total_dd = 0
-        for num, skill in enumerate(self.compulsory.split()):
+        for num, skill in enumerate(routines[0].split()):
             comp_card_data[f'vol1skill{num+1}'] = skill
             skill_dd = Skill(skill).difficulty
             comp_card_data[f'vol1skill{num+1}dd'] = f'{skill_dd:.1f}'
@@ -226,7 +227,7 @@ class Athlete(User):
 
         # optional and finals
         total_dd = 0
-        for num, skill in enumerate(self.optional.split()):
+        for num, skill in enumerate(routines[1].split()):
             comp_card_data[f'vol2skill{num+1}'] = skill
             comp_card_data[f'finalsskill{num+1}'] = skill
             skill_dd = Skill(skill).difficulty
@@ -238,17 +239,19 @@ class Athlete(User):
 
         fill_out(comp_card_data, filename=filename or "modified_comp_card.pdf")
 
-    def save_dm_comp_card(self, filename=""):
+    def save_dm_comp_card(self, filename="", passes=[]):
         """
         Save the user's double mini comp card
         """
+        passes = passes or [self.dm_prelim1, self.dm_prelim2]
+        print(f"Passes: {passes}")
         comp_card_data = {
             'level': str(self.levels[1]),
             'name': f'{self.details.get("first_name")} {self.details.get("last_name")}'
         }
 
         dmt_passes = {
-            'prelims': [self.dm_prelim1.split(), self.dm_prelim2.split()],
+            'prelims': [passes[0].split(), passes[1].split()],
             'finals': [self.dm_finals1.split(), self.dm_finals2.split()]
         }
         status = {0: 'mounter', 1: 'dismount'}
