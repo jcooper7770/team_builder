@@ -34,7 +34,7 @@ from typing import OrderedDict
 from flask import session
 
 from application.utils.database import get_user, get_users_and_turns, save_athlete,\
-    delete_from_db, get_from_db, add_to_db
+    delete_from_db, get_from_db, add_to_db, get_all_airtimes
 from application.utils.utils import NON_SKILLS
 from application.trampoline.comp_card import fill_out
 
@@ -1184,6 +1184,19 @@ def get_leaderboards():
     # Gather all turns
     event_turns, user_data = get_turn_dds()
 
+    # Get all airtimes
+    airtimes = get_all_airtimes()
+    top_airtimes = {"trampoline": defaultdict(int)}
+    sorted_airtimes = sorted(airtimes, key=lambda x: x[1])
+    for airtime in sorted_airtimes:
+        user = airtime[0]
+        if not airtime[1]:
+            continue
+        if user_data[user]["private"]:
+            continue
+        top_airtimes["trampoline"][user] = f"{airtime[1]} ({airtime[2]})"
+    
+
     # Sort the turns and take top for each user
     top_turns = {}
     user_turns = {}
@@ -1227,7 +1240,8 @@ def get_leaderboards():
         ("TURNS", user_turns),
         ("TURNS THIS WEEK", user_turns_this_week),
         ("FLIPS", user_flips),
-        ("FLIPS THIS WEEK", user_flips_this_week)
+        ("FLIPS THIS WEEK", user_flips_this_week),
+        ("AIRTIMES", top_airtimes)
     ])
     all_sorted = [("DD", top_turns)]
     for key, data in data_keys.items():

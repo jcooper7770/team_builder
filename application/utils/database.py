@@ -230,6 +230,16 @@ def add_airtime_to_db(user, airtime, date_str):
     engine.execute(ins)
 
 
+def get_all_airtimes():
+    """
+    Returns all airtimes
+    """
+    engine = create_engine()
+    result = engine.execute('SELECT * from `airtimes`;')
+    all_airtimes = [airtime for airtime in result]
+    return all_airtimes
+
+
 def get_user_airtimes(user):
     """
     Returns the airtimes for the user
