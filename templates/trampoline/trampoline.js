@@ -62,7 +62,16 @@ const paginate = function() {
     // create practice page divs
     var practices_page = document.createElement("div");
     practices_page.id = "practices_page";
-    for(element of paginated_practices[curr_page-1]){
+    const num_practices = paginated_practices[curr_page-1].length
+    //for(element of paginated_practices[curr_page-1]){
+    for(let i=0; i<num_practices; i++) {
+        var element = paginated_practices[curr_page-1][i];
+        if (i==0) {
+            // Open the first table
+            element.classList.remove('closed');
+            const chevron = element.children[0].children[0];
+            chevron.classList = "fa fa-chevron-up";
+        }
         practices_page.append(element);
         practices_page.append(document.createElement("br"));
         practices_page.append(document.createElement("br"));
@@ -1196,6 +1205,7 @@ function expandPractices() {
                 const chevron = table.children[0].children[0];
                 chevron.classList = "fa fa-chevron-up";
             } else {
+                table.style.height = '';
                 table.classList.add("closed");
                 const chevron = table.children[0].children[0];
                 chevron.classList = "fa fa-chevron-down";
