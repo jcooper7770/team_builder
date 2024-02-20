@@ -28,6 +28,7 @@
   - [DONE] Click on a pokmeon and simulate a battle in pvpoke
      - https://pvpoke.com/battle/1500/{pokemon1}/{pokemon2}/{#shields1}{#shields2}
   - [DONE] Fetch data daily instead of every time refreshed and save to DB
+  - Flashcard game for move counts
 """
 
 from typing import OrderedDict
@@ -988,7 +989,7 @@ def create_table_from_results(results, pokemon=None, width=None, tc=None, toolti
     :return: the table for the results
     :rtype: str
     """
-    table = TableMaker(border=1, align="center", bgcolor="#FFFFFF", width=width)
+    table = TableMaker(border=1, align="center", bgcolor="#FFFFFF", width=width, pokemon=pokemon)
 
     for line in results.split("\n"):
         if not line:

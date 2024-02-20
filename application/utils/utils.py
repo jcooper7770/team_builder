@@ -388,7 +388,7 @@ class TableMaker:
     """
     Makes a table from results
     """
-    def __init__(self, border, align="center", bgcolor="#FFFFFF", width=None):
+    def __init__(self, border, align="center", bgcolor="#FFFFFF", width=None, pokemon=False):
         self.border = border
         self.align = align
         self.bgcolor = bgcolor
@@ -396,6 +396,7 @@ class TableMaker:
         self.div_table = []
         self.width = width
         self.first_table = True
+        self.pokemon = pokemon
         self.new_table()
         self._row_num = 0
         
@@ -412,8 +413,11 @@ class TableMaker:
             # This is the correct way to do it but this breaks the home page
             #options.append(f"style='width:{self.width}'")
         options_str = " ".join(options)
-        self.table.append('<div class="practice-table closed">')
-        self.table.append('<button class="table-open-btn dfsdfsd"><i class="fa fa-chevron-down" aria-hidden="true"></i></button>')
+        if not self.pokemon:
+            self.table.append('<div class="practice-table closed">')
+            self.table.append('<button class="table-open-btn dfsdfsd"><i class="fa fa-chevron-down" aria-hidden="true"></i></button>')
+        else:
+            self.table.append('<div class="practice-table">')
         self.table.append(f"<table {options_str}>")
         self.table.append("<thead class=\"thead-dark bg-dark text-white color-changing\">")
         self._row_num = 0

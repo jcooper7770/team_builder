@@ -206,7 +206,8 @@ def run():
     team_results = make_recommended_teams(team_maker, chosen_pokemon, chosen_league, chosen_position)
 
     html.append("<h1 align='center'><u>Randomly Generated Teams</u></h1>")
-    html.append(create_table_from_results(team_results, width='50%'))
+    html.append(create_table_from_results(team_results, width='50%', pokemon=True))
+    #print(f"** team results: {team_results}")
 
     # Data
     #html.append("<div align='center'><button onclick='hideData()'>Toggle data</button></div>")

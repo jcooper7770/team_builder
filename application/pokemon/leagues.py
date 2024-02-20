@@ -109,8 +109,6 @@ def refresh_leagues():
         League("Evolution", "1500-evolution", "great-evolution"),
         League("Willpower", "1500-willpower", "great-willpower"),
         League("Halloween", "1500-halloween", "great-halloween"),
-        League("CatchS12", "1500", "great-catch1124"),
-        League("CatchS16", "1500", "great-catch1123"),
         League("Weather", "1500-weather", "great-weather"),
         League("Electric", "1500-electric", "great-electric"),
         League("Psychic", "1500-psychic", "great-psychic"),
@@ -119,6 +117,9 @@ def refresh_leagues():
         League("Sunshine", "1500-sunshine", "great-sunshine"),
         League("GLSingleType", "1500-single", "great-single"),
         League("Fantasy", "1500-fantasy", "great-fantasy"),
+        League("GLCatchS12", "1500", "great-catch1124"),
+        League("GLCatchS16", "1500", "great-catch1123"),
+        League("GLCatchS17", "1500", "great-catch0224"),
 
         # Ultra cups
         League("UL", "2500", "ultra"),
