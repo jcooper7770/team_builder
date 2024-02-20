@@ -238,123 +238,118 @@
     </div>
 
   {% if request.endpoint != "coach.coach_home" %}
-    <!-- Goals -->
+    <!-- Weekly Challenges -->
     <br><br>
-    <div class="container">
+    <div class="container challenges">
+      <div class="challenges-header color-changing">
+        Weekly Challenges
+        <button type="button" class="btn float-right">
+          <span class="fa fa-window-minimize" id="minimize_challenges" style="color: white;"></span>
+        </button>
+      </div>
+      <div class="weekly-challenges" id="challenges_body">
+        Complete these challenges by next Sunday ({{ next_sunday }})
+        <ul class="challenge-list">
+          {% for challenge, completed in challenges.items() %}
+          <li class="challenge{% if completed %} completed{% endif %}">
+            <input type="checkbox" disabled{% if completed %} checked{% endif %}>{{ challenge }}
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+   
+     <!-- Goals -->
+    <br><br>
+    <div class="container challenges">
       <form action="{{ url_for('trampoline.trampoline_log') }}" method="post" id="goals" style="text-align:left;">
         <input type="hidden" name="goals_form" id="goals_form" value="goals_form" \>
-        <table align="center" width="30%" border=1 class="table table-striped color-changing">
-          <thead class="thead-dark">
-            <th colspan=3>
-              Goals
-              <button type="button" class="btn float-right">
-                <span class="fa fa-window-minimize" id="minimize_goals" style="color: white;"></span>
-              </button>
-            </th>
-          </thead>
-          <tbody id="goals_body">
-            <tr>
-              <td colspan=3>
+        <div class="challenges-header color-changing">
+          Goals
+          <button type="button" class="btn float-right">
+            <span class="fa fa-window-minimize" id="minimize_goals" style="color: white;"></span>
+          </button>
+        </div>
+        <div class="weekly-challenges" id="goals_body">
 
-                <div class="form-inline">
-                  <input type="text" name="goal_string" id="goal_string" placeholder="Write goal here" style="width:70%;"
-                    class="form-control color-changing mr-1" \>
-                  <button id="submit-goals" type="submit" class="btn btn-primary color-changing" style="display:inline-block">Submit Goal</button>
-                </div>
-
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <div style="max-height: 300px; overflow-y: auto">
-                  <table border="1">
-                    {% for goal in goals %}
-                    <tr>
-                      <td width="5%">
-                        {% if goal.done %}
-                        <input type="checkbox" id="{{ loop.index0 }}" name="{{ loop.index0 }}" checked \>
-                        {% else %}
-                        <input type="checkbox" id="{{ loop.index0 }}" name="{{ loop.index0 }}" \>
-                        {% endif %}
-                      </td>
-                      <td>
-                        {% if goal.done %}
-                        <!--<strike>{{ goal.goal }}</strike>-->
-                        <span style="color:red">[DONE]</span> {{ goal.goal }}
-                        {% else %}
-                        {{ goal.goal }}
-                        {% endif %}
-                      </td>
-                      <td width="5%">
-                        <button type="submit" id="delete{{ loop.index0 }}" name="delete{{ loop.index0 }}" class="btn">
-                          <span class="fa fa-remove" aria-hidden='true'></span>
-                        </button>
-                      </td>
-                    </tr>
-                    {% endfor %}
-                  </table>
-                </div>
-              </td>
-            </tr>
-
-          </tbody>
-        </table>
+          <div class="form-inline">
+            <input type="text" name="goal_string" id="goal_string" placeholder="Write goal here" style="width:70%;"
+              class="form-control color-changing mr-1" \>
+            <button id="submit-goals" type="submit" class="btn btn-primary color-changing" style="display:inline-block">Submit Goal</button>
+          </div>
+          <div style="max-height: 300px; overflow-y: auto">
+            <table border="1">
+              {% for goal in goals %}
+              <tr>
+                <td width="5%">
+                  {% if goal.done %}
+                  <input type="checkbox" id="{{ loop.index0 }}" name="{{ loop.index0 }}" checked \>
+                  {% else %}
+                  <input type="checkbox" id="{{ loop.index0 }}" name="{{ loop.index0 }}" \>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if goal.done %}
+                  <!--<strike>{{ goal.goal }}</strike>-->
+                  <span style="color:red">[DONE]</span> {{ goal.goal }}
+                  {% else %}
+                  {{ goal.goal }}
+                  {% endif %}
+                </td>
+                <td width="5%">
+                  <button type="submit" id="delete{{ loop.index0 }}" name="delete{{ loop.index0 }}" class="btn">
+                    <span class="fa fa-remove" aria-hidden='true'></span>
+                  </button>
+                </td>
+              </tr>
+              {% endfor %}
+            </table>
+          </div>
+        </div>
       </form>
     </div>
 
     <br><br>
     <!-- Airtimes -->
-    <div class="container">
+    <div class="container challenges">
       <form action="{{ url_for('trampoline.trampoline_log') }}" method="post" id="airtime" style="text-align:left;">
         <input type="hidden" name="airtime_form" id="airtime_form" value="airtime_form" \>
-        <table align="center" width="30%" border=1 class="table table-striped color-changing">
-          <thead class="thead-dark">
-            <th colspan=3>
-              Airtimes
-              <button type="button" class="btn float-right">
-                <span class="fa fa-window-minimize" id="minimize_airtimes" style="color: white;"></span>
-              </button>
-            </th>
-          </thead>
-          <tbody style="height:100px; overflow-y:auto;" id="airtimes_body">
-            <tr>
-              <td colspan=3>
+        <div class="challenges-header color-changing">
+          Airtimes
+          <button type="button" class="btn float-right">
+            <span class="fa fa-window-minimize" id="minimize_airtimes" style="color: white;"></span>
+          </button>
+        </div>
+        <div class="weekly-challenges" id="airtimes_body">
+          <div class="form-inline">
+            <input type="text" name="airtime_string" id="airtime_string" placeholder="Write airtime here" style="width:70%;"
+              class="form-control color-changing mr-1" \>
+              <!-- add date picker field -->
+            <input type="date" name="airtime-date" class="form-control color-changing" id="airtime-date" \>
+            <button id="submit-airtime" type="submit" class="btn btn-primary color-changing" style="display:inline-block">Submit Airtime</button>
+          </div>
+          <div style="max-height: 300px; overflow-y: auto">
+            <table border="1">
+              {% for airtime in airtimes %}
+              {% if airtime.airtime %}
+              <tr>
+                <td width="20%">{{ airtime.date}}</td>
+                <td>{{ airtime.airtime }}</td>
+                <td width="5%">
+                  <button type="submit" id="delete{{ loop.index0 }}" name="delete{{ loop.index0 }}" class="btn">
+                    <span class="fa fa-remove" aria-hidden='true'></span>
+                  </button>
+                </td>
+              </tr>
+              {% endif %}
+              {% endfor %}
+            </table>
+          </div>
 
-                <div class="form-inline">
-                  <input type="text" name="airtime_string" id="airtime_string" placeholder="Write airtime here" style="width:70%;"
-                    class="form-control color-changing mr-1" \>
-                    <!-- add date picker field -->
-                  <input type="date" name="airtime-date" class="form-control color-changing" id="airtime-date" \>
-                  <button id="submit-airtime" type="submit" class="btn btn-primary color-changing" style="display:inline-block">Submit Airtime</button>
-                </div>
-
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <div style="max-height: 300px; overflow-y: auto">
-                  <table border="1">
-                    {% for airtime in airtimes %}
-                    {% if airtime.airtime %}
-                    <tr>
-                      <td width="20%">{{ airtime.date}}</td>
-                      <td>{{ airtime.airtime }}</td>
-                      <td width="5%">
-                        <button type="submit" id="delete{{ loop.index0 }}" name="delete{{ loop.index0 }}" class="btn">
-                          <span class="fa fa-remove" aria-hidden='true'></span>
-                        </button>
-                      </td>
-                    </tr>
-                    {% endif %}
-                    {% endfor %}
-                  </table>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        </div>
       </form>
     </div>
+
   {% endif %}
   <br><br>
   </div>

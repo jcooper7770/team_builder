@@ -7,6 +7,7 @@ import subprocess
 from passlib.hash import sha256_crypt
 from werkzeug.utils import secure_filename
 
+from application.trampoline.challenges import CHALLENGES, get_next_sunday
 from application.trampoline.trampoline import convert_form_data, get_leaderboards, pretty_print, Practice, current_user, set_current_user,\
      current_event, set_current_event, set_current_athlete,\
      ALL_SKILLS, get_leaderboards, Athlete, get_user_turns, get_turn_dds
@@ -266,6 +267,15 @@ def trampoline_log():
         lesson_plans[lesson_num]['percent_complete'] = f"{complete_percent:0.2f}"
     print(lesson_plans)
 
+    challenges = {
+        "Do a routine": True,
+        "Get airtime higher than 20.00": False
+    }
+    challenges = {
+        challenge.name: challenge.complete_fn(user_turns, airtimes)
+        for challenge in CHALLENGES
+    }
+    next_sunday = get_next_sunday()
 
     return render_template(
         f"trampoline/trampoline.html",
@@ -292,7 +302,9 @@ def trampoline_log():
         dmt_passes=dmt_passes_ordered,
         tumbling_skills=tumbling_skills_ordered,
         lesson_plans=lesson_plans,
-        athlete_dict=user['details'].get('personal_dict', {})
+        athlete_dict=user['details'].get('personal_dict', {}),
+        challenges=challenges,
+        next_sunday=next_sunday
     )
 
 
