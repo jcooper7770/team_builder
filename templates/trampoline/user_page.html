@@ -32,6 +32,12 @@
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
+  @media screen and (min-width: 800px) {
+    .user-info div {
+      white-space: nowrap;
+    }
+
+  }
 
   .metrics {
     display: flex;
@@ -90,6 +96,7 @@
     font-size: 12px;
     margin-top: 0px;
   }
+
   .post-title {
     padding: 0px;
     margin-bottom: 0px;
@@ -104,6 +111,57 @@
   div.dark-mode-color h4,
   div.dark-mode-color p {
     color: white;
+  }
+
+  /* Prestige */
+  .prestige-data {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+  }
+  .total-prestige {
+    display: flex;
+    justify-content: center;
+    align-items: start;
+    width: 20%;
+  }
+  .total-prestige p {
+    background: white;
+    border-radius: 50%;
+    border: 1px solid black;
+    font-weight: bold;
+    padding: 10px;
+  }
+  .total-prestige.level0 p {
+    background-color: #CD7F32;
+  }
+  .total-prestige.level1 p {
+    background: silver;
+  }
+  .total-prestige.level2 p {
+    background: gold;
+  }
+  .prestige-explanation {
+    max-height: 300px;
+    overflow-y: auto;
+  }
+  .prestige-explanation ul {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .prestige-explanation ul li {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid black;
+    border-radius: 10px;
+    padding: 2px 5px;
+
+  }
+  .prestige-explanation ul li span:first-child {
+    border-bottom: 1px dotted black;
   }
 </style>
 <!-- Settings -->
@@ -177,11 +235,44 @@
         <p><strong>Most Flips in One Turn:</strong> {{ biggest_flips }}</p>
       </div>
       <div>
-        <p><strong>Most DD in One Turn:</strong> {{ biggest_dd }}</p>
+        <p><strong>Most DD in One Turn:</strong> {{ '%0.1f'|format(biggest_dd|float) }}</p>
       </div>
       <!-- Add more metrics as needed -->
     </div>
   </section>
+
+  <!-- Prestige section -->
+  <section class="prestige">
+    <div class="pretige-title"><h2>Prestige</h2></div>
+    <div class="prestige-data">
+      <div class="total-prestige">
+        <p>{{ prestige.trampoline }}</p>
+      </div>
+      <div class="prestige-explanation">
+        <ul>
+          <li><span>Days logged:</span><span>{{ prestige.days }} pts</span></li>
+          <li><span>Most days logged in a row:</span><span>{{ prestige.biggest_combo_days }} days</span></li>
+          <li>
+            <span># days w/out modifiers:</span>
+            <span>{{ prestige.days - prestige.double_point_modifiers - prestige.quadruple_point_modifiers }} ({{ prestige.days - prestige.double_point_modifiers - prestige.quadruple_point_modifiers }}*1pt={{(prestige.days - prestige.double_point_modifiers - prestige.quadruple_point_modifiers)}}pts)</span>
+          </li>
+          <li>
+            <span># double pt modifiers:</span>
+            <span>{{ prestige.double_point_modifiers }} ({{prestige.double_point_modifiers}}*2pts={{2*(prestige.double_point_modifiers)}}pts)</span>
+          </li>
+          <li>
+            <span># quadruple pt modifiers:</span>
+            <span>{{ prestige.quadruple_point_modifiers }} ({{prestige.quadruple_point_modifiers}}*4pts={{4*(prestige.quadruple_point_modifiers)}}pts)</span>
+          </li>
+          <li>
+            <span># Trampoline Routines:</span>
+            <span>{{prestige.trampoline_routines}} ({{prestige.trampoline_routines}}*3pts={{3*prestige.trampoline_routines}}pts)</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
   <section class="highlighted-posts">
     <h2>Highlighted Posts</h2>
     {% for post in user_posts %}
@@ -213,5 +304,17 @@
   crossorigin="anonymous"></script>
 
 <script type="text/javascript">
+  // change level color
+  const prestigePts = document.querySelector(".total-prestige p");
+  const prestigeTotal = document.querySelector(".total-prestige");
+  if (Number(prestigePts.textContent) >= 50) {
+    prestigeTotal.classList = "total-prestige level1";
+  }
+  if (Number(prestigePts.textContent) > 100) {
+    prestigeTotal.classList = "total-prestige level2";
+  }
+  if (Number(prestigePts.textContent) < 50) {
+    prestigeTotal.classList = "total-prestige level0";
+  }
 </script>
 {% endblock %}

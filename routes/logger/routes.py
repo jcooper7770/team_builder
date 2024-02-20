@@ -859,15 +859,24 @@ def get_user_prestige(username):
     """
     Return's the user's total points
     """
+    data = {
+        "days": 0,
+        "routines": 0,
+        "biggest_combo_days": 0,
+        "double_point_modifiers": 0,
+        "quadruple_point_modifiers": 0
+    }
     class MockReq:
         args = {}
     mock_request = MockReq()
     stats = create_user_stats(mock_request, [], username=username)
+    data['trampoline_routines'] = sum([stat['y'] for stat in stats.get('trampoline_routines')])
     tramp_day_points = 0 # number of points for logging days
     last_date = None
     combo = 1 # combo for # days in a row
     for datapt in stats.get("trampoline_flips_per_day", []):
         date = datetime.datetime.strptime(datapt['x'], "%Y-%m-%d")
+        data["days"] += 1
         #start_date = datetime.datetime.strptime(start_date, "%m/%d/%Y")
         if not last_date:
             tramp_day_points += 1
@@ -881,22 +890,28 @@ def get_user_prestige(username):
             if 2 <= combo < 7:
                 print("combo 2-6 days! - +2 pts")
                 points_added = 2
+                data["double_point_modifiers"] += 1
             elif combo >= 7:
                 print("combo 7+ days! - +4 pts")
                 points_added = 4
+                data["quadruple_point_modifiers"] += 1
 
             tramp_day_points += points_added
             print(f"prestige calc: {date} === {tramp_day_points}")
             last_date = date
+            if combo > data["biggest_combo_days"]:
+                data["biggest_combo_days"] = combo
             continue
         # no longer consecutive days so combo goes back to 1
         combo = 1
         tramp_day_points += 1
         print(f"prestige calc: {date} === {tramp_day_points}")
         last_date = date
-    return {
-        "trampoline": tramp_day_points
+    result = {
+        "trampoline": tramp_day_points + 3*data['trampoline_routines']
     }
+    result.update(data)
+    return result
 
 
 def create_user_stats(request, airtimes, username=None):
@@ -914,6 +929,11 @@ def create_user_stats(request, airtimes, username=None):
     event_turns, _ = get_turn_dds()
     datapts = {}
     day_flips = {
+        'trampoline': defaultdict(int),
+        'dmt': defaultdict(int),
+        'tumbling': defaultdict(int)
+    }
+    day_routines = {
         'trampoline': defaultdict(int),
         'dmt': defaultdict(int),
         'tumbling': defaultdict(int)
@@ -960,6 +980,10 @@ def create_user_stats(request, airtimes, username=None):
             day_flips[event][turn_date] += turn_flips
             flips_per_turn[event][turn_date].append(turn_flips)
             turns_per_practice[turn_date] += 1
+
+            # routines/passes
+            if event == "trampoline" and len(turn['turn'].split()) == 10:
+                day_routines[event][turn_date] += 1
     
     datapts['trampoline_flips_per_day'] = [{'x': date, 'y': flips} for date, flips in sorted(day_flips['trampoline'].items(), key=lambda x: x[0])]
     datapts['dmt_flips_per_day'] = [{'x': date, 'y': flips} for date, flips in day_flips['dmt'].items()]
@@ -968,6 +992,7 @@ def create_user_stats(request, airtimes, username=None):
     datapts['tumbling_flips_per_day'] = [{'x': date, 'y': flips} for date, flips in day_flips['tumbling'].items()]
     datapts['tumbling_flips_per_turn'] = [{'x': date, 'y': sum(flips)/len(flips)} for date, flips in flips_per_turn['tumbling'].items()]
     datapts['turns_per_practice'] = [{'x': date, 'y': turns} for date, turns in sorted(turns_per_practice.items(), key=lambda x: x[0])]
+    datapts['trampoline_routines'] = [{'x': date, 'y': routines} for date, routines in sorted(day_routines['trampoline'].items(), key=lambda x: x[0])]
 
     # airtimes data
     datapts['airtimes'] = [{'x': airtime['date'], 'y': float(airtime['airtime'])} for airtime in airtimes if airtime['airtime']]
@@ -1192,6 +1217,7 @@ def user_page(name):
         name = ""
     
     prestige = get_user_prestige(name)
+    print(f"prestige data: {prestige}")
     turns, _ = get_turn_dds(name)
     total_flips, total_turns, biggest_flips, biggest_dd = 0, 0, 0, 0
     for event, event_turns in turns.items():
@@ -1229,6 +1255,7 @@ def user_page(name):
         biggest_flips=biggest_flips,
         biggest_dd=biggest_dd,
         user_posts=user_posts,
+        prestige=prestige
     )
 
 @tramp_bp.route('/logger/lessons/complete', methods=["POST"])
