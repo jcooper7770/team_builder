@@ -568,3 +568,21 @@ def update_cache(key, value):
     """Updates the cache"""
     global CACHE
     CACHE[key] = value
+
+
+def is_routine(turn):
+    """
+    Determines if the turn is a trampoline routine by having 10 consecutive skills
+    """
+    skills = [skill for skill in turn.split() if skill not in NON_SKILLS]
+    #return len(skills) == 10
+
+    skill_num = 0
+    for skill in turn.split():
+        # restart the count if any non skills are found in the routine
+        if skill in NON_SKILLS:
+            skill_num = 0
+            continue
+        skill_num += 1
+    return skill_num == 10
+        
