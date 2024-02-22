@@ -994,8 +994,10 @@ def create_user_stats(request, airtimes, username=None):
             turns_per_practice[turn_date] += 1
 
             # routines/passes
-            if event == "trampoline" and len(turn['turn'].split()) == 10:
-                day_routines[event][turn_date] += 1
+            if event == "trampoline":
+                real_skills = [skill for skill in turn['turn'].split() if skill not in NON_SKILLS]
+                if len(real_skills) == 10:
+                    day_routines[event][turn_date] += 1
     
     datapts['trampoline_flips_per_day'] = [{'x': date, 'y': flips} for date, flips in sorted(day_flips['trampoline'].items(), key=lambda x: x[0])]
     datapts['dmt_flips_per_day'] = [{'x': date, 'y': flips} for date, flips in day_flips['dmt'].items()]
