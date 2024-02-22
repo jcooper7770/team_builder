@@ -1,6 +1,8 @@
 from collections import defaultdict
 import datetime
 
+from application.utils.utils import NON_SKILLS
+
 
 class Challenge:
     def __init__(self, name, complete_fn):
@@ -51,7 +53,8 @@ def finished_a_routine(user_turns, _, num_days=7):
         if turn[2].date() < starting_date:
             continue
         if turn[4] == "trampoline":
-            if len(turn[1].split()) == 10:
+            skills = [skill for skill in turn[1].split() if skill not in NON_SKILLS]
+            if len(skills) == 10:
                 return True, turn[2].date()
     
     return False, None

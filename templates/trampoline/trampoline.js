@@ -557,7 +557,23 @@ $("[id^=edit_]").click(function (e) {
         for (var row of rows ) {
             var turn = ""
             if (row.children.length > 1) {
-                turn = row.children[1].childNodes[1].textContent;
+                // Accommodate for the red Xs in the turn
+                var currentTurn = "";
+                const textNodes = row.children[1].childNodes;
+                for (let i = 0; i< textNodes.length; i++) {
+                    if (textNodes[i].tagName == "DIV") {
+                        continue;
+                    }
+                    if (textNodes[i].tagName == "SPAN") {
+                        currentTurn = currentTurn.concat(textNodes[i].textContent);
+                    } else {
+                        currentTurn = currentTurn.concat(textNodes[i].textContent);
+                    }
+                }
+                console.log(currentTurn);
+                console.log(row.children[1].childNodes);
+                //turn = row.children[1].childNodes[1].textContent;
+                turn = currentTurn
                 turns.push(turn);
             } else if (row.children.length == 1 && row.children[0].classList == "comment-row") {
                 turn = row.children[0].childNodes[1].textContent;
