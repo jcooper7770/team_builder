@@ -52,9 +52,9 @@ def finished_a_routine(user_turns, _, num_days=7):
             continue
         if turn[4] == "trampoline":
             if len(turn[1].split()) == 10:
-                return True
+                return True, turn[2].date()
     
-    return False
+    return False, None
 
 
 def airtime_higher_than_20(_, airtimes, num_days=7):
@@ -67,11 +67,11 @@ def airtime_higher_than_20(_, airtimes, num_days=7):
             continue
         try:
             if float(airtime['airtime']) > 20:
-                return True
+                return True, airtime['date']
         except:
             pass
     
-    return False 
+    return False, None
 
 
 def logged_x_days(user_turns, _, num_days=7, num_logs=1):
@@ -84,7 +84,9 @@ def logged_x_days(user_turns, _, num_days=7, num_logs=1):
         if turn[2].date() < starting_date:
             continue
         days_logged.add(str(turn[2].date()))
-    return len(days_logged) >= num_logs
+        if len(days_logged) >= num_logs:
+            return True, turn[2].date()
+    return False, None
 
 
 def logged_x_turns_in_a_day(user_turns, _, num_days=7, num_logs=1):
@@ -99,8 +101,8 @@ def logged_x_turns_in_a_day(user_turns, _, num_days=7, num_logs=1):
         date_str = str(turn[2].date())
         days_logged[date_str] += 1
         if days_logged[date_str] >= num_logs:
-            return True
-    return False
+            return True, turn[2].date()
+    return False, None
 
 
 # list of this week's challenges

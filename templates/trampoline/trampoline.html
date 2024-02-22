@@ -251,11 +251,11 @@
         Complete these challenges by next Sunday ({{ next_sunday }})
         <ul class="challenge-list">
           {% for challenge, completed in challenges.items() %}
-          <li class="challenge{% if completed %} completed{% endif %}">
-            <input type="checkbox" disabled{% if completed %} checked{% endif %}>
-            {% if completed %}🎉{% endif %}
+          <li class="challenge{% if completed[0] %} completed{% endif %}">
+            <input type="checkbox" disabled{% if completed[0] %} checked{% endif %}>
+            {% if completed[0] %}🎉{% endif %}
             {{ challenge }}
-            {% if completed %}🎉{% endif %}
+            {% if completed[0] %}🎉 ({{ completed[1] }}){% endif %}
           </li>
           {% endfor %}
         </ul>
