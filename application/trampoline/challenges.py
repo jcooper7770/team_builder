@@ -65,8 +65,11 @@ def airtime_higher_than_20(_, airtimes, num_days=7):
     for airtime in airtimes:
         if airtime['date'] < starting_date:
             continue
-        if float(airtime['airtime']) > 20:
-            return True
+        try:
+            if float(airtime['airtime']) > 20:
+                return True
+        except:
+            pass
     
     return False 
 
