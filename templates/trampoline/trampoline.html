@@ -252,7 +252,10 @@
         <ul class="challenge-list">
           {% for challenge, completed in challenges.items() %}
           <li class="challenge{% if completed %} completed{% endif %}">
-            <input type="checkbox" disabled{% if completed %} checked{% endif %}>{{ challenge }}
+            <input type="checkbox" disabled{% if completed %} checked{% endif %}>
+            {% if completed %}🎉{% endif %}
+            {{ challenge }}
+            {% if completed %}🎉{% endif %}
           </li>
           {% endfor %}
         </ul>
