@@ -236,11 +236,17 @@
           e.style.color = "#F6B17A";
           e.style.background = "";
         }
+        if (e.tagName == "P") {
+          e.style.color = "#FFFFFF";
+          e.style.background = "";
+        }
       }
       bgElement.style.background = "#424769";
+      document.querySelector("body").style.color = "#FFFFFF";
     }
     function setLightMode(elements, background) {
       background.style.background = "#E5E4E2";
+      document.querySelector("body").style.color = "";
 
       for (e of elements) {
         e.classList.remove("dark-mode-color");
@@ -279,6 +285,9 @@
           e.classList.add("btn-primary");
         }
         if (e.tagName == "A") {
+          e.style.color = "";
+        }
+        if (e.tagName == "P") {
           e.style.color = "";
         }
 

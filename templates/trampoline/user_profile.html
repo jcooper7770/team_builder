@@ -29,7 +29,7 @@
 
   <!-- Coach Requests -->
   {% if user_data['coach_requests'] %}
-  <div class="card border-primary">
+  <div class="card border-primary color-changing">
     <div class="card-header text-center">
       <h2>Coach Requests</h2>
     </div>
@@ -48,7 +48,7 @@
   <br>
   {% endif %}
 
-  <div class="card border-primary">
+  <div class="card border-primary color-changing">
     <div class="card-header text-center">
       <h2>User Settings for {{user}}</h2>
     </div>
@@ -342,7 +342,7 @@
 <!-- Options -->
 <br><br>
 <div class="container">
-  <div class="card border-primary">
+  <div class="card border-primary color-changing">
     <div class="card-header text-center">
       <h2>User Options for {{user}}</h2>
     </div>
@@ -384,7 +384,7 @@
 
   <!-- Send messages to athletes -->
   <br><br>
-  <div class="card border-primary">
+  <div class="card border-primary color-changing">
     <div class="card-header text-center">
       <h2>Message Center</h2>
     </div>
@@ -392,7 +392,7 @@
       <div class="col-sm-6">
         <div class="row"><b><u>Messages:</u></b></div>
         <form name="read_msgs" id="read_msgs" method="POST" action="/logger/athlete/messages">
-          <div class="row" style="overflow-y:scroll; height:100px;">
+          <div class="row" style="overflow-y:auto; height:100px;">
             <ul style="list-style-type: none;">
               {% for message in messages %}
               <li><input name="message_{{loop.index}}" type="checkbox"{% if message.read %} checked {% endif %}\>{{ message.msg }}</li>

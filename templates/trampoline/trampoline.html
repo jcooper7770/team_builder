@@ -248,14 +248,16 @@
         </button>
       </div>
       <div class="weekly-challenges" id="challenges_body">
-        Complete these challenges by next Sunday ({{ next_sunday }})
+        <p class="color-changing">Complete these challenges by next Sunday ({{ next_sunday }})</p>
         <ul class="challenge-list">
           {% for challenge, completed in challenges.items() %}
           <li class="challenge{% if completed[0] %} completed{% endif %}">
             <input type="checkbox" disabled{% if completed[0] %} checked{% endif %}>
+            <p class="color-changing">
             {% if completed[0] %}🎉{% endif %}
             {{ challenge }}
             {% if completed[0] %}🎉 ({{ completed[1] }}){% endif %}
+            </p>
           </li>
           {% endfor %}
         </ul>

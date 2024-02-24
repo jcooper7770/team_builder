@@ -457,8 +457,12 @@ body {
   border-radius: 5px;
   cursor: pointer;
 }
+body.dark .tag-box {
+  color: black;
+}
 
-.tag-box.selected {
+.tag-box.selected,
+body.dark .tag-box.selected {
   background-color: #6fa9e5;
   color: #fff;
 }
@@ -725,4 +729,8 @@ div.practice-table:has(.coach-practice-header) > .table-open-btn {
 }
 .challenge.completed {
   font-weight: normal;
+}
+.challenge p,
+#challenges_body p {
+  display: inline;
 }
