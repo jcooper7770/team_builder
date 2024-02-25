@@ -389,6 +389,15 @@
       <span class="badge badge-item super-badge gold" id="challenges-75">
         <i class="fa fa-star"></i><i class="fa fa-star"></i>75 Challenges Completed<i class="fa fa-star"></i><i class="fa fa-star"></i>
       </span>
+      <span class="badge badge-item super-badge gold" id="challenges-100">
+        <i class="fa fa-star"></i>
+        <i class="fa fa-star"></i>
+        <i class="fa fa-star"></i>
+        100 Challenges Completed
+        <i class="fa fa-star"></i>
+        <i class="fa fa-star"></i>
+        <i class="fa fa-star"></i>
+      </span>
       <!-- Add more badges as needed -->
     </div>
     <div class="total-challenges-container">
@@ -457,6 +466,7 @@
   {% endfor %}
     // Add more weeks as needed
   ];
+  var totalCompleted = {{ total_completed_challenges }};
 
 
   // Function to generate HTML for weekly challenges using Bootstrap accordion
@@ -493,26 +503,29 @@
   window.onload = function () {
     generateWeeklyChallenges();
 
-    if (completedChallenges.length < 75) {
+    if (totalCompleted < 100) {
+      document.getElementById("challenges-100").style.display = "none";
+    }
+    if (totalCompleted < 75) {
       document.getElementById("challenges-75").style.display = "none";
     }
-    if (completedChallenges.length < 50) {
+    if (totalCompleted < 50) {
       document.getElementById("challenges-50").style.display = "none";
     }
-    if (completedChallenges.length < 30) {
+    if (totalCompleted < 30) {
       document.getElementById("challenges-30").style.display = "none";
     }
-    if (completedChallenges.length < 20) {
+    if (totalCompleted < 20) {
       document.getElementById("challenges-20").style.display = "none";
     }
-    if (completedChallenges.length < 10) {
+    if (totalCompleted < 10) {
       document.getElementById("challenges-10").style.display = "none";
     }
-    if (completedChallenges.length < 1) {
+    if (totalCompleted < 1) {
       document.getElementById("challenges-1").style.display = "none";
     }
 
-    document.getElementById('total-challenges').textContent = completedChallenges.length;
+    document.getElementById('total-challenges').textContent = totalCompleted;
   };
 </script>
 {% endblock %}

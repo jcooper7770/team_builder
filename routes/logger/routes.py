@@ -1265,6 +1265,7 @@ def user_page(name):
         if challenges
     ]
     sorted_challenges = sorted(completed_challenges, key=lambda x: x['title'])
+    total_completed_challenges = sum([len(challenge['challenges']) for challenge in completed_challenges])
 
     private_profile = user.private if name != "" else True
     if name == current_user:
@@ -1288,7 +1289,8 @@ def user_page(name):
         biggest_dd=biggest_dd,
         user_posts=user_posts,
         prestige=prestige,
-        completed_challenges=sorted_challenges
+        completed_challenges=sorted_challenges,
+        total_completed_challenges=total_completed_challenges
     )
 
 @tramp_bp.route('/logger/lessons/complete', methods=["POST"])
