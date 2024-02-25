@@ -207,8 +207,9 @@
   }
 
   .badge-item.plain {
-    background-color: blue;
-    /* Gold color */
+    background-color: rgba(0,0,0,0);
+    border: 1px solid black;
+    color: black;
   }
 
   .badge-item.super-badge {
@@ -221,6 +222,15 @@
     /* Rounded corners */
     font-weight: bold;
   }
+
+  .badge-item.super-super-badge {
+    /* Increase font size */
+    border-radius: 20px;
+    border: 3px solid #C0C0C0;
+    /* Rounded corners */
+    font-weight: bold;
+  }
+
 
   .week-container {
     margin-top: 20px;
@@ -398,6 +408,16 @@
         <i class="fa fa-star"></i>
         <i class="fa fa-star"></i>
       </span>
+      <span class="badge badge-item super-super-badge gold" id="challenges-200">
+        <i class="fa fa-star"></i>
+        <i class="fa fa-star"></i>
+        <i class="fa fa-star"></i>
+        200 Challenges Completed
+        <i class="fa fa-star"></i>
+        <i class="fa fa-star"></i>
+        <i class="fa fa-star"></i>
+      </span>
+
       <!-- Add more badges as needed -->
     </div>
     <div class="total-challenges-container">
@@ -503,6 +523,9 @@
   window.onload = function () {
     generateWeeklyChallenges();
 
+    if (totalCompleted < 200) {
+      document.getElementById("challenges-200").style.display = "none";
+    }
     if (totalCompleted < 100) {
       document.getElementById("challenges-100").style.display = "none";
     }
