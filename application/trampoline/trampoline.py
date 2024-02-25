@@ -163,7 +163,7 @@ class Athlete(User):
             password="", expand_comments=False, is_coach=False, athletes=[],
             first_login=False, signup_date=None, messages=[],
             tu_prelims1=[], tu_prelims2=[], tramp_level=10, dmt_level=10, tumbling_level=10,
-            coach_requests=[], first_name="", last_name="", points={}, personal_dict={}
+            coach_requests=[], first_name="", last_name="", points={}, personal_dict={}, completed_challenges={}
         ):
         self.name = name
         self.compulsory = compulsory
@@ -189,7 +189,8 @@ class Athlete(User):
             "first_name": first_name,
             "last_name": last_name,
             "points": points, # split prestige by event
-            "personal_dict": personal_dict
+            "personal_dict": personal_dict,
+            "completed_challenges": completed_challenges
         }
 
     def set_comp(self, skills):
@@ -325,7 +326,8 @@ class Athlete(User):
             coach_requests=user['coach_requests'],
             first_name=user['details'].get('first_name', ''),
             last_name=user['details'].get('last_name', ''),
-            personal_dict=user['details'].get('personal_dict', {})
+            personal_dict=user['details'].get('personal_dict', {}),
+            completed_challenges=user['details'].get('completed_challenges', {})
         )
         print("***3")
         print(athlete)

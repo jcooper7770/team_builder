@@ -7,7 +7,7 @@ import subprocess
 from passlib.hash import sha256_crypt
 from werkzeug.utils import secure_filename
 
-from application.trampoline.challenges import CHALLENGES, get_next_sunday
+from application.trampoline.challenges import CHALLENGES, get_next_sunday, save_completed_challenges
 from application.trampoline.trampoline import convert_form_data, get_leaderboards, pretty_print, Practice, current_user, set_current_user,\
      current_event, set_current_event, set_current_athlete,\
      ALL_SKILLS, get_leaderboards, Athlete, get_user_turns, get_turn_dds
@@ -276,6 +276,9 @@ def trampoline_log():
         for challenge in CHALLENGES
     }
     next_sunday = get_next_sunday()
+
+    # Put completed challenges into athlete db (in background)
+    save_completed_challenges(username, challenges)
 
     return render_template(
         f"trampoline/trampoline.html",
@@ -1246,6 +1249,12 @@ def user_page(name):
             if n_dd > biggest_dd:
                 biggest_dd = n_dd
 
+    print(f"completed challenges: {user.details.get('completed_challenges')}")
+    completed_challenges = [
+        {'title': title, "challenges": challenges}
+        for title, challenges in user.details.get('completed_challenges', {}).items()
+    ]
+    sorted_challenges = sorted(completed_challenges, key=lambda x: x['title'])
 
     private_profile = user.private if name != "" else True
     if name == current_user:
@@ -1268,7 +1277,8 @@ def user_page(name):
         biggest_flips=biggest_flips,
         biggest_dd=biggest_dd,
         user_posts=user_posts,
-        prestige=prestige
+        prestige=prestige,
+        completed_challenges=sorted_challenges
     )
 
 @tramp_bp.route('/logger/lessons/complete', methods=["POST"])

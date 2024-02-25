@@ -1,6 +1,8 @@
 from collections import defaultdict
 import datetime
+import threading
 
+from application.trampoline.trampoline import Athlete
 from application.utils.utils import NON_SKILLS, is_routine
 
 
@@ -27,6 +29,7 @@ def get_starting_date(num_days):
         return most_recent_sunday
     #today = datetime.date.today()
     #return today - datetime.timedelta(days=today.weekday()+1)
+
 
 def get_next_sunday():
     """
@@ -133,6 +136,43 @@ def logged_x_turns_in_a_day(user_turns, _, num_days=7, num_logs=1):
         if days_logged[date_str] >= num_logs:
             return True, turn[2].date()
     return False, None
+
+
+
+# save completed challenges to DB
+def save_in_background(username, challenges):
+    """
+    Saves the completed challenges in the background
+    """
+    thread = threading.Thread(
+        target=save_completed_challenges,
+        args=(username, challenges,)
+    )
+    thread.start()
+
+
+def save_completed_challenges(username, challenges):
+    """
+    Save the completed challenges to the DB (in the background)
+
+    challenges: {'challenge': (True/False, date), ...}
+    """
+    athlete = Athlete.load(username)
+    completed = athlete.details.get('completed_challenges', {})
+
+    next_sunday = get_next_sunday()
+    challenge_date_start = next_sunday - datetime.timedelta(days=7)
+    title = f"{challenge_date_start.strftime('%Y/%m/%d')} - {next_sunday.strftime('%Y/%m/%d')}"
+    weekly_challenges = {
+        title: [
+            f"{challenge} ({info[1]})"
+            for challenge, info in challenges.items()
+            if info[0]
+        ]
+    }
+    completed.update(weekly_challenges)
+    athlete.details['completed_challenges'] = completed
+    athlete.save()
 
 
 # list of this week's challenges

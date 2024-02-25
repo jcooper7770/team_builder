@@ -32,6 +32,7 @@
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
+
   @media screen and (min-width: 800px) {
     .user-info div {
       white-space: nowrap;
@@ -53,6 +54,8 @@
 
   .highlighted-posts {
     margin-top: 20px;
+    height: 700px;
+    overflow-y: auto;
   }
 
   .post {
@@ -119,12 +122,14 @@
     flex-direction: row;
     gap: 20px;
   }
+
   .total-prestige {
     display: flex;
     justify-content: center;
     align-items: start;
     width: 20%;
   }
+
   .total-prestige p {
     background: white;
     border-radius: 50%;
@@ -132,25 +137,31 @@
     font-weight: bold;
     padding: 10px;
   }
+
   .total-prestige.level0 p {
     background-color: #CD7F32;
   }
+
   .total-prestige.level1 p {
     background: silver;
   }
+
   .total-prestige.level2 p {
     background: gold;
   }
+
   .prestige-explanation {
     max-height: 300px;
     overflow-y: auto;
   }
+
   .prestige-explanation ul {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
     gap: 10px;
   }
+
   .prestige-explanation ul li {
     list-style: none;
     display: flex;
@@ -160,8 +171,77 @@
     padding: 2px 5px;
 
   }
+
   .prestige-explanation ul li span:first-child {
     border-bottom: 1px dotted black;
+  }
+
+  /* Weekly badges */
+  .badge-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+  }
+
+  .badge-item {
+    background-color: #007bff;
+    /* Default color */
+    color: #fff;
+  }
+
+  .badge-item.gold {
+    background-color: #FFD700;
+    /* Gold color */
+  }
+
+  .badge-item.silver {
+    background-color: #C0C0C0;
+    /* Silver color */
+  }
+
+  .badge-item.bronze {
+    background-color: #CD7F32;
+    /* Bronze color */
+  }
+
+  .badge-item.plain {
+    background-color: blue;
+    /* Gold color */
+  }
+  .week-container {
+    margin-top: 20px;
+  }
+
+  .week-title {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 5px;
+    cursor: pointer;
+    /* Add cursor pointer for indicating clickability */
+  }
+
+  .challenges-list {
+    list-style-type: none;
+    padding-left: 0;
+    margin-bottom: 0;
+  }
+
+
+  .card-header .fa {
+    transition: .3s transform ease-in-out;
+  }
+
+  .card-header .collapsed .fa {
+    transform: rotate(90deg);
+  }
+
+  #weeklyChallenges {
+    /*display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;*/
+    max-height: 300px;
+    overflow-y: auto;
   }
 </style>
 <!-- Settings -->
@@ -243,7 +323,9 @@
 
   <!-- Prestige section -->
   <section class="prestige">
-    <div class="pretige-title"><h2>Prestige</h2></div>
+    <div class="pretige-title">
+      <h2>Prestige</h2>
+    </div>
     <div class="prestige-data">
       <div class="total-prestige">
         <p>{{ prestige.trampoline }}</p>
@@ -254,23 +336,50 @@
           <li><span>Most days logged in a row:</span><span>{{ prestige.biggest_combo_days }} days</span></li>
           <li>
             <span># days w/out modifiers:</span>
-            <span>{{ prestige.days - prestige.double_point_modifiers - prestige.quadruple_point_modifiers }} ({{ prestige.days - prestige.double_point_modifiers - prestige.quadruple_point_modifiers }}*1pt={{(prestige.days - prestige.double_point_modifiers - prestige.quadruple_point_modifiers)}}pts)</span>
+            <span>{{ prestige.days - prestige.double_point_modifiers - prestige.quadruple_point_modifiers }} ({{
+              prestige.days - prestige.double_point_modifiers - prestige.quadruple_point_modifiers
+              }}*1pt={{(prestige.days - prestige.double_point_modifiers -
+              prestige.quadruple_point_modifiers)}}pts)</span>
           </li>
           <li>
             <span># double pt modifiers:</span>
-            <span>{{ prestige.double_point_modifiers }} ({{prestige.double_point_modifiers}}*2pts={{2*(prestige.double_point_modifiers)}}pts)</span>
+            <span>{{ prestige.double_point_modifiers }}
+              ({{prestige.double_point_modifiers}}*2pts={{2*(prestige.double_point_modifiers)}}pts)</span>
           </li>
           <li>
             <span># quadruple pt modifiers:</span>
-            <span>{{ prestige.quadruple_point_modifiers }} ({{prestige.quadruple_point_modifiers}}*4pts={{4*(prestige.quadruple_point_modifiers)}}pts)</span>
+            <span>{{ prestige.quadruple_point_modifiers }}
+              ({{prestige.quadruple_point_modifiers}}*4pts={{4*(prestige.quadruple_point_modifiers)}}pts)</span>
           </li>
           <li>
             <span># Trampoline Routines:</span>
-            <span>{{prestige.trampoline_routines}} ({{prestige.trampoline_routines}}*3pts={{3*prestige.trampoline_routines}}pts)</span>
+            <span>{{prestige.trampoline_routines}}
+              ({{prestige.trampoline_routines}}*3pts={{3*prestige.trampoline_routines}}pts)</span>
           </li>
         </ul>
       </div>
     </div>
+  </section>
+
+
+  <section class="badges">
+    <h2>Weekly Challenges</h2>
+    <div class="badge-container">
+      <span class="badge badge-item plain" id="challenges-1">1 Challenge Completed</span>
+      <span class="badge badge-item bronze" id="challenges-10">10 Challenges Completed</span>
+      <span class="badge badge-item silver" id="challenges-20">20 Challenges Completed</span>
+      <span class="badge badge-item gold" id="challenges-30">30 Challenges Completed</span>
+      <!-- Add more badges as needed -->
+    </div>
+    <!-- Weekly Challenges -->
+    <div class="week-container">
+      <div id="weeklyChallenges">
+        <div id="accordion" role="tablist" aria-multiselectable="true">
+          <!-- Weekly challenges will be dynamically generated here -->
+        </div>
+      </div>
+    </div>
+
   </section>
 
   <section class="highlighted-posts">
@@ -306,5 +415,74 @@
   if (Number(prestigePts.textContent) < 50) {
     prestigeTotal.classList = "total-prestige level0";
   }
+
+  // Dummy data for completed challenges grouped by week
+  var completedChallenges = [
+    /*
+    { week: "Week 1", challenges: ["Challenge A", "Challenge B", "Challenge C"] },
+    { week: "Week 1", challenges: ["Challenge A", "Challenge B", "Challenge C"] },
+    { week: "Week 1", challenges: ["Challenge A", "Challenge B", "Challenge C"] },
+    { week: "Week 1", challenges: ["Challenge A", "Challenge B", "Challenge C"] },
+    { week: "Week 1", challenges: ["Challenge A", "Challenge B", "Challenge C"] },
+    { week: "Week 1", challenges: ["Challenge A", "Challenge B", "Challenge C"] },
+    { week: "Week 1", challenges: ["Challenge A", "Challenge B", "Challenge C"] },
+    { week: "Week 1", challenges: ["Challenge A", "Challenge B", "Challenge C"] },
+    { week: "Week 2", challenges: ["Challenge D", "Challenge E", "Challenge F"] },
+    */
+    {% for challenge in completed_challenges %}
+    { week: "{{challenge.title}}", challenges: {{ challenge.challenges | safe}}},
+    {% endfor %}
+    // Add more weeks as needed
+  ];
+
+
+  // Function to generate HTML for weekly challenges using Bootstrap accordion
+  function generateWeeklyChallenges() {
+    var container = document.getElementById("accordion");
+    completedChallenges.forEach(function (week, index) {
+      var cardHtml = `
+          <div class="card color-changing">
+            <h5 class="card-header" role="tab" id="heading${index}">
+              <a data-toggle="collapse" href="#collapse${index}" aria-expanded="false" aria-controls="collapse${index}" class="d-block collapsed">
+                <i class="fa fa-chevron-down pull-right"></i> ${week.week}
+              </a>
+            </h5>
+            <div id="collapse${index}" class="collapse" role="tabpanel" aria-labelledby="heading${index}">
+              <div class="card-body">
+                <ul class="list-group list-group-flush">`;
+
+      week.challenges.forEach(function (challenge) {
+        cardHtml += `
+            <li class="list-group-item color-changing">${challenge}</li>`;
+      });
+
+      cardHtml += `
+                </ul>
+              </div>
+            </div>
+          </div>`;
+
+      container.innerHTML += cardHtml;
+    });
+  }
+
+  // Generate weekly challenges on page load
+  window.onload = function () {
+    generateWeeklyChallenges();
+
+    if (completedChallenges.length < 30) {
+      document.getElementById("challenges-30").style.display = "none";
+    }
+    if (completedChallenges.length < 20) {
+      document.getElementById("challenges-20").style.display = "none";
+    }
+    if (completedChallenges.length < 10) {
+      document.getElementById("challenges-10").style.display = "none";
+    }
+    if (completedChallenges.length < 1) {
+      document.getElementById("challenges-1").style.display = "none";
+    }
+
+  };
 </script>
 {% endblock %}
