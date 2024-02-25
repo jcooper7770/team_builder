@@ -209,6 +209,17 @@
     background-color: blue;
     /* Gold color */
   }
+
+  .badge-item.super-badge {
+    /* Additional styling for super badges */
+    /*padding: 8px 12px;*/
+    /* Increase padding */
+    /*font-size: 18px;*/
+    /* Increase font size */
+    border-radius: 20px;
+    /* Rounded corners */
+  }
+
   .week-container {
     margin-top: 20px;
   }
@@ -370,6 +381,12 @@
       <span class="badge badge-item bronze" id="challenges-10">10 Challenges Completed</span>
       <span class="badge badge-item silver" id="challenges-20">20 Challenges Completed</span>
       <span class="badge badge-item gold" id="challenges-30">30 Challenges Completed</span>
+      <span class="badge badge-item super-badge gold" id="challenges-50">
+        <i class="fa fa-star"></i>50 Challenges Completed<i class="fa fa-star"></i>
+      </span>
+      <span class="badge badge-item super-badge gold" id="challenges-75">
+        <i class="fa fa-star"></i><i class="fa fa-star"></i>75 Challenges Completed<i class="fa fa-star"></i><i class="fa fa-star"></i>
+      </span>
       <!-- Add more badges as needed -->
     </div>
     <div class="total-challenges-container">
@@ -434,8 +451,8 @@
     { week: "Week 2", challenges: ["Challenge D", "Challenge E", "Challenge F"] },
     */
     {% for challenge in completed_challenges %}
-    { week: "{{challenge.title}}", challenges: {{ challenge.challenges | safe}}},
-    {% endfor %}
+  { week: "{{challenge.title}}", challenges: {{ challenge.challenges | safe }} },
+  {% endfor %}
     // Add more weeks as needed
   ];
 
@@ -474,6 +491,12 @@
   window.onload = function () {
     generateWeeklyChallenges();
 
+    if (completedChallenges.length < 75) {
+      document.getElementById("challenges-75").style.display = "none";
+    }
+    if (completedChallenges.length < 50) {
+      document.getElementById("challenges-50").style.display = "none";
+    }
     if (completedChallenges.length < 30) {
       document.getElementById("challenges-30").style.display = "none";
     }
