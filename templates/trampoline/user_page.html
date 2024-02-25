@@ -242,6 +242,7 @@
     flex-wrap: wrap;*/
     max-height: 300px;
     overflow-y: auto;
+    border: 1px solid black;
   }
 </style>
 <!-- Settings -->
@@ -371,6 +372,9 @@
       <span class="badge badge-item gold" id="challenges-30">30 Challenges Completed</span>
       <!-- Add more badges as needed -->
     </div>
+    <div class="total-challenges-container">
+      Total Challenges Completed: <span id="total-challenges">0</span>
+    </div>
     <!-- Weekly Challenges -->
     <div class="week-container">
       <div id="weeklyChallenges">
@@ -483,6 +487,7 @@
       document.getElementById("challenges-1").style.display = "none";
     }
 
+    document.getElementById('total-challenges').textContent = completedChallenges.length;
   };
 </script>
 {% endblock %}

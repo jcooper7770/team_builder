@@ -7,7 +7,7 @@ import subprocess
 from passlib.hash import sha256_crypt
 from werkzeug.utils import secure_filename
 
-from application.trampoline.challenges import CHALLENGES, get_next_sunday, save_completed_challenges
+from application.trampoline.challenges import CHALLENGES, get_next_sunday, save_completed_challenges, retroactively_record_challenges, retroactively_save_in_bg
 from application.trampoline.trampoline import convert_form_data, get_leaderboards, pretty_print, Practice, current_user, set_current_user,\
      current_event, set_current_event, set_current_athlete,\
      ALL_SKILLS, get_leaderboards, Athlete, get_user_turns, get_turn_dds
@@ -279,6 +279,15 @@ def trampoline_log():
 
     # Put completed challenges into athlete db (in background)
     save_completed_challenges(username, challenges)
+    if request.args.get('save_all_challenges', False):
+        print("Retroactively saving challenges for all user data")
+        retroactively_save_in_bg(username, user_turns, airtimes)
+    
+    if request.args.get('delete_challenges', False):
+        print("Deleting user challenges")
+        athlete = Athlete.load(username)
+        athlete.details['completed_challenges'] = {}
+        athlete.save()
 
     return render_template(
         f"trampoline/trampoline.html",
@@ -1253,6 +1262,7 @@ def user_page(name):
     completed_challenges = [
         {'title': title, "challenges": challenges}
         for title, challenges in user.details.get('completed_challenges', {}).items()
+        if challenges
     ]
     sorted_challenges = sorted(completed_challenges, key=lambda x: x['title'])
 
