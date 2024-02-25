@@ -514,6 +514,11 @@ def sign_up():
         confirm = request.form.get("confirm", "")
         private = True if request.form.get("private")=="true" else False
         is_coach = True if request.form.get("user_type") == "coach" else False
+        levels = [
+            request.form.get("tramp_level"),
+            request.form.get("dmt_level"),
+            request.form.get("tu_level"),
+        ]
 
         if not username:
             session["error"] = "Please enter a username"
@@ -538,7 +543,8 @@ def sign_up():
         athlete = Athlete(
             username, private, password=hashed_password,
             is_coach=is_coach, first_login=True, signup_date=datetime.datetime.today(),
-            first_name=first_name, last_name=last_name
+            first_name=first_name, last_name=last_name,
+            tramp_level=levels[0], dmt_level=levels[1], tumbling_level=levels[2],
         )
         athlete.save()
         session["previous_page"] = "trampoline.trampoline_log"

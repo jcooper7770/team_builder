@@ -1,6 +1,12 @@
 {% extends "trampoline/base.html" %}
 
 {% block content %}
+<style>
+
+  #card-body {
+    transition: height 0.7s ease;
+  }
+</style>
 <br><br>
 
 <div class="container d-flex align-items-center justify-content-center">
@@ -81,12 +87,51 @@
           <div class="d-flex flex-column">
             <p class="m-0">User type:</p>
             <div class="d-flex flex-row">
-              <input type="radio" id="athlete" name="user_type" value="athlete" checked>
-              <label for="athlete">Athlete</label>
+              <input type="radio" id="athlete" name="user_type" value="athlete" checked onclick="document.getElementById('levels').classList='d-flex flex-column'; document.getElementById('levels').style.display='';">
+              <label for="athlete" onclick="showLevels()">Athlete</label>
             </div>
             <div class="d-flex flex-row">
-              <input type="radio" id="coach" name="user_type" value="coach">
-              <label for="coach">Coach</label>
+              <input type="radio" id="coach" name="user_type" value="coach" onclick="document.getElementById('levels').classList=''; document.getElementById('levels').style.display='none';">
+              <label for="coach" onclick="hideLevels()">Coach</label>
+            </div>
+          </div>
+
+          <div class="d-flex flex-column" id="levels">
+            <p class="m-0">Levels:</p>
+            <div class="d-flex flex-column">
+              <label for="tramp_level">Trampoline Level:</label>
+              <select class="form-control" id="tramp_level" name="tramp_level">
+                {% for i in range(1, 11) %}
+                <option value="{{i}}" >{{i}}</option>
+                {% endfor %}
+                <option value="OE" >Open Elite</option>
+                <option value="YE" >Youth Elite</option>
+                <option value="JE" >Junior Elite</option>
+                <option value="IE" >Intermediate Elite</option>
+                <option value="SE" >Senior Elite</option>
+              </select>
+              <label for="dmt_level">Double Mini Level:</label>
+              <select class="form-control" id="dmt_level" name="dmt_level">
+                {% for i in range(1, 11) %}
+                <option value="{{i}}" >{{i}}</option>
+                {% endfor %}
+                <option value="OE" >Open Elite</option>
+                <option value="YE" >Youth Elite</option>
+                <option value="JE" >Junior Elite</option>
+                <option value="IE" >Intermediate Elite</option>
+                <option value="SE" >Senior Elite</option>
+              </select>
+                <label for="tu_level">Tumbling Level:</label>
+              <select class="form-control" id="tu_level" name="tu_level">
+                {% for i in range(1, 11) %}
+                <option value="{{i}}" >{{i}}</option>
+                {% endfor %}
+                <option value="OE" >Open Elite</option>
+                <option value="YE" >Youth Elite</option>
+                <option value="JE" >Junior Elite</option>
+                <option value="IE" >Intermediate Elite</option>
+                <option value="SE" >Senior Elite</option>
+              </select>
             </div>
           </div>
 
@@ -119,10 +164,12 @@ const headerText = document.getElementById("header-text");
 const cardBody = document.getElementById("card-body");
 signupButton.addEventListener("click", function(e) {
   e.preventDefault();
+  const signUpForm = document.getElementById("sign-up-form");
   signupForm.style.top = "15%";
   loginForm.style.top = "120%";
   headerText.innerText = "Sign Up";
-  cardBody.style.height = "600px";
+  //cardBody.style.height = signUpForm.offsetHeight + "900px";
+  cardBody.style.height = signUpForm.offsetHeight + 50 + "px";
 });
 loginButton.addEventListener("click", function(e) {
   e.preventDefault();
@@ -132,6 +179,19 @@ loginButton.addEventListener("click", function(e) {
   cardBody.style.height = "300px";
 })
 
+function hideLevels() {
+  document.getElementById('levels').classList='';
+  document.getElementById('levels').style.display='none';
+  const signUpForm = document.getElementById("sign-up-form");
+  cardBody.style.height = signUpForm.offsetHeight + 50 + "px";
+}
+function showLevels() {
+  document.getElementById('levels').classList='d-flex flex-column';
+  document.getElementById('levels').style.display='';
+  const signUpForm = document.getElementById("sign-up-form");
+  cardBody.style.height = signUpForm.offsetHeight + 50 + "px";
+
+}
 
 </script>
 
