@@ -275,13 +275,19 @@
     <h1>User Profile</h1>
   </header>
 
-  {% if private %}
+  {% if private and name != ""%}
   <section class="private-message">
     <p><i class="fa fa-exclamation-circle" aria-hidden="true"></i>Athlete's profile is private</p>
   </section>
   {% endif %}
 
-  {% if private == false %}
+  {% if name == "" %}
+  <section class="private-message">
+    <p><i class="fa fa-exclamation-circle" aria-hidden="true"></i>Athlete doesn't exist</p>
+  </section>
+  {% endif %}
+
+  {% if private == false and name != "" %}
   <section>
     <h2>Athlete Information</h2>
     <div class="user-info color-changing">

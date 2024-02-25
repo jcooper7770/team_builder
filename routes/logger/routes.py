@@ -1245,6 +1245,7 @@ def user_page(name):
         user = Athlete.load(name)
         name = user.name
     except:
+        user = None
         name = ""
     
     prestige = get_user_prestige(name)
@@ -1264,16 +1265,20 @@ def user_page(name):
             if n_dd > biggest_dd:
                 biggest_dd = n_dd
 
-    print(f"completed challenges: {user.details.get('completed_challenges')}")
-    completed_challenges = [
-        {'title': title, "challenges": challenges}
-        for title, challenges in user.details.get('completed_challenges', {}).items()
-        if challenges
-    ]
-    sorted_challenges = sorted(completed_challenges, key=lambda x: x['title'])
-    total_completed_challenges = sum([len(challenge['challenges']) for challenge in completed_challenges])
+    sorted_challenges = []
+    total_completed_challenges = 0
+    if user:
+        print(f"completed challenges: {user.details.get('completed_challenges')}")
+        completed_challenges = [
+            {'title': title, "challenges": challenges}
+            for title, challenges in user.details.get('completed_challenges', {}).items()
+            if challenges
+        ]
+        sorted_challenges = sorted(completed_challenges, key=lambda x: x['title'])
+        total_completed_challenges = sum([len(challenge['challenges']) for challenge in completed_challenges])
 
     private_profile = user.private if name != "" else True
+    user_exists = name != ""
     if name == current_user:
         private_profile = False
     return render_template(
@@ -1296,7 +1301,8 @@ def user_page(name):
         user_posts=user_posts,
         prestige=prestige,
         completed_challenges=sorted_challenges,
-        total_completed_challenges=total_completed_challenges
+        total_completed_challenges=total_completed_challenges,
+        user_exists=user_exists
     )
 
 @tramp_bp.route('/logger/lessons/complete', methods=["POST"])
