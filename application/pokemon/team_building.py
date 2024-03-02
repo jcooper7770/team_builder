@@ -371,7 +371,23 @@ class MetaTeamDestroyer:
             self.leads_list = self.filter_top_pokemon(self.leads_list)
             self.safeswaps_list = self.filter_top_pokemon(self.safeswaps_list)
             self.backs_list = self.filter_top_pokemon(self.backs_list)
-        
+
+        # Find counters to the top teams
+        self.team_counters = {}
+        for team in self.pokemon_teams:
+            weaknesses = []
+            for pokemon in team.split('-'):
+                weakness = self.species_counters_dict.get(pokemon, [])
+                weaknesses.extend(weakness)
+            weakness_counts = dict()
+            for i in weaknesses:
+                weakness_counts[i] = weakness_counts.get(i, 0) + 1
+            #print(weaknesses)
+            #print(weakness_counts)
+            #print(f"team: {team} - weaknesses: {sorted(weakness_counts.items(), key=lambda x: x[1], reverse=True)[:10]}")
+            best_counters = [pokemon for pokemon, count in weakness_counts.items() if count > 1]
+            self.team_counters[team] = ', '.join(sorted(best_counters))
+
     def set_counter_data(self):
         # Create a mapping of the counters
         self.species_counters_dict = defaultdict(set)# pokemon that each pokemon counters well

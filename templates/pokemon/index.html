@@ -470,6 +470,7 @@ function toggleAdvOptions(e) {
           <div id="team-col" class="fa fa-caret-down">
             {{ team[0] }}
             <span style="display: none; opacity: 0; transition: all 1s ease">
+              <br>Counters: {{ team_counters[team[0]] }}
               {% for pokemon in team[2] %}
               <table border="1" class="mx-auto">
                 <tr><th colspan="2" class="text-center">{{ pokemon }}</th></tr>

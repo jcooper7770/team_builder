@@ -264,6 +264,7 @@ def run():
         poke_win_rates=team_maker.pokemon_win_rates,
         #team_win_rates=list(team_maker.pokemon_teams.items()),
         team_win_rates=team_counts,
+        team_counters=team_maker.team_counters,
         n_teams=sum([p[1] for p in team_maker.result_data['meta_leads']]),
         user=session.get("name", ""),
         ratings=sorted(team_maker.all_ratings),
