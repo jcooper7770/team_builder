@@ -1236,6 +1236,8 @@ def social():
 @tramp_bp.route("/logger/user/<name>", methods=["GET"])
 def user_page(name):
     current_user = session.get('name')
+    if name == "@name":
+        return redirect(f"/logger/user/{current_user}")
     #event_turns, user_data = get_turn_dds()
     all_posts = get_posts_from_db()
     user_posts = [post for post in all_posts if post.get('name') == name]

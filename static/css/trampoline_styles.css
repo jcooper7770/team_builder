@@ -233,6 +233,51 @@ body {
   text-align: center;
 }
 
+/* Whats new */
+#whats-new .card-body {
+  max-height: 300px;
+  overflow-y: auto;
+}
+#whats-new .card-body ul li {
+  list-style: none;
+  position: relative;
+  margin-bottom: 10px;
+}
+#whats-new .card-body ul li::after {
+  content: '';
+  width: 100%;
+  height: 1px;
+  background-color: gray;
+  position: absolute;
+  top: 100%;
+  left: 0;
+}
+#whats-new .card-body ul li .update-title {
+  font-weight: bold;
+}
+#whats-new .card-body ul li .update-text {
+  font-style: italic;
+}
+#whats-new .card-body ul li .update-text .update-img {
+  display: flex;
+  justify-content: center;
+}
+#whats-new .card-body ul li .update-text .update-img img {
+  width: 50%;
+}
+#whats-new .card-body ul li .update-text.bug-fix {
+  color: gray;
+}
+#whats-new .card-body ul li .update-date {
+  font-size: 12px;
+  position: relative;
+  left: 0;
+  color: gray;
+}
+
+
+
+
 .graph-canvas {
   width: 100% !important;
   height: 500px !important;
