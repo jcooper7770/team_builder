@@ -14,7 +14,7 @@ from application.trampoline.trampoline import convert_form_data, get_leaderboard
 from application.utils.database import get_users_and_turns, insert_goal_to_db, get_user_goals, complete_goal,\
     delete_goal_from_db, get_user, add_airtime_to_db, get_user_airtimes, delete_airtime_from_db,\
     rate_practice_in_db, get_ratings, add_post_to_db, get_posts_from_db, delete_post_from_db,\
-    get_lessons_from_db, update_lesson
+    get_lessons_from_db, update_lesson, add_notification_to_db, clear_notifications
 from application.utils.utils import *
 
 tramp_bp = Blueprint('trampoline', __name__)
@@ -295,6 +295,7 @@ def trampoline_log():
         event=event,
         routine_text=log_text,
         user=session.get('name'),
+        is_admin=session.get('is_admin', False),
         goals=get_user_goals(current_user()),
         airtimes=airtimes,
         all_skills=ALL_SKILLS,
@@ -492,12 +493,21 @@ def trampoline_user_practices(username):
 @tramp_bp.route("/logger/about")
 def about_trampoline():
     commit_hash = subprocess.check_output(["git", "rev-parse", "HEAD"]).decode('ascii').strip()
-    return render_template("trampoline/about_trampoline.html", user=session.get("name"), commit_hash=commit_hash)
+    return render_template(
+        "trampoline/about_trampoline.html",
+        user=session.get("name"),
+        commit_hash=commit_hash,
+        is_admin=session.get('is_admin', False)
+    )
 
 
 @tramp_bp.route("/logger/resources")
 def resource_trampoline():
-    return render_template("trampoline/resources.html", user=session.get("name"))
+    return render_template(
+        "trampoline/resources.html",
+        user=session.get("name"),
+        is_admin=session.get('is_admin', False)
+    )
 
 
 @tramp_bp.route("/sign_up", methods=["GET", "POST"])
@@ -550,6 +560,55 @@ def sign_up():
         session["previous_page"] = "trampoline.trampoline_log"
         return redirect(url_for('trampoline.login'))
     return render_template("trampoline/login.html", error_text=session.get('error'), user="")
+
+
+@tramp_bp.route("/logger/admin")
+def admin():
+    """
+    Admin page
+    """
+    is_admin = session.get('is_admin', False)
+    if not is_admin:
+        return redirect(url_for('trampoline.trampoline_log'))
+    return render_template("trampoline/admin.html", user=session.get("name"), error_text=session.get('error'), is_admin=is_admin)
+
+
+@tramp_bp.route('/logger/notification', methods=["POST"])
+def notification():
+    """
+    Create notifications
+    """
+    title = request.json.get('title')
+    message = request.json.get('message')
+    user = request.json.get('user', None)
+    add_notification_to_db(title, message, user=user)
+    return {'success': True}
+
+
+@tramp_bp.route('/logger/notifications')
+def user_notifications():
+    """
+    Get user notifications
+    """
+    username = session.get('name')
+    athlete = Athlete.load(username)
+    notis = athlete.notifications
+    return {
+        "notifications": notis,
+        "requests": athlete.coach_requests if not athlete.is_coach else [],
+        "messages": [msg for msg in athlete.messages if not msg['read']]
+    }
+
+
+@tramp_bp.route('/logger/notification/clear', methods=["POST"])
+def clear_notification():
+    """
+    Create notifications
+    """
+    username = session.get('name')
+    clear_notifications(username)
+    return {'success': True}
+
 
 @tramp_bp.route("/login", methods=["GET", "POST"])
 def login():
@@ -604,6 +663,7 @@ def login():
         #return redirect(url_for('trampoline.trampoline_log'))
         # no longer user's first login
         athlete = Athlete.load(username)
+        session['is_admin'] = athlete.is_admin
         print(str(athlete))
         if athlete.first_login:
             athlete.first_login = False
@@ -628,6 +688,7 @@ def logout():
     session["current_athlete"] = ""
     session["previous_page"] = "trampoline.trampoline_log"
     session['log'] = {}
+    session['is_admin'] = False
     return redirect(url_for('trampoline.login'))
 
 
@@ -657,7 +718,12 @@ def landing_page():
     leaderboard = get_leaderboards()
     if not leaderboard["DD"]:
         leaderboard = mock_leaderboard
-    return render_template("trampoline/landing_page.html", user=session.get("name"), leaderboard=leaderboard)
+    return render_template(
+        "trampoline/landing_page.html",
+        user=session.get("name"),
+        leaderboard=leaderboard,
+        is_admin=session.get('is_admin', False)
+    )
 
 
 @tramp_bp.route('/logger/social/post', methods=["POST", "DELETE"])
@@ -816,6 +882,7 @@ def user_stats():
         "trampoline/user_statistics.html",
         body=body,
         user=session.get('name'),
+        is_admin=session.get('is_admin', False),
         datapts=datapts,
         chart_start=request.args.get('chart_start', ""),
         chart_end=request.args.get('chart_end', ""),
@@ -1058,6 +1125,7 @@ def user_profile():
     return render_template(
         "trampoline/user_profile.html",
         user=current_user,
+        is_admin=session.get('is_admin', False),
         user_data=user_data,
         error_text=session.get('error'),
         messages=messages
@@ -1221,7 +1289,12 @@ def chart():
                 'x': str(turn['date']).split()[0],
                 'y': turn['flips']
             })
-    return render_template("graph.html", user=current_user, datapts=datapts)
+    return render_template(
+        "graph.html",
+        user=current_user,
+        datapts=datapts, 
+        is_admin=session.get('is_admin', False)
+    )
 
 
 @tramp_bp.route("/logger/social", methods=["GET"])
@@ -1230,7 +1303,12 @@ def social():
     all_posts = get_posts_from_db()
     # Sort posts by date
     all_posts = sorted(all_posts, key=lambda x: datetime.datetime.strptime(x['date'], "%m/%d/%Y %H:%M:%S %p"))
-    return render_template("trampoline/social.html", user=current_user, all_posts=all_posts)
+    return render_template(
+        "trampoline/social.html",
+        user=current_user,
+        all_posts=all_posts,
+        is_admin=session.get('is_admin', False)
+    )
 
 
 @tramp_bp.route("/logger/user/<name>", methods=["GET"])
@@ -1286,6 +1364,7 @@ def user_page(name):
     return render_template(
         "trampoline/user_page.html",
         user=current_user,
+        is_admin=session.get('is_admin', False),
         name=name,
         athlete_comp=user.compulsory if name != "" else "",
         athlete_optional=user.optional if name != "" else "",

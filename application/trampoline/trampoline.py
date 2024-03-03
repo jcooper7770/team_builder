@@ -163,7 +163,8 @@ class Athlete(User):
             password="", expand_comments=False, is_coach=False, athletes=[],
             first_login=False, signup_date=None, messages=[],
             tu_prelims1=[], tu_prelims2=[], tramp_level=10, dmt_level=10, tumbling_level=10,
-            coach_requests=[], first_name="", last_name="", points={}, personal_dict={}, completed_challenges={}
+            coach_requests=[], first_name="", last_name="", points={}, personal_dict={}, completed_challenges={}, notifications=[],
+            is_admin=False
         ):
         self.name = name
         self.compulsory = compulsory
@@ -178,10 +179,12 @@ class Athlete(User):
         self.password = password
         self.expand_comments = expand_comments
         self.is_coach = is_coach
+        self.is_admin = is_admin
         self.athletes = athletes
         self.first_login = first_login
         self.signup_date = signup_date or datetime.datetime.today()
         self.messages = messages
+        self.notifications = notifications
         self.levels = [tramp_level, dmt_level, tumbling_level]
         self.coach_requests = coach_requests
         points = points or {event: 0 for event in EVENTS}
@@ -291,12 +294,14 @@ class Athlete(User):
             'password': self.password,
             'expand_comments': self.expand_comments,
             'is_coach': self.is_coach,
+            'is_admin': self.is_admin,
             'athletes': self.athletes,
             'coach_requests': self.coach_requests,
             'first_login': self.first_login,
             'signup_date': str(self.signup_date),
             'messages': self.messages,
-            'details': json.dumps(self.details)
+            'details': json.dumps(self.details),
+            'notifications': json.dumps(self.notifications),
         }
         with open(file_name, 'w') as athlete_file:
             json.dump(athlete_data, athlete_file)
@@ -313,13 +318,11 @@ class Athlete(User):
         Loads in an athlete
         """
         user = get_user(name)
-        print("***1")
         signup_date = datetime.datetime.strptime(user.get('signup_date'), '%Y-%m-%d') if user.get('signup_date') else None
-        print("***2")
         athlete = Athlete(
             user['name'], user["private"], user['compulsory'], user['optional'],
             password=user['password'], expand_comments=user.get('expand_comments', False),
-            is_coach=user["is_coach"], athletes=user["athletes"], first_login=user['first_login'],
+            is_coach=user["is_coach"], is_admin=user.get('is_admin', False), athletes=user["athletes"], first_login=user['first_login'],
             signup_date=signup_date, messages=user['messages'],
             dm_prelims1=user['dm_prelim1'], dm_prelims2=user['dm_prelim2'], dm_finals1=user['dm_finals1'], dm_finals2=user['dm_finals2'],
             tramp_level=user['levels'][0], dmt_level=user['levels'][1], tumbling_level=user['levels'][2],
@@ -327,10 +330,9 @@ class Athlete(User):
             first_name=user['details'].get('first_name', ''),
             last_name=user['details'].get('last_name', ''),
             personal_dict=user['details'].get('personal_dict', {}),
-            completed_challenges=user['details'].get('completed_challenges', {})
+            completed_challenges=user['details'].get('completed_challenges', {}),
+            notifications=user.get('notifications', []),
         )
-        print("***3")
-        print(athlete)
 
         '''    
         # First check if user exists
@@ -353,12 +355,9 @@ class Athlete(User):
             athlete = None
         '''
         if athlete:
-            print("***4")
             return athlete
 
-        print("***5")
         file_path = os.path.join("athletes", f'{name}.json')
-        print("***6")
 
         if not os.path.exists(file_path):
             return Athlete(name)

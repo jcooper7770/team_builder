@@ -79,7 +79,8 @@
     </a>
     <div id="navbarNav" class="collapse navbar-collapse top-nav">
       <ul class="navbar-nav main-nav">
-        <li class="nav-item{%if request.endpoint=='trampoline.trampoline_log' or request.endpoint=='coach.coach_home' %} active{% endif %}">
+        <li
+          class="nav-item{%if request.endpoint=='trampoline.trampoline_log' or request.endpoint=='coach.coach_home' %} active{% endif %}">
           <a class="nav-link" href="/logger">Logger</a>
         </li>
         <li class="nav-item{%if request.endpoint=='trampoline.social' %} active{% endif %}">
@@ -97,12 +98,28 @@
       </ul>
       <ul class="nav navbar-nav ml-auto mr-sm-3 user-nav">
         {% if user %}
+        <!-- Add a notification icon with an ID for easy access -->
+        <li class="nav-item position-relative">
+          <a class="nav-link" href="#">
+            <i class="fa fa-bell"></i> <!-- Use a bell icon or any other suitable icon -->
+            <span class="badge badge-danger badge-pill notification-badge">0</span>
+            <!-- Badge to show notification count -->
+          </a>
+          <div class="dropdown-menu dropdown-menu-right position-absolute notifications-dropdown">
+            <!-- Notification items will be added here -->
+          </div>
+        </li>
+
         <li class="nav-item dropdown ml-auto">
           <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown"
             aria-haspopup="true" aria-expanded="false">Hello {{ user }}!</a>
-          <div id="user-menu" class="dropdown-menu dropdown-menu-right position-absolute" aria-labelledby="navbarDropdownMenuLink">
+          <div id="user-menu" class="dropdown-menu dropdown-menu-right position-absolute"
+            aria-labelledby="navbarDropdownMenuLink">
             <a class="dropdown-item" href="/logger/user/{{user}}">User Profile</a>
             <a class="dropdown-item" href="/logger/user">Settings</a>
+            {% if is_admin %}
+            <a class="dropdown-item" href="/logger/admin">Admin</a>
+            {% endif %}
             <!--<a class="dropdown-item" href="/logger/user/statistics">User Statistics</a>-->
             <a class="dropdown-item" href="#" data-keepopenonclick>
               <div>
@@ -161,7 +178,11 @@
 
   {% block content %}{% endblock %}
 
-
+  <script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
+    crossorigin="anonymous"></script>
+  <script>
+    {% include 'trampoline/base.js' %}
+  </script>
   <script type="text/javascript">
     $("#close_error").click(function (e) {
       var errorText = document.getElementById("error");

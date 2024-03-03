@@ -133,7 +133,9 @@ def get_user(user):
         'dm_finals2': user[14],
         'levels': json.loads(user[15]),
         "coach_requests": json.loads(user[16]),
-        'details': json.loads(user[17])
+        'details': json.loads(user[17]),
+        'notifications': json.loads(user[18]),
+        'is_admin': user[19]
     }
 
 
@@ -459,7 +461,9 @@ def save_athlete(athlete):
             dm_finals1=' '.join(athlete.dm_finals1) if isinstance(athlete.dm_finals1, list) else athlete.dm_finals1,
             dm_finals2=' '.join(athlete.dm_finals2) if isinstance(athlete.dm_finals2, list) else athlete.dm_finals2,
             levels=json.dumps(athlete.levels),
-            details=json.dumps(athlete.details)
+            details=json.dumps(athlete.details),
+            notifications=json.dumps(athlete.notifications),
+            is_admin=athlete.is_admin
         )
         engine.execute(ins)
     else:
@@ -481,7 +485,9 @@ def save_athlete(athlete):
             dm_finals1=' '.join(athlete.dm_finals1) if isinstance(athlete.dm_finals1, list) else athlete.dm_finals1,
             dm_finals2=' '.join(athlete.dm_finals2) if isinstance(athlete.dm_finals2, list) else athlete.dm_finals2,
             levels=json.dumps(athlete.levels),
-            details=json.dumps(athlete.details)
+            details=json.dumps(athlete.details),
+            notifications=json.dumps(athlete.notifications),
+            is_admin=athlete.is_admin
         )
         engine.execute(update)
     
@@ -667,3 +673,25 @@ def delete_lesson_from_db(coach, title, date):
     table = sqlalchemy.Table("lessons", metadata, autoload=True, autoload_with=ENGINE)
     delete = table.delete().where(table.c.coach==coach).where(table.c.date==date).where(table.c.title==title)
     return ENGINE.execute(delete)
+
+
+def add_notification_to_db(title, message, user=None):
+    """
+    Adds a notification for every user or a particular user
+    """
+    engine = create_engine()
+    query = f"UPDATE users SET notifications = JSON_ARRAY_APPEND(notifications, '$', JSON_OBJECT('title', '{title}', 'message', '{message}', 'viewed', '0'));"
+    if user:
+        query = f"UPDATE users SET notifications = JSON_ARRAY_APPEND(notifications, '$', JSON_OBJECT('title', '{title}', 'message', '{message}', 'viewed', '0')) WHERE `user`='{user}';"
+    result = engine.execute(query)
+    print(f"Added notification: {result}")
+
+
+def clear_notifications(user):
+    """"
+    Clear the notifications for the user
+    """
+    engine = create_engine()
+    query = f"UPDATE users SET notifications = '[]' WHERE `user`='{user}';"
+    result = engine.execute(query)
+    print(f"Added notification: {result}")
