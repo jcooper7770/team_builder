@@ -125,6 +125,7 @@ PRESTIGE_SYSTEM = {
         *EVENTS
     ]
 }
+RATINGS = {"3": "😊", "2": "😐", "1": "😞", "0": ""}
 
 ENGINE = None
 DB_TABLE = None
@@ -558,6 +559,54 @@ class Practice:
         #delete_from_db(practice_date, user=CURRENT_USER, event=event)
         delete_from_db(practice_date, user=session.get('name'), event=event)
         return deleted
+
+    def convert_to_dict(self, rating=0):
+        """
+        Convert to dict so that it can be read from the html file
+        """
+        result = {'turns': []}
+        num_turns = self.get_num_turns()
+        title_date = self.date.strftime("%A %m/%d/%Y")
+        rating_date = self.date.strftime("%m-%d-%Y")
+        rating_string = RATINGS.get(str(rating), "")
+        share_date = self.date.strftime("%Y-%m-%d")
+        turn_num = 0
+        total_difficulty = 0
+        total_flips = 0
+        total_skills = 0
+        for turn in self.turns:
+            if turn.skills:
+                turn_num += 1
+            num_skills = len([skill for skill in turn.skills if skill.shorthand not in NON_SKILLS])
+            total_difficulty += turn.difficulty
+            total_flips += turn.total_flips
+            total_skills += num_skills
+            
+            turn_data = {
+                'skills': ' '.join(skill.shorthand for skill in turn.skills),
+                'note': turn.note,
+                'num_skills': num_skills,
+                'difficulty': f"{turn.difficulty:0.1f}",
+                'turn_flips': turn.total_flips,
+                'turn_num': turn_num,
+                # totals
+                'total_difficulty': f"{total_difficulty:0.1f}",
+                'total_flips': total_flips,
+                'total_skills': total_skills
+            }
+            result['turns'].append(turn_data)
+
+        result.update({
+            'title': f"{title_date} ({self.event}) ({num_turns} {'turn' if num_turns==1 else 'turns'})",
+            'tags': self.tags,
+            'rating': rating,
+            'rating_string': rating_string,
+            'date': share_date,
+            'total_difficulty': f"{total_difficulty:0.1f}",
+            'total_flips': total_flips,
+            'total_skills': total_skills
+        })
+        return result 
         
 
 class Skill:

@@ -6,6 +6,7 @@
 :root {
   /* bootstrap colors: https://www.bitdegree.org/learn/bootstrap-colors */
   --bootstrap-primary: #007bff;
+  --bootstrap-secondary: #9FA6B2;
   --boostrap-info: #17a2b8;
   --bootstrap-success: #28a745;
   --bootstrap-warning: #ffc107;
@@ -713,6 +714,46 @@ footer {
 }
 
 /* Practice tables */
+.practice-table {
+  margin-bottom: 20px;
+}
+.practice-header {
+  background: var(--bootstrap-dark);
+  color: white;
+  font-weight: bold;
+  padding: 10px;
+}
+.practice-turn {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  background-color: var(--bootstrap-light);
+}
+.practice-turn:nth-child(odd) {
+  background-color: var(--bootstrap-secondary);
+}
+.practice-turn .column {
+  border: 1px solid black;
+  padding: 5px 10px;
+}
+.practice-turn .turn-num {
+  width: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.practice-totals {
+  width: 100%;
+  border: 1px solid black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-block: 10px;
+}
+
+.practice-turn .turn-skills, .practice-turn .turn-note {
+  width: 100%;
+}
 div.practice-table.closed:has(.coach-practice-header) { /* coach practice tables have .coach-practice-header class */
   height: 70px;
 }

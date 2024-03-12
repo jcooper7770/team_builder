@@ -198,6 +198,7 @@ def trampoline_log():
     all_turns = []
     all_ratings = get_ratings(session.get('name'))
     print(all_ratings)
+    practice_data = []
     for practice in user_practices:
         # Add the turns into a table for that practice
         title_date = practice.date.strftime("%A %m/%d/%Y")
@@ -210,6 +211,7 @@ def trampoline_log():
         practice_tables.append(practice_table)
         for turn in practice.turns:
             all_turns.append([skill.shorthand for skill in turn.skills])
+        practice_data.append(practice.convert_to_dict(practice_rating))
 
     all_practice_tables = "".join(practice_tables)
     
@@ -317,7 +319,9 @@ def trampoline_log():
         lesson_plans=lesson_plans,
         athlete_dict=user['details'].get('personal_dict', {}),
         challenges=challenges,
-        next_sunday=next_sunday
+        next_sunday=next_sunday,
+        practice_data=practice_data,
+        expand_comments=user.get("expand_comments", False)
     )
 
 
