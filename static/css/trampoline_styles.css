@@ -13,6 +13,7 @@
   --boostrap-danger: #dc3545;
   --bootstrap-light: #f8f9fa;
   --bootstrap-dark: #343a40;
+  --bootstrap-table-dark: #212529;
 }
 
 body {
@@ -732,8 +733,17 @@ footer {
 .practice-turn:nth-child(odd) {
   background-color: var(--bootstrap-secondary);
 }
+
+/* Dark mode for the table rows */
+.practice-table:has(.practice-table-inner .practice-header.dark-mode-color) .practice-table-inner .practice-body .practice-turn {
+  background: var(--bootstrap-dark);
+}
+.practice-table:has(.practice-table-inner .practice-header.dark-mode-color) .practice-table-inner .practice-body .practice-turn:nth-child(odd) {
+  background: var(--bootstrap-table-dark);
+}
+
 .practice-turn .column {
-  border: 1px solid black;
+  /*border: 1px solid black;*/
   padding: 5px 10px;
 }
 .practice-turn .turn-num {
@@ -741,6 +751,7 @@ footer {
   display: flex;
   justify-content: center;
   align-items: center;
+  border-right: 1px solid black;
 }
 .practice-totals {
   width: 100%;
@@ -760,7 +771,13 @@ div.practice-table.closed:has(.coach-practice-header) { /* coach practice tables
 div.practice-table.closed {
   height: 100px;
 }
-div.practice-table {
+div.practice-body {
+  transition: all 0.3s ease;
+}
+/*div.practice-body.closed {
+  height: 20px;
+}*/
+div.practice-table, div.practice-table-outer {
   overflow: hidden;
   transition: height 0.3s ease;
   position: relative;
@@ -771,11 +788,12 @@ div.practice-table {
   width: 100%;
 }
 
-div.practice-table:has(.coach-practice-header) > .table-open-btn {
+div.practice-table:has(.coach-practice-header) > .table-open-btn,
+div.practice-table:has(.coach-practice-header) > .div-open-btn {
   top: 70px;
 }
 
-.table-open-btn {
+.table-open-btn, .div-open-btn {
   position: absolute;
   transform: translate(-50%, -100%);
   left: 50%;
@@ -783,6 +801,7 @@ div.practice-table:has(.coach-practice-header) > .table-open-btn {
   border-radius: 50%;
   width: 30px;
   background: lightblue;
+  z-index: 2;
 }
 
 #expand-practices-btn {

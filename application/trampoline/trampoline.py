@@ -570,6 +570,7 @@ class Practice:
         rating_date = self.date.strftime("%m-%d-%Y")
         rating_string = RATINGS.get(str(rating), "")
         share_date = self.date.strftime("%Y-%m-%d")
+        post_date = self.date.strftime("%m-%d-%Y")
         turn_num = 0
         total_difficulty = 0
         total_flips = 0
@@ -602,9 +603,11 @@ class Practice:
             'rating': rating,
             'rating_string': rating_string,
             'date': share_date,
+            'post_date': post_date,
             'total_difficulty': f"{total_difficulty:0.1f}",
             'total_flips': total_flips,
-            'total_skills': total_skills
+            'total_skills': total_skills,
+            'event': self.event
         })
         return result 
         

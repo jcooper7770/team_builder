@@ -223,6 +223,9 @@ def trampoline_log():
         all_practice_tables,
         "</div>"
     ]
+    html = [
+        all_practice_tables
+    ]
     body = "".join(html) if all_practice_tables else ""
     logging.info(f"error: {session.get('error', '')}")
 

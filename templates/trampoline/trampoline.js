@@ -208,7 +208,7 @@ const changePage = function() {
     practices_page.innerHTML = "";
     for(element of paginated_practices[curr_page-1]){
         practices_page.append(element);
-        if (element.firstChild.style.display != "none") {
+        if (element.firstElementChild.style.display != "none") {
             practices_page.append(document.createElement("br"));
             practices_page.append(document.createElement("br"));
         }
@@ -712,8 +712,8 @@ function handleRatingSelection(option) {
   // Perform any desired action with the selected rating
   console.log('Selected rating:', selectedRating);
   //option.parentNode.parentNode.parentNode.firstChild.textContent = selectedRating;
-  option.parentNode.parentNode.parentNode.parentNode.firstChild.firstChild.textContent = selectedRating;
-  option.parentNode.parentNode.parentNode.parentNode.firstChild.firstChild.setAttribute("name", rating);
+  option.parentNode.parentNode.parentNode.parentNode.firstElementChild.firstElementChild.textContent = selectedRating;
+  option.parentNode.parentNode.parentNode.parentNode.firstElementChild.firstElementChild.setAttribute("name", rating);
   //option.parentNode.parentNode.parentNode.firstChild.setAttribute("name", rating);
 
   var practice_name = option.parentNode.parentNode.parentNode.parentNode.parentNode.getAttribute("name")
@@ -1189,6 +1189,25 @@ $('[class^="table-open-btn"]').click(function(e) {
         button.childNodes[0].classList = "fa fa-chevron-up";
     } else {
         tableDiv.style.height = '';
+        button.childNodes[0].classList = "fa fa-chevron-down";
+    }
+    tableDiv.classList.toggle("closed");
+
+});
+
+$('[class^="div-open-btn"]').click(function(e) {
+    const button = e.target.closest("button.div-open-btn");
+    //const table = button.previousElementSibling;
+    //const tableDiv = button.previousElementSibling;
+
+    const table = button.nextElementSibling.children[1];
+    const tableHeader = button.nextElementSibling.children[0];
+    const tableDiv = table.parentNode.parentNode;
+    if (tableDiv.classList.contains('closed')) {
+        tableDiv.style.height = tableHeader.offsetHeight + table.offsetHeight + 'px';
+        button.childNodes[0].classList = "fa fa-chevron-up";
+    } else {
+        tableDiv.style.height = '100px';
         button.childNodes[0].classList = "fa fa-chevron-down";
     }
     tableDiv.classList.toggle("closed");
