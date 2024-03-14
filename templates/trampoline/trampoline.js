@@ -139,7 +139,7 @@ const repaginate = function() {
     for(page=0; page < paginated_practices.length; page++){
         for (element of paginated_practices[page]) {
             paginatedPage.push(element);
-            if (element.firstChild.style.display != "none") {
+            if (element.style.display != "none") {
                 numCurrentPage++;
             }
 
@@ -165,7 +165,7 @@ const repaginate = function() {
     //console.log(paginated_practices);
     for(element of paginated_practices[curr_page-1]){
         practices_page.append(element);
-        if (element.firstChild.style.display != "none") {
+        if (element.style.display != "none") {
             practices_page.append(document.createElement("br"));
             practices_page.append(document.createElement("br"));
         }
@@ -553,9 +553,13 @@ $("[id^=edit_]").click(function (e) {
 
         // Add practice as turns
         var turns = [];
-        const rows = event.target.closest(".table").children[1].children;
+        console.log(event.target.closest(".table-practice-inner"));
+        const rows = event.target.closest(".practice-table-inner").children[1].children;
         for (var row of rows ) {
             var turn = ""
+            if (row.classList.contains("practice-totals")) {
+                continue;
+            }
             if (row.children.length > 1) {
                 // Accommodate for the red Xs in the turn
                 var currentTurn = "";
@@ -567,7 +571,7 @@ $("[id^=edit_]").click(function (e) {
                     if (textNodes[i].tagName == "SPAN") {
                         currentTurn = currentTurn.concat(textNodes[i].textContent);
                     } else {
-                        currentTurn = currentTurn.concat(textNodes[i].textContent);
+                        currentTurn = currentTurn.concat(textNodes[i].textContent.trim());
                     }
                 }
                 console.log(currentTurn);
@@ -596,7 +600,7 @@ $("[id^=edit_]").click(function (e) {
         // Set tags
         var tagList = [];
         //const tags = event.target.closest('th').children[1].children;
-        const tags = event.target.closest('th').children[0].children[2].children;
+        const tags = event.target.closest('.athlete-practice-header').children[0].children[2].children;
         for(var tag of tags) {
             tagList.push(tag.textContent)
         }
@@ -680,10 +684,13 @@ function addPostToTableHeader(header) {
 //const tableHeaders = document.querySelectorAll('#practice-header');
 const tableHeaders = document.querySelectorAll('.practice-header-bottom');
 tableHeaders.forEach(function (header) {
+
+  {% if request.endpoint != "coach.coach_home" %}
   addDropdownToTableHeader(header);
 
   // add post option also
   addPostToTableHeader(header);
+  {% endif %}
 });
 
 // Event delegation for dynamically added rating options

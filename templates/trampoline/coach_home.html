@@ -163,14 +163,15 @@
       for (let j = 0; j < page.length; j++) {
         var container = page[j];
         var table = container.children[0];
+        var table = page[j];
 
         // re-display the table incase it was hidden
         table.style.display = "";
         if (selected.length == 0) {
           continue
         }
-        var thead = table.children[0];
-        var title = thead.children[0].children[0].children[0].innerHTML;
+        var thead = table.children[1].children[0];
+        var title = thead.children[0].children[0].innerText;
         var includes = false;
         for (ath of selected) {
           if (title.includes(ath)) {

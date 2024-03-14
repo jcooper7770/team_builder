@@ -560,7 +560,7 @@ class Practice:
         delete_from_db(practice_date, user=session.get('name'), event=event)
         return deleted
 
-    def convert_to_dict(self, rating=0):
+    def convert_to_dict(self, rating=0, name=None):
         """
         Convert to dict so that it can be read from the html file
         """
@@ -597,8 +597,12 @@ class Practice:
             }
             result['turns'].append(turn_data)
 
+        
+        title = f"{title_date} ({self.event}) ({num_turns} {'turn' if num_turns==1 else 'turns'})"
+        if name:
+            title = f"({name}) {title}"
         result.update({
-            'title': f"{title_date} ({self.event}) ({num_turns} {'turn' if num_turns==1 else 'turns'})",
+            'title': title,
             'tags': self.tags,
             'rating': rating,
             'rating_string': rating_string,
@@ -607,7 +611,9 @@ class Practice:
             'total_difficulty': f"{total_difficulty:0.1f}",
             'total_flips': total_flips,
             'total_skills': total_skills,
-            'event': self.event
+            'event': self.event,
+            'name': name,
+            'type': 'athlete' if not name else 'coach'
         })
         return result 
         

@@ -46,6 +46,10 @@
       border-radius: 10px;
     }
 
+    nav.navbar.top-navbar {
+      z-index: 1000;
+    }
+
     /* @import url("templates/background.css");*/
   </style>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/background.css')}}" type="text/css" />
@@ -65,10 +69,10 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/trampoline_styles.css')}}" type="text/css" />
 </head>
 
-<body style="background-color:#E5E4E2;">
+<body style="background-color:#E5E4E2;" class="light-mode">
 
   <!-- Grey navbar with black text -->
-  <nav class="navbar navbar-expand-sm bg-dark navbar-dark sticky color-changing">
+  <nav class="navbar navbar-expand-sm bg-dark navbar-dark sticky color-changing top-navbar">
     <!-- Add the Font Awesome button for mobile view -->
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
       aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -215,6 +219,7 @@
     const colorChangingElements = document.getElementsByClassName("color-changing");
     //const primaryButtons = document.getElementsByClassName("btn btn-primary");
     function setDarkMode(elements, bgElement) {
+      document.body.classList = "dark-mode";
       const darkHeaderColor = "#2D3250"
       for (e of elements) {
         e.classList.add("dark-mode-color");
@@ -266,6 +271,7 @@
       document.querySelector("body").style.color = "#FFFFFF";
     }
     function setLightMode(elements, background) {
+      document.body.classList = "light-mode";
       background.style.background = "#E5E4E2";
       document.querySelector("body").style.color = "";
 

@@ -35,6 +35,7 @@ def coach_home():
     # sort all practices to show them in order
     practices.sort(key=lambda p: p['practice'].date, reverse=True)
 
+    practice_data = []
     for practice in practices:
         # Add the turns into a table for that practice
         title_date = practice['practice'].date.strftime("%A %m/%d/%Y")
@@ -42,6 +43,10 @@ def coach_home():
         print(practice["practice"].__dict__)
         practice_table = skills_table(practice['practice'].turns, title=title, expand_comments=False, tags=practice['practice'].tags)
         practice_tables.append(practice_table)
+        
+        practice_data.append(
+            practice['practice'].convert_to_dict(rating=None, name=practice['athlete'])
+        )
 
     all_practice_tables = "".join(practice_tables)
 
@@ -74,7 +79,8 @@ def coach_home():
         all_skills=ALL_SKILLS,
         users=users,
         lesson_plans=lesson_plans,
-        athlete_dict={}
+        athlete_dict={},
+        practice_data=practice_data
     )
 
 @coach_bp.route("/logger/coach/settings", methods=["GET", "POST"])

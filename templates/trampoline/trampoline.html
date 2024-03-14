@@ -456,46 +456,45 @@
         <div class="practice-table closed">
           <button class="div-open-btn"><i class="fa fa-chevron-up" aria-hidden="true"></i></button>
           <div class="practice-table-inner" name="{{practice.post_date}}_{{practice.event}}">
-            <div class="practice-header color-changing" id="practice-header">
-              <div class="practice-header-top">
-                <span id="practice-rating" name="{{practice.rating}}">{{practice.rating_string}}</span>{{practice.title}}
-              </div>
-              <div class="practice-header-bottom">
-                <button type="button" class="btn float-right delete-btn" id="delete-button">
-                  <a title="remove day" href="#">
-                    <span id="remove_{{practice.post_date}}_{{practice.event}}" class="fa fa-remove"
-                      aria-hidden="true"></span>
-                  </a>
-                </button>
-                <a href='/logger/_current_/practices?start={{practice.date}}&end={{practice.date}}'
-                  class='float-right btn btn-primary' target='_blank' title='share practice'>Share</a>
-              </div>
-              <div class="practice-tags">
-                {% for tag in practice.tags %}
-                {% if tag %}
-                <div class="practice-tag">{{tag}}</div>
-                {% endif %}
-                {% endfor %}
+            <div class="athlete-practice-header practice-header" id="practice-header">
+              <div>
+                <div class="practice-header-top">
+                  <span id="practice-rating" name="{{practice.rating}}">{{practice.rating_string}}</span>{{practice.title}}
+                </div>
+                <div class="practice-header-bottom">
+                  {% if practice.type == "athlete" %}
+                  <button type="button" class="btn float-right delete-btn" id="delete-button">
+                    <a title="remove day" href="#">
+                      <span id="remove_{{practice.post_date}}_{{practice.event}}" class="fa fa-remove" aria-hidden="true"></span>
+                    </a>
+                  </button>
+                  <button type="button" class="btn float-right edit-btn">
+                    <a title="edit day" href="#">
+                      <span id="edit_{{practice.post_date}}_{{practice.event}}" class="fa fa-pencil-square-o"
+                        aria-hidden="true"></span>
+                    </a>
+                  </button>
+                  <a href='/logger/_current_/practices?start={{practice.date}}&end={{practice.date}}'
+                    class='float-right btn btn-primary' target='_blank' title='share practice'>Share</a>
+                  {% endif %}
+                </div>
+                <div class="practice-tags">
+                  {% for tag in practice.tags %}
+                  {% if tag %}
+                  <div class="practice-tag">{{tag}}</div>
+                  {% endif %}
+                  {% endfor %}
+                </div>
               </div>
             </div>
             <div class="practice-body">
-              {% for turn in practice.turns %}
+              {%- for turn in practice.turns -%}
               <div class="practice-turn">
-                {% if turn.note and turn.skills == "" %}
+                {%- if turn.note and turn.skills == "" -%}
                 <div class="turn-note column"><i class="fa fa-comments"></i> {{turn.note}}</div>
-                {% else %}
+                {%- else -%}
                 <div class="turn-num column"><b><a href="#" id="copy-text" title="copy turn">{{turn.turn_num}}</a></b></div>
-                <div class="turn-skills column">
-                  <i class="expand-turn fa fa-plus"></i>
-                  {{turn.skills}}
-                  {% if turn.note %}
-                  <i class="fa fa-comments" title="toggle comment" id="unhide-note"></i>
-                  {% if expand_comments %}
-                  <span id="hidden-note" style="display: inline"><br>{{turn.note}}</span>
-                  {% else %}
-                  <span id="hidden-note" style="display: none"><br>{{turn.note}}</span>
-                  {% endif %}
-                  {% endif %}
+                <div class="turn-skills column"><i class="expand-turn fa fa-plus"></i>{{ turn.skills }}{%- if turn.note -%}<i class="fa fa-comments" title="toggle comment" id="unhide-note"></i>{%- if expand_comments -%}<span id="hidden-note" style="display: inline"><br>{{turn.note}}</span>{%- else -%}<span id="hidden-note" style="display: none"><br>{{turn.note}}</span>{%- endif -%}{%- endif -%}
                   <br>
                   <div style="display: none;">
                     <u><b>Turn:</b></u> <b>Skills:</b> {{turn.num_skills}} - <b>Flips:</b> {{turn.turn_flips}} - <b>DD:</b>
@@ -506,9 +505,9 @@
                     {{turn.total_difficulty}}
                   </div>
                 </div>
-                {% endif %}
+                {%- endif -%}
               </div>
-              {% endfor %}
+              {%- endfor -%}
               <div class="practice-totals practice-turn">
                 <b>Skills:</b> {{practice.total_skills}} - <b>&nbsp;Flips:</b> {{practice.total_flips}} - <b>&nbsp;DD:</b>
                 {{practice.total_difficulty}}
@@ -517,7 +516,7 @@
           </div>
         </div>
         {% endfor %}
-        {{body|safe}}
+        <!--{{body|safe}}-->
       </div>
     </div>
     <br>

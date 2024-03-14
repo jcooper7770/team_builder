@@ -734,12 +734,28 @@ footer {
   background-color: var(--bootstrap-secondary);
 }
 
+/* Light mode for table rows */
+body.light-mode .practice-turn {
+  background-color: var(--bootstrap-light);
+}
+body.light-mode .practice-turn:nth-child(odd) {
+  background-color: var(--bootstrap-secondary);
+}
+
 /* Dark mode for the table rows */
+/*
 .practice-table:has(.practice-table-inner .practice-header.dark-mode-color) .practice-table-inner .practice-body .practice-turn {
   background: var(--bootstrap-dark);
 }
 .practice-table:has(.practice-table-inner .practice-header.dark-mode-color) .practice-table-inner .practice-body .practice-turn:nth-child(odd) {
   background: var(--bootstrap-table-dark);
+}
+*/
+body.dark-mode .practice-turn {
+  background-color: var(--bootstrap-dark);
+}
+body.dark-mode .practice-turn:nth-child(odd) {
+  background-color: var(--bootstrap-table-dark);
 }
 
 .practice-turn .column {

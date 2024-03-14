@@ -406,7 +406,7 @@ class TableMaker:
             f"align='{self.align}'",
             #f"style='background-color:{self.bgcolor};'",
             #'class="table table-striped table-responsive-lg table-light color-changing"' # removing table-responsive-lg because it was formatting table strangely
-            'class="table table-striped table-light color-changing"'
+            'class="table table-striped table-light color-changing practice-table-inner"'
         ]
         if self.width:
             options.append(f"width='{self.width}'")
