@@ -752,14 +752,15 @@ $("[id^=search-rating]").click(function(e) {
         for (let j=0; j<page.length; j++) {
             var container = page[j];
             var table = container.children[0];
+            var table = page[j];
 
             // re-display the table incase it was hidden
             table.style.display = "";
             if (rating == "0") {
                 continue
             }
-            var thead = table.children[0];
-            var table_rating_element = thead.children[0].children[0].firstChild.firstChild.firstChild;
+            var thead = table.children[1].children[0];
+            var table_rating_element = thead.children[0].children[0].firstElementChild;
             const table_rating = table_rating_element.getAttribute("name");
             if (table_rating != rating) {
                 table.style.display = "none";
