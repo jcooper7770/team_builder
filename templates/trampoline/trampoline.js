@@ -873,14 +873,15 @@ $("[id^=search-tag]").click(function(e) {
         for (let j=0; j<page.length; j++) {
             var container = page[j];
             var table = container.children[0];
+            var table = page[j];
 
             // re-display the table incase it was hidden
             table.style.display = "";
             if (tag == "Reset") {
                 continue
             }
-            var thead = table.children[0];
-            var table_tag_elements = thead.children[0].children[0].children[1];
+            var thead = table.children[1].children[0];
+            var table_tag_elements = thead.children[0].children[2]
             const table_tags = table_tag_elements.textContent;
             if (!table_tags.includes(tag)) {
                 table.style.display = "none";
