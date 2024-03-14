@@ -715,6 +715,27 @@ footer {
 }
 
 /* Practice tables */
+#practices_page {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+}
+#practices_page .practice-table {
+  width: 45%;
+}
+@media screen and (max-width: 650px) {
+  #practices_page .practice-table {
+    width: 100%;
+  }
+}
+@media screen and (min-width: 1200px) {
+  #practices_page .practice-table {
+    width: 30%;
+  }
+}
+
 .practice-table {
   margin-bottom: 20px;
 }

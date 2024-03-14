@@ -73,8 +73,8 @@ const paginate = function() {
             chevron.classList = "fa fa-chevron-up";
         }
         practices_page.append(element);
-        practices_page.append(document.createElement("br"));
-        practices_page.append(document.createElement("br"));
+        //practices_page.append(document.createElement("br"));
+        //practices_page.append(document.createElement("br"));
     }
     practices_div.append(practices_page);
 
