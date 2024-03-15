@@ -737,13 +737,16 @@ footer {
 }
 
 .practice-table {
-  margin-bottom: 20px;
+  margin-bottom: 0px;
+  filter: drop-shadow(5px 5px 10px #000)
 }
 .practice-header {
   background: var(--bootstrap-dark);
   color: white;
   font-weight: bold;
   padding: 10px;
+  /* curve the top of the tables */
+  border-radius: 15px 15px 0px 0px;
 }
 .practice-turn {
   display: flex;
@@ -753,6 +756,10 @@ footer {
 }
 .practice-turn:nth-child(odd) {
   background-color: var(--bootstrap-secondary);
+}
+.practice-turn:last-child {
+  /* curve the bottom of the tables */
+  border-radius: 0px 0px 15px 15px;
 }
 
 /* Light mode for table rows */
@@ -888,4 +895,11 @@ div.practice-table:has(.coach-practice-header) > .div-open-btn {
 .challenge p,
 #challenges_body p {
   display: inline;
+}
+
+/* coach */
+
+body.dark-mode #shown_athletes,
+body.dark-mode #hidden_athletes {
+  background-color: #424769;
 }

@@ -166,8 +166,8 @@ const repaginate = function() {
     for(element of paginated_practices[curr_page-1]){
         practices_page.append(element);
         if (element.style.display != "none") {
-            practices_page.append(document.createElement("br"));
-            practices_page.append(document.createElement("br"));
+            //practices_page.append(document.createElement("br"));
+            //practices_page.append(document.createElement("br"));
         }
     }
     var practices_div = document.getElementById("practices");
@@ -209,8 +209,9 @@ const changePage = function() {
     for(element of paginated_practices[curr_page-1]){
         practices_page.append(element);
         if (element.firstElementChild.style.display != "none") {
-            practices_page.append(document.createElement("br"));
-            practices_page.append(document.createElement("br"));
+            // this is handled now by the CSS gap property
+            //practices_page.append(document.createElement("br"));
+            //practices_page.append(document.createElement("br"));
         }
     }
 }
