@@ -862,6 +862,73 @@ $("[id^=new-turn-button]").click(function(e) {
     clearRecs();
 });
 
+function displayEvent(event_name, display) {
+    for(let i=0; i<paginated_practices.length; i++) {
+        var page = paginated_practices[i];
+        for (let j=0; j<page.length; j++) {
+            var container = page[j];
+            var table = container.children[0];
+            var table = page[j];
+
+            // re-display the table incase it was hidden
+            //table.style.display = "";
+
+            var table_header = table.children[1].children[0].children[0].children[0].textContent;
+            if (display) {
+                if (table_header.includes(`(${event_name})`)) {
+                    table.style.display = "";
+                }
+            } else {
+                if (table_header.includes(`(${event_name})`)) {
+                    table.style.display = "none";
+                }
+            }
+        }
+    }
+
+}
+
+$("[id^=search-event]").click(function(e) {
+    e.target.classList.toggle("selected");
+    if (e.target.classList.contains("selected")) {
+        e.target.style.background = "blue";
+    } else {
+        e.target.style.background = "";
+    }
+
+    // get all selected events
+    var selected_events = document.querySelectorAll(".search-event-btn.selected");
+    console.log(selected_events);
+
+    // show all tables if none chosen
+    if (selected_events.length == 0) {
+        for(let i=0; i<paginated_practices.length; i++) {
+            var page = paginated_practices[i];
+            for (let j=0; j<page.length; j++) {
+                page[j].style.display = "";
+            }
+        }
+        repaginate();
+        return
+    }
+
+    // hide all tables
+    for(let i=0; i<paginated_practices.length; i++) {
+        var page = paginated_practices[i];
+        for (let j=0; j<page.length; j++) {
+            page[j].style.display = "none";
+        }
+    }
+    
+    for(var event_btn of selected_events) {
+        var event_name = event_btn.id.split("-")[2];
+        console.log(`Showing ${event_name}`);
+        displayEvent(event_name, true);
+        
+    }
+    repaginate();
+});
+
 $("[id^=search-tag]").click(function(e) {
     document.querySelectorAll("[id^=search-tag]").forEach(x => {
         x.style.background = "";
