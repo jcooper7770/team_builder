@@ -427,22 +427,24 @@
                 <button class="btn btn-secondary" type="button" id="search-practice">Search Practice</button>
               </form>
             </li>
-            <li class="nav-item text-white">Rating:
-              <button id="search-rating-3" class="btn btn-info">😊</button>
-              <button id="search-rating-2" class="btn btn-info">😐</button>
-              <button id="search-rating-1" class="btn btn-info">😞</button>
-              <button id="search-rating-0" class="btn btn-info">Reset</button>
-            </li>
-            <li class="nav-item text-white">Tags:
-              {% for tag in tags %}
-              <button id="search-tag" class="btn btn-info">{{tag}}</button>
-              {% endfor %}
-              <button id="search-tag" class="btn btn-info">Reset</button>
-            </li>
-            <li class="nav-item text-white">Events:
-              <button id="search-event-trampoline" class="btn btn-info search-event-btn">Trampoline</button>
-              <button id="search-event-dmt" class="btn btn-info search-event-btn">Double Mini</button>
-              <button id="search-event-tumbling" class="btn btn-info search-event-btn">Tumbling</button>
+            <li class="nav-item">
+              <ul class="filter-btns">
+                <li>Rating:
+                  <button id="search-rating-3" class="btn btn-info search-rating-btn">😊</button>
+                  <button id="search-rating-2" class="btn btn-info search-rating-btn">😐</button>
+                  <button id="search-rating-1" class="btn btn-info search-rating-btn">😞</button>
+                </li>
+                <li>Tags:
+                  {% for tag in tags %}
+                  <button id="search-tag" class="btn btn-info search-tag-btn">{{tag}}</button>
+                  {% endfor %}
+                </li>
+                <li>Events:
+                  <button id="search-event-trampoline" class="btn btn-info search-event-btn">Trampoline</button>
+                  <button id="search-event-dmt" class="btn btn-info search-event-btn">Double Mini</button>
+                  <button id="search-event-tumbling" class="btn btn-info search-event-btn">Tumbling</button>
+                </li>
+              </ul>
             </li>
           </ul>
           <!-- Links -->

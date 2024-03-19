@@ -739,13 +739,33 @@ function handleRatingSelection(option) {
 
 }
 
+function showAllTables() {
+    for(let i=0; i<paginated_practices.length; i++) {
+        var page = paginated_practices[i];
+        for (let j=0; j<page.length; j++) {
+            page[j].style.display = "";
+        }
+    }
+    repaginate();
+}
+
 $("[id^=search-rating]").click(function(e) {
-    // remove all backgrounds of search buttons
-    document.querySelectorAll("[id^=search-rating]").forEach(x => {
-        x.style.background = "";
-    });
-    const rating = e.target.id.slice(-1);
-    e.target.style.background = "blue";
+    e.target.classList.toggle("selected");
+
+    if (e.target.classList.contains("selected")) {
+        e.target.style.background = "blue";
+    } else {
+        e.target.style.background = "";
+    }
+
+
+    var selected_ratings = document.querySelectorAll(".search-rating-btn.selected");
+    // If none selected then show all
+    if (selected_ratings.length == 0) {
+        showAllTables();
+        return;        
+    }
+
     showSpinner("Searching by rating...");
 
     for(let i=0; i<paginated_practices.length; i++) {
@@ -755,20 +775,22 @@ $("[id^=search-rating]").click(function(e) {
             var table = container.children[0];
             var table = page[j];
 
-            // re-display the table incase it was hidden
-            table.style.display = "";
-            if (rating == "0") {
-                continue
-            }
+            // start by hiding all tables
+            table.style.display = "none";
+
             var thead = table.children[1].children[0];
             var table_rating_element = thead.children[0].children[0].firstElementChild;
             const table_rating = table_rating_element.getAttribute("name");
-            if (table_rating != rating) {
-                table.style.display = "none";
+            for(var rating_element of selected_ratings) {
+                var rating = rating_element.id.slice(-1);
+                if (table_rating == rating) {
+                    table.style.display = "";
+                }
             }
 
         }
     }
+    repaginate();
     document.querySelector('.spinner-container').style.display = "none";
 
 });
@@ -902,12 +924,7 @@ $("[id^=search-event]").click(function(e) {
 
     // show all tables if none chosen
     if (selected_events.length == 0) {
-        for(let i=0; i<paginated_practices.length; i++) {
-            var page = paginated_practices[i];
-            for (let j=0; j<page.length; j++) {
-                page[j].style.display = "";
-            }
-        }
+        showAllTables();
         repaginate();
         return
     }
@@ -930,12 +947,22 @@ $("[id^=search-event]").click(function(e) {
 });
 
 $("[id^=search-tag]").click(function(e) {
-    document.querySelectorAll("[id^=search-tag]").forEach(x => {
-        x.style.background = "";
-    });
-    const tag = e.target.textContent;
-    e.target.style.background = "blue";
+    e.target.classList.toggle("selected");
+    if (e.target.classList.contains("selected")) {
+        e.target.style.background = "blue";
+    } else {
+        e.target.style.background = "";
+    }
+    var selected_tags = document.querySelectorAll(".search-tag-btn.selected");
+    console.log(selected_tags);
+    // If none selected then select all
+    if (selected_tags.length == 0) {
+        showAllTables();
+        repaginate();
+        return
+    }
     showSpinner("Searching by tag...");
+   
 
     for(let i=0; i<paginated_practices.length; i++) {
         var page = paginated_practices[i];
@@ -944,20 +971,25 @@ $("[id^=search-tag]").click(function(e) {
             var table = container.children[0];
             var table = page[j];
 
-            // re-display the table incase it was hidden
-            table.style.display = "";
-            if (tag == "Reset") {
-                continue
-            }
+            // start by hiding tables
+            table.style.display = "none";
+
             var thead = table.children[1].children[0];
             var table_tag_elements = thead.children[0].children[2]
             const table_tags = table_tag_elements.textContent;
-            if (!table_tags.includes(tag)) {
-                table.style.display = "none";
+
+            // and only show the table if its highlighted
+            console.log(table_tags);
+            for(var tag_element of selected_tags) {
+                var tag = tag_element.textContent;
+                if(table_tags.includes(tag)) {
+                    table.style.display = "";
+                }
             }
 
         }
     }
+    repaginate();
     document.querySelector('.spinner-container').style.display = "none";
 
 });

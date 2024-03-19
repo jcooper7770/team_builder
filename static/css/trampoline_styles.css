@@ -903,3 +903,20 @@ body.dark-mode #shown_athletes,
 body.dark-mode #hidden_athletes {
   background-color: #424769;
 }
+
+/* Table filters */
+ul.filter-btns {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  list-style-type: none;
+  color: white;
+}
+@media screen and (max-width: 500px) {
+  .search-event-btn, .search-tag-btn {
+    font-size: 12px;
+  }
+  ul.filter-btns {
+    flex-direction: column;
+  }
+}
