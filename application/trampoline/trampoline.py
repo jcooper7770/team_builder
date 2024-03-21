@@ -71,6 +71,7 @@ SKILLS = [
     "12101", "12103",
     "12200", "12222"
 ]
+TUMBLING_SKILLS = ["f", "(", "^"]
 
 # TODO: Add common and uncommon skill separators
 # TODO: Or split up front and back skills
@@ -1062,8 +1063,8 @@ def convert_form_data(form_data, logger=print, event=EVENT, notes=None, get_athl
     # Split by spaces for each skill
     #turns = form_data.split('\r\n')
     turns = form_data.splitlines()
-    inner_regex = "|".join(["\d+[o</]+"] + NON_SKILLS)
-    inner_regex = inner_regex.replace('.', '\.')
+    inner_regex = "|".join(["\d+[o</]+"] + NON_SKILLS + TUMBLING_SKILLS)
+    inner_regex = inner_regex.replace('.', '\.').replace('(', "\(")
     regex = f"({inner_regex})"
     #print(inner_regex, regex)
     turn_skills = [
