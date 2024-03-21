@@ -165,7 +165,36 @@
 
               <!-- Skills to be logged -->
               <div class="form-row" id="row-skill">
-                <div class="col-sm-3">Skills:<br><a href="/logger/about" class="btn btn-light" style="border: 1px solid; border-radius: 10px;">Click here for help</a></div>
+                <!--<div class="col-sm-3">Skills:<br><a href="/logger/about" class="btn btn-light" style="border: 1px solid; border-radius: 10px;">Click here for help</a></div>-->
+                <div class="col-sm-3">Skills:<br><button class="btn btn-light" id="help-btn" style="border: 1px solid; border-radius: 10px;" type="button">Click here for help</button></div>
+
+                <!-- Help modal -->
+                <div class="modal" id="instructionModal">
+                  <div class="modal-dialog">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <h5 class="modal-title">Input Data Instructions</h5>
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                      </div>
+                      <div class="modal-body">
+                        <!-- Add your instructions here -->
+                        <p>Here are some tips on how to input data:</p>
+                        <ul style="list-style-position: inside; padding-left: 10px;">
+                          <li>Use shorthand when inputting the skills</li>
+                          <li>Input multiple skills in a turn by separating the skills by spaces. i.e. "<i>12001< 811<</i>"</li>
+                          <li>Input multiple turns by putting each turn on a new line OR clicking the + button.</li>
+                          <li>Add comments to turns by adding a new line after the turn and starting the comment with "- " or "# ".</li>
+                          <li>Add personalized shortcuts on your <a href="/logger/user">user settings</a></li>
+                        </ul>
+                        <p>For more help, visit the <a href="/logger/about">About Page</a>.</p>
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 <div class="col color-changing" id="col-skill" style="padding-bottom: 40px;">
                   <!-- Full Screen Button -->
                   <button type="button" id="fullScreenBtn" class="btn btn-light">Toggle Full Screen</button>
@@ -677,8 +706,15 @@
 </div>
 </div>
 
-<script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
-  crossorigin="anonymous"></script>
+<!--<script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
+  crossorigin="anonymous"></script>-->
+
+<script>
+/* Help button pop-up */
+document.getElementById('help-btn').addEventListener('click', function() {
+    $('#instructionModal').modal('show');
+});
+</script>
 
 {% block javascript %}
 {% endblock %}
