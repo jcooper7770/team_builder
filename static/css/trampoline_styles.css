@@ -16,6 +16,11 @@
   --bootstrap-table-dark: #212529;
   --dark-mode-btn: #F6B17A;
   --dark-mode-div: rgb(112, 119, 161);
+  /* Light theme from https://www.heavy.ai/blog/12-color-palettes-for-telling-better-stories-with-your-data */
+  --table-header: #1984c5;
+  --table-row1: #a7d5ed;
+  --table-row2: #e2e2e2;
+  --table-btns: #e1a692;
 }
 
 body {
@@ -235,6 +240,15 @@ body {
 }
 .feature-title {
   text-align: center;
+}
+
+/* Leaderboards */
+#leaderboard table thead {
+  background-color: var(--table-header);
+  color: var(--table-row2);
+}
+body.dark-mode #leaderboard table thead {
+  background-color: var(--bootstrap-dark);
 }
 
 /* Whats new */
@@ -564,7 +578,13 @@ body.dark .tag-box.selected {
   position: fixed;
   width: 100%;
   z-index: 1030;
+}
+.bottom-tabs ul {
+  background-color: var(--table-header);
   border-top: 1px solid #dee2e6;
+}
+.bottom-tabs ul a {
+  color: var(--table-row2);
 }
 
 .darkmode-checkbox {
@@ -742,6 +762,12 @@ footer {
   appearance: none;
 }
 
+.navbar-1,
+.top-navbar {
+  background-color: var(--table-header);
+  color: var(--table-row2);
+}
+
 /* Practice tables */
 #practices_page {
   display: flex;
@@ -770,12 +796,24 @@ footer {
 }
 .practice-header {
   background: var(--bootstrap-dark);
+  background: var(--table-header);
   color: white;
   font-weight: bold;
   padding: 10px;
   /* curve the top of the tables */
   border-radius: 15px 15px 0px 0px;
 }
+.practice-header button,
+.practice-header a.rate-btn,
+.practice-header a.share-btn {
+  background: var(--table-btns);
+  color: black;
+}
+.practice-header .edit-btn a,
+.practice-header .delete-btn a {
+  color: black;
+}
+
 .practice-turn {
   display: flex;
   flex-direction: row;
@@ -793,9 +831,11 @@ footer {
 /* Light mode for table rows */
 body.light-mode .practice-turn {
   background-color: var(--bootstrap-light);
+  background-color: var(--table-row1);
 }
 body.light-mode .practice-turn:nth-child(odd) {
   background-color: var(--bootstrap-secondary);
+  background-color: var(--table-row2);
 }
 
 /* Dark mode for the table rows */
@@ -807,6 +847,13 @@ body.light-mode .practice-turn:nth-child(odd) {
   background: var(--bootstrap-table-dark);
 }
 */
+body.dark-mode .edit-btn,
+body.dark-mode .delete-btn {
+  background-color: var(--dark-mode-btn);
+}
+body.dark-mode .practice-header {
+  background-color: var(--bootstrap-dark);
+}
 body.dark-mode .practice-turn {
   background-color: var(--bootstrap-dark);
 }
@@ -900,6 +947,7 @@ div.practice-table:has(.coach-practice-header) > .div-open-btn {
 }
 .challenges-header {
   background: var(--bootstrap-dark);
+  background: var(--table-header);
   color: white;
   font-weight: bold;
   border-radius: 10px 10px 0 0;
@@ -980,6 +1028,7 @@ body.dark-mode #submit-message {
 body.dark-mode .edit-btn a span,
 body.dark-mode .delete-btn a span {
   color: var(--dark-mode-btn);
+  color: black;
 }
 body.dark-mode select#event {
   color: white;

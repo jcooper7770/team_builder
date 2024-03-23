@@ -75,7 +75,8 @@
 <body style="background-color:#E5E4E2;" class="light-mode">
 
   <!-- Grey navbar with black text -->
-  <nav class="navbar navbar-expand-sm bg-dark navbar-dark sticky color-changing top-navbar">
+  <!--<nav class="navbar navbar-expand-sm bg-dark navbar-dark sticky color-changing top-navbar">-->
+  <nav class="navbar navbar-expand-sm navbar-dark sticky color-changing top-navbar">
     <!-- Add the Font Awesome button for mobile view -->
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
       aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -282,11 +283,11 @@
         e.classList.remove("dark-mode-color");
         e.style.background = "";
         if (e.tagName == "NAV") {
-          e.classList.add("bg-dark");
+          //e.classList.add("bg-dark");
         }
         if (e.tagName == "THEAD") {
           e.classList.add("thead-dark");
-          e.classList.add("bg-dark");
+          //e.classList.add("bg-dark");
         }
         if (e.tagName == "TABLE") {
           e.classList.add("table-light");
@@ -308,7 +309,7 @@
         }
         if (e.tagName == "UL") {
           e.style.background = "";
-          e.classList.add("bg-dark");
+          //e.classList.add("bg-dark");
         }
         if (e.tagName == "BUTTON") {
           e.style.background = "";
