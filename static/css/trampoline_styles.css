@@ -14,6 +14,8 @@
   --bootstrap-light: #f8f9fa;
   --bootstrap-dark: #343a40;
   --bootstrap-table-dark: #212529;
+  --dark-mode-btn: #F6B17A;
+  --dark-mode-div: rgb(112, 119, 161);
 }
 
 body {
@@ -254,6 +256,9 @@ body {
   top: 100%;
   left: 0;
 }
+body.dark-mode #whats-new .card-body ul.news-list>li::after {
+  background-color: white;
+}
 #whats-new .card-body ul li .update-title {
   font-weight: bold;
 }
@@ -270,11 +275,17 @@ body {
 #whats-new .card-body ul li .update-text.bug-fix {
   color: gray;
 }
+body.dark-mode #whats-new .card-body ul li .update-text.bug-fix {
+  color: black;
+}
 #whats-new .card-body ul li .update-date {
   font-size: 12px;
   position: relative;
   left: 0;
   color: gray;
+}
+body.dark-mode #whats-new .card-body ul li .update-date {
+  color: black;
 }
 
 
@@ -415,8 +426,13 @@ body {
   #lessonPlans {
     padding-bottom: 70px;
   }
+
 }
 
+/* Charts */
+#chart-dates {
+  width: 100%;
+}
 .down-arrow {
   position: absolute;
   bottom: 20px;
@@ -517,7 +533,8 @@ body {
   border-radius: 5px;
   cursor: pointer;
 }
-body.dark .tag-box {
+body.dark-mode .tag-box {
+  background-color: var(--dark-mode-btn);
   color: black;
 }
 
@@ -622,8 +639,15 @@ a.dark-mode-color {
   border-radius: 10px;
   background-color: rgba(173, 216, 230, 1);
 }
+body.dark-mode .single-plan {
+  background-color: rgba(112, 119, 161, 1);
+  color: black;
+}
 .single-plan.completed {
   background-color: rgba(173, 216, 230, 0.5);
+}
+body.dark-mode .single-plan.completed {
+  background-color: rgba(112, 119, 161, 0.5);
 }
 .lesson-plan-header {
   display: flex;
@@ -651,6 +675,10 @@ a.dark-mode-color {
   background-color: white;
   border-radius: 10px;
   padding: 2px;
+}
+body.dark-mode .lesson-plan-header span.completed p {
+  background-color: black;
+  color: white;
 }
 
 .plan-details.completed,
@@ -919,4 +947,69 @@ ul.filter-btns {
   ul.filter-btns {
     flex-direction: column;
   }
+}
+
+
+/* dark mode styles */
+body.dark-mode .start-btn,
+body.dark-mode .login-btn,
+body.dark-mode #help-btn,
+body.dark-mode #fullScreenBtn,
+body.dark-mode .rate-btn,
+body.dark-mode .share-btn,
+body.dark-mode #chart-dates,
+body.dark-mode #save-lesson,
+body.dark-mode #toggle-lesson-details,
+body.dark-mode #expand-practices-btn,
+body.dark-mode .modal-footer button,
+body.dark-mode #comp-card,
+body.dark-mode #comp-card-dmt,
+body.dark-mode #comp-card-tu,
+body.dark-mode #remove-dict,
+body.dark-mode #new-dict,
+body.dark-mode #save-user-settings,
+body.dark-mode #export-data,
+body.dark-mode #import-data,
+body.dark-mode #mark_read,
+body.dark-mode #submit-message {
+  background-color: var(--dark-mode-btn);
+  border: none;
+  color: black;
+}
+
+body.dark-mode .edit-btn a span,
+body.dark-mode .delete-btn a span {
+  color: var(--dark-mode-btn);
+}
+body.dark-mode select#event {
+  color: white;
+}
+
+body.dark-mode .practice-graphs,
+body.dark-mode #whats-new .card {
+  background: rgb(112, 119, 161);
+}
+body.dark-mode canvas {
+  background: white;
+}
+body.dark-mode .practice-graphs .nav-item a {
+  color: black;
+  border: 1px solid var(--dark-mode-btn);
+}
+body.dark-mode #leaderboard .nav-item a {
+  color: black;
+  border: 1px solid var(--dark-mode-btn);
+}
+body.dark-mode .modal-content {
+  background-color: var(--dark-mode-div);
+  color: black;
+}
+body.dark-mode .modal-content a,
+body.dark-mode #accordion h5 a {
+  color: darkblue;
+}
+body.dark-mode #accordion div,
+body.dark-mode #accordion .list-group .list-group-item {
+  background-color: var(--dark-mode-div);
+  color: white;
 }
