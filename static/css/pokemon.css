@@ -394,7 +394,6 @@ input[type=number]::-webkit-outer-spin-button {
   }
   .meta-table > div > div.tab-content > div > table > tbody > tr:last-child{
     height: 30vh;
-    background-color: blue;
   }
 }
 
