@@ -159,6 +159,7 @@ def run():
             chosen_league = get_recent_league() or "GL"
             session['league'] = chosen_league
             #chosen_league = "ML"
+
     print(f"Chosen league: {chosen_league}. {session.get('league')}")
     session['league'] = chosen_league
     chosen_pokemon = request.args.get('pokemon', '')
@@ -177,6 +178,7 @@ def run():
     print("----- Refreshed -----")
     # Data tables from cache
     if get_refresh() or get_new_data(chosen_league, num_days_start, num_days_end, rating, exponent):
+        print("!!! getting new data")
         try:
             #results, team_maker, data_error = get_counters_for_rating(rating, chosen_league, days_back=num_days)
             results, team_maker, data_error = get_counters_for_rating(rating, chosen_league, days_back_start=num_days_start, days_back_end=num_days_end, exponent=exponent)

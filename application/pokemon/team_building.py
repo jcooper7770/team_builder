@@ -1081,9 +1081,12 @@ def get_recent_league():
         if league.startswith('all_pokemon') or league == "game_master":
             continue
         try:
-            records = sorted(json.loads(json.loads(result[1])).get('records'), key=lambda x: x.get('time'), reverse=True)
-        except:
-            print(f"ERROR: failed to get data for {league}")
+            if isinstance(json.loads(result[1]), str):
+                records = sorted(json.loads(json.loads(result[1])).get('records'), key=lambda x: x.get('time'), reverse=True)
+            else:
+                records = sorted(json.loads(result[1]).get('records'), key=lambda x: x.get('time'), reverse=True)
+        except Exception as e:
+            print(f"ERROR: failed to get data for {league} because: '{e}'")
             continue
         latest_record = records[0]
         leagues[league] = latest_record.get('time')
