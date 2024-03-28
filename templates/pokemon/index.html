@@ -194,33 +194,52 @@ function toggleAdvOptions(e) {
 
   <div class="main-content"></div>
 
-  <br><br>
-  <div class="container">
-    <p align="center" class="bg-dark text-white" style="margin:0px; text-decoration: none; border-bottom: 1px solid white; font-size: 20px;">Meta Data</p>
-    <div class="border-dark">
-      <nav class="bg-dark">
-        <ul class="nav nav-tabs" id="pokemon-position" role="tablist">
-          <li class="nav-item">
-            <a class="nav-link active" href="#nav-leads" id="nav-leads-tab" data-toggle="tab" aria-controls="nav-leads" role="tab" aria-selected="true">Leads</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#nav-ss" id="nav-ss-tab" data-toggle="tab" aria-controls="nav-ss" role="tab" aria-selected="false">Second</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#nav-back" id="nav-back-tab" data-toggle="tab" aria-controls="nav-back" role="tab" aria-selected="false">Third</a>
-          </li>
-          <li class="nav-item ml-auto">
-            <p class="nav-link" style="color:white">Using <b>{{ n_teams }}</b> teams of data</p>
-          </li>
-        </ul>
-      </nav>
+  <!-- Tabs at bottom-->
+  <div class="bottom-tabs">
+    <!--<ul class="nav nav-tabs fixed-bottom bg-dark color-changing">-->
+    <ul class="nav nav-tabs fixed-bottom color-changing">
+      <li class="nav-item">
+        <a class="nav-link active" data-toggle="tab" href="#meta-tab">Meta Data</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" data-toggle="tab" href="#teams-tab">Top Teams</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" data-toggle="tab" href="#recc-tab">Recommended Teams</a>
+      </li>
+    </ul>
+  </div>
+
+  <div class="tab-content">
+    <div id="meta-tab" class="tab-pane fade show active">
+      <div>
+        <p align="center" class="clear-header" style="margin:0px; text-decoration: none; border-bottom: 1px solid white; font-size: 20px;">Meta Data</p>
+        <div class="border-dark meta-table">
+          <nav class="clear-header">
+            <ul class="nav nav-tabs" id="pokemon-position" role="tablist">
+              <li class="nav-item">
+                <a class="nav-link active" href="#nav-leads" id="nav-leads-tab" data-toggle="tab" aria-controls="nav-leads"
+                  role="tab" aria-selected="true">Leads</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#nav-ss" id="nav-ss-tab" data-toggle="tab" aria-controls="nav-ss" role="tab"
+                  aria-selected="false">Second</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#nav-back" id="nav-back-tab" data-toggle="tab" aria-controls="nav-back" role="tab"
+                  aria-selected="false">Third</a>
+              </li>
+              <li class="nav-item ml-auto">
+                <p class="nav-link" style="">Using <b>{{ n_teams }}</b> teams of data</p>
+              </li>
+            </ul>
+          </nav>
       <div class="p-0">
         <div class="tab-content">
-
           <!-- Leads Tab -->
           <div class="tab-pane fade show active" id="nav-leads" role="tabpanel" aria-labelledby="nav-leads-tab">
             <table class="my-0 table-striped" border="1" style="background-color: white;">
-              <thead class="bg-dark text-white">
+              <thead class="clear-header">
                 <th colspan="2" class="text-center">Leads</th>
               </thead>
               <tbody>
@@ -239,9 +258,9 @@ function toggleAdvOptions(e) {
                     <p>In parentheses is the pokemon's actual win rate in the lead.</p>
                   </td>
                 </tr>
-                <tr>
+                <tr class="data-row">
                   <td>
-                    <div class="data" style="height:400px;">
+                    <div class="data2" style="">
                       <table style="width: 100%;">
                         <tr style="border:none;">
                           <td style="border:none;padding-top:1px;padding-bottom:0px"><b><u>Pokemon</u></b></td>
@@ -262,7 +281,7 @@ function toggleAdvOptions(e) {
                     </div>
                   </td>
                   <td>
-                    <div class="data" style="height:400px;">
+                    <div class="data2" style="">
                       <table border="0" style="width: 100%; display: none;">
                         <tr style="border:none;">
                           <td style="border:none;padding-top:1px;padding-bottom:0px"><b><u>Pokemon</u></b></td>
@@ -297,7 +316,7 @@ function toggleAdvOptions(e) {
           <!-- Second pokemon Tab -->
           <div class="tab-pane fade" id="nav-ss" role="tabpanel" aria-labelledby="nav-ss-tab">
             <table class="my-0 table-striped" border="1" style="background-color: white;">
-              <thead class="bg-dark text-white">
+              <thead class="clear-header">
                 <th colspan="2" class="text-center">Second Pokemon</th>
               </thead>
               <tbody>
@@ -316,9 +335,9 @@ function toggleAdvOptions(e) {
                     <p>In parentheses is the pokemon's actual win rate in the second position.</p>
                   </td>
                 </tr>
-                <tr>
+                <tr class="data-row">
                   <td>
-                    <div class="data" style="height:400px;">
+                    <div class="data2" style="">
                       <table border="0" style="width: 100%">
                         <tr style="border:none;">
                           <td style="border:none;padding-top:1px;padding-bottom:0px"><b><u>Pokemon</u></b></td>
@@ -338,7 +357,7 @@ function toggleAdvOptions(e) {
                     </div>
                   </td>
                   <td>
-                    <div class="data" style="height:400px;">
+                    <div class="data2" style="">
                       <table border="0" style="width: 100%; display: none;">
                         <tr style="border:none;">
                           <td style="border:none;padding-top:1px;padding-bottom:0px"><b><u>Pokemon</u></b></td>
@@ -372,7 +391,7 @@ function toggleAdvOptions(e) {
           <!-- Third pokemon Tab -->
           <div class="tab-pane fade" id="nav-back" role="tabpanel" aria-labelledby="nav-back-tab">
             <table class="my-0 table-striped" border="1" style="background-color: white;">
-              <thead class="bg-dark text-white">
+              <thead class="clear-header">
                 <th colspan="2" class="text-center">Third Pokemon</th>
               </thead>
               <tbody>
@@ -391,9 +410,9 @@ function toggleAdvOptions(e) {
                     <p>In parentheses is the pokemon's actual win rate in the third position.</p>
                   </td>
                 </tr>
-                <tr>
+                <tr class="data-row">
                   <td>
-                    <div class="data" style="height:400px;">
+                    <div class="data2" style="">
                       <table border="0" style="width: 100%">
                         <tr style="border:none;">
                           <td style="border:none;padding-top:1px;padding-bottom:0px"><b><u>Pokemon</u></b></td>
@@ -413,7 +432,7 @@ function toggleAdvOptions(e) {
                     </div>
                   </td>
                   <td>
-                    <div class="data" style="height:400px;">
+                    <div class="data2" style="">
                       <table border="0" style="width: 100%; display: none;">
                         <tr style="border:none;">
                           <td style="border:none;padding-top:1px;padding-bottom:0px"><b><u>Pokemon</u></b></td>
@@ -445,13 +464,14 @@ function toggleAdvOptions(e) {
           </div>
         </div>
       </div>
+    </div> 
+      </div>
     </div>
-    <br><br>
-
-    <!-- Top used teams -->
-    <div>
-      <div id="top-used-teams-header" class="bg-dark" >
-        <div id="title" class="text-center text-white w-100 font-weight-bold">Top Used Teams</div>
+    <div id="teams-tab" class="tab-pane fade">
+      <br><br>
+      <div class="container">
+      <div id="top-used-teams-header" class="clear-header" >
+        <div id="title" class="text-center w-100 font-weight-bold">Top Used Teams</div>
         <div id="searchbar" class="mx-auto" >
           <button id="team-search-button" class="bg-white"><i class="fa fa-search bg-white"></i></button>
           <input type="text" id="team-search-input" placeholder="Search for Pokemon">
@@ -460,7 +480,7 @@ function toggleAdvOptions(e) {
       <a class="btn btn-primary" href="/move_image?pokemon={{teams_move_count_string}}&cols=10" target="_blank" style="width: 100%; border-radius: 0">Download move counts</a>
    
       <div id="teams-section">
-        <div id="teams-section-header" class="bg-dark text-white text-center">
+        <div id="teams-section-header" class="clear-header text-center">
           <div id="team">Team</div>
           <div id="wr">Win Rate</div>
         </div>
@@ -491,30 +511,12 @@ function toggleAdvOptions(e) {
         {% endfor %}
       </div>
     </div>
-    <br>
-
-    <!--
-    <div style="height:500px;overflow:auto;">
-      <table class="table table-striped" border="1" style="background-color: white;">
-        <thead class="thead-dark bg-dark text-white">
-          <tr><td colspan=2 align="center">Top Used Teams</td></tr>
-          <tr><td colspan="2" style="padding: 0px;"><a class="btn btn-primary" href="/move_image?pokemon={{teams_move_count_string}}" target="_blank" style="width: 100%; border-radius: 0">Download move counts</a></td></tr>
-          <th>Team</th><th>Win Rate</th>
-        </thead>
-        <tbody>
-          {% for team in team_win_rates %}
-          <tr>
-            <td>{{ team[0] }}</td><td>{{ team[1] }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
     </div>
-  -->
+    <div id="recc-tab" class="tab-pane fade">
+      {{body|safe}}
+    </div>
   </div>
-
   <br><br>
-  {{body|safe}}
   <br><br>
 
   </div>
