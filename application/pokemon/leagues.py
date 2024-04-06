@@ -120,6 +120,7 @@ def refresh_leagues():
         League("GLCatchS12", "1500", "great-catch1124"),
         League("GLCatchS16", "1500", "great-catch1123"),
         League("GLCatchS17", "1500", "great-catch0224"),
+        League("GLJungle", "1500-jungle", "great-jungle"),
 
         # Ultra cups
         League("UL", "2500", "ultra"),
