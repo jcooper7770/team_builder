@@ -1,4 +1,4 @@
-from flask import Blueprint, session, send_file, request
+from flask import Blueprint, session, send_file, request, render_template
 
 from application.trampoline.trampoline import Athlete
 from application.utils.utils import *
@@ -72,3 +72,13 @@ def coach_comp_cards():
     zipf.close()
     return send_file(zipfile_name, mimetype='zip', as_attachment=True)
 
+
+@comp_card_bp.route("/logger/compcards")
+def comp_cards():
+    """
+    Create comp cards manually
+    """
+    return render_template(
+        "trampoline/comp_card.html",
+        user=session.get('name')
+    )

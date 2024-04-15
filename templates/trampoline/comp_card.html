@@ -1,0 +1,164 @@
+{% extends "trampoline/base.html" %}
+
+{% block content %}
+<br>
+{% block logging %}
+{% endblock %}
+
+<br><br>
+
+<br>
+
+<style>
+  body {
+    background-color: #f8f9fa;
+  }
+
+  .container {
+    margin-top: 50px;
+  }
+
+  .comp-card-form {
+    display: none;
+  }
+
+  .comp-card-form.show {
+    display: inline;
+  }
+</style>
+
+<div class="container">
+  <div class="card">
+    <div class="card-header">
+      <h3>Create Comp Cards</h3>
+    </div>
+    <div class="card-body">
+      <select name="event" id="event" class="form-control">
+        <option value="trampoline">Trampoline</option>
+        <option value="dmt">Double Mini</option>
+        <option value="tumbling" disabled>Tumbling</option>
+      </select>
+      <form id="compcardForm">
+        <div id="trampForm" class="comp-card-form show">
+          <div class="form-group">
+            <label for="tramp1">Trampoline Routine 1:</label>
+            <input type="text" class="form-control" id="tramp1" placeholder="First trampoline routine">
+          </div>
+          <div class="form-group">
+            <label for="tramp2">Trampoline Routine 2:</label>
+            <input type="text" class="form-control" id="tramp2" placeholder="Second trampoline routine">
+          </div>
+          <button type="submit" class="btn btn-primary">Create Comp Card</button>
+        </div>
+        <div id="dmtForm" class="comp-card-form">
+          <div class="form-group">
+            <label for="dmt1">Pass 1:</label>
+            <input type="text" id="dmt1" class="form-control" placeholder="First Pass">
+          </div>
+          <div class="form-group">
+            <label for="dmt2">Pass 2:</label>
+            <input type="text" id="dmt2" class="form-control" placeholder="Second Pass">
+          </div>
+          <button type="submit" class="btn btn-primary">Create Comp Card</button>
+        </div>
+        <div id="tumblingForm" class="comp-card-form">
+          <div class="form-group">
+            <label for="tumbling1">Pass 1:</label>
+            <input type="text" id="tumbling1" class="form-control" placeholder="First Pass">
+          </div>
+          <div class="form-group">
+            <label for="tumbling2">Pass 2:</label>
+            <input type="text" id="tumbling2" class="form-control" placeholder="Second Pass">
+          </div>
+          <button type="submit" class="btn btn-primary">Create Comp Card</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+
+{% block javascript %}
+{% endblock %}
+<script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
+  crossorigin="anonymous"></script>
+<script type="text/javascript">
+  const eventSelect = document.getElementById("event");
+  eventSelect.addEventListener("change", function (event) {
+    const cardEvent = eventSelect.value;
+    switch (cardEvent) {
+      case "trampoline":
+        showForm("tramp");
+        break;
+      case "dmt":
+        showForm("dmt");
+        break;
+      case "tumbling":
+        showForm("tumbling");
+        break;
+      default:
+        document.querySelector(".comp-card-form.show").classList.toggle("show");
+        document.querySelector("#trampForm").classList.add("show");
+    }
+  });
+
+  function showForm(formType) {
+    const formId = `#${formType}Form`;
+    document.querySelector(".comp-card-form.show").classList.toggle("show");
+    document.querySelector(formId).classList.add("show");
+  }
+
+  function getCurrentForm() {
+    var formId = document.querySelector("div.show").id;
+    return formId.slice(0, -4);
+  }
+
+  document.getElementById("compcardForm").addEventListener("submit", function (event) {
+    var currentForm = getCurrentForm();
+    console.log(`current form: ${currentForm}`);
+    event.preventDefault(); // Prevent default form submission
+    // Get form values
+    var data;
+    var url;
+    switch(currentForm) {
+      case "tramp":
+        const r1 = document.getElementById("tramp1");
+        const r2 = document.getElementById("tramp2");
+        url = "/logger/user/compcard";
+        data = {
+          r1: r1,
+          r2: r2,
+        }
+        break;
+      case "dmt":
+        const p1 = document.getElementById("pass1");
+        const p2 = document.getElementById("pass2");
+        url = "/logger/user/dm_compcard";
+        data = {
+          p1: p1,
+          p2: p2,
+        }
+        break;
+      case "tumbling":
+        break;
+      default:
+        break;
+    } 
+    $.ajax({
+        type: 'POST',
+        url: url,
+        contentType: 'application/json',
+        data: JSON.stringify(data),
+        success: function (data) {
+            console.log("successfully saved data");
+            location.href = "/logger/user/compcard/download";
+        }
+    });
+
+
+  });
+
+</script>
+
+{% endblock %}
