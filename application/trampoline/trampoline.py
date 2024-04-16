@@ -212,7 +212,7 @@ class Athlete(User):
         self.optional = skills
         self.save()
 
-    def save_comp_card(self, filename="", routines=[]):
+    def save_comp_card(self, filename="", routines=[], more_data={}):
         """
         Saves the user's routines onto a comp card
         """
@@ -221,6 +221,7 @@ class Athlete(User):
             'level': str(self.levels[0]),
             'name': f'{self.details.get("first_name")} {self.details.get("last_name")}'
         }
+        comp_card_data.update(more_data)
 
         # compulsory
         total_dd = 0
@@ -245,7 +246,7 @@ class Athlete(User):
 
         fill_out(comp_card_data, filename=filename or "modified_comp_card.pdf")
 
-    def save_dm_comp_card(self, filename="", passes=[]):
+    def save_dm_comp_card(self, filename="", passes=[], more_data={}):
         """
         Save the user's double mini comp card
         """
@@ -255,6 +256,7 @@ class Athlete(User):
             'level': str(self.levels[1]),
             'name': f'{self.details.get("first_name")} {self.details.get("last_name")}'
         }
+        comp_card_data.update(more_data)
 
         dmt_passes = {
             'prelims': [passes[0].split(), passes[1].split()],

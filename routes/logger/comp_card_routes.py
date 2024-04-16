@@ -1,6 +1,7 @@
 from flask import Blueprint, session, send_file, request, render_template
 
 from application.trampoline.trampoline import Athlete
+from application.utils.database import get_user
 from application.utils.utils import *
 
 comp_card_bp = Blueprint('comp_cards', __name__)
@@ -21,7 +22,7 @@ def user_comp_card():
             routine1 or athlete.compulsory,
             routine2 or athlete.optional
         ]
-        athlete.save_comp_card(routines=routines)
+        athlete.save_comp_card(routines=routines, more_data=request.json)
     return send_file("comp_cards/modified_comp_card.pdf", as_attachment=True)
 
 @comp_card_bp.route("/logger/user/compcard/download")
@@ -48,7 +49,7 @@ def user_dm_comp_card():
             pass1 or athlete.dm_prelim1,
             pass2 or athlete.dm_prelim2
         ]
-        athlete.save_dm_comp_card(passes=passes)
+        athlete.save_dm_comp_card(passes=passes, more_data=request.json)
 
     return send_file("comp_cards/modified_comp_card.pdf", as_attachment=True)
 
@@ -78,7 +79,12 @@ def comp_cards():
     """
     Create comp cards manually
     """
+    athlete = Athlete.load(session.get("name"))
+    athlete_name = f"{athlete.details['first_name']} {athlete.details['last_name']}" if athlete.details['first_name'] else ""
+    user_data = get_user(session.get('name'))
     return render_template(
         "trampoline/comp_card.html",
-        user=session.get('name')
+        user=session.get('name'),
+        name=athlete_name,
+        user_data=user_data
     )
