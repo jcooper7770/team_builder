@@ -1,4 +1,4 @@
-from flask import Blueprint, session, send_file, request, render_template
+from flask import Blueprint, session, send_file, request, render_template, redirect
 
 from application.trampoline.trampoline import Athlete
 from application.utils.database import get_user
@@ -79,12 +79,15 @@ def comp_cards():
     """
     Create comp cards manually
     """
-    athlete = Athlete.load(session.get("name"))
+    name = session.get('name')
+    if not name:
+        return redirect('/login')
+    athlete = Athlete.load(name)
     athlete_name = f"{athlete.details['first_name']} {athlete.details['last_name']}" if athlete.details['first_name'] else ""
     user_data = get_user(session.get('name'))
     return render_template(
         "trampoline/comp_card.html",
-        user=session.get('name'),
+        user=name,
         name=athlete_name,
         user_data=user_data
     )
