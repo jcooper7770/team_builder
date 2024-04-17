@@ -1,6 +1,6 @@
 from flask import Blueprint, session, send_file, request, render_template, redirect
 
-from application.trampoline.trampoline import Athlete
+from application.trampoline.trampoline import Athlete, Practice
 from application.utils.database import get_user
 from application.utils.utils import *
 
@@ -82,6 +82,11 @@ def comp_cards():
     name = session.get('name')
     if not name:
         return redirect('/login')
+    user_practices = Practice.load_from_db(name)
+    all_turns = []
+    for practice in user_practices:
+        for turn in practice.turns:
+            all_turns.append([skill.shorthand for skill in turn.skills])
     athlete = Athlete.load(name)
     athlete_name = f"{athlete.details['first_name']} {athlete.details['last_name']}" if athlete.details['first_name'] else ""
     user_data = get_user(session.get('name'))
@@ -89,5 +94,6 @@ def comp_cards():
         "trampoline/comp_card.html",
         user=name,
         name=athlete_name,
-        user_data=user_data
+        user_data=user_data,
+        user_turns=all_turns
     )

@@ -121,12 +121,13 @@
           </div>
           <div class="form-group">
             <label for="tramp1">Trampoline Routine 1:</label>
-            <input type="text" class="form-control" id="tramp1" placeholder="First trampoline routine">
+            <input type="text" class="form-control" id="tramp1" placeholder="First trampoline routine" value="{{user_data['compulsory']}}">
           </div>
           <div class="form-group">
             <label for="tramp2">Trampoline Routine 2:</label>
-            <input type="text" class="form-control" id="tramp2" placeholder="Second trampoline routine">
+            <input type="text" class="form-control" id="tramp2" placeholder="Second trampoline routine" value="{{user_data['optional']}}">
           </div>
+          <div id="reccs"></div>
           <button type="submit" class="btn btn-primary">Create Comp Card</button>
         </div>
         <div id="dmtForm" class="comp-card-form">
@@ -149,11 +150,11 @@
           </div>
           <div class="form-group">
             <label for="dmt1">Pass 1:</label>
-            <input type="text" id="dmt1" class="form-control" placeholder="First Pass">
+            <input type="text" id="dmt1" class="form-control" placeholder="First Pass" value="{{user_data['dm_prelim1']}}">
           </div>
           <div class="form-group">
             <label for="dmt2">Pass 2:</label>
-            <input type="text" id="dmt2" class="form-control" placeholder="Second Pass">
+            <input type="text" id="dmt2" class="form-control" placeholder="Second Pass" value="{{user_data['dm_prelim2']}}">
           </div>
           <button type="submit" class="btn btn-primary">Create Comp Card</button>
         </div>
@@ -264,6 +265,52 @@
     });
 
 
+  });
+
+  const tramp_r1 = document.getElementById('tramp1');
+  const tramp_r2 = document.getElementById('tramp2');
+  tramp_r1.addEventListener('input', function(event) {
+    addReccSkill('r1');
+  });
+  tramp_r2.addEventListener('input', function(event) {
+    addReccSkill('r2');
+  });
+
+  function addReccSkill(field) {
+    var lastValue;
+    if (field == "r1") {
+      lastValue = tramp_r1.value.split(' ').slice(-1);
+    } else {
+      lastValue = tramp_r2.value.split(' ').slice(-1);
+    }
+    console.log(`last value: ${lastValue}`);
+    var recc_skills = recommendSkill(lastValue);
+    console.log(`recc skill: ${recc_skills}`);
+
+    const reccSection = document.getElementById("reccs");
+    reccSection.innerHTML = "";
+    for(var skill of recc_skills) {
+      var newRec = document.createElement("a")
+      newRec.className = `recc-skill btn btn-info ${field}`;
+      newRec.value = field;
+      newRec.textContent = skill;
+      newRec.id = `recc-skill-${skill}`;
+      reccSection.appendChild(newRec);
+    }
+  }
+
+
+  $('[id=reccs]').on('click', 'a', function(event){
+    console.log(event.target);
+    const addedSkill = event.target.textContent;
+
+    if (event.target.classList.contains('r1')) {
+      tramp_r1.value = tramp_r1.value + " " +  addedSkill;
+      addReccSkill('r1');
+    } else {
+      tramp_r2.value = tramp_r2.value + " " +  addedSkill;
+      addReccSkill('r2');
+    }
   });
 
 </script>

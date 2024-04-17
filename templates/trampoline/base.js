@@ -104,3 +104,52 @@ document.addEventListener("DOMContentLoaded", function () {
     loadUserNotifications();
     {% endif %}
 });
+
+function recommendSkill(current_skill) {
+    if ( "{{ user_turns }}" == "") {
+        var all_turns = [];
+    } else {
+        var all_turns = {{ user_turns | default("")| tojson }};
+    }
+    var next_skills = {};
+    for (let turn_num = 0; turn_num < all_turns.length; turn_num++) {
+        var turn = all_turns[turn_num];
+        skill = "";
+        for (let skill_num = 0; skill_num < turn.length - 1; skill_num++) {
+            var skill = turn[skill_num];
+            //console.log("Current: " + current_skill + " - checking " + skill);
+            // Get next skill if the current skill was found
+            if (skill == current_skill){
+                next_skill = turn[skill_num + 1];
+                if (!(next_skill in next_skills)) {
+                    next_skills[next_skill] = 0;
+                }
+                next_skills[next_skill]++;
+            }
+        }
+    }
+
+    if (next_skills.length == 0) {
+        return "";
+    }
+
+    // sort and find the most used next skill
+    var items = Object.keys(next_skills).map(function(key) {
+        return [key, next_skills[key]];
+    });
+    items.sort(function(first, second) {
+        return second[1] - first[1];
+    });
+    if (items.length == 0) {
+        return "";
+    }
+    console.log(next_skills);
+    most_used_next = items[0][0];
+    most_used_next = items.slice(0, 5);
+    most_used = []
+    for (let i=0; i<most_used_next.length; i++){
+        most_used.push(most_used_next[i][0]);
+    }
+    return most_used;
+
+};
