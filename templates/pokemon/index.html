@@ -488,7 +488,7 @@ function toggleAdvOptions(e) {
         {% if "/1 ||" not in team[1] %}
         <div>
           <div id="team-col" class="fa fa-caret-down">
-            {{ team[0] }}
+            <span id="team">{{ team[0] }}</span>
             <span style="display: none; opacity: 0; transition: all 1s ease">
               <br>Counters: {{ team_counters[team[0]] }}
               {% for pokemon in team[2] %}
@@ -641,7 +641,7 @@ searchButton.addEventListener("click", function(e){
     if (elem.id !="teams-section-header") {
       elem.style.display = "none";
 
-      var rowText = elem.children[0].innerText;
+      var rowText = elem.children[0].children[0].innerText;
       var contains = false;
       for(var i=0; i < searchValues.length; i++ ) {
         var andTerms = searchValues[i].split("&");
@@ -677,7 +677,7 @@ searchButton.addEventListener("click", function(e){
 $("[id^=team-col]").click(function(e) {
   // Find the team-col div from whatever was clicked on
   var target = e.target;
-  var hiddenElement = e.target.children[0]
+  var hiddenElement = e.target.children[1]
   if (e.target.tagName != "DIV") {
     target = e.target.closest("div");
     hiddenElement = target.children[0];
