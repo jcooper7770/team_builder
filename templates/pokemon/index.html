@@ -633,8 +633,8 @@ optionsMenu.style.top = navbar.getBoundingClientRect().height + 'px';
 // Teams search feature
 const searchButton = document.getElementById("team-search-button");
 const searchInput = document.getElementById("team-search-input");
-searchButton.addEventListener("click", function(e){
-  e.preventDefault();
+
+function searchTeam(e) {
   var rowNum = 0;
   const searchValues = searchInput.value.split(" ");
   document.querySelectorAll("#teams-section > div").forEach((elem) => {
@@ -671,6 +671,12 @@ searchButton.addEventListener("click", function(e){
       }
     }
   });
+}
+searchInput.addEventListener('input', searchTeam);
+
+searchButton.addEventListener("click", function(e){
+  e.preventDefault();
+  searchTeam(e);
 });
 
 // Clicking on team column opens up move counts
