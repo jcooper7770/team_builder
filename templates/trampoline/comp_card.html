@@ -43,6 +43,11 @@
     background: var(--bootstrap-dark);
     color: white;
   }
+  .copyable-routine {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+  }
 </style>
 
 <div class="container">
@@ -121,7 +126,10 @@
           </div>
           <div class="form-group">
             <label for="tramp1">Trampoline Routine 1:</label>
-            <input type="text" class="form-control" id="tramp1" placeholder="First trampoline routine" value="{{user_data['compulsory']}}">
+            <div class="copyable-routine">
+              <input type="text" class="form-control" id="tramp1" placeholder="First trampoline routine" value="{{user_data['compulsory']}}">
+              <button id="copy-tramp-routine" class="btn btn-primary"><i class="fa fa-clone" aria-hidden="true"></i></button>
+            </div>
           </div>
           <div class="form-group">
             <label for="tramp2">Trampoline Routine 2:</label>
@@ -150,7 +158,10 @@
           </div>
           <div class="form-group">
             <label for="dmt1">Pass 1:</label>
-            <input type="text" id="dmt1" class="form-control" placeholder="First Pass" value="{{user_data['dm_prelim1']}}">
+            <div class="copyable-routine">
+              <input type="text" id="dmt1" class="form-control" placeholder="First Pass" value="{{user_data['dm_prelim1']}}">
+              <button id="copy-dm-routine" class="btn btn-primary"><i class="fa fa-clone" aria-hidden="true"></i></button>
+            </div>
           </div>
           <div class="form-group">
             <label for="dmt2">Pass 2:</label>
@@ -161,7 +172,10 @@
         <div id="tumblingForm" class="comp-card-form">
           <div class="form-group">
             <label for="tumbling1">Pass 1:</label>
-            <input type="text" id="tumbling1" class="form-control" placeholder="First Pass">
+            <div class="copyable-routine">
+              <input type="text" id="tumbling1" class="form-control" placeholder="First Pass">
+              <button id="copy-tu-routine" class="btn btn-primary"><i class="fa fa-clone" aria-hidden="true"></i></button>
+            </div>
           </div>
           <div class="form-group">
             <label for="tumbling2">Pass 2:</label>
@@ -311,6 +325,15 @@
       tramp_r2.value = tramp_r2.value + " " +  addedSkill;
       addReccSkill('r2');
     }
+  });
+
+  document.getElementById("copy-tramp-routine").addEventListener('click', function(e) {
+    e.preventDefault();
+    document.getElementById('tramp2').value = document.getElementById('tramp1').value;
+  });
+  document.getElementById("copy-dm-routine").addEventListener('click', function(e) {
+    e.preventDefault();
+    document.getElementById('dmt2').value = document.getElementById('dmt1').value;
   });
 
 </script>
