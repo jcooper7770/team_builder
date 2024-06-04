@@ -1100,7 +1100,7 @@ def create_user_stats(request, airtimes, username=None):
     datapts['trampoline_routines'] = [{'x': date, 'y': routines} for date, routines in sorted(day_routines['trampoline'].items(), key=lambda x: x[0])]
 
     # airtimes data
-    datapts['airtimes'] = [{'x': airtime['date'], 'y': float(airtime['airtime'])} for airtime in airtimes if airtime['airtime']]
+    datapts['airtimes'] = [{'x': airtime['date'].strftime('%Y-%m-%d'), 'y': float(airtime['airtime'])} for airtime in airtimes if airtime['airtime']]
     return datapts
 
 
