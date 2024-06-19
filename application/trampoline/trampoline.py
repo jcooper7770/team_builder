@@ -1000,9 +1000,12 @@ def get_skill_difficulty(skill):
     if skill.flips == 1 and skill.twists[0] > 0 and skill.pos not in [TUCK_POS, 't']:
         flip_difficulty -= 0.1
 
+    # add extra 0.1 for each flip over a double (i.e. 0.1 for triples, 0.2 for quads...)
+    bonus_dd = 0 if skill.flips < 3 else (skill.flips//1.0 - 2) * 0.1
+
     return flip_difficulty \
            + sum([2*twist for twist in skill.twists]) * 0.1 \
-           + (0.1 if skill.flips == 3 else 0) # extra 0.1 for a triple flip
+           + bonus_dd
 
 
 def is_comment(string, event):
