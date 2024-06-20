@@ -1359,3 +1359,31 @@ function expandPractices() {
 
 
 }
+
+$(document).ready(function () {
+    $('#question-form').on('submit', function (event) {
+        event.preventDefault();
+
+        const question = $('#question').val();
+
+        if (!question) {
+            $('#response').html('<div class="alert alert-danger" role="alert">Please enter a question.</div>');
+            return;
+        }
+
+        $('#response').html('<div class="spinner-border text-primary" role="status"><span class="sr-only">Loading...</span></div>');
+
+        $.ajax({
+            url: '/logger/ask-ai',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ question: question }),
+            success: function (response) {
+                $('#response').html('<div class="alert alert-success" role="alert">' + response.answer + '</div>');
+            },
+            error: function () {
+                $('#response').html('<div class="alert alert-danger" role="alert">There was an error processing your request. Please try again later.</div>');
+            }
+        });
+    });
+});

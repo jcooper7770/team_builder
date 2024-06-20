@@ -406,6 +406,26 @@
       <h4>View practice turns</h4>
       <p>Here you can view all previous practices logged</p>
     </div>
+
+    <div class="container">
+        <button class="btn btn-info mb-3" type="button" data-toggle="collapse" data-target="#qa-section" aria-expanded="false" aria-controls="qa-section">
+            <i class="fa fa-comments"></i> Ask the AI about Your Practice
+        </button>
+        <div class="collapse" id="qa-section">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form id="question-form">
+                        <div class="form-group">
+                            <label for="question">Your Question:</label>
+                            <textarea class="form-control" id="question" rows="3" placeholder="Enter your question here..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary"><i class="fa fa-paper-plane"></i> Ask AI</button>
+                    </form>
+                    <div id="response" class="mt-4"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 {% block logging %}
 {% endblock %}
     <!--Navbar-->

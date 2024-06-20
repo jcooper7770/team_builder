@@ -1,6 +1,7 @@
 import datetime
 import os
 from collections import defaultdict, OrderedDict
+import openai
 
 from flask import Blueprint, jsonify, render_template, request, session, redirect, send_file, url_for, flash
 import subprocess
@@ -20,6 +21,7 @@ from application.utils.utils import *
 tramp_bp = Blueprint('trampoline', __name__)
 UPLOAD_FOLDER = os.path.join("static", "uploads")
 
+openai.api_key = os.environ.get("OPENAI_KEY")
 
 def get_log_data(request):
     """
@@ -1415,3 +1417,62 @@ def complete_lesson():
     all_finished_turns[name] = finished_turns
     update_lesson(title, date, all_finished_turns)
     return {"success": True}
+
+@tramp_bp.route('/logger/ask-ai', methods=['POST'])
+def ask_ai():
+    n_turns = 50
+    user_turns = get_user_turns(session.get("name"))
+    recent_turns = user_turns[-n_turns:]
+    recent_turns_map = [
+        {'event': turn[3],
+         'turn number': turn[0],
+         'turn skills': turn[1],
+         'turn date': turn[2]
+         } for turn in recent_turns
+    ]
+    print(f"using recent turns: {recent_turns}")
+    data = request.json
+    question = data.get('question')
+    
+    # Create a prompt for the OpenAI API
+    prompt = f"""You are a coach for trampoline athletes. Here is some data on your athlete's last 10 turns: {recent_turns}.
+    
+    The format of each entry is turn number, shorthand skills during that turn (each skill is separated by a space), date of the turn, athlete's name, event performed, and notes on the turn.
+    """
+    prompt = f"""You are a coach for trampoline athletes. Here is some data on your athlete's most recent turns (starting with the most recent): {recent_turns_map[::-1]}.
+
+    The shorthand notation follows a specific format:
+    
+    1. Number of Flips: The first number represents the total number of quarter flips, which indicates how many flips are performed. All single flips start with a 4, doubles with an 8, triples with a 12...
+    2. Twists in Each Flip: The subsequent numbers represent the number of half twists in each flip:
+        - Each digit corresponds to half twists, where '1' means half twist, '2' means 1 full twist (2 half twists), and so on.
+    3. Position Symbol: The symbol following the numbers indicates the position of the flips:
+        - / for straight or layout position
+        - o for tuck position
+        - < for pike position
+
+For example:
+
+- 821/ means a double flip with a full twist in the first flip and a half twist in the second flip, performed in straight or layout position.
+- 12001< means a triple flip with no twists in the first two flips and one half twist in the third flip, performed in pike position.
+- 160000o means a quadruple flip with no twists in any of the flips, performed in tuck position.
+- Given the shorthand for "801< 824/", this contains two skills in a row (because of the space inbetween). The first is a double flip with a half turn in the second flip (in pike position). The second skill is a double flip with a full twist in the first flip and two full twists in the second.
+
+    One hint to figure out the number of flips is by counting the number of characters in the skill. Single flip: 3 characters. Double flips: 4 characters. Triple flips: 6 characters. Quadruple flips: 7 characters.
+
+    Be as descriptive as you can, providing any reasoning for how you come up with your answer along with the dates of practices that you used. You might have to split the turns by the spaces to account for all skills. Do not skip over any skills.
+    """
+
+    messages = [
+        {'role': 'system', 'content': prompt},
+        {'role': 'user', 'content': f"Answer the following question: {question}"}
+    ] 
+    # Send the prompt to OpenAI for processing
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo-0125",
+        messages=messages,
+    )
+    
+    # Extract and return the response
+    answer = response.choices[0].message.content
+    return jsonify({"answer": answer})

@@ -1062,3 +1062,7 @@ body.dark-mode #accordion .list-group .list-group-item {
   background-color: var(--dark-mode-div);
   color: white;
 }
+
+#response .alert {
+    white-space: pre-wrap;
+}
