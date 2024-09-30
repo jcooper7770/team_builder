@@ -222,7 +222,7 @@ def get_all_rankings(reset_data=False):
     }
 
 
-def generate_move_strings(pokemon, pokemon_ranking, counts, chosen_fast_move=None, mega=None, popular_moves={}):
+def generate_move_strings(pokemon, pokemon_ranking, counts, chosen_fast_move=None, mega=None, popular_moves={}, chosen_charge_moves=[]):
     """
     Generate move strings for image
     """
@@ -265,10 +265,15 @@ def generate_move_strings(pokemon, pokemon_ranking, counts, chosen_fast_move=Non
     for move, count in counts.get(mega or pokemon, {}).items():
         # move looks like "fast_move (0) [1] - charge move [50]"
         fast_move = move.split('-')[0].split()[0]
+        fast_move_turns = move.split('-')[0].split()[1]
         charge_move = move.split('-')[1].split()[0]
 
         # Check charge move
-        if charge_move.upper() not in most_used_charges: # Charge move not in most used
+        print(f"*** move: {move} | count: {count}")
+        if chosen_charge_moves:
+            if charge_move.upper() not in chosen_charge_moves:
+                continue
+        elif charge_move.upper() not in most_used_charges: # Charge move not in most used
             #print(f"{pokemon} - charge {charge_move} not in most used")
             continue
 
@@ -287,7 +292,7 @@ def generate_move_strings(pokemon, pokemon_ranking, counts, chosen_fast_move=Non
         #added = f"{added}^" if count[3] != count[0] else added
         #short_count = f"{count[0]}{'-' if count[0]!=count[1] else ''}"
         short_count = f"{count[0]}{added}"
-        pokemon_moveset['fast'] = ' '.join(fast_move.upper().split('_'))
+        pokemon_moveset['fast'] = ' '.join(fast_move.upper().split('_')) + f" {fast_move_turns}"
         pokemon_moveset['charge'].append({'move': ' '.join(charge_move.upper().split("_")), 'count': short_count})
     if not pokemon_moveset['charge']:
         pokemon_moveset['charge'] = [{'move': '???', 'count': '?'}, {'move': '???', 'count': '?'}]
@@ -372,10 +377,16 @@ def make_image(pokemon_list, number_per_row=5, reset_data=False):
     row, col = -1, -1
     for pokemon in ["logo"] + sorted(pokemon_list):
         # extract pokemon from string if a fast move is chosen
-        chosen_fast_move = None
-        z = re.match(r'(\w*)\((\w*)\)', pokemon)
+        chosen_fast_move, chosen_charge_moves = None, []
+        #z = re.match(r'(\w*)\((\w*)\)', pokemon)
+        #if z:
+        #    pokemon, chosen_fast_move = z.groups()
+        z = re.match(r'(\w*)(\((.*)\))?(\[(.*)\])?', pokemon)
         if z:
-            pokemon, chosen_fast_move = z.groups()
+            pokemon, _, chosen_fast_move, _, chosen_charge_moves_str = z.groups()
+            if chosen_charge_moves_str:
+                chosen_charge_moves = [move.upper() for move in chosen_charge_moves_str.split()][:3]
+        #print(f"*** pokemon: {pokemon} - fast: {chosen_fast_move} - charge: {chosen_charge_moves}")
         
         # in case of mega/primal
         mega = ""
@@ -463,7 +474,11 @@ def make_image(pokemon_list, number_per_row=5, reset_data=False):
 
         # add move count text for pokemon
         popular_moves = pokemon_moves.get(pokemon, {})
-        pokemon_moveset = generate_move_strings(pokemon, pokemon_ranking, counts, chosen_fast_move=chosen_fast_move, mega=mega, popular_moves=popular_moves)
+        pokemon_moveset = generate_move_strings(
+            pokemon, pokemon_ranking, counts,
+            chosen_fast_move=chosen_fast_move, mega=mega, popular_moves=popular_moves,
+            chosen_charge_moves=chosen_charge_moves
+        )
         add_counts_to_img(pokemon, pokemon_moveset, blank_img, row, col, [image_font, cm_image_font, count_image_font])
 
     blank_img.save("image.png")

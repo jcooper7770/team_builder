@@ -6,10 +6,10 @@
     <br>
     <table class="move-count-options">
       <tr>
-        <td>
+        <td style="width: 0%; padding-right: 10px">
           <label>Filter Pokemon:</label>
         </td>
-        <td>
+        <td style="width: 70%">
           <input list="pokemon" type="text" name="chosen_pokemon" onkeyup="filterPokemon()" class="form-control">
           <datalist id="pokemon">
             <option value="altaria,azumarill,bastiodon,diggersby,drapion,jumpluff,lanturn,licki,medicham,nidoqueen,ninetales,noctowl,obstagoon,registeel,sableye,scrafty,skarmory,stunfisk,swampert,talonflame,toxapex,toxicroak,trevenant,umbreon,walrein,wigglytuff,clefable,mew,cofrag,creselia,deoxys_defense,dewgong,froslass,whiscash,victreebell,victini,mandibuzz,lapras,machamp,pidgeot,sylveon,skuntank,muk_alolan,galv,charjabug,araquanid,ariados,lurantis,dubwool,abomasnow,shiftry,dedenne,dunsparce,dragonite,ferrothorn,shiftry,noctowl,greedent,guzzlord,miltank,pelipper,gliscor,staraptor(wing_attack),staraptor(gust),victini,tentacruel,lanturn(water_gun),chesnaught,carbink,carbink(tackle),gligar,greedent(mud_shot),steelix,hitmontop"><B>GL</B></option>
@@ -26,14 +26,21 @@
         </td>
       </tr>
       <tr>
-        <td>Filter Tips</td>
-        <td>
-          <ul style="list-style-position: inside; margin-left: 10px">
+        <!--<td>Filter Tips</td>-->
+        <td colspan="4">
+          <h5>Filter Tips:</h5>
+          <ul style="list-style-position: inside; margin-left: 0px; padding-left: 5px">
             <li>
-              Write a list of comma-separated pokemon. <i>i.e. walrein,trev,medi</i>
+              Write a list of comma-separated pokemon.
+              <ul><li><i>i.e. walrein,trev,medi</i></li></ul>
             </li>
             <li>
-              Add fastmove (for the downloaded image) inside ( ). <i>i.e. walrein(waterfall),bulba(tackle),venu</i>
+              Add fast move (for the downloaded image) inside ( ).
+              <ul><li><i>i.e. walrein(waterfall),bulba(tackle),venu</i></li></ul>
+            </li>
+            <li>
+              Add charge moves (for the downloaded image) inside [ ], separated by spaces (maximum 3).
+              <ul><li><i>i.e. walrein[earthquake],venu[frenzy_plant return], charizard</i></li></ul>
             </li>
           </ul>
         </td>
@@ -79,14 +86,16 @@
       }
       for (var input in inputs){
         // remove move from chosen pokemon if it exists
-        const chosen_pokemon = inputs[input].replace(/(\(\w*\))/i, "");
+        //const chosen_pokemon = inputs[input].replace(/(\(\w*\))/i, "");
+        const chosen_pokemon = inputs[input].replace(/(\(\w*\))/i, "").replace(/\[.*\]/i, "");
         if(table.id.toUpperCase().indexOf(chosen_pokemon) > -1){
           var pokemon_name = table.id.slice(0, -6);
           if(pokemon_name == "pidgeotto" && inputs[input].toLowerCase() == "pidgeot"){
             continue;
           }
           // add back in the move
-          pokemon_name = pokemon_name + inputs[input].replace(/(\w*)(\(\w*\))?/i, "$2")
+          //pokemon_name = pokemon_name + inputs[input].replace(/(\w*)(\(\w*\))?/i, "$2")
+          pokemon_name = pokemon_name + inputs[input].replace(/(\w*)(\(\w*\))?(\[.*\])?/i, "$2$3")
           all_pokemon.push(pokemon_name)
         }
       } 
@@ -123,7 +132,7 @@
       table = all_tables[i];
       for (var input in inputs){ // input it the index
         // remove move from chosen pokemon if it exists
-        const pokemon = inputs[input].replace(/(\(\w*\))/i, "");
+        const pokemon = inputs[input].replace(/(\(\w*\))/i, "").replace(/\[.*\]/i, "");
 
         // check if the table has the given pokemon
         if(table.id.toUpperCase().indexOf(pokemon) > -1){
