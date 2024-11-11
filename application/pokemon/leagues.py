@@ -8,6 +8,8 @@
 """
 
 import requests
+import json
+
 
 class League:
     """
@@ -15,10 +17,29 @@ class League:
     """
     def __init__(self, name, ranking_url_value, data_url_value, cup_value=None):
         self.name = name
+        self.data_url_value = data_url_value
         self.ranking_url = f"https://vps.gobattlelog.com/data/overall/rankings-{ranking_url_value}.json?v=1.28.0"
         self.data_url = f"https://vps.gobattlelog.com/records/{data_url_value}/latest.json?ts=451466.3"
         self.league_value = f"{ranking_url_value}{'-40' if 'classic' in ranking_url_value else ''}"
         self.cup_value = cup_value or name.lower()
+    
+    def get_data(self, start_mmr=None, end_mmr=None):
+        """
+        Returns the data from the new gobattlelog endpoint
+        """
+        new_endpoint = f"https://gobattlelog.com/league_history?league={self.data_url_value}"
+        if start_mmr is not None:
+            new_endpoint = f"{new_endpoint}&start_mmr={start_mmr}"
+        if end_mmr is not None:
+            new_endpoint = f"{new_endpoint}&start_mmr={end_mmr}"
+
+        print(f"Getting data for {self.name} from new endpoint: {new_endpoint}")
+        response = requests.get(new_endpoint)
+        self.data_url = response.json().get("records")
+        print(f"secondary endpoint: {self.data_url}")
+
+        return requests.get(self.data_url).json()
+
 
 
 class LeagueList:

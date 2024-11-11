@@ -256,6 +256,9 @@ class MetaTeamDestroyer:
         # start calculating the anti-meta pokemon
         #self.setup(rating)
         self.set_counter_data()
+        # Set refresh back to False
+        #  because at this point we know we have to refresh
+        set_refresh(False)
 
     def filter_data(self, rating, days_back_start, days_back_end, league):
         """
@@ -285,6 +288,9 @@ class MetaTeamDestroyer:
 
         if len(temp_latest_info) == 0:
             print("!!!!")
+            print(self.latest_info)
+            with open("result.txt", "w") as result_file:
+                result_file.write(json.dumps(self.latest_info))
             raise NoPokemonFound(f"Did not find {league} data last {days_back_end}-{days_back_start} days at {rating or 'all'} rating")
         self.all_latest_info = [record for record in self.latest_info] # make a copy for stats weights later
         self.latest_info = temp_latest_info
@@ -462,16 +468,21 @@ class MetaTeamDestroyer:
 
         # Set refresh back to False
         #  because at this point we know we have to refresh
-        set_refresh(False)
+        #set_refresh(False)
         logger.info("Getting new data")
 
+        history = "all_pokemon" not in league and "game_master" not in league
+
         try:
-            latest_info = requests.get(url, timeout=REQUEST_TIMEOUT).json()
+            if history:
+                latest_info = self.league_obj.get_data()
+            else:
+                latest_info = requests.get(url, timeout=REQUEST_TIMEOUT).json()
             json.dump(latest_info, open(f"data/latest_{league}.json", 'w'))
         except Exception as exc:
             print(f"Failed to load latest {league} data because: {exc}")
             try:
-                latest_info = json.load(open(f"data/latest_{league}.json"))
+                latest_info = json.load(open(f"data/latest_{league}json"))
             except FileNotFoundError:
                 print(f"Failed to find data/latest_{league}.json file. Using stale data from {last_fetched_date}")
                 return json.loads(latest_info)

@@ -555,17 +555,45 @@ $("a.tooltip1").hover(function() {
 // Pull new data from gobattlelog for the league and refresh
 $("#refresh-league-data").click(function (e){
   // Get current league
+  e.preventDefault();
   var league = $("#league_picker").val();
   alert("Refreshing data for: " + league);
   // POST to refresh data
   var spinnercontainer = document.querySelector(".spinner-container");
   spinnercontainer.style.display = "flex";
-  $.post("/data/refresh", {
-    league: league
-  },
-  function(data, status){
+  var request_data = {league: league};
+$.ajax({
+    url: "/data/refresh",
+    type: "POST",
+    contentType: "application/json",
+    data: JSON.stringify(request_data),
+    success: function (data) {
+      // Handle successful response
+      alert("Data refreshed successfully!");
+      location.reload();
+    },
+    error: function (xhr, status, error) {
+      // Handle error response
+      alert(`Failed to refresh data because: ${error}`);
+      console.error("Error:", error);
+    },
+    complete: function () {
+      // Hide the spinner
+      spinnercontainer.style.display = "none";
+    }
   });
-  location.reload();
+
+  /*
+  $.post("/data/refresh", {league: league}, function(data, status){
+    alert(`Data refreshed for ${league}`);
+    location.reload();
+  })
+  .fail(function(xhr, status, error) {
+    alert(`Failed to refresh data because: ${error}`);
+    console.error("Error:", error);
+    spinnercontainer.style.display = "none";
+  });
+  */
 });
 
 // Refreshes once a new league is chosen
