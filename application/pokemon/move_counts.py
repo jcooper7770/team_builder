@@ -375,6 +375,7 @@ def make_image(pokemon_list, number_per_row=5, reset_data=False):
     cm_image_font = ImageFont.truetype("static/arialbd.ttf", 8)
     count_image_font = ImageFont.truetype("static/arialbd.ttf", 27)
     row, col = -1, -1
+    used_pokemon = []
     for pokemon in ["logo"] + sorted(pokemon_list):
         # extract pokemon from string if a fast move is chosen
         chosen_fast_move, chosen_charge_moves = None, []
@@ -413,6 +414,19 @@ def make_image(pokemon_list, number_per_row=5, reset_data=False):
             pokemon = pokemon[:-7]
             if pokemon in pokemon_list:
                 continue
+        
+        pokemon_name = pokemon_ranking.get('speciesName')
+        if pokemon_name:
+            pokemon_name = pokemon_name.split()[0].lower()
+        # add chosen fast move to used pokemon check
+        used_pokemon_name = pokemon_name
+        if chosen_fast_move:
+            used_pokemon_name = f"{pokemon_name}({chosen_fast_move})"
+        if chosen_charge_moves_str:
+            used_pokemon_name = f"{used_pokemon_name}_{chosen_charge_moves_str}"
+        if used_pokemon_name in used_pokemon:
+            print(f"Skipping {pokemon} because already in the image")
+            continue
         url = image_url.format(pokemon=pokemon.replace("_", "-"))
         col += 1
         if col % number_per_row == 0:
@@ -427,7 +441,8 @@ def make_image(pokemon_list, number_per_row=5, reset_data=False):
         img2 = None
 
         # Download image
-        download_pokemon_image(pokemon)
+        print(f"Downloading image for {pokemon} ({pokemon_name})")
+        download_pokemon_image(pokemon, pokemon_name)
         '''
         if not os.path.exists(pokemon_image):
             img_data = requests.get(url).content
@@ -435,8 +450,21 @@ def make_image(pokemon_list, number_per_row=5, reset_data=False):
                 handler.write(img_data)
         '''
 
+        def alt_name(pokemon, pokemon_name):
+            pokemon_image = f"pokemon_images/{pokemon}.png" if pokemon != "logo" else "static/newFlippinCoopLogo.png"
+            try:
+                print(f"trying {pokemon_image}")
+                img2 = Image.open(pokemon_image)
+                return pokemon_image
+            except:
+                pokemon_image = f"pokemon_images/{pokemon_name}.png" if pokemon != "logo" else "static/newFlippinCoopLogo.png"
+                print(f"using {pokemon_image}")
+                return pokemon_image
+
+
         # Paste image in canvas
         try:
+            pokemon_image = alt_name(pokemon, pokemon_name)
             img2 = Image.open(pokemon_image)
             img2copy = img2.copy()
             img2copy = img2copy.resize((100, 100))
@@ -480,6 +508,7 @@ def make_image(pokemon_list, number_per_row=5, reset_data=False):
             chosen_charge_moves=chosen_charge_moves
         )
         add_counts_to_img(pokemon, pokemon_moveset, blank_img, row, col, [image_font, cm_image_font, count_image_font])
+        used_pokemon.append(used_pokemon_name)
 
     blank_img.save("image.png")
 
@@ -507,13 +536,20 @@ def draw_text(imgText, position, text, font, anchor="ms"):
         anchor=anchor
     )
 
-def download_pokemon_image(pokemon):
+def download_pokemon_image(pokemon, pokemon_name=None, used_pokemon_name=False):
     pokemon_image = f"static/images/pokemon_images/{pokemon}.png" if pokemon != "logo" else "static/newFlippinCoopLogo.png"
     image_url = "https://img.pokemondb.net/sprites/go/normal/{pokemon}.png"
     url = image_url.format(pokemon=pokemon.replace("_", "-"))
+
     if not os.path.exists(pokemon_image):
+        print(f"Downloading image for {pokemon} at: {url}")
         resp = requests.get(url)
         if resp.status_code in [304, 404]:
+            print(f"Missing image for {pokemon}. Altername name: {pokemon_name}")
+            if not used_pokemon_name and pokemon_name:
+                # try with the pokemon's name
+                print(f"checking alertnate pokemon name for image: {pokemon_name}")
+                return download_pokemon_image(pokemon_name, used_pokemon_name=False)
             return
         img_data = resp.content
         with open(pokemon_image, 'wb') as handler:

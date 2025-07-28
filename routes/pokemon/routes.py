@@ -80,11 +80,21 @@ def move_count_image():
     pokemon_list = data.get("pokemon")
     num_cols = data.get("cols", 5)
     '''
-    make_image(list(set(pokemon_list)), number_per_row=num_cols, reset_data=reset)
-    export_image = os.path.abspath(os.path.join(poke_bp.root_path, "..", "..", "image.png"))
+    success = False
+    for n in range(3):
+        try:
+            make_image(list(set(pokemon_list)), number_per_row=num_cols, reset_data=reset)
+            success = True
+            break
+        except Exception as exc:
+            print(f"Failed to make move image on attempt {n} because: {exc}")
+    
+    if success:
+        export_image = os.path.abspath(os.path.join(poke_bp.root_path, "..", "..", "image.png"))
     #return send_file(export_image, as_attachment=True, cache_timeout=0)
-    return send_file(export_image, as_attachment=True)
+        return send_file(export_image, as_attachment=True)
     #return json.dumps({"status": "OK"})
+    return {"status": "failed"}
 
 
 @poke_bp.route("/move_counts")
@@ -221,9 +231,10 @@ def run():
     # Download all pokemon images
     for pokemon in team_maker.all_pokemon:
         pokemon_species = pokemon.get('speciesId')
+        pokemon_name = pokemon.get('speciesName').split()[0].lower()
         if "_shadow" in pokemon_species:
             pokemon_species = pokemon_species[:-7]
-        download_pokemon_image(pokemon_species)
+        download_pokemon_image(pokemon_species, pokemon_name)
 
     # make a list of pokemon from the top 30 teams
     teams_pokemon = set()

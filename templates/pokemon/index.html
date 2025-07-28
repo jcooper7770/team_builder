@@ -2,7 +2,9 @@
 
 {% block content %}
 <script type="text/javascript">
-function fillPokemonCharts(data, chartId, poke_win_rates) {
+async function fillPokemonCharts(data, chartId, poke_win_rates) {
+  const all_pokemon = {{ all_pokemon | tojson }};
+
   const chartElement = document.getElementById(chartId);
 
   for(let i=0; i< data.length; i++) {
@@ -36,16 +38,36 @@ function fillPokemonCharts(data, chartId, poke_win_rates) {
   
     const secondColDiv = document.createElement("div");
     secondColDiv.className = "pokemon-image-container col-6";
-   
+    const isShadow = pokemonData[0].includes("shadow");
+    const baseName = isShadow ? pokemonData[0].slice(0, -7) : pokemonData[0];
+    const imagePath = `/images/pokemon_images/${baseName}.png`;
+    const imageExists = await new Promise((resolve) => {
+      const img = new Image();
+      img.src = imagePath;
+
+      img.onload = () => resolve(true);
+      img.onerror = () => resolve(false);
+    });
+
+    let finalName = baseName;
+    if (!imageExists) {
+      console.log(`Checking alt name for ${finalName}`);
+      const alt = all_pokemon.find(p => p.speciesId == baseName);
+      if (alt && alt.speciesName) {
+        finalName = alt.speciesName.split(/\s|\(/)[0].toLowerCase();
+        console.log(`New alt name: ${finalName}`);
+      }
+    }
+
     var content = '';
     if (pokemonData[0].includes("shadow")) {
       const pokemonName = pokemonData[0].slice(0, -7);
       content = `<div style="position: relative;">
-        <img src="/images/pokemon_images/${pokemonName}.png" class="pokemon-image" style="z-index: 2; position: relative;" alt="${pokemonData[0]}">
+        <img src="/images/pokemon_images/${finalName}.png" class="pokemon-image" style="z-index: 2; position: relative;" alt="${pokemonData[0]}">
         <img src="/images/shadow_fire.png" style="max-width: 100%; max-height: 50px; position: absolute; left: 0px; bottom: 10px;">
       </div>`
     } else {
-      content = `<img src="/images/pokemon_images/${pokemonData[0]}.png" class="pokemon-image" alt="${pokemonData[0]}" >`
+      content = `<img src="/images/pokemon_images/${finalName}.png" class="pokemon-image" alt="${finalName}" >`
     }
     secondColDiv.innerHTML = content;
     firstRowDiv.appendChild(firstColDiv);
