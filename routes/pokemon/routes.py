@@ -149,6 +149,7 @@ def test_endpoint():
 
 @poke_bp.route("/")
 def run():
+    print("dsljfndsjlnflsjnadnf")
     user = None
     if session.get('name'):
         try:
@@ -255,6 +256,10 @@ def run():
                 counts[pokemon] = count
         team_counts.append([team, win_rate, counts])
 
+    pokemon_types = {
+        pokemon['speciesId']: pokemon['types']
+        for pokemon in team_maker.game_master.get('pokemon')
+    }
     return render_template(
         "pokemon/index.html",
         body="".join(html).replace(" table-responsive-lg", ""),
@@ -286,7 +291,8 @@ def run():
         admin_user=user.is_admin if user else False,
         subscribed_user=user.subscribed if user else False,
         min_percentage=min_percentage,
-        pokemon_move_counts=pokemon_moves
+        pokemon_move_counts=pokemon_moves,
+        pokemon_types=pokemon_types
     )
 
 @poke_bp.route("/pokemon/login", methods=["GET", "POST"])
