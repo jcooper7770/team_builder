@@ -256,6 +256,15 @@ def run():
                 counts[pokemon] = count
         team_counts.append([team, win_rate, counts])
 
+    # add in report pokemon to moves
+    report_pokemon = set()
+    for _, reports in team_maker.result_data.items():
+        for pokemon in reports:
+            report_pokemon.add(pokemon[0])
+    additional_moves = get_move_counts(team_maker.game_master, chosen_pokemon=list(report_pokemon))
+    pokemon_moves.update(additional_moves)
+
+
     pokemon_types = {
         pokemon['speciesId']: pokemon['types']
         for pokemon in team_maker.game_master.get('pokemon')

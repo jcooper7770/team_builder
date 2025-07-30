@@ -5,10 +5,57 @@
 
 const all_pokemon = {{ all_pokemon | tojson }};
 const pokemon_types = {{ pokemon_types | tojson }};
+const pokemon_move_counts = {{ pokemon_move_counts | tojson }};
+console.log(pokemon_move_counts);
+
+function moveCountTable(pokemon) {
+  // get the move counts for the pokemon
+  const baseName = getBaseName(pokemon);
+  
+  const moves = pokemon_move_counts[baseName];
+
+  const table = document.createElement("table");
+  table.classList = "pokemon-move-counts hide-moves";
+  if (moves == undefined) {
+    console.log(`Skipping moves for ${pokemon}`);
+    return table;
+  }
+
+  // make the table
+  const headerRow = document.createElement("tr");
+  const header1 = document.createElement("th");
+  header1.textContent = "Move";
+  headerRow.appendChild(header1);
+  const header2 = document.createElement("th");
+  header2.textContent = "Counts";
+  headerRow.appendChild(header2);
+  table.appendChild(headerRow);
+
+  for (const [key, value] of Object.entries(moves)) {
+    const row = document.createElement("tr");
+    const col1 = document.createElement("td");
+    col1.textContent = key;
+    row.appendChild(col1);
+    const col2 = document.createElement("td");
+    col2.textContent = value;
+    row.appendChild(col2);
+    table.appendChild(row);
+  }
+  return table;
+}
+
+function getBaseName(pokemon) {
+  const isShadow = pokemon.includes("shadow");
+  const baseName = isShadow ? pokemon.slice(0, -7) : pokemon;
+  return baseName;
+}
 
 function getFileName(pokemon) {
   if (pokemon === "?") {
-    return document.createTextNode("?");
+    const cell = document.createElement("div");
+    cell.classList = "report-name";
+    cell.textContent = "?";
+    return cell;
   }
 
   const isShadow = pokemon.includes("shadow");
@@ -61,6 +108,7 @@ function getFileName(pokemon) {
   nameText.style.justifyContent = "center";
   nameText.style.display = "flex";
   nameText.style.flexDirection = "row";
+  nameText.className = "report-name";
 
   // If shadow variant
   if (isShadow) {
@@ -414,7 +462,7 @@ function toggleAdvOptions(e) {
                           <th id="sort-reports" style="border:none;padding-top:1px;padding-bottom:0px; cursor: pointer;"><b><u># Reports</u></b></th>
                         </tr>
                       {% for lead in result_data.meta_leads %}
-                        <tr style="border:none;">
+                        <tr style="border:none;" class="result-row" data-pokemon="{{ lead[0] }}">
                           <td style="border:none;padding-top:1px;padding-bottom:0px;overflow: visible;">
                             <div style="display: flex; flex-direction: column; align-items: center;" class="pokemon-image-cell" data-pokemon="{{ lead[0] }}">
                               <!-- to be filled on load
@@ -494,12 +542,12 @@ function toggleAdvOptions(e) {
                     <div class="data2" style="">
                       <table border="0" style="width: 100%" class="sortable-table">
                         <tr style="border:none;">
-                          <th id="sort-name"    style="border:none;padding-top:1px;padding-bottom:0px"><b><u>Pokemon</u></b></th>
+                          <th id="sort-name"    style="border:none;padding-top:1px;padding-bottom:0px; cursor: pointer;"><b><u>Pokemon</u></b></th>
                           <th id="sort-winrate" style="border:none;padding-top:1px;padding-bottom:0px; cursor: pointer;"><b><u>Win Rate</u></b></th>
-                          <th id="sort-reports"  style="border:none;padding-top:1px;padding-bottom:0px"><b><u># Reports</u></b></th>
+                          <th id="sort-reports" style="border:none;padding-top:1px;padding-bottom:0px; cursor: pointer;"><b><u># Reports</u></b></th>
                         </tr>
                       {% for ss in result_data.meta_ss %}
-                        <tr style="border:none;">
+                        <tr style="border:none;" class="result-row" data-pokemon="{{ ss[0] }}">
                           <td style="border:none;padding-top:1px;padding-bottom:0px">
                             <div style="display: flex; flex-direction: column; align-items: center;" class="pokemon-image-cell" data-pokemon="{{ ss[0] }}">
                             <!-- to be filled on load
@@ -576,12 +624,12 @@ function toggleAdvOptions(e) {
                     <div class="data2" style="">
                       <table border="0" style="width: 100%" class="sortable-table">
                         <tr style="border:none;">
-                          <th id="sort-name"    style="border:none;padding-top:1px;padding-bottom:0px"><b><u>Pokemon</u></b></th>
+                          <th id="sort-name"    style="border:none;padding-top:1px;padding-bottom:0px; cursor: pointer;"><b><u>Pokemon</u></b></th>
                           <th id="sort-winrate" style="border:none;padding-top:1px;padding-bottom:0px; cursor: pointer;"><b><u>Win Rate</u></b></th>
-                          <th id="sort-reports"  style="border:none;padding-top:1px;padding-bottom:0px"><b><u># Reports</u></b></th>
+                          <th id="sort-reports" style="border:none;padding-top:1px;padding-bottom:0px; cursor: pointer;"><b><u># Reports</u></b></th>
                         </tr>
                       {% for back in result_data.meta_backs %}
-                        <tr style="border:none;">
+                        <tr style="border:none;" class="result-row" data-pokemon="{{ back[0] }}">
                           <td style="border:none;padding-top:1px;padding-bottom:0px">
                             <div style="display: flex; flex-direction: column; align-items: center;" class="pokemon-image-cell" data-pokemon="{{ back[0] }}">
                             <!-- to be filled on load
@@ -981,6 +1029,23 @@ document.addEventListener("DOMContentLoaded", function () {
       const el = getFileName(pokemon);
       cell.textContent = ""; // Clear existing
       cell.appendChild(el);
+      
+      // add click event to toggle pokemon moves
+      cell.parentElement.addEventListener("click", () => {
+        cell.parentElement.style.cursor = "pointer";
+        const table = cell.parentElement.querySelector(".pokemon-move-counts");
+        if (table != undefined) {
+          table.classList.toggle("hide-moves");
+        }
+      });
+    });
+
+    const resultRows = document.querySelectorAll(".result-row");
+    resultRows.forEach(row => {
+      const pokemon = row.getAttribute("data-pokemon");
+      console.log(`Making move counts for ${pokemon}`);
+      const table = moveCountTable(pokemon);
+      row.children[0].appendChild(table);
     });
 
     /*
@@ -995,7 +1060,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // make rows sortable for report tables
     document.querySelectorAll(".sortable-table").forEach(table => {
-      const rows = Array.from(table.querySelectorAll("tr")).slice(1); // Skip header
+      //const rows = Array.from(table.querySelectorAll("tr")).slice(1); // Skip header
+      const rows = Array.from(table.querySelectorAll("tr.result-row"));
       let sortState = {
         column: null,
         ascending: true
@@ -1037,6 +1103,13 @@ document.addEventListener("DOMContentLoaded", function () {
         const sorted = [...rows].sort((a, b) => {
           let aText = a.children[colIndex].innerText.trim();
           let bText = b.children[colIndex].innerText.trim();
+
+          // adjust for the pokemon moves table in the cell
+          if(!isWinRate && !isNumeric) {
+            const x = a.children[colIndex].querySelector('.report-name');
+            aText = a.children[colIndex].querySelector('.report-name').innerText.trim();
+            bText = b.children[colIndex].querySelector('.report-name').innerText.trim();
+          }
 
           let aVal, bVal;
 

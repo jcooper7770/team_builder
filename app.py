@@ -68,6 +68,8 @@ app.register_blueprint(paypal_bp, url_prefix="/")
 @app.template_filter()
 def pokemonColor(pokemon_name, chosen_pokemon, chosen_league):
     """ Choose the color of the pokemon"""
+    # temporatily disable because its taking too long
+    return pokemon_name.title()
     if not chosen_pokemon:
         return pokemon_name.title()
     battle_results = get_simmed_battle(pokemon_name, chosen_pokemon)
@@ -114,6 +116,7 @@ def get_app():
     
 if __name__ == "__main__":
     # Start db connection
+    logger.info("Starting app...")
     if socket.gethostname().endswith("secureserver.net"):
         set_table_name("data")
         create_engine(table_name="data")

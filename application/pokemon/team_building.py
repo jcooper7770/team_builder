@@ -1035,7 +1035,8 @@ def create_table_from_results(results, pokemon=None, width=None, tc=None, toolti
             for value in values:
                 if value:
                     # Provide links to battles
-                    if pokemon and ':' in value:
+                    # temp disable because it takes too long
+                    if pokemon and ':' in value and False:
                         league_val = LEAGUES_LIST[CACHE.get('league', '')] or '1500'
                         #league_val = LEAGUE_VALUE.get(CACHE.get('league', ''), '1500')
                         cell_pokemon = value.split(':')[0].strip()
