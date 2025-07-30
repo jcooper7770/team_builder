@@ -1441,7 +1441,7 @@ def ask_ai():
     """
     prompt = f"""You are a coach for trampoline athletes. Here is some data on your athlete's most recent turns (starting with the most recent): {recent_turns_map[::-1]}.
 
-    The shorthand notation follows a specific format:
+    The skills sections use trampoline shorthand notation, which follows a specific format:
     
     1. Number of Flips: The first number represents the total number of quarter flips, which indicates how many flips are performed. All single flips start with a 4, doubles with an 8, triples with a 12...
     2. Twists in Each Flip: The subsequent numbers represent the number of half twists in each flip:
@@ -1469,7 +1469,8 @@ For example:
     ] 
     # Send the prompt to OpenAI for processing
     response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo-0125",
+        #model="gpt-3.5-turbo-0125",
+        model="gpt-4.1-mini",
         messages=messages,
     )
     
