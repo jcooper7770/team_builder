@@ -206,7 +206,7 @@
                       <a class="remove-log color-changing" class="remove-turn" href="#"><i class="fa fa-minus-square" aria-hidden="true"></i></a>
                       <a class="copy-log-button color-changing" href="#"><i class="fa fa-clone" aria-hidden="true"></i></a>
                       <textarea id="log" style="border: 0; width: 100%; height: 30px;"
-                        rows="1" placeholder="Input your turn here..." class="color-changing" name="log-0">{{log_line}}</textarea>
+                        rows="1" placeholder="Input your turn here... (e.g., 40o 41o 800o 12001o)" class="color-changing" name="log-0">{{log_line}}</textarea>
                     </div>
                     {% endfor %}
                     <!-- else use an empty textarea -->
@@ -215,7 +215,7 @@
                       <a class="remove-log color-changing" class="remove-turn" href="#"><i class="fa fa-minus-square" aria-hidden="true"></i></a>
                       <a class="copy-log-button color-changing" href="#"><i class="fa fa-clone" aria-hidden="true"></i></a>
                       <textarea id="log" style="border: 0; width: 100%; height: 30px;"
-                        rows="1" placeholder="Input your turn here..." class="color-changing" name="log-0">{{routine}}</textarea>
+                        rows="1" placeholder="Input your turn here... (e.g., 12001o 811< 12001o)" class="color-changing" name="log-0">{{routine}}</textarea>
                     </div>
                     {% endif %}
                     <div id="log-turn-0">
@@ -357,7 +357,7 @@
         </div>
         <div class="weekly-challenges" id="airtimes_body">
           <div class="form-inline">
-            <input type="text" name="airtime_string" id="airtime_string" placeholder="Write airtime here" style="width:70%;"
+            <input type="number" name="airtime_string" id="airtime_string" placeholder="Write airtime here (e.g., 16.52)" style="width:70%;"
               class="form-control color-changing mr-1" \>
               <!-- add date picker field -->
             <input type="date" name="airtime-date" class="form-control color-changing" id="airtime-date" \>
