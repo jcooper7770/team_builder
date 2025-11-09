@@ -1016,7 +1016,8 @@ $("#search-practice").click(function (e) {
         var page = paginated_practices[i];
         for (let j=0; j<page.length; j++) {
             var container = page[j];
-            var table = container.children[0];
+            const table = container.querySelector(".practice-table-inner");
+            if(!table) continue;
 
             // re-display the table incase it was hidden
             table.style.display = "";
@@ -1024,6 +1025,7 @@ $("#search-practice").click(function (e) {
                 continue
             }
             var thead = table.children[0];
+            console.log(thead);
             var title = thead.children[0].children[0].innerHTML;
             if (!title.includes(string_date)) {
                 table.style.display = "none";
