@@ -150,6 +150,14 @@
                 <div class="col"><input type="text" id="notes" name="notes" placeholder="Enter notes" value="" style="width:90%"
                     class="form-control color-changing"></div>
               </div>
+ 
+              <!-- Turn airtime -->
+              <div class="form-row">
+                <div class="col-sm-3"><label for="turn_airtime">Turn Airtime:</label></div>
+                <div class="col"><input type="number" step="0.01" id="turn_airtime" name="turn_airtime" 
+                  placeholder="Enter airtime for your turn (e.g., 12.34)" value="" style="width:90%"
+                  class="form-control color-changing"></div>
+              </div>
 
               <!-- Tags -->
               <div class="form-row">
@@ -555,6 +563,7 @@
                 <div class="turn-skills column"><i class="expand-turn fa fa-plus"></i>{{ turn.skills }}{%- if turn.note -%}<i class="fa fa-comments" title="toggle comment" id="unhide-note"></i>{%- if expand_comments -%}<span id="hidden-note" style="display: inline"><br>{{turn.note}}</span>{%- else -%}<span id="hidden-note" style="display: none"><br>{{turn.note}}</span>{%- endif -%}{%- endif -%}
                   <br>
                   <div style="display: none;">
+                    {%- if turn.airtime > 0 -%}<u><b>Airtime:</b></u> {{turn.airtime}}<br>{%- endif -%}
                     <u><b>Turn:</b></u> <b>Skills:</b> {{turn.num_skills}} - <b>Flips:</b> {{turn.turn_flips}} - <b>DD:</b>
                     {{turn.difficulty}}
                     <br>

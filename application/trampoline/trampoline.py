@@ -461,7 +461,9 @@ class Practice:
         date = list(practice_data.keys())[0]
         return Practice(
             datetime.datetime.strptime(date, '%Y-%m-%d').date(),
-            [Routine([Skill(skill, event=event) for skill in routine], event=event) if (routine and routine[0][0]!="-") else Routine([], note=routine[0][1:] if routine else routine) for routine in practice_data[date]['turns']],
+            [
+                Routine([Skill(skill, event=event) for skill in routine], event=event) if (routine and routine[0][0]!="-") else Routine([], note=routine[0][1:] if routine else routine) for routine in practice_data[date]['turns']
+            ],
             event
         )
 
@@ -507,7 +509,7 @@ class Practice:
             #practices[practice_date][event][turn[0]] = turn[1]
 
             # {'1': {'skills': '801o', 'note': 'dfsd'}, '2': ...}
-            practices[practice_date][event][turn[0]] = {'skills': turn[1], 'note': turn[5]}
+            practices[practice_date][event][turn[0]] = {'skills': turn[1], 'note': turn[5], 'airtime': turn[7]}
 
         return_vals = []
         for practice_date, event_data in practices.items():
@@ -520,11 +522,12 @@ class Practice:
                 for turn in turns_list:
                     skills = turn['skills']
                     note = turn['note']
+                    airtime = turn['airtime']
                     #print(f"{practice_date} - skills: '{skills}' - note: '{note}'")
                     # not a note
                     if skills and skills[0]!="-":
                         try:
-                            routine = Routine([skill_class(skill, event=event) for skill in skills.split()], event=event, note=note)
+                            routine = Routine([skill_class(skill, event=event) for skill in skills.split()], event=event, note=note, airtime=airtime)
                         except:
                             print(f"Skipping data: {skills}")
                         routines.append(routine)
@@ -593,6 +596,7 @@ class Practice:
                 'difficulty': f"{turn.difficulty:0.1f}",
                 'turn_flips': turn.total_flips,
                 'turn_num': turn_num,
+                'airtime': turn.airtime,
                 # totals
                 'total_difficulty': f"{total_difficulty:0.1f}",
                 'total_flips': total_flips,
@@ -817,16 +821,24 @@ class Routine():
     """
     Routine
     """
-    def __init__(self, skills, event=EVENT, note=None):
+    def __init__(self, skills, event=EVENT, note=None, airtime=None):
         self.skills = skills
         self.event = event
         self.note = note
         self.total_flips = sum([skill.flips for skill in self.skills])
         self.total_twists = sum([sum(skill.twists) for skill in self.skills])
         self.difficulty = sum([skill.difficulty for skill in self.skills])
+        try:
+            self.airtime = float(airtime)
+        except:
+            self.airtime = -1
 
     def __str__(self):
-        return f'{self.total_flips} flips - {self.total_twists} twists ({self.difficulty:0.1f})'
+        #return f'{self.total_flips} flips - {self.total_twists} twists ({self.difficulty:0.1f})'
+        base = f'{self.total_flips} flips - {self.total_twists} twists ({self.difficulty:0.1f})'
+        if self.airtime:
+            base = f'{base} [Airtime: {self.airtime}]'
+        return base
 
     def __repr__(self):
         return str(self)
@@ -834,7 +846,8 @@ class Routine():
     def toJSON(self):
         return {
             "skills": [skill.shorthand for skill in self.skills],
-            "note": self.note or ""
+            "note": self.note or "",
+            "airtime": self.airtime
         }
         '''
         if self.skills:
@@ -1019,7 +1032,10 @@ def is_comment(string, event):
     return False
 
 
-def convert_form_data(form_data, logger=print, event=EVENT, notes=None, get_athlete=True, athlete_dict={}):
+def convert_form_data(
+        form_data, logger=print, event=EVENT, notes=None,
+        get_athlete=True, athlete_dict={}, turn_airtime=None
+    ):
     """
     Converts the data from the form into trampoline routines
     and returns a list of Routine objs
@@ -1125,7 +1141,7 @@ def convert_form_data(form_data, logger=print, event=EVENT, notes=None, get_athl
             athlete.set_opt(turn[1:])
             athlete.save()
 
-        routine = Routine([], event=event)
+        routine = Routine([], event=event, airtime=turn_airtime)
         for skill_num, skill in enumerate(turn):
             # Catch repeat skills with skill x#
             skill = skill.replace('\\', '/')
@@ -1205,7 +1221,7 @@ def get_turn_dds(user=None):
 
     { 
         'trampoline': [
-            {'turn': '801<', 'user': 'user', date: '01-02-2022', 'dd': 10.5},
+            {'turn': '801<', 'user': 'user', date: '01-02-2022', 'dd': 10.5, 'airtime': 12.34},
             ...
         ],
         ...
@@ -1228,6 +1244,7 @@ def get_turn_dds(user=None):
         turn_dd = sum([skill.difficulty for routine in routines for skill in routine.skills])
         turn_flips = sum([skill.flips for routine in routines for skill in routine.skills])
         turn_note = turn[5]
+        turn_airtime = turn[7]
 
         # add to all turns
         single_turn = {
@@ -1236,7 +1253,8 @@ def get_turn_dds(user=None):
             "date": turn[2],
             "dd": turn_dd,
             "flips": turn_flips,
-            "note": turn_note
+            "note": turn_note,
+            "airtime": turn_airtime
         }
         event_turns[event].append(single_turn)
     return event_turns, user_data
@@ -1251,7 +1269,7 @@ def get_leaderboards():
 
     # Get all airtimes
     airtimes = get_all_airtimes()
-    top_airtimes = {"trampoline": defaultdict(int)}
+    top_airtimes = {"10 bounce": defaultdict(int), "trampoline turn": defaultdict(int)}
     sorted_airtimes = sorted(airtimes, key=lambda x: x[1])
     for airtime in sorted_airtimes:
         user = airtime[0]
@@ -1259,7 +1277,7 @@ def get_leaderboards():
             continue
         if user_data[user]["private"]:
             continue
-        top_airtimes["trampoline"][user] = f"{airtime[1]} ({airtime[2]})"
+        top_airtimes["10 bounce"][user] = f"{airtime[1]} ({airtime[2]})"
     
 
     # Sort the turns and take top for each user
@@ -1268,6 +1286,7 @@ def get_leaderboards():
     user_turns_this_week = {}
     user_flips = {}
     user_flips_this_week = {}
+    user_airtimes = {}
     for event in event_turns:
         event_turns[event] = sorted(event_turns[event], key=lambda x:x["dd"], reverse=True)
 
@@ -1289,17 +1308,26 @@ def get_leaderboards():
                 user_turns_this_week[event][user] += 1
                 user_flips_this_week[event][user] += turn['flips']
             user_flips[event][user] += turn['flips']
+
             # Only include if there are 10 skills on trampoline or 2-3 skills on double mini
             turn_skills = turn['turn'].split()
             if event == 'trampoline' and len(turn_skills) != 10:
                 continue
             if event == "dmt" and len(turn_skills) not in [2, 3]:
                 continue
-
+            # only count airtimes if its 10 skills
             turn_date = turn['date'].date().strftime('%m/%d/%Y')
+            if turn['airtime'] > 0:
+                if user not in user_airtimes:
+                    user_airtimes[user] = {'airtime': turn['airtime'], 'date': turn_date}
+                if turn['airtime'] > user_airtimes[user]['airtime']:
+                    user_airtimes[user] = {'airtime': turn['airtime'], 'date': turn_date}
+            # same for routine/pass dd
             if user not in top_turns[event]:
                 top_turns[event][user] = f"{turn['dd']:.1f} ({turn_date})"
 
+    for user, airtime in user_airtimes.items():
+        top_airtimes['trampoline turn'][user] = f"{airtime['airtime']} ({airtime['date']})"
     # Order the user turns by number of turns per event
     data_keys = OrderedDict([
         ("TURNS", user_turns),

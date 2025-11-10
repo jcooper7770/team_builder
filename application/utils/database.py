@@ -166,6 +166,7 @@ def add_to_db(turns, user, event, practice_date, table=None, tags=[]):
                 user=user,
                 date=practice_date,
                 note=turn['note'],
+                airtime=turn.get('airtime', -1),
                 tags=','.join(tags)
             )
             engine.execute(ins)

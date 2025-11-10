@@ -51,6 +51,7 @@ def _save_trampoline_data(request):
     username = request.form.get('name', None) or session.get('name')
     event = request.form.get('event', None) or current_event()
     notes = request.form.get('notes', None)
+    turn_airtime = request.form.get("turn_airtime", -1)
     tags = request.form.get('selected_tags', '').split(',')
     custom_tags = request.form.get("custom_tags", "").split(',')
     tags.extend(custom_tags)
@@ -66,7 +67,7 @@ def _save_trampoline_data(request):
     print(user_data)
     routines = convert_form_data(form_data, event=event, notes=notes, athlete_dict=personal_dict)
     '''
-    routines = convert_form_data(form_data, event=event, notes=notes, athlete_dict={})
+    routines = convert_form_data(form_data, event=event, notes=notes, athlete_dict={}, turn_airtime=turn_airtime)
     logger.info(request.form.get('log', 'None').split('\r\n'))
 
     # Save new goal
@@ -424,6 +425,7 @@ def search_date():
         practice_date = request.args.get("practice_date", "")
     else:
         practice_date = request.form.get("practice_date", "")
+    print(f"Searching by date {practice_date}")
 
     if not practice_date:
         session["search_date"] = None
@@ -1050,6 +1052,7 @@ def create_user_stats(request, airtimes, username=None):
         'tumbling': defaultdict(list)
     }
     turns_per_practice = defaultdict(int)
+    datapts['turn_airtimes'] = []
     for event, all_turns in event_turns.items():
         datapts[f'{event}_dd'] = []
         datapts[f'{event}_flips'] = []
@@ -1083,6 +1086,11 @@ def create_user_stats(request, airtimes, username=None):
                 'x': turn_date,
                 'y': turn_flips
             })
+            if turn['airtime'] > 0:
+                datapts['turn_airtimes'].append({
+                    'x': turn_date,
+                    'y': turn['airtime']
+                })
             day_flips[event][turn_date] += turn_flips
             flips_per_turn[event][turn_date].append(turn_flips)
             turns_per_practice[turn_date] += 1
@@ -1102,12 +1110,13 @@ def create_user_stats(request, airtimes, username=None):
     datapts['trampoline_routines'] = [{'x': date, 'y': routines} for date, routines in sorted(day_routines['trampoline'].items(), key=lambda x: x[0])]
 
     # airtimes data
-    datapts['airtimes'] = []
+    #datapts['airtimes'] = []
+    datapts['ten_bounce'] = []
     for airtime in airtimes:
         if not airtime['airtime']:
             continue
         try:
-            datapts['airtimes'].append(
+            datapts['ten_bounce'].append(
                 {
                     'x': airtime['date'].strftime('%Y-%m-%d'),
                     'y': float(airtime['airtime'])
