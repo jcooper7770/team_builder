@@ -105,7 +105,38 @@ def vertical_gradient(size, top, bottom):
 
 
 def rounded_rect(draw, box, radius, fill=None, outline=None, width=1):
-    draw.rounded_rectangle(box, radius=radius, fill=fill, outline=outline, width=width)
+    """
+    Draws a rounded rectangle. Uses PIL's native rounded_rectangle when
+    available (Pillow >= 8.2), and falls back to manually composing it
+    from rectangles + pieslices/arcs on older Pillow versions (this is
+    what avoids 'ImageDraw object has no attribute rounded_rectangle'
+    on servers running an older Pillow).
+    """
+    if hasattr(draw, "rounded_rectangle"):
+        draw.rounded_rectangle(box, radius=radius, fill=fill, outline=outline, width=width)
+        return
+
+    x0, y0, x1, y1 = box
+    r = min(radius, (x1 - x0) / 2, (y1 - y0) / 2)
+    r = max(r, 0)
+
+    if fill is not None:
+        draw.rectangle([x0 + r, y0, x1 - r, y1], fill=fill)
+        draw.rectangle([x0, y0 + r, x1, y1 - r], fill=fill)
+        draw.pieslice([x0, y0, x0 + 2 * r, y0 + 2 * r], 180, 270, fill=fill)
+        draw.pieslice([x1 - 2 * r, y0, x1, y0 + 2 * r], 270, 360, fill=fill)
+        draw.pieslice([x0, y1 - 2 * r, x0 + 2 * r, y1], 90, 180, fill=fill)
+        draw.pieslice([x1 - 2 * r, y1 - 2 * r, x1, y1], 0, 90, fill=fill)
+
+    if outline is not None:
+        draw.line([x0 + r, y0, x1 - r, y0], fill=outline, width=width)
+        draw.line([x0 + r, y1, x1 - r, y1], fill=outline, width=width)
+        draw.line([x0, y0 + r, x0, y1 - r], fill=outline, width=width)
+        draw.line([x1, y0 + r, x1, y1 - r], fill=outline, width=width)
+        draw.arc([x0, y0, x0 + 2 * r, y0 + 2 * r], 180, 270, fill=outline, width=width)
+        draw.arc([x1 - 2 * r, y0, x1, y0 + 2 * r], 270, 360, fill=outline, width=width)
+        draw.arc([x0, y1 - 2 * r, x0 + 2 * r, y1], 90, 180, fill=outline, width=width)
+        draw.arc([x1 - 2 * r, y1 - 2 * r, x1, y1], 0, 90, fill=outline, width=width)
 
 
 def draw_card_shadow(canvas, box, radius, blur=10, opacity=90, offset=(0, 6)):
@@ -114,9 +145,10 @@ def draw_card_shadow(canvas, box, radius, blur=10, opacity=90, offset=(0, 6)):
     pad = blur * 3
     shadow = Image.new("RGBA", (int(x1 - x0 + pad * 2), int(y1 - y0 + pad * 2)), (0, 0, 0, 0))
     sd = ImageDraw.Draw(shadow)
-    sd.rounded_rectangle(
+    rounded_rect(
+        sd,
         [pad, pad, x1 - x0 + pad, y1 - y0 + pad],
-        radius=radius, fill=(*SHADOW_COLOR, opacity)
+        radius, fill=(*SHADOW_COLOR, opacity)
     )
     shadow = shadow.filter(ImageFilter.GaussianBlur(blur))
     canvas.alpha_composite(shadow, (int(x0 - pad + offset[0]), int(y0 - pad + offset[1])))
@@ -165,8 +197,7 @@ def draw_move_card(canvas, draw, x, y, pokemon_name, pokemon_moveset, sprite_img
     cx = S(x + CARD_W / 2)
 
     # sprite
-    #thumb_d = S(78)
-    thumb_d = S(100)
+    thumb_d = S(78)
     thumb = circular_thumb(sprite_img, thumb_d, ring_color=DIVIDER, bg_color=(34, 40, 58, 255))
     canvas.alpha_composite(thumb, (int(cx - thumb_d / 2), int(S(y + 14))))
 
@@ -215,8 +246,7 @@ def draw_move_card(canvas, draw, x, y, pokemon_name, pokemon_moveset, sprite_img
         by1 = by0 + badge_h
         accent = accents[i] if i < len(accents) else ACCENT_COUNT
         pill(draw, (bx0, by0, bx1, by1), fill=(*accent, 32), outline=None)
-        #draw.text((bx1 - badge_w / 2, ry + row_h / 2), count, font=count_fnt, fill=accent, anchor="mm")
-        draw.text((bx1 - badge_w / 2, ry + row_h / 2), count, font=count_fnt, fill=(0, 0, 0), anchor="mm")
+        draw.text((bx1 - badge_w / 2, ry + row_h / 2), count, font=count_fnt, fill=accent, anchor="mm")
 
 
 def draw_header_card(canvas, draw, x, y, logo_img, help_lines):
@@ -611,7 +641,7 @@ def make_image(pokemon_list, number_per_row=5, reset_data=False):
 
         # Download image
         print(f"Downloading image for {pokemon} ({pokemon_name})")
-        img_path = download_pokemon_image(pokemon, pokemon_name)
+        download_pokemon_image(pokemon, pokemon_name)
         '''
         if not os.path.exists(pokemon_image):
             img_data = requests.get(url).content
@@ -619,15 +649,7 @@ def make_image(pokemon_list, number_per_row=5, reset_data=False):
                 handler.write(img_data)
         '''
 
-        def alt_name(pokemon, pokemon_name, img_path=None):
-            if img_path:
-                try:
-                    print(f"[{pokemon}] Trying image at {img_path}")
-                    img2 = Image.open(img_path)
-                    return img_path
-                except:
-                    print("failed")
-    
+        def alt_name(pokemon, pokemon_name):
             pokemon_image = f"pokemon_images/{pokemon}.png" if pokemon != "logo" else "static/newFlippinCoopLogo.png"
             try:
                 print(f"trying {pokemon_image}")
@@ -642,7 +664,7 @@ def make_image(pokemon_list, number_per_row=5, reset_data=False):
         # Load sprite image
         sprite_img = None
         try:
-            pokemon_image = alt_name(pokemon, pokemon_name, img_path=img_path)
+            pokemon_image = alt_name(pokemon, pokemon_name)
             sprite_img = Image.open(pokemon_image)
         except Exception as error:
             print(f"Cannot add image for {pokemon} because:  {error}")
@@ -703,7 +725,6 @@ def download_pokemon_image(pokemon, pokemon_name=None, used_pokemon_name=False):
                 newData.append(item)
         img.putdata(newData)
         img.save(pokemon_image)
-    return pokemon_image
 
 
 
