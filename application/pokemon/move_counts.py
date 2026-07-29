@@ -171,6 +171,17 @@ def get_counts(charge_move_energy, fast_move_energy, n_moves=5):
     return counts
 
 
+def group_move_counts_by_fast_move(move_counts):
+    """Group a Pokémon's move-count rows by their fast move for compact display."""
+    grouped_counts = {}
+    for pokemon, combinations in move_counts.items():
+        grouped_counts[pokemon] = {}
+        for combination, counts in combinations.items():
+            fast_move, charge_move = combination.split(" - ", 1)
+            grouped_counts[pokemon].setdefault(fast_move, []).append((charge_move, counts))
+    return grouped_counts
+
+
 def get_game_master():
     """
     Get game master data from db
@@ -294,6 +305,9 @@ def generate_move_strings(pokemon, pokemon_ranking, counts, chosen_fast_move=Non
         short_count = f"{count[0]}{added}"
         pokemon_moveset['fast'] = ' '.join(fast_move.upper().split('_')) + f" {fast_move_turns}"
         pokemon_moveset['charge'].append({'move': ' '.join(charge_move.upper().split("_")), 'count': short_count})
+        #count_sequence = " · ".join(str(value) for value in count)
+        #pokemon_moveset['fast'] = ' '.join(fast_move.upper().split('_')) + f" {fast_move_turns}"
+        #pokemon_moveset['charge'].append({'move': ' '.join(charge_move.upper().split("_")), 'count': count_sequence})
     if not pokemon_moveset['charge']:
         pokemon_moveset['charge'] = [{'move': '???', 'count': '?'}, {'move': '???', 'count': '?'}]
     return pokemon_moveset

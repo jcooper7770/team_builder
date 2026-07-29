@@ -8,7 +8,7 @@ from passlib.hash import sha256_crypt
 import openai
 
 from application.pokemon.leagues import LEAGUES_LIST
-from application.pokemon.move_counts import get_move_counts, make_image, get_all_rankings, download_pokemon_image
+from application.pokemon.move_counts import get_move_counts, group_move_counts_by_fast_move, make_image, get_all_rankings, download_pokemon_image
 from application.pokemon.team_building import MetaTeamDestroyer, PokemonUser, get_counters_for_rating, NoPokemonFound, get_recent_league,\
     use_weighted_values, get_refresh, create_table_from_results, set_refresh
 from application.utils.utils import *
@@ -105,7 +105,9 @@ def move_counts():
         user = PokemonUser.load(session.get('name'))
     except:
         user = None
-    moves = get_move_counts(None, chosen_pokemon=chosen_pokemon, n_moves=n_moves)
+    moves = group_move_counts_by_fast_move(
+        get_move_counts(None, chosen_pokemon=chosen_pokemon, n_moves=n_moves)
+    )
     return render_template(
         "pokemon/move_counts.html",
         moves=moves,
