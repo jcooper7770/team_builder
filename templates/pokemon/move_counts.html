@@ -1,72 +1,71 @@
 {% extends "pokemon/base.html" %}
 
 {% block content %}
-<div class="container">
-  <!--<form action="/move_counts">-->
-    <br>
-    <table class="move-count-options">
-      <tr>
-        <td style="width: 0%; padding-right: 10px">
-          <label>Filter Pokemon:</label>
-        </td>
-        <td style="width: 70%">
-          <input list="pokemon" type="text" name="chosen_pokemon" onkeyup="filterPokemon()" class="form-control">
+<main class="move-counts-page container">
+  <!--
+  <section class="move-counts-hero">
+    <span class="move-counts-eyebrow">Battle reference</span>
+    <h1>Move counts, made readable</h1>
+    <p>Search Pokémon to see exactly how many fast moves are needed for each charge move.</p>
+  </section>
+  -->
+  <section class="move-counts-controls" aria-label="Move count controls">
+    <div class="form-row align-items-end">
+      <div class="form-group col-lg-8 mb-3 mb-lg-0">
+        <label for="chosen_pokemon">Filter Pokémon</label>
+        <input id="chosen_pokemon" list="pokemon" type="text" name="chosen_pokemon" oninput="filterPokemon()" class="form-control" placeholder="Try: walrein, trevenant, medicham">
           <datalist id="pokemon">
             <option value="altaria,azumarill,bastiodon,diggersby,drapion,jumpluff,lanturn,licki,medicham,nidoqueen,ninetales,noctowl,obstagoon,registeel,sableye,scrafty,skarmory,stunfisk,swampert,talonflame,toxapex,toxicroak,trevenant,umbreon,walrein,wigglytuff,clefable,mew,cofrag,creselia,deoxys_defense,dewgong,froslass,whiscash,victreebell,victini,mandibuzz,lapras,machamp,pidgeot,sylveon,skuntank,muk_alolan,galv,charjabug,araquanid,ariados,lurantis,dubwool,abomasnow,shiftry,dedenne,dunsparce,dragonite,ferrothorn,shiftry,noctowl,greedent,guzzlord,miltank,pelipper,gliscor,staraptor(wing_attack),staraptor(gust),victini,tentacruel,lanturn(water_gun),chesnaught,carbink,carbink(tackle),gligar,greedent(mud_shot),steelix,hitmontop"><B>GL</B></option>
             <option value="venusaur,charizard,pidgeot,sandslash_alolan,nidoqueen,ninetales,ninetales_alolan,machamp,tentacruel,muk,muk_alolan,muk_alolan,gyarados,lapras,snorlax,articuno,articuno_galarian,dragonite,mewtwo_armored,typhlosion,umbreon,steelix,swampert,flygon,walrein,regirock,regice,registeel,deoxys_defense,skuntank,drapion,toxicroak,abomasnow,gliscor,giratina_altered,cresselia,scrafty,escavalier,jellicent,galvantula,stunfisk_galarian,mandibuzz,cobalion(double_kick),virizion,talonflame,sylveon,trevenant,pyukumuku,tapu_fini,buzzwole,melmetal,greedent,obstagoon,sirfetchd,crobat,typhlosion(shadow_claw),ampharos,magnezone,golem_alolan(rollout),golem_alolan(volt_switch),bewear,aurorus,kyurem">UL</option>
             <option value="avalu,conkel,darkra,dialga,dragonit,excadr,giratina,garcho,groudo,gyara,haxor,ho_oh,kyog,landor,lugia,machamp,melmetal,mamosw,metagr,mewtwo,palkia,regirock,rhyper,snorl,swamper,sylve(quick_attack),sylv(charm),togeki,tyrani,walrei,yvelt,zacian_hero(quick_attack),zacian_hero(snarl),zamazenta_hero,zaru,zekr,reshira,ursaluna,xern,hydr,florges">ML</option>
             <option value="swampert,gyara,primarina,goliso,chesnaug,venus,chariza,bewear,florges,togekiss,magnezone,excad,mamoswine,avalugg,walrein,sirfetc,machamp,heracr,escav,roserade,hippowd,rhyper,genga,dragonite,garchomp,kommo,hydrei,haxor,miloti,metagross,sylve,sneasler,snorla,conkel,primarina(waterfall),gyarados(waterfall)">MLP</option>
           </datalist>
-        </td>
-        <td>
-          <input type="number" name="num_rows" value="7" min="3" max="10" class="form-control">
-        </td>
-        <td>
-          <button type="submit" onclick="downloadData()">Download move counts</button>
-        </td>
-      </tr>
-      <tr>
-        <!--<td>Filter Tips</td>-->
-        <td colspan="4">
-          <h5>Filter Tips:</h5>
-          <ul style="list-style-position: inside; margin-left: 0px; padding-left: 5px">
-            <li>
-              Write a list of comma-separated pokemon.
-              <ul><li><i>i.e. walrein,trev,medi</i></li></ul>
-            </li>
-            <li>
-              Add fast move (for the downloaded image) inside ( ).
-              <ul><li><i>i.e. walrein(waterfall),bulba(tackle),venu</i></li></ul>
-            </li>
-            <li>
-              Add charge moves (for the downloaded image) inside [ ], separated by spaces (maximum 3).
-              <ul><li><i>i.e. walrein[earthquake],venu[frenzy_plant return], charizard</i></li></ul>
-            </li>
-          </ul>
-        </td>
-      </tr>
-    </table>
-    <br><br>
-  <div class="grid-container" style="display: grid; grid-template-columns: 50% 50%;" id="table-grid">
+      </div>
+      <div class="form-group col-5 col-lg-2 mb-3 mb-lg-0">
+        <label for="num_rows">Cards per row</label>
+        <input id="num_rows" type="number" name="num_rows" value="7" min="3" max="10" class="form-control">
+      </div>
+      <div class="form-group col-7 col-lg-2 mb-3 mb-lg-0">
+        <button type="button" class="btn btn-primary move-counts-download" onclick="downloadData()"><i class="fa fa-download" aria-hidden="true"></i> Download reference</button>
+      </div>
+    </div>
+    <details class="move-counts-tips"><summary>Formatting tips <i class="fa fa-chevron-down" aria-hidden="true"></i></summary><ul><li>Use commas for multiple Pokémon: <em>walrein, trev, medi</em>.</li><li>Add a fast move in parentheses for the downloaded reference: <em>walrein(waterfall)</em>.</li><li>Add up to three charge moves in brackets: <em>venu[frenzy_plant return]</em>.</li></ul></details>
+  </section>
+  <p class="move-counts-key"><span>1</span><span>2</span><span>3</span> Each number is the fast-move count needed to reach that charge move.</p>
+  <div class="move-counts-grid" id="table-grid" aria-live="polite">
   {% for pokemon in moves.keys() %}
-  <table border="1" id="{{pokemon}}_table" name="pokemon" class="table table-striped" style="width: 90%; height: 1%; background-color: white;">
-    <thead class="thead-dark bg-dark text-white">
-    <tr>
-      <th colspan="2">{{ pokemon }}</th>
-    </tr>
-    </thead>
-    <tbody>
-    {% for counts in moves[pokemon].items() %}
-    <tr>
-      <td>{{counts[0]}}</td>
-      <td>{{counts[1]}}</td>
-    </tr>
-    </tbody>
+  <article id="{{pokemon}}_table" name="pokemon" class="move-count-card">
+    <h2>{{ pokemon.replace('_', ' ') }}</h2>
+    <div class="fast-move-groups">
+    {% for fast_move, charge_moves in moves[pokemon].items() %}
+      {% set fast_name = fast_move.split(' (')[0] %}
+      {% set fast_turns = fast_move.split('(')[1].split(')')[0] %}
+      {% set fast_energy = fast_move.split('[')[1].split(']')[0] %}
+      <details class="fast-move-group">
+        <summary>
+          <span class="fast-move-summary"><strong>{{ fast_name.replace('_', ' ') | title }}</strong><small><i class="fa fa-clock-o" aria-hidden="true"></i> {{ fast_turns }} turn{{ '' if fast_turns == '1' else 's' }} · <i class="fa fa-bolt" aria-hidden="true"></i> +{{ fast_energy }} energy</small></span>
+          <span class="fast-move-count">{{ charge_moves|length }} charge move{{ '' if charge_moves|length == 1 else 's' }} <i class="fa fa-chevron-down" aria-hidden="true"></i></span>
+        </summary>
+        <table>
+          <thead><tr><th scope="col">Move path</th><th scope="col">Fast moves to charge</th></tr></thead>
+          <tbody>
+          {% for charge_move, counts in charge_moves %}
+            {% set charge_name = charge_move.split(' [')[0] %}
+            {% set charge_energy = charge_move.split('[')[1].split(']')[0] %}
+            <tr>
+              <td class="move-name"><strong>{{ fast_name.replace('_', ' ') | title }} <i class="fa fa-long-arrow-right" aria-hidden="true"></i> {{ charge_name.replace('_', ' ') | title }}</strong><small>{{ charge_energy }} energy required</small></td>
+              <td class="move-count-sequence" aria-label="Fast move counts: {{ counts | join(', ') }}">{% for count in counts %}<span title="Charge {{ loop.index }}">{{count}}</span>{% endfor %}</td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </details>
     {% endfor %}
-  </table>
+    </div>
+  </article>
   {% endfor %}
   </div>
-</div>
+</main>
 
 
 <script type="text/javascript">

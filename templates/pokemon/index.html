@@ -282,38 +282,14 @@ function toggleAdvOptions(e) {
 </script>
 
 <div class="outside">
-  <div class="options-menu">
-    <button class="options-menu-button my-auto">Options <i class="fa fa-angle-double-right"></i></button>
-    <button class="options-close-button my-auto"><i class="fa fa-times" aria-hidden="true"></i></button>
-    <div style="clear:both;"></div>
-    <div class="container">
-      <form action="/">
-      <table border=1 align="center" class="table table-striped table-sm">
-        <thead class="thead-dark">
-          <th colspan=2>Options</th>
-        </thead>
-        <tbody>
-          <tr>
-            <td>
-              <button class="btn btn-secondary w-100" id='btn-advanced-options' onclick="toggleAdvOptions(event)">Advanced <i id="caret-advanced-options" class="fa fa-caret-down"></i></button>
-            </td>
-          </tr>
-          <tr style="display: none;" id="advanced-options">
-            <td>
-              Min Percentage:
-              <input type="number" min="1" step="1" id="min_percentage" value="{{min_percentage}}" name="min_percentage" class="form-control" />
-              Calculation Exponent:
-              <input type="number" min="1" max="3" step="1" id="exponent" value="{{exponent or 1}}" name="exponent" class="form-control" />
-              <button class="btn btn-warning w-100" id="refresh-league-data">Refresh League Data</button>
-              <br>Last refreshed: {{ last_refreshed }}
-            </td>
-          </tr>
-          <tr>
-            <td align="center">League:</td>
-          </tr>
-          <tr>
-            <td>
-            <select id="league_picker" name="league" class="form-control">
+  <section class="generator-shell container-fluid">
+    <div class="generator-heading">
+      <div><span class="generator-kicker">Live player data</span><h1>Filter the reported battle data</h1><p>These settings update the player-reported data below and inform the team recommendations.</p></div>
+      <span class="generator-status"><i class="fa fa-database" aria-hidden="true"></i> Updated {{ last_refreshed }}</span>
+    </div>
+    <form action="/" class="generator-form">
+      <div class="generator-grid">
+        <div class="form-group"><label for="league_picker">League</label><select id="league_picker" name="league" class="form-control">
               {% for league in split_leagues %}
               <optgroup label="{{ league[0] }}">
                 {% for cup in league[1] %}
@@ -321,85 +297,38 @@ function toggleAdvOptions(e) {
                 {% endfor %}
               </optgroup>
               {% endfor %}
-            </select>
-            </td>
-          </tr>
-          <tr>
-            <td align="center">Create team from pokemon:</td>
-          </tr>
-          <tr>
-            <td>
-            <select id="mySelect" name="pokemon" class="form-control">
+            </select></div>
+        <div class="form-group"><label for="mySelect">Build around a Pokémon <span class="text-muted">(optional)</span></label><select id="mySelect" name="pokemon" class="form-control">
               <option value="">None</option>
             {% for pokemon in all_pokemon %}
               <option value='{{pokemon.speciesId}}'{% if current_pokemon == pokemon.speciesId %} selected{% endif %}>{{pokemon.speciesId}}</option>
             {% endfor %}
-            </select>
-            <input type='radio' id='lead' value='lead' name='position' {% if chosen_position=="lead" %} checked {% endif %}><label for='lead'>In the lead</label>
-            <br><input type='radio' id='back' value='back' name='position' {% if chosen_position=="back" %} checked {% endif %}><label for='back'>In the back</label>
-            </td>
-          </tr>
-          <tr>
-            <td align="center">Time Range of Data (in days):</td>
-          </tr>
-          <tr>
-            <td>
-              <div style="display: flex; flex-direction: row; justify-content: space-between;">
-                <div id="from-section" style="display: flex; flex-direction: column; width: 40%;" class="text-center">
-                  <p>From:</p>
-                  <input type="number" min="1" step="1" id="num_days_start" value="{{num_days_start}}" name="num_days_start" class="form-control w-40" />
-                </div>
-                <div id="from-section" style="display: flex; flex-direction: column; width: 40%;" class="text-center">
-                  <p>To:</p>
-                  <input type="number" min="0" step="1" id="num_days_end" value="{{num_days_end}}" name="num_days_end" class="form-control w-40" />
-                </div>
-              </div>
-            </td>
-          </tr>
-          <tr>
-            <td align="center">Rating:</td>
-          </tr>
-          <tr>
-            <td>
-              <select id="rating" name="rating" class="form-control">
+            </select><fieldset class="position-choice"><legend>Preferred position</legend><label><input type="radio" id="lead" value="lead" name="position" {% if chosen_position=="lead" %} checked {% endif %}> Lead</label><label><input type="radio" id="back" value="back" name="position" {% if chosen_position=="back" %} checked {% endif %}> Closer</label></fieldset></div>
+        <div class="form-group"><label for="rating">Rating bracket</label><select id="rating" name="rating" class="form-control">
                 <option value="None">None</option>
                 {% for rating in ratings %}
                 <option value="{{rating}}"{% if rating == current_rating %} selected{% endif %}>{{rating}}</option>
                 {% endfor %}
-              </select>
-            </td>
-          </tr>
-          <tr>
-            <td align="center">Number of recommended teams:</td>
-          </tr>
-          <tr>
-            <td>
-              <input type="number" min="1" step="1" id="num_teams" value="{{number_teams}}" name="num_teams" class="form-control" />
-            </td>
-          </tr>
-          <tr>
-            <td colspan=2 align="right"><button id="submit-button" type="submit" class="btn btn-primary w-100">Submit</button></td>
-          </tr>
-        </tbody>
-      </table>
-      </form>
-    </div>
-  </div>
-
-  <div class="main-content"></div>
+              </select></div>
+        <div class="form-group"><label for="num_teams">Recommended teams</label><input type="number" min="1" step="1" id="num_teams" value="{{number_teams}}" name="num_teams" class="form-control" /></div>
+        <div class="form-group generator-submit"><button id="submit-button" type="submit" class="btn btn-primary">Update live data <i class="fa fa-arrow-right" aria-hidden="true"></i></button></div>
+      </div>
+      <details class="generator-advanced"><summary>Advanced data settings <i class="fa fa-chevron-down" aria-hidden="true"></i></summary><div class="generator-advanced-grid"><div class="form-group"><label for="num_days_start">Data starts (days ago)</label><input type="number" min="1" step="1" id="num_days_start" value="{{num_days_start}}" name="num_days_start" class="form-control" /></div><div class="form-group"><label for="num_days_end">Data ends (days ago)</label><input type="number" min="0" step="1" id="num_days_end" value="{{num_days_end}}" name="num_days_end" class="form-control" /></div><div class="form-group"><label for="min_percentage">Minimum counter score (%)</label><input type="number" min="1" step="1" id="min_percentage" value="{{min_percentage}}" name="min_percentage" class="form-control" /></div><div class="form-group"><label for="exponent">Calculation exponent</label><input type="number" min="1" max="3" step="1" id="exponent" value="{{exponent or 1}}" name="exponent" class="form-control" /></div></div></details>
+    </form>
+  </section>
 
   <!-- Tabs at bottom-->
   <div class="bottom-tabs">
     <!--<ul class="nav nav-tabs fixed-bottom bg-dark color-changing">-->
     <ul class="nav nav-tabs fixed-bottom color-changing">
       <li class="nav-item">
-        <a class="nav-link active" data-toggle="tab" href="#meta-tab">Meta Data</a>
+        <a class="nav-link active" data-toggle="tab" href="#meta-tab">Player-reported data</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" data-toggle="tab" href="#teams-tab">Top Teams</a>
+        <a class="nav-link" data-toggle="tab" href="#teams-tab">Most played teams</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" data-toggle="tab" href="#recc-tab">Recommended Teams</a>
+        <a class="nav-link" data-toggle="tab" href="#recc-tab">Algorithm recommendations</a>
       </li>
     </ul>
   </div>
@@ -407,7 +336,7 @@ function toggleAdvOptions(e) {
   <div class="tab-content">
     <div id="meta-tab" class="tab-pane fade show active">
       <div>
-        <p align="center" class="clear-header" style="margin:0px; text-decoration: none; border-bottom: 1px solid white; font-size: 20px;">Meta Data</p>
+        <p align="center" class="clear-header" style="margin:0px; text-decoration: none; border-bottom: 1px solid white; font-size: 20px;">Player-reported battle data</p>
         <div class="border-dark meta-table">
           <nav class="clear-header">
             <ul class="nav nav-tabs" id="pokemon-position" role="tablist">
@@ -690,8 +619,8 @@ function toggleAdvOptions(e) {
       <div id="top-used-teams-header" class="clear-header" >
         <div id="title" class="text-center w-100 font-weight-bold">Top Used Teams</div>
         <div id="searchbar" class="mx-auto" >
-          <button id="team-search-button" class="bg-white"><i class="fa fa-search bg-white"></i></button>
-          <input type="text" id="team-search-input" placeholder="Search for Pokemon">
+          <button id="team-search-button" class="bg-white" type="button" aria-label="Search top teams"><i class="fa fa-search bg-white" aria-hidden="true"></i></button>
+          <input type="text" id="team-search-input" placeholder="Search for Pokémon" aria-label="Search top teams by Pokémon">
         </div>
       </div>
       <a class="btn btn-primary" href="/move_image?pokemon={{teams_move_count_string}}&cols=10" target="_blank" style="width: 100%; border-radius: 0">Download move counts</a>
@@ -704,7 +633,7 @@ function toggleAdvOptions(e) {
         {% for team in team_win_rates %}
         {% if "/1 ||" not in team[1] %}
         <div>
-          <div id="team-col" class="fa fa-caret-down">
+          <div id="team-col" class="fa fa-caret-down" role="button" tabindex="0" aria-expanded="false" aria-label="Show details for {{ team[0] }}">
             <span id="team">{{ team[0] }}</span>
             <span style="display: none; opacity: 0; transition: all 1s ease">
               <br>Counters: {{ team_counters[team[0]] }}
@@ -845,36 +774,6 @@ $(document).ready(function () {
 window.onload = function(e) {
 }
 
-// options menu
-const menuButton = document.querySelector('.options-menu-button');
-const closeButton = document.querySelector('.options-close-button');
-const menu = document.querySelector('.options-menu');
-const content = document.querySelector('.main-content');
-
-menuButton.addEventListener('click', function() {
-  menu.classList.toggle('open');
-  menuButton.classList.toggle('open');
-  if (slideMainContent){
-    content.classList.toggle('open');
-  }
-  // change icon
-  document.querySelector('.options-menu-button i').classList = "fa fa-angle-double-left";
-});
-closeButton.addEventListener('click', function() {
-  menu.classList.toggle('open');
-  menuButton.classList.toggle('open');
-
-  if (slideMainContent){
-    content.classList.toggle('open');
-  }
-  // change icon
-  document.querySelector('.options-menu-button i').classList = "fa fa-angle-double-right";
-});
-const navbar = document.querySelector('.navbar');
-const optionsMenu = document.querySelector('.options-menu');
-
-optionsMenu.style.top = navbar.getBoundingClientRect().height + 'px';
-
 // Teams search feature
 const searchButton = document.getElementById("team-search-button");
 const searchInput = document.getElementById("team-search-input");
@@ -940,10 +839,19 @@ $("[id^=team-col]").click(function(e) {
     hiddenElement.style.display = "";
     hiddenElement.style.opacity = "1";
     target.className = "fa fa-caret-up";
+    target.setAttribute("aria-expanded", "true");
   } else {
     hiddenElement.style.display = "none";
     hiddenElement.style.opacity = "0";
     target.className = "fa fa-caret-down";
+    target.setAttribute("aria-expanded", "false");
+  }
+});
+
+$('[id^=team-col]').keydown(function(e) {
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault();
+    $(this).click();
   }
 });
 
@@ -1137,6 +1045,18 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       const headerCells = table.querySelectorAll("tr th");
+
+      headerCells.forEach((cell) => {
+        cell.setAttribute("role", "button");
+        cell.setAttribute("tabindex", "0");
+        cell.setAttribute("aria-label", `Sort by ${cell.innerText}`);
+        cell.addEventListener("keydown", (event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            cell.click();
+          }
+        });
+      });
 
       headerCells[0].addEventListener("click", () => sortTable(0, false));
       headerCells[1].addEventListener("click", () => sortTable(1, true, true)); // win rate

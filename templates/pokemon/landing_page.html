@@ -1,162 +1,74 @@
 {% extends "pokemon/base.html" %}
 
 {% block content %}
-<div class="hero-section">
-  <div class="row">
-    <!-- Image -->
-    <div class="col-md-6">
-      <img src="images/website_preview3.png" class="img-fluid hero-img">
-    </div>
-
-    <div class="col-md-1"></div>
-    <!-- Text -->
-    <div class="col-md-4">
-      <p>Here you'll find all the resources you need to become a a <b>top-notch</b> Pokemon Go PVP battler, including:</p>
-      <ul class="hero-list">
-        <li>Learning the current meta in each league</li>
-        <li>Learning the counts for each pokemon</li>
-        <li>Learning popular teams</li>
-      </ul>
-      <p>Many battlers using this site have ascended to the <b>legend rank</b>. Get ahead of your opponents!</p>
-      <a class="btn btn-primary" href="/">Start Now</a>
-    </div>
-  </div>
-  <div class="down-arrow">
-    <a onclick="scrollToSection(event,'outside')" class="text-white">
-      <i class="fa fa-chevron-down"></i>
-    </a>
-  </div>
-</div>
-
-<div class="outside" id="outside">
-  <br><br>
-<div class="container" style="background: rgba(255,255,255,0.4); border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
-  <h1 align="center">Welcome to the Anti-Meta Team Generator!</h1>
-  <div class="row mx-auto">
-
-    <!--<img class="mx-auto" src="/newFlippinCoopLogo.png" alt="Logo" style="width: 500px;">-->
-    <!--<p class="bgtext" style="width: 100%; position:absolute; top:50%; left:50%; font: 900 2.2em sans-serif; background-clip: text;">Testing</p>-->
-    <!--<div class="bgtext2">Testing 1 2 3 4 5</div>-->
-  </div>
-  <p>Here you'll find all the resources you need to become a top-notch Pokemon Go PVP battler, including: learning the current meta in each league, learning counts for each pokemon, and learning popular teams.</p>
-  <div class="rows">
-  {% set cardSize = 10 %}
-  <div class="row">
-    <div class="col-md-{{cardSize}} mx-auto mb-4 d-flex justify-content-center">
-      <div class="card mx-auto w-100">
-        <div class="card-body">
-          <h2 id="meta-data" class="card-title">Meta Data</h2>
-          <p class="card-text">Here you'll find the latest information on the Pokemon Go Battle meta, including the most popular Pokemon, moves, and team compositions.</p>
-          <p class="card-text">Check back regularly to stay up-to-date on the shifting landscape of competitive Pokemon Go.</p>
+<main class="landing-page">
+  <section class="landing-hero">
+    <div class="landing-orb landing-orb-one"></div>
+    <div class="landing-orb landing-orb-two"></div>
+    <div class="container landing-hero-content">
+      <div class="row align-items-center">
+        <div class="col-lg-6 landing-copy">
+          <span class="landing-eyebrow"><i class="fa fa-bolt" aria-hidden="true"></i> Pokémon GO PvP intelligence</span>
+          <h1>Build smarter teams.<br><span>Win more battles.</span></h1>
+          <p class="landing-lede">Make sense of the current meta, uncover anti-meta picks, and build a team with confidence for your next set.</p>
+          <div class="landing-actions">
+            <a class="btn landing-primary" href="/">Build a team <i class="fa fa-arrow-right" aria-hidden="true"></i></a>
+            <a class="landing-text-link" href="/about">How it works</a>
+          </div>
+          <div class="landing-proof">
+            <span><i class="fa fa-check" aria-hidden="true"></i> Current league data</span>
+            <span><i class="fa fa-check" aria-hidden="true"></i> Practical battle tools</span>
+          </div>
         </div>
-        <div class="card-footer">
-          <a href="/" class="btn btn-primary">Open Meta Data</a>
+        <div class="col-lg-6 mt-5 mt-lg-0">
+          <div class="landing-preview">
+            <div class="landing-preview-bar"><span></span><span></span><span></span><b>Team intelligence</b></div>
+            <img src="/images/website_preview3.png" class="img-fluid" alt="Preview of the Anti-Meta Team Generator results">
+          </div>
         </div>
       </div>
     </div>
-  </div>
+  </section>
 
-  <div class="row">
-    <div class="col-md-{{cardSize}} mx-auto mb-4 d-flex justify-content-center">
-      <div class="card mx-auto w-100">
-        <div class="card-body">
-          <h2 id="about" class="card-title">About</h2>
-          <p class="card-text">Learn about how to read the meta data and how to use it to build teams.</p>
-        </div>
-        <div class="card-footer">
-          <a href="/about" class="btn btn-primary">Open About page</a>
-        </div>
+  <section class="landing-tools container">
+    <div class="landing-section-heading">
+      <span>Everything you need</span>
+      <h2>From matchup data to better decisions</h2>
+      <p>Start with the tool that helps your battle prep most today.</p>
+    </div>
+    <div class="row">
+      <div class="col-md-4 mb-4">
+        <article class="landing-tool-card landing-tool-featured">
+          <div class="landing-tool-icon"><i class="fa fa-crosshairs" aria-hidden="true"></i></div>
+          <h3>Anti-Meta Generator</h3>
+          <p>See what is popular in your league and find Pokémon that counter the field.</p>
+          <a href="/">Open generator <i class="fa fa-arrow-right" aria-hidden="true"></i></a>
+        </article>
+      </div>
+      <div class="col-md-4 mb-4">
+        <article class="landing-tool-card">
+          <div class="landing-tool-icon"><i class="fa fa-list-ol" aria-hidden="true"></i></div>
+          <h3>Move Counts</h3>
+          <p>Learn charge-move timing and create a concise reference for your battles.</p>
+          <a href="/move_counts">Explore move counts <i class="fa fa-arrow-right" aria-hidden="true"></i></a>
+        </article>
+      </div>
+      <div class="col-md-4 mb-4">
+        <article class="landing-tool-card">
+          <div class="landing-tool-icon"><i class="fa fa-book" aria-hidden="true"></i></div>
+          <h3>Learn the Meta</h3>
+          <p>Understand the metrics behind the generator and turn data into stronger teams.</p>
+          <a href="/about">Read the guide <i class="fa fa-arrow-right" aria-hidden="true"></i></a>
+        </article>
       </div>
     </div>
-  </div>
+  </section>
 
-  <div class="row">
-    <div class="col-md-{{cardSize}} mx-auto mb-4 d-flex justify-content-center">
-      <div class="card mx-auto w-100">
-        <div class="card-body">
-          <h2 id="move-counts" class="card-title">Move Counts</h2>
-          <p class="card-text">Learn the counts for all pokemon moves in Pokemon Go. Also create your own move counts infographics!</p>
-          <p class="card-text">Using move counts is a great way to take the next step to improving on your skills during battles. Many top battlers have these metrics memorized while some keep an infographic on their screen during battles. Use this tool to optimize your performance and give yourself the edge in battle.</p>
-        </div>
-        <div class="card-footer">
-          <a href="/move_counts" class="btn btn-primary">Open Move Counts</a>
-        </div>
-      </div>
+  <section class="landing-support">
+    <div class="container d-flex flex-column flex-md-row align-items-md-center justify-content-between">
+      <div><span>Keep the tools growing</span><h2>Support the project</h2></div>
+      <div class="landing-support-links"><a href="/paypal">Subscribe</a><a href="http://patreon.com/itsFlippinCoop" target="_blank" rel="noopener">Patreon <i class="fa fa-external-link" aria-hidden="true"></i></a></div>
     </div>
-  </div>
-
-  <div class="row">
-    <div class="col-md-{{cardSize}} mx-auto mb-4 d-flex justify-content-center">
-      <div class="card mx-auto w-100">
-        <div class="card-body">
-          <h2 id="go-battle-log" class="card-title">Go Battle Log</h2>
-          <p class="card-text">Keep track of your battle results and see how you're improving over time. Use this tool to track your progress and identify areas for improvement.</p>
-          <p class="card-text">The Anti-Meta Team Generator uses data from GoBattleLog to generate the meta and anti-meta data.</p>
-        </div>
-        <div class="card-footer">
-          <a href="https://gobattlelog.com/" class="btn btn-primary">Visit GoBattleLog</a>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="row">
-    <div class="col-md-{{cardSize}} mx-auto mb-4 d-flex justify-content-center">
-      <div class="card mx-auto w-100">
-        <div class="card-body">
-          <h2 id="pvpoke" class="card-title">Pvpoke</h2>
-          <p class="card-text">Pvpoke is an open-source tool for simulating, ranking, and building teams for Pokemon GO PvP (player versus player) battles.</p>
-        </div>
-        <div class="card-footer">
-          <a href="https://pvpoke.com/" class="btn btn-primary">Visit Pvpoke</a>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="row">
-    <div class="col-md-{{cardSize}} mx-auto mb-4 d-flex justify-content-center">
-      <div class="card mx-auto w-100">
-        <div class="card-body">
-          <h2 id="pvpoke" class="card-title">Support me through subscribing</h2>
-          <p class="card-text">Please consider supporting me by subscribing on my <a target="_blank" href="/paypal">Paypal</a>. This will help encourage me to continue working on my website and producing move count infographics.</p>
-          <p class="card-text">There are many benefits to subscribing. Check them out on the paypal page!</p>
-        </div>
-        <div class="card-footer">
-          <a href="/paypal" class="btn btn-primary">Check out the Subscription Page</a>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="row">
-    <div class="col-md-{{cardSize}} mx-auto mb-4 d-flex justify-content-center">
-      <div class="card mx-auto w-100">
-        <div class="card-body">
-          <h2 id="pvpoke" class="card-title">Support me on Patreon</h2>
-          <p class="card-text">Please consider supporting me on my <a target="_blank" href="http://patreon.com/itsFlippinCoop">Patreon</a>. This will help encourage me to continue working on my website and producing move count infographics.</p>
-        </div>
-        <div class="card-footer">
-          <a href="http://patreon.com/itsFlippinCoop" class="btn btn-primary">Visit Patreon</a>
-        </div>
-      </div>
-    </div>
-  </div>
-
-</div>
-</div>
-<br><br>
-</div>
-<script src="https://code.jquery.com/jquery-3.5.1.js"
-          integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
-          crossorigin="anonymous"></script>
- 
-<script type="text/javascript">
-var spinnerClose = document.getElementById("spinner-close");
-spinnerClose.addEventListener("click", function() {
-  var spinnerContainer = document.querySelector(".spinner-container");
-  spinnerContainer.style.display = "none";
-});
-
-</script>
+  </section>
+</main>
 {% endblock %}
