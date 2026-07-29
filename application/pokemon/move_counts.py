@@ -197,7 +197,7 @@ def draw_move_card(canvas, draw, x, y, pokemon_name, pokemon_moveset, sprite_img
     cx = S(x + CARD_W / 2)
 
     # sprite
-    thumb_d = S(78)
+    thumb_d = S(108)
     thumb = circular_thumb(sprite_img, thumb_d, ring_color=DIVIDER, bg_color=(34, 40, 58, 255))
     canvas.alpha_composite(thumb, (int(cx - thumb_d / 2), int(S(y + 14))))
 
@@ -246,7 +246,7 @@ def draw_move_card(canvas, draw, x, y, pokemon_name, pokemon_moveset, sprite_img
         by1 = by0 + badge_h
         accent = accents[i] if i < len(accents) else ACCENT_COUNT
         pill(draw, (bx0, by0, bx1, by1), fill=(*accent, 32), outline=None)
-        draw.text((bx1 - badge_w / 2, ry + row_h / 2), count, font=count_fnt, fill=accent, anchor="mm")
+        draw.text((bx1 - badge_w / 2, ry + row_h / 2), count, font=count_fnt, fill=(0,0,0), anchor="mm")
 
 
 def draw_header_card(canvas, draw, x, y, logo_img, help_lines):
@@ -641,7 +641,7 @@ def make_image(pokemon_list, number_per_row=5, reset_data=False):
 
         # Download image
         print(f"Downloading image for {pokemon} ({pokemon_name})")
-        download_pokemon_image(pokemon, pokemon_name)
+        img_path = download_pokemon_image(pokemon, pokemon_name)
         '''
         if not os.path.exists(pokemon_image):
             img_data = requests.get(url).content
@@ -649,7 +649,13 @@ def make_image(pokemon_list, number_per_row=5, reset_data=False):
                 handler.write(img_data)
         '''
 
-        def alt_name(pokemon, pokemon_name):
+        def alt_name(pokemon, pokemon_name, img_path=None):
+            if img_path:
+                try:
+                    img2 = Image.open(img_path)
+                    return img_path
+                except:
+                    pass
             pokemon_image = f"pokemon_images/{pokemon}.png" if pokemon != "logo" else "static/newFlippinCoopLogo.png"
             try:
                 print(f"trying {pokemon_image}")
@@ -664,7 +670,7 @@ def make_image(pokemon_list, number_per_row=5, reset_data=False):
         # Load sprite image
         sprite_img = None
         try:
-            pokemon_image = alt_name(pokemon, pokemon_name)
+            pokemon_image = alt_name(pokemon, pokemon_name, img_path=img_path)
             sprite_img = Image.open(pokemon_image)
         except Exception as error:
             print(f"Cannot add image for {pokemon} because:  {error}")
@@ -725,6 +731,7 @@ def download_pokemon_image(pokemon, pokemon_name=None, used_pokemon_name=False):
                 newData.append(item)
         img.putdata(newData)
         img.save(pokemon_image)
+    return pokemon_image
 
 
 
