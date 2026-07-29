@@ -12,13 +12,14 @@ TODO:
 
 from dataclasses import dataclass
 import json
+import math
 import os.path
 import logging
 import re
 import requests
 import time
 
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
 from application.utils.database import create_engine
 #from ..utils.database import create_engine
@@ -34,9 +35,209 @@ The "-" means that the
   second move is one less
 twitch.tv/itsflippincoop"""
 
+HELP_LINES = [
+    "HOW TO READ THIS",
+    "Fast move on top",
+    "5-  =  5 or 4 (leftover energy)",
+    "*  =  alt. 3rd cycle count",
+    "twitch.tv/itsflippincoop",
+]
+
 ALL_RANKINGS = []
 GAME_MASTER = {}
 LATEST_DATA = {}
+
+
+# ---------------------------------------------------------------------------
+# THEME / RENDERING
+# ---------------------------------------------------------------------------
+SS = 3  # supersampling factor; everything is drawn at SS x scale then
+        # downsampled at the end for smooth text and rounded corners.
+
+BG_TOP = (13, 16, 26)
+BG_BOTTOM = (20, 24, 38)
+CARD_BG = (26, 31, 46)
+CARD_BORDER = (45, 52, 74)
+SHADOW_COLOR = (0, 0, 0)
+
+TEXT_PRIMARY = (241, 245, 249)
+TEXT_SECONDARY = (148, 163, 184)
+TEXT_MUTED = (100, 112, 134)
+
+ACCENT_FAST = (56, 189, 248)      # sky-400, fast move pill
+ACCENT_COUNT = (250, 204, 21)     # amber-400, main count numbers
+ACCENT_ALT = (167, 139, 250)      # violet-300, 3rd charge move accent
+DIVIDER = (42, 49, 68)
+
+CARD_W = 224
+CARD_H = 270
+GAP = 16
+MARGIN = 28
+HEADER_H = 96
+
+FONT_DIR = os.path.join("static", "fonts")
+
+
+def _font(name, size):
+    return ImageFont.truetype(os.path.join(FONT_DIR, name), size * SS)
+
+
+def F_TITLE(size): return _font("Outfit-Bold.ttf", size)
+def F_BOLD(size): return _font("Outfit-Bold.ttf", size)
+def F_REG(size): return _font("Outfit-Regular.ttf", size)
+def F_MONO_B(size): return _font("JetBrainsMono-Bold.ttf", size)
+def F_MONO(size): return _font("JetBrainsMono-Regular.ttf", size)
+
+
+def S(v):
+    return v * SS
+
+
+def vertical_gradient(size, top, bottom):
+    """Returns an RGB image with a smooth top-to-bottom gradient."""
+    w, h = size
+    base = Image.new("RGB", (1, h), 0)
+    px = base.load()
+    for y in range(h):
+        t = y / max(h - 1, 1)
+        px[0, y] = tuple(int(top[i] + (bottom[i] - top[i]) * t) for i in range(3))
+    return base.resize((w, h))
+
+
+def rounded_rect(draw, box, radius, fill=None, outline=None, width=1):
+    draw.rounded_rectangle(box, radius=radius, fill=fill, outline=outline, width=width)
+
+
+def draw_card_shadow(canvas, box, radius, blur=10, opacity=90, offset=(0, 6)):
+    """Paints a soft drop shadow behind a card directly onto `canvas` (RGBA)."""
+    x0, y0, x1, y1 = box
+    pad = blur * 3
+    shadow = Image.new("RGBA", (int(x1 - x0 + pad * 2), int(y1 - y0 + pad * 2)), (0, 0, 0, 0))
+    sd = ImageDraw.Draw(shadow)
+    sd.rounded_rectangle(
+        [pad, pad, x1 - x0 + pad, y1 - y0 + pad],
+        radius=radius, fill=(*SHADOW_COLOR, opacity)
+    )
+    shadow = shadow.filter(ImageFilter.GaussianBlur(blur))
+    canvas.alpha_composite(shadow, (int(x0 - pad + offset[0]), int(y0 - pad + offset[1])))
+
+
+def draw_text_centered(draw, cx, y, text, font, fill, tracking=0):
+    """Draws horizontally centered text, with optional letter-spacing in px."""
+    if tracking == 0:
+        draw.text((cx, y), text, font=font, fill=fill, anchor="ma")
+        return
+    widths = [draw.textlength(ch, font=font) for ch in text]
+    total = sum(widths) + tracking * (len(text) - 1)
+    x = cx - total / 2
+    for ch, w in zip(text, widths):
+        draw.text((x, y), ch, font=font, fill=fill, anchor="la")
+        x += w + tracking
+
+
+def pill(draw, box, fill, outline=None, width=1):
+    radius = (box[3] - box[1]) / 2
+    rounded_rect(draw, box, radius, fill=fill, outline=outline, width=width)
+
+
+def circular_thumb(sprite_img, diameter, ring_color, bg_color):
+    """Returns an RGBA image: circular backdrop + centered sprite."""
+    d = int(diameter)
+    out = Image.new("RGBA", (d, d), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(out)
+    draw.ellipse([0, 0, d, d], fill=bg_color)
+    draw.ellipse([S(1), S(1), d - S(1), d - S(1)], outline=ring_color, width=S(1))
+    if sprite_img is not None:
+        inner = int(d * 0.72)
+        spr = sprite_img.convert("RGBA").resize((inner, inner), Image.LANCZOS)
+        out.alpha_composite(spr, ((d - inner) // 2, (d - inner) // 2 - S(1)))
+    return out
+
+
+def draw_move_card(canvas, draw, x, y, pokemon_name, pokemon_moveset, sprite_img):
+    """Draws one modern, rounded 'stat card' for a pokemon's move counts."""
+    box = (S(x), S(y), S(x + CARD_W), S(y + CARD_H))
+    radius = S(16)
+
+    draw_card_shadow(canvas, box, radius, blur=S(4), opacity=70, offset=(0, S(3)))
+    rounded_rect(draw, box, radius, fill=CARD_BG, outline=CARD_BORDER, width=S(1))
+
+    cx = S(x + CARD_W / 2)
+
+    # sprite
+    #thumb_d = S(78)
+    thumb_d = S(100)
+    thumb = circular_thumb(sprite_img, thumb_d, ring_color=DIVIDER, bg_color=(34, 40, 58, 255))
+    canvas.alpha_composite(thumb, (int(cx - thumb_d / 2), int(S(y + 14))))
+
+    # name
+    name_y = S(y + 100)
+    draw_text_centered(draw, cx, name_y, pokemon_name.upper(), F_BOLD(14), TEXT_PRIMARY, tracking=S(1))
+
+    # fast move pill
+    fast_text = pokemon_moveset.get("fast", "?")
+    fnt_fast = F_MONO_B(13)
+    fw = draw.textlength(fast_text, font=fnt_fast)
+    pill_pad_x = S(12)
+    pill_h = S(28)
+    pill_w = fw + pill_pad_x * 2
+    pill_y0 = S(y + 128)
+    pill_box = (cx - pill_w / 2, pill_y0, cx + pill_w / 2, pill_y0 + pill_h)
+    pill(draw, pill_box, fill=(56, 189, 248, 32), outline=ACCENT_FAST, width=int(S(1.5)))
+    draw.text((cx, pill_y0 + pill_h / 2), fast_text, font=fnt_fast, fill=(214, 242, 255), anchor="mm")
+
+    # divider
+    div_y = S(y + 168)
+    draw.line([(S(x + 18), div_y), (S(x + CARD_W - 18), div_y)], fill=DIVIDER, width=S(1))
+
+    # charge moves
+    charges = pokemon_moveset.get("charge", [])[:3]
+    row_h = S(30)
+    row_y = div_y + S(14)
+    accents = [ACCENT_COUNT, ACCENT_COUNT, ACCENT_ALT]
+    for i, cm in enumerate(charges):
+        move_name = cm.get("move", "???")
+        count = str(cm.get("count", "?"))
+        ry = row_y + i * row_h
+        max_w = S(CARD_W - 90)
+        fnt = F_REG(13)
+        while draw.textlength(move_name, font=fnt) > max_w and len(move_name) > 3:
+            move_name = move_name[:-2]
+        draw.text((S(x + 18), ry + row_h / 2), move_name, font=fnt, fill=TEXT_SECONDARY, anchor="lm")
+
+        count_fnt = F_MONO_B(18)
+        cw = draw.textlength(count, font=count_fnt)
+        badge_w = max(cw + S(18), S(38))
+        badge_h = S(26)
+        bx1 = S(x + CARD_W - 18)
+        bx0 = bx1 - badge_w
+        by0 = ry + row_h / 2 - badge_h / 2
+        by1 = by0 + badge_h
+        accent = accents[i] if i < len(accents) else ACCENT_COUNT
+        pill(draw, (bx0, by0, bx1, by1), fill=(*accent, 32), outline=None)
+        #draw.text((bx1 - badge_w / 2, ry + row_h / 2), count, font=count_fnt, fill=accent, anchor="mm")
+        draw.text((bx1 - badge_w / 2, ry + row_h / 2), count, font=count_fnt, fill=(0, 0, 0), anchor="mm")
+
+
+def draw_header_card(canvas, draw, x, y, logo_img, help_lines):
+    """Draws the branded header/legend card that replaces the old 'logo' cell."""
+    box = (S(x), S(y), S(x + CARD_W), S(y + CARD_H))
+    radius = S(16)
+    draw_card_shadow(canvas, box, radius, blur=S(4), opacity=70, offset=(0, S(3)))
+    rounded_rect(draw, box, radius, fill=(20, 24, 38), outline=CARD_BORDER, width=S(1))
+
+    cx = S(x + CARD_W / 2)
+    if logo_img is not None:
+        d = S(72)
+        logo = logo_img.convert("RGBA").resize((int(d), int(d)), Image.LANCZOS)
+        canvas.alpha_composite(logo, (int(cx - d / 2), int(S(y + 14))))
+
+    ty = S(y + 100)
+    for i, line in enumerate(help_lines):
+        color = TEXT_PRIMARY if i == 0 else TEXT_SECONDARY
+        fnt = F_BOLD(13) if i == 0 else F_REG(12)
+        draw_text_centered(draw, cx, ty, line, fnt, color)
+        ty += S(20)
 
 
 def load_data(data):
@@ -313,65 +514,7 @@ def generate_move_strings(pokemon, pokemon_ranking, counts, chosen_fast_move=Non
     return pokemon_moveset
 
 
-def add_counts_to_img(pokemon, pokemon_moveset, blank_img, row, col, fonts):
-    """
-    Adds the move counts text to the image
-    """
-    image_font, cm_image_font, count_image_font = fonts
-    imgText = ImageDraw.Draw(blank_img)
-    charge_xpos = (2*col + 1)*100 + 32
 
-    # Draw fast move
-    draw_text(
-        imgText,
-        (charge_xpos, row*100 + 10),
-        pokemon_moveset['fast'],
-        font=image_font
-    )
-    print(pokemon, pokemon_moveset)
-
-    # Draw charge moves
-    draw_text(
-        imgText,
-        (charge_xpos, row*100 + 20),
-        pokemon_moveset['charge'][0]['move'],
-        font=cm_image_font
-    )
-    draw_text(
-        imgText,
-        (charge_xpos, row*100 + 45),
-        pokemon_moveset['charge'][0]['count'],
-        font=count_image_font
-    )
-
-    if len(pokemon_moveset['charge']) > 1:
-        # second charge move
-        draw_text(
-            imgText,
-            (charge_xpos + 33 if len(pokemon_moveset['charge'])==3 else charge_xpos, row*100 + 60),
-            pokemon_moveset['charge'][1]['move'],
-            font=cm_image_font
-        )
-        draw_text(
-            imgText,
-            (charge_xpos + 33 if len(pokemon_moveset['charge'])==3 else charge_xpos, row*100 + 85),
-            pokemon_moveset['charge'][1]['count'],
-            font=count_image_font
-        )
-    
-    if len(pokemon_moveset['charge']) == 3:
-        draw_text(
-            imgText,
-            (charge_xpos - 33, row*100 + 95),
-            pokemon_moveset['charge'][2]['move'],
-            font=cm_image_font,
-        )
-        draw_text(
-            imgText,
-            (charge_xpos - 33, row*100 + 85),
-            pokemon_moveset['charge'][2]['count'],
-            font=count_image_font,
-        )
 
 
 def make_image(pokemon_list, number_per_row=5, reset_data=False):
@@ -382,12 +525,24 @@ def make_image(pokemon_list, number_per_row=5, reset_data=False):
     rankings = get_all_rankings(reset_data)
     pokemon_moves = get_popular_moves(days_back=30)
     image_url = "https://img.pokemondb.net/sprites/go/normal/{pokemon}.png"
-    image_height = ((len(pokemon_list) + 1) // number_per_row) * 100 + 100
-    image_width = number_per_row * 200
-    blank_img = Image.new("RGB", (image_width, image_height), (219, 226, 233))
-    image_font = ImageFont.truetype("static/arialbd.ttf", 11)
-    cm_image_font = ImageFont.truetype("static/arialbd.ttf", 8)
-    count_image_font = ImageFont.truetype("static/arialbd.ttf", 27)
+
+    n_cards = len(pokemon_list) + 1  # +1 for the header/logo card
+    n_rows = math.ceil(n_cards / number_per_row)
+    image_width = MARGIN * 2 + number_per_row * CARD_W + (number_per_row - 1) * GAP
+    image_height = MARGIN * 2 + HEADER_H + n_rows * CARD_H + (n_rows - 1) * GAP
+
+    canvas = vertical_gradient((S(image_width), S(image_height)), BG_TOP, BG_BOTTOM).convert("RGBA")
+    draw = ImageDraw.Draw(canvas)
+    draw_text_centered(
+        draw, S(image_width / 2), S(MARGIN), "POKÉMON GO MOVE COUNTS",
+        F_TITLE(24), TEXT_PRIMARY, tracking=S(1)
+    )
+    draw_text_centered(
+        draw, S(image_width / 2), S(MARGIN + 34), "Fast move \u2192 charge move cycle reference",
+        F_REG(12), TEXT_MUTED
+    )
+    grid_top = MARGIN + HEADER_H
+
     row, col = -1, -1
     used_pokemon = []
     for pokemon in ["logo"] + sorted(pokemon_list):
@@ -456,7 +611,7 @@ def make_image(pokemon_list, number_per_row=5, reset_data=False):
 
         # Download image
         print(f"Downloading image for {pokemon} ({pokemon_name})")
-        download_pokemon_image(pokemon, pokemon_name)
+        img_path = download_pokemon_image(pokemon, pokemon_name)
         '''
         if not os.path.exists(pokemon_image):
             img_data = requests.get(url).content
@@ -464,7 +619,15 @@ def make_image(pokemon_list, number_per_row=5, reset_data=False):
                 handler.write(img_data)
         '''
 
-        def alt_name(pokemon, pokemon_name):
+        def alt_name(pokemon, pokemon_name, img_path=None):
+            if img_path:
+                try:
+                    print(f"[{pokemon}] Trying image at {img_path}")
+                    img2 = Image.open(img_path)
+                    return img_path
+                except:
+                    print("failed")
+    
             pokemon_image = f"pokemon_images/{pokemon}.png" if pokemon != "logo" else "static/newFlippinCoopLogo.png"
             try:
                 print(f"trying {pokemon_image}")
@@ -476,42 +639,20 @@ def make_image(pokemon_list, number_per_row=5, reset_data=False):
                 return pokemon_image
 
 
-        # Paste image in canvas
+        # Load sprite image
+        sprite_img = None
         try:
-            pokemon_image = alt_name(pokemon, pokemon_name)
-            img2 = Image.open(pokemon_image)
-            img2copy = img2.copy()
-            img2copy = img2copy.resize((100, 100))
-            blank_img.paste(img2copy, (2*col*100, row*100), img2copy.convert("RGBA"))
+            pokemon_image = alt_name(pokemon, pokemon_name, img_path=img_path)
+            sprite_img = Image.open(pokemon_image)
         except Exception as error:
             print(f"Cannot add image for {pokemon} because:  {error}")
-        
-        if pokemon != "logo":
-            pokemonText = ImageDraw.Draw(blank_img)
-            draw_text(
-                pokemonText,
-                (2*col*100, row*100+10),
-                pokemon,
-                font=image_font,
-                anchor="ls"
-            )
 
-        rectangle = ImageDraw.Draw(blank_img)
-        rectangle.rectangle(
-            [(2*col)*100, row*100, (2*col+1)*100 + 100, row*100 + 100],
-            outline="black"
-        )
+        card_x = MARGIN + col * (CARD_W + GAP)
+        card_y = grid_top + row * (CARD_H + GAP)
 
-        # Skip move text for the logo
+        # Draw the branded header/legend card in place of the old "logo" cell
         if pokemon == "logo":
-            imgText = ImageDraw.Draw(blank_img)
-            charge_xpos = (2*col + 1)*100 + 50
-            draw_text(
-                imgText,
-                (charge_xpos, row*100 + 10),
-                HELP_TEXT,
-                font=cm_image_font
-            )
+            draw_header_card(canvas, draw, card_x, card_y, sprite_img, HELP_LINES)
             continue
 
         # add move count text for pokemon
@@ -521,34 +662,14 @@ def make_image(pokemon_list, number_per_row=5, reset_data=False):
             chosen_fast_move=chosen_fast_move, mega=mega, popular_moves=popular_moves,
             chosen_charge_moves=chosen_charge_moves
         )
-        add_counts_to_img(pokemon, pokemon_moveset, blank_img, row, col, [image_font, cm_image_font, count_image_font])
+        draw_move_card(canvas, draw, card_x, card_y, pokemon, pokemon_moveset, sprite_img)
         used_pokemon.append(used_pokemon_name)
 
-    blank_img.save("image.png")
+    final_img = canvas.resize((image_width, image_height), Image.LANCZOS).convert("RGB")
+    final_img.save("image.png")
 
 
-def draw_text(imgText, position, text, font, anchor="ms"):
-    """
-    Draws text with gray background
-    """
-    bbox = imgText.textbbox(
-        position,
-        f" {text} ",
-        font=font,
-        anchor=anchor
-    )
-    new_size = (0, -2, 0, 2)
-    new_bbox = tuple(sum(x) for x in zip(bbox, new_size))
-    #imgText.rectangle(bbox, fill=(128, 128, 128, 25)) # grey background to text
-    #imgText.rectangle(bbox, fill=(255,255,255, 25), outline="#000000") # white background with black outline
-    imgText.rectangle(new_bbox, fill=(255,255,255, 25), outline="#000000")
-    imgText.text(
-        position,
-        text,
-        font=font,
-        fill=(0, 0, 0),
-        anchor=anchor
-    )
+
 
 def download_pokemon_image(pokemon, pokemon_name=None, used_pokemon_name=False):
     pokemon_image = f"static/images/pokemon_images/{pokemon}.png" if pokemon != "logo" else "static/newFlippinCoopLogo.png"
@@ -582,6 +703,7 @@ def download_pokemon_image(pokemon, pokemon_name=None, used_pokemon_name=False):
                 newData.append(item)
         img.putdata(newData)
         img.save(pokemon_image)
+    return pokemon_image
 
 
 
