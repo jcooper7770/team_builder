@@ -313,7 +313,20 @@ function toggleAdvOptions(e) {
         <div class="form-group"><label for="num_teams">Recommended teams</label><input type="number" min="1" step="1" id="num_teams" value="{{number_teams}}" name="num_teams" class="form-control" /></div>
         <div class="form-group generator-submit"><button id="submit-button" type="submit" class="btn btn-primary">Update live data <i class="fa fa-arrow-right" aria-hidden="true"></i></button></div>
       </div>
-      <details class="generator-advanced"><summary>Advanced data settings <i class="fa fa-chevron-down" aria-hidden="true"></i></summary><div class="generator-advanced-grid"><div class="form-group"><label for="num_days_start">Data starts (days ago)</label><input type="number" min="1" step="1" id="num_days_start" value="{{num_days_start}}" name="num_days_start" class="form-control" /></div><div class="form-group"><label for="num_days_end">Data ends (days ago)</label><input type="number" min="0" step="1" id="num_days_end" value="{{num_days_end}}" name="num_days_end" class="form-control" /></div><div class="form-group"><label for="min_percentage">Minimum counter score (%)</label><input type="number" min="1" step="1" id="min_percentage" value="{{min_percentage}}" name="min_percentage" class="form-control" /></div><div class="form-group"><label for="exponent">Calculation exponent</label><input type="number" min="1" max="3" step="1" id="exponent" value="{{exponent or 1}}" name="exponent" class="form-control" /></div></div></details>
+      <details class="generator-advanced">
+        <summary>Advanced data settings <i class="fa fa-chevron-down" aria-hidden="true"></i></summary>
+        <div class="generator-advanced-grid">
+          <div class="form-group">
+            <label for="num_days_start">Data starts (days ago)</label><input type="number" min="1" step="1" id="num_days_start" value="{{num_days_start}}" name="num_days_start" class="form-control" />
+          </div>
+          <div class="form-group"><label for="num_days_end">Data ends (days ago)</label><input type="number" min="0" step="1" id="num_days_end" value="{{num_days_end}}" name="num_days_end" class="form-control" />
+          </div>
+          <div class="form-group"><label for="min_percentage">Minimum counter score (%)</label><input type="number" min="1" step="1" id="min_percentage" value="{{min_percentage}}" name="min_percentage" class="form-control" />
+          </div>
+          <div class="form-group"><label for="exponent">Calculation exponent</label><input type="number" min="1" max="3" step="1" id="exponent" value="{{exponent or 1}}" name="exponent" class="form-control" />
+          </div>
+        </div>
+      </details>
     </form>
   </section>
 
