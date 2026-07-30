@@ -1,0 +1,379 @@
+<!doctype html>
+<html>
+
+<head>
+
+  <style type="text/css">
+    .practices {
+      height: 900px;
+      overflow-y: auto;
+    }
+
+    .practices::-webkit-scrollbar {
+      width: 20px;
+    }
+
+    .practices::-webkit-scrollbar-track {
+      background: white;
+    }
+
+    .practices::-webkit-scrollbar-thumb {
+      background-color: gray;
+      border-radius: 20px;
+      border: 3px solid black;
+    }
+
+    body::-webkit-scrollbar {
+      width: 20px;
+    }
+
+    body::-webkit-scrollbar-track {
+      background: white;
+    }
+
+    body::-webkit-scrollbar-thumb {
+      background-color: gray;
+      border-radius: 20px;
+      border: 3px solid black;
+    }
+
+    ul {
+      list-style-position: inside;
+    }
+
+    .main-nav .nav-item.active {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 10px;
+    }
+
+    nav.navbar.top-navbar {
+      z-index: 1000;
+    }
+
+    /* @import url("templates/background.css");*/
+  </style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/background.css')}}" type="text/css" />
+
+  <title>Trampoline Logger</title>
+  <meta charset="utf-8">
+  <!--<meta name="viewport" content="width=device-width, initial-scale=0.31, maximum-scale=1" />-->
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css">
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <!--<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.slim.min.js"></script>-->
+<script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
+  crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/utils.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.21.0/moment.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/trampoline_styles.css')}}" type="text/css" />
+</head>
+
+<body style="background-color:#E5E4E2;" class="light-mode">
+
+  <!-- Grey navbar with black text -->
+  <!--<nav class="navbar navbar-expand-sm bg-dark navbar-dark sticky color-changing top-navbar">-->
+  <nav class="navbar navbar-expand-sm navbar-dark sticky color-changing top-navbar">
+    <!-- Add the Font Awesome button for mobile view -->
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+      aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <i class="fa fa-bars"></i>
+    </button>
+    <a class="navbar-brand" href="/logger/landing">
+      <img src="/images/flipLogo.png" alt="Logo" style="width:40px;">
+    </a>
+    <div id="navbarNav" class="collapse navbar-collapse top-nav">
+      <ul class="navbar-nav main-nav">
+        <li
+          class="nav-item{%if request.endpoint=='trampoline.trampoline_log' or request.endpoint=='coach.coach_home' %} active{% endif %}">
+          <a class="nav-link" href="/logger">Logger</a>
+        </li>
+        <li class="nav-item{%if request.endpoint=='trampoline.social' %} active{% endif %}">
+          <a class="nav-link" href="/logger/social">Feed</a>
+        </li>
+        <li class="nav-item{%if request.endpoint=='trampoline.about_trampoline' %} active{% endif %}">
+          <a class="nav-link" href="/logger/about">About</a>
+        </li>
+        <li class="nav-item{%if request.endpoint=='trampoline.resource_trampoline' %} active{% endif %}">
+          <a class="nav-link" href="/logger/resources">Resources</a>
+        </li>
+      </ul>
+      <ul class="nav navbar-nav mx-auto abs-center-x main-nav">
+        <li class="nav-item"><a class="navbar-brand disabled">Trampoline Practice Logger</a></li>
+      </ul>
+      <ul class="nav navbar-nav ml-auto mr-sm-3 user-nav">
+        {% if user %}
+        <!-- Add a notification icon with an ID for easy access -->
+        <li class="nav-item position-relative">
+          <a class="nav-link" href="#">
+            <i class="fa fa-bell"></i> <!-- Use a bell icon or any other suitable icon -->
+            <span class="badge badge-danger badge-pill notification-badge">0</span>
+            <!-- Badge to show notification count -->
+          </a>
+          <div class="dropdown-menu dropdown-menu-right position-absolute notifications-dropdown">
+            <!-- Notification items will be added here -->
+          </div>
+        </li>
+
+        <li class="nav-item dropdown ml-auto">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown"
+            aria-haspopup="true" aria-expanded="false">Hello {{ user }}!</a>
+          <div id="user-menu" class="dropdown-menu dropdown-menu-right position-absolute"
+            aria-labelledby="navbarDropdownMenuLink">
+            <a class="dropdown-item" href="/logger/user/{{user}}">User Profile</a>
+            <a class="dropdown-item" href="/logger/user">Settings</a>
+            {% if is_admin %}
+            <a class="dropdown-item" href="/logger/admin">Admin</a>
+            {% endif %}
+            <!--<a class="dropdown-item" href="/logger/user/statistics">User Statistics</a>-->
+            <a class="dropdown-item" href="#" data-keepopenonclick>
+              <div>
+                <input type="checkbox" class="darkmode-checkbox" id="darkmode-checkbox">
+                <label for="darkmode-checkbox" class="darkmode-checkbox-label">
+                  <i class="fa fa-moon-o"></i>
+                  <i class="fa fa-sun-o"></i>
+                  <span class="darkmode-ball"></span>
+                </label>
+              </div>
+            </a>
+            <a class="dropdown-item" href="#" style="display: none;">
+              <input type="checkbox" id="theme-switch"><label for="theme-switch">Dark Mode</label>
+            </a>
+            <a class="dropdown-item" href="/logout">Logout</a>
+          </div>
+        </li>
+        {% else %}
+        <li class="nav-item ml-auto">
+          <a class="nav-link" href="/login">Login</a>
+        </li>
+        {% endif %}
+      </ul>
+    </div>
+
+  </nav>
+
+  {% if error_text %}
+  <p style='background-color:yellow;text-align:center' id="error">
+    <b>{{error_text}}</b>
+    <a id="close_error" href="#"><span class="fa fa-remove float-right" aria-hidden='true'></span></a>
+  </p>
+  <br>
+  {% endif %}
+
+
+
+  <!-- background floating squares -->
+  <div class="area">
+    <ul class="circles">
+      <!-- Try adding image floating -->
+      <!--<li><i class="fa fa-plus-square-o" aria-hidden="true"></i></li>-->
+      <li></li>
+      <li></li>
+      <li></li>
+      <li></li>
+      <li></li>
+      <li></li>
+      <li></li>
+      <li></li>
+      <li></li>
+      <li></li>
+    </ul>
+  </div>
+
+
+  {% block content %}{% endblock %}
+
+  <!--<script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
+    crossorigin="anonymous"></script>-->
+  <script>
+    {% include 'trampoline/base.js' %}
+  </script>
+  <script type="text/javascript">
+    $("#close_error").click(function (e) {
+      var errorText = document.getElementById("error");
+      errorText.opacity = 1;
+      //(function fade(){(errorText.opacity-=.1)<0?errorText.display="none":setTimeout(fade,40)})();
+      errorText.style.transition = '1s';
+      errorText.style.opacity = 0;
+    });
+    function scrollToSection(event, sectionId) {
+      event.preventDefault(); // Prevent the default anchor behavior
+      var section = document.getElementById(sectionId);
+      var navbar = document.getElementsByClassName("navbar")[0]
+      const navbarHeight = navbar.getBoundingClientRect().height;
+      if (section) {
+        var offset = 0; // Adjust this value based on your fixed navbar height
+        offset = navbarHeight;
+        var sectionPosition = section.getBoundingClientRect().top + window.scrollY;
+        window.scrollTo({
+          top: sectionPosition - offset,
+          behavior: 'smooth'
+        });
+      }
+    }
+
+    // Dark mode
+    const themeSwitch = document.getElementById("theme-switch");
+    const currentTheme = localStorage.getItem('theme');
+    const background = document.getElementsByClassName("area")[0];
+    const darkElements = document.getElementsByClassName("bg-dark");
+    const colorChangingElements = document.getElementsByClassName("color-changing");
+    //const primaryButtons = document.getElementsByClassName("btn btn-primary");
+    function setDarkMode(elements, bgElement) {
+      document.body.classList = "dark-mode";
+      const darkHeaderColor = "#2D3250"
+      for (e of elements) {
+        e.classList.add("dark-mode-color");
+        //console.log(`element: ${e}. ${e.id} - ${e.tagName}`);
+        e.style.background = darkHeaderColor;
+        if (e.tagName == "NAV") {
+          e.classList.remove("bg-dark");
+        }
+        if (e.tagName == "THEAD") {
+          e.classList.remove("thead-dark");
+          e.classList.remove("bg-dark");
+        }
+        if (e.tagName == "TABLE") {
+          e.classList.remove("table-light");
+          e.classList.add("table-dark");
+        }
+        if (e.tagName == "TEXTAREA") {
+          e.style.color = "white";
+          e.classList.add("white-placeholder");
+          if (e.id == "log") {
+            e.style.background = "repeating-linear-gradient(transparent, transparent 19px, black 19px, black 20px) #7077A1 0 9px";
+          }
+        }
+        if (e.tagName == "INPUT") {
+          e.style.color = "white";
+          e.classList.add("white-placeholder");
+        }
+        if (e.id == "col-skill") {
+          e.style.backgroundColor = "#7077A1";
+        }
+        if (e.tagName == "UL") {
+          e.style.background = darkHeaderColor;
+          e.classList.remove("bg-dark")
+        }
+        if (e.tagName == "BUTTON") {
+          e.style.background = "#F6B17A";
+          e.classList.remove("btn-primary");
+        }
+        if (e.tagName == "A") {
+          e.style.color = "#F6B17A";
+          e.style.background = "";
+        }
+        if (e.tagName == "P") {
+          e.style.color = "#FFFFFF";
+          e.style.background = "";
+        }
+      }
+      bgElement.style.background = "#424769";
+      document.querySelector("body").style.color = "#FFFFFF";
+    }
+    function setLightMode(elements, background) {
+      document.body.classList = "light-mode";
+      background.style.background = "#E5E4E2";
+      document.querySelector("body").style.color = "";
+
+      for (e of elements) {
+        e.classList.remove("dark-mode-color");
+        e.style.background = "";
+        if (e.tagName == "NAV") {
+          //e.classList.add("bg-dark");
+        }
+        if (e.tagName == "THEAD") {
+          e.classList.add("thead-dark");
+          //e.classList.add("bg-dark");
+        }
+        if (e.tagName == "TABLE") {
+          e.classList.add("table-light");
+          e.classList.remove("table-dark");
+        }
+        if (e.tagName == "TEXTAREA") {
+          e.style.color = "";
+          e.classList.remove("white-placeholder");
+          if (e.id == "log") {
+            e.style.backgroundImage = "repeating-linear-gradient(transparent, transparent 19px, #ddd 19px, #ddd 20px)";
+          }
+        }
+        if (e.tagName == "INPUT") {
+          e.style.color = "";
+          e.classList.remove("white-placeholder");
+        }
+        if (e.id == "col-skill") {
+          e.style.backgroundColor = "";
+        }
+        if (e.tagName == "UL") {
+          e.style.background = "";
+          //e.classList.add("bg-dark");
+        }
+        if (e.tagName == "BUTTON") {
+          e.style.background = "";
+          e.classList.add("btn-primary");
+        }
+        if (e.tagName == "A") {
+          e.style.color = "";
+        }
+        if (e.tagName == "P") {
+          e.style.color = "";
+        }
+
+      }
+    }
+
+    const darkmodeCheckbox = document.getElementById("darkmode-checkbox")
+    if (currentTheme) {
+      themeSwitch.checked = currentTheme == "dark-mode";
+      darkmodeCheckbox.checked = currentTheme == "dark-mode";
+      if (currentTheme == "dark-mode") {
+        setDarkMode(colorChangingElements, background);
+      }
+    }
+
+    themeSwitch.addEventListener("change", function () {
+      if (themeSwitch.checked) {
+        // dark mode
+        setDarkMode(colorChangingElements, background);
+        localStorage.setItem("theme", "dark-mode");
+      } else {
+        // light mode
+        localStorage.setItem("theme", "light-mode");
+        setLightMode(colorChangingElements, background);
+      }
+    });
+
+    darkmodeCheckbox.addEventListener("change", () => {
+      document.body.classList.toggle("dark")
+      if (darkmodeCheckbox.checked) {
+        // dark mode
+        setDarkMode(colorChangingElements, background);
+        localStorage.setItem("theme", "dark-mode");
+      } else {
+        // light mode
+        localStorage.setItem("theme", "light-mode");
+        setLightMode(colorChangingElements, background);
+      }
+
+    })
+
+
+    // keep the skill dropdowns open
+    $(function () {
+      $("div.dropdown-menu").on("click", "[data-keepopenonclick]", function (e) {
+        e.stopPropagation();
+      });
+    });
+    {% block js %} {% endblock %}
+  </script>
+
+  <!--<script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
+    crossorigin="anonymous"></script>-->
+  <!--<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct" crossorigin="anonymous"></script>-->
+</body>
+
+</html>

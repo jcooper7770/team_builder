@@ -1,0 +1,341 @@
+{% extends "trampoline/base.html" %}
+
+{% block content %}
+<br>
+{% block logging %}
+{% endblock %}
+
+<br><br>
+
+<br>
+
+<style>
+  body {
+    background-color: #f8f9fa;
+  }
+
+  .container {
+    margin-top: 20px;
+    margin-bottom: 30px;
+  }
+
+  .comp-card-form {
+    display: none;
+  }
+
+  .comp-card-form.show {
+    display: inline;
+  }
+
+  body.dark-mode .card {
+    background: var(--bootstrap-dark);
+  }
+  body.dark-mode .btn-primary {
+    background: var(--dark-mode-btn);
+    color: black;
+    border-color: black;
+  }
+  body.dark-mode select, body.dark-mode select:focus,
+  body.dark-mode option,
+  body.dark-mode input, body.dark-mode input:focus,
+  body.dark-mode input:-webkit-autofill,
+  body.dark-mode input:-webkit-autofill:focus {
+    background: var(--bootstrap-dark);
+    color: white;
+  }
+  .copyable-routine {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+  }
+</style>
+
+<div class="container">
+  <div class="card">
+    <div class="card-header">
+      <h3>Create Comp Cards</h3>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-3">
+          <label for="event">Event:</label>
+        </div>
+        <div class="col">
+          <select name="event" id="event" class="form-control">
+            <option value="trampoline">Trampoline</option>
+            <option value="dmt">Double Mini</option>
+            <option value="tumbling" disabled>Tumbling</option>
+          </select>
+        </div>
+      </div>
+      <form id="compcardForm">
+        <div id="basic-info">
+          <div class="form-group row">
+            <div class="col-3">
+              <label for="name">Name:</label>
+            </div>
+            <div class="col">
+              <input type="text" id="name" class="form-control" placeholder="John Doe" value="{{name}}">
+            </div>
+          </div>
+          <div class="form-group row">
+            <div class="col-3">
+              <label for="age">Age Group:</label>
+            </div>
+            <div class="col">
+              <input type="text" id="age" class="form-control" placeholder="Age Group...">
+            </div>
+          </div>
+          <div class="form-group row">
+            <div class="col-3">
+              <label for="gender">Gender:</label>
+            </div>
+            <div class="col">
+              <select class="form-control" id="gender">
+                <option value="M">M</option>
+                <option value="F">F</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group row">
+            <div class="col-3">
+              <label for="team">Team:</label>
+            </div>
+            <div class="col">
+              <input type="text" id="team" class="form-control" placeholder="Enter team name...">
+            </div>
+          </div>
+        </div>
+        <div id="trampForm" class="comp-card-form show">
+          <div class="form-group row">
+            <div class="col-3">
+              <label for="tr-level">Level:</label>
+            </div>
+            <div class="col">
+              <select id="tr-level" class="form-control">
+                {% for i in range(1, 11) %}
+                <option value="{{i}}" {% if user_data['levels'][0]|int==i %}selected{% endif %}>{{i}}</option>
+                {% endfor %}
+                <option value="OE" {% if user_data['levels'][0]=='OE' %}selected{% endif %}>Open Elite</option>
+                <option value="YE" {% if user_data['levels'][0]=='YE' %}selected{% endif %}>Youth Elite</option>
+                <option value="JE" {% if user_data['levels'][0]=='JE' %}selected{% endif %}>Junior Elite</option>
+                <option value="IE" {% if user_data['levels'][0]=='IE' %}selected{% endif %}>Intermediate Elite</option>
+                <option value="SE" {% if user_data['levels'][0]=='SE' %}selected{% endif %}>Senior Elite</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="tramp1">Trampoline Routine 1:</label>
+            <div class="copyable-routine">
+              <input type="text" class="form-control" id="tramp1" placeholder="First trampoline routine" value="{{user_data['compulsory']}}">
+              <button id="copy-tramp-routine" class="btn btn-primary"><i class="fa fa-clone" aria-hidden="true"></i></button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="tramp2">Trampoline Routine 2:</label>
+            <input type="text" class="form-control" id="tramp2" placeholder="Second trampoline routine" value="{{user_data['optional']}}">
+          </div>
+          <div id="reccs"></div>
+          <button type="submit" class="btn btn-primary">Create Comp Card</button>
+        </div>
+        <div id="dmtForm" class="comp-card-form">
+          <div class="form-group row">
+            <div class="col-3">
+              <label for="dmt-level">Level:</label>
+            </div>
+            <div class="col">
+              <select id="dmt-level" class="form-control">
+                {% for i in range(1, 11) %}
+                <option value="{{i}}" {% if user_data['levels'][1]|int==i %}selected{% endif %}>{{i}}</option>
+                {% endfor %}
+                <option value="OE" {% if user_data['levels'][1]=='OE' %}selected{% endif %}>Open Elite</option>
+                <option value="YE" {% if user_data['levels'][1]=='YE' %}selected{% endif %}>Youth Elite</option>
+                <option value="JE" {% if user_data['levels'][1]=='JE' %}selected{% endif %}>Junior Elite</option>
+                <option value="IE" {% if user_data['levels'][1]=='IE' %}selected{% endif %}>Intermediate Elite</option>
+                <option value="SE" {% if user_data['levels'][1]=='SE' %}selected{% endif %}>Senior Elite</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="dmt1">Pass 1:</label>
+            <div class="copyable-routine">
+              <input type="text" id="dmt1" class="form-control" placeholder="First Pass" value="{{user_data['dm_prelim1']}}">
+              <button id="copy-dm-routine" class="btn btn-primary"><i class="fa fa-clone" aria-hidden="true"></i></button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="dmt2">Pass 2:</label>
+            <input type="text" id="dmt2" class="form-control" placeholder="Second Pass" value="{{user_data['dm_prelim2']}}">
+          </div>
+          <button type="submit" class="btn btn-primary">Create Comp Card</button>
+        </div>
+        <div id="tumblingForm" class="comp-card-form">
+          <div class="form-group">
+            <label for="tumbling1">Pass 1:</label>
+            <div class="copyable-routine">
+              <input type="text" id="tumbling1" class="form-control" placeholder="First Pass">
+              <button id="copy-tu-routine" class="btn btn-primary"><i class="fa fa-clone" aria-hidden="true"></i></button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="tumbling2">Pass 2:</label>
+            <input type="text" id="tumbling2" class="form-control" placeholder="Second Pass">
+          </div>
+          <button type="submit" class="btn btn-primary">Create Comp Card</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+
+{% block javascript %}
+{% endblock %}
+<script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
+  crossorigin="anonymous"></script>
+<script type="text/javascript">
+  const eventSelect = document.getElementById("event");
+  eventSelect.addEventListener("change", function (event) {
+    const cardEvent = eventSelect.value;
+    switch (cardEvent) {
+      case "trampoline":
+        showForm("tramp");
+        break;
+      case "dmt":
+        showForm("dmt");
+        break;
+      case "tumbling":
+        showForm("tumbling");
+        break;
+      default:
+        document.querySelector(".comp-card-form.show").classList.toggle("show");
+        document.querySelector("#trampForm").classList.add("show");
+    }
+  });
+
+  function showForm(formType) {
+    const formId = `#${formType}Form`;
+    document.querySelector(".comp-card-form.show").classList.toggle("show");
+    document.querySelector(formId).classList.add("show");
+  }
+
+  function getCurrentForm() {
+    var formId = document.querySelector("div.comp-card-form.show").id;
+    return formId.slice(0, -4);
+  }
+
+  document.getElementById("compcardForm").addEventListener("submit", function (event) {
+    var currentForm = getCurrentForm();
+    console.log(`current form: ${currentForm}`);
+    event.preventDefault(); // Prevent default form submission
+    // Get form values
+    var data;
+    var url;
+    switch (currentForm) {
+      case "tramp":
+        const r1 = document.getElementById("tramp1").value;
+        const r2 = document.getElementById("tramp2").value;
+        url = "/logger/user/compcard";
+        data = {
+          r1: r1,
+          r2: r2,
+          level: document.getElementById('tr-level').value
+        }
+        break;
+      case "dmt":
+        const p1 = document.getElementById("dmt1").value;
+        const p2 = document.getElementById("dmt2").value;
+        url = "/logger/user/dm_compcard";
+        data = {
+          p1: p1,
+          p2: p2,
+          level: document.getElementById('dmt-level').value
+        }
+        break;
+      case "tumbling":
+        break;
+      default:
+        break;
+    }
+    Object.assign(
+      data, {
+      name: document.getElementById('name').value,
+      team: document.getElementById('team').value,
+      gender: document.getElementById('gender').value,
+      age: document.getElementById('age').value
+    }
+    );
+    console.log(data);
+    $.ajax({
+      type: 'POST',
+      url: url,
+      contentType: 'application/json',
+      data: JSON.stringify(data),
+      success: function (data) {
+        console.log("successfully saved data");
+        location.href = "/logger/user/compcard/download";
+      }
+    });
+
+
+  });
+
+  const tramp_r1 = document.getElementById('tramp1');
+  const tramp_r2 = document.getElementById('tramp2');
+  tramp_r1.addEventListener('input', function(event) {
+    addReccSkill('r1');
+  });
+  tramp_r2.addEventListener('input', function(event) {
+    addReccSkill('r2');
+  });
+
+  function addReccSkill(field) {
+    var lastValue;
+    if (field == "r1") {
+      lastValue = tramp_r1.value.split(' ').slice(-1);
+    } else {
+      lastValue = tramp_r2.value.split(' ').slice(-1);
+    }
+    console.log(`last value: ${lastValue}`);
+    var recc_skills = recommendSkill(lastValue);
+    console.log(`recc skill: ${recc_skills}`);
+
+    const reccSection = document.getElementById("reccs");
+    reccSection.innerHTML = "";
+    for(var skill of recc_skills) {
+      var newRec = document.createElement("a")
+      newRec.className = `recc-skill btn btn-info ${field}`;
+      newRec.value = field;
+      newRec.textContent = skill;
+      newRec.id = `recc-skill-${skill}`;
+      reccSection.appendChild(newRec);
+    }
+  }
+
+
+  $('[id=reccs]').on('click', 'a', function(event){
+    console.log(event.target);
+    const addedSkill = event.target.textContent;
+
+    if (event.target.classList.contains('r1')) {
+      tramp_r1.value = tramp_r1.value + " " +  addedSkill;
+      addReccSkill('r1');
+    } else {
+      tramp_r2.value = tramp_r2.value + " " +  addedSkill;
+      addReccSkill('r2');
+    }
+  });
+
+  document.getElementById("copy-tramp-routine").addEventListener('click', function(e) {
+    e.preventDefault();
+    document.getElementById('tramp2').value = document.getElementById('tramp1').value;
+  });
+  document.getElementById("copy-dm-routine").addEventListener('click', function(e) {
+    e.preventDefault();
+    document.getElementById('dmt2').value = document.getElementById('dmt1').value;
+  });
+
+</script>
+
+{% endblock %}

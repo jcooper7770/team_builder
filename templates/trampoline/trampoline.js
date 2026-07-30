@@ -1,0 +1,1391 @@
+var curr_page = 1;
+var paginated_practices = [];
+$(document).ready(function() {
+    // Set logger date to current local date if a search date isn't chosen
+    {% if url_for(request.endpoint) == "/logger" or request.endpoint == "coach.coach_home" %}
+    {% if not search_date %}
+    {% if not current_date %}
+    var date = new Date();
+    date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+    document.getElementById("logger-date").value = date.toJSON().slice(0,10);
+    {% if request.endpoint != "coach.coach_home" %}
+    document.getElementById("airtime-date").value = date.toJSON().slice(0,10);
+    {% endif %}
+    {% else %}
+    document.getElementById("logger-date").value = "{{current_date}}";
+    {% if request.endpoint != "coach.coach_home" %}
+    document.getElementById("airtime-date").value = "{{current_date}}";
+    document.getElementById("practice_date").value = "{{current_date}}";
+    {% endif %}
+    {% endif %}
+    {% else %}
+    document.getElementById("logger-date").value = "{{search_date}}";
+    {% if request.endpoint != "coach.coach_home" %}
+    document.getElementById("airtime-date").value = "{{search_date}}";
+    document.getElementById("practice_date").value = "{{search_date}}";
+    {% endif %}
+    {% endif %}
+    {% endif %}
+    paginate();
+});
+
+const paginate = function() {
+    // paginate practices
+    var practices = [];
+    var practices_div = document.getElementById("practices");
+    var nodes = practices_div.childNodes;
+    for (element of nodes){
+        if (element.tagName == "DIV") {
+            practices.push(element);
+        }
+    }
+
+    // split practices into pages
+    var page_size = 10;
+    n_pages = Math.floor(practices.length / page_size) + 1;
+    for(i=0; i< n_pages; i++) {
+        var start = i * page_size;
+        var end = (i+1) * page_size;
+        if(end > practices.length) {
+            end = practices.length;
+        }
+        var current_page = practices.slice(start, end);
+        paginated_practices.push(current_page);
+    }
+
+    // clear the practices div
+    practices_div.innerHTML = "";
+
+    // create buttons for pages
+    createPageButtons();
+
+    // create practice page divs
+    var practices_page = document.createElement("div");
+    practices_page.id = "practices_page";
+    const num_practices = paginated_practices[curr_page-1].length
+    //for(element of paginated_practices[curr_page-1]){
+    for(let i=0; i<num_practices; i++) {
+        var element = paginated_practices[curr_page-1][i];
+        if (i==0) {
+            // Open the first table
+            element.classList.remove('closed');
+            const chevron = element.children[0].children[0];
+            chevron.classList = "fa fa-chevron-up";
+        }
+        practices_page.append(element);
+        //practices_page.append(document.createElement("br"));
+        //practices_page.append(document.createElement("br"));
+    }
+    practices_div.append(practices_page);
+
+}
+
+const createPageButtons = function () {
+    // clear the practices div
+    var practices_div = document.getElementById("practices");
+    practices_div.innerHTML = "";
+    // create buttons for pages
+    var page_buttons = document.createElement("div");
+    page_buttons.id = "page_buttons";
+    page_buttons.classList.add("text-center")
+
+    var next_page = document.createElement("button");
+    next_page.innerHTML = "Next >>";
+    next_page.style = "padding:0 10px; cursor: pointer;"
+    next_page.id = "page_next";
+    next_page.classList = "page-btn"
+    next_page.onclick = changePage;
+    //practices_div.prepend(next_page);
+    page_buttons.prepend(next_page);
+    for(page=paginated_practices.length; page>0; page--){
+        var new_page = document.createElement("button")
+        new_page.innerHTML = page;
+        new_page.id = "page_"+page;
+        new_page.onclick = changePage;
+        if (page != 1) {
+            new_page.classList = "page-btn";
+        } else {
+            new_page.classList = "page-btn selected";
+        }
+        new_page.style = "padding:0 10px; cursor: pointer;"
+        //practices_div.prepend(new_page)
+        page_buttons.prepend(new_page)
+    }
+    var prev_page = document.createElement("button");
+    prev_page.innerHTML = "<< Prev";
+    prev_page.style = "padding:0 10px; curdor: pointer;"
+    prev_page.id = "page_prev";
+    prev_page.classList = "page-btn"
+    prev_page.onclick = changePage;
+    //practices_div.prepend(prev_page);
+    page_buttons.prepend(prev_page);
+    practices_div.append(page_buttons);
+
+    // Add expand all button
+    const expand_btn = document.createElement("button");
+    expand_btn.classList = "btn btn-primary";
+    expand_btn.id = "expand-practices-btn";
+    expand_btn.innerText = "Expand All";
+    expand_btn.onclick = expandPractices;
+    practices_div.append(expand_btn);
+
+}
+
+const repaginate = function() {
+    var newPaginatedPractices = [];
+
+    var numCurrentPage = 0; // number of non-hidden on page
+    var paginatedPage = []; // current page of elements
+    for(page=0; page < paginated_practices.length; page++){
+        for (element of paginated_practices[page]) {
+            paginatedPage.push(element);
+            if (element.style.display != "none") {
+                numCurrentPage++;
+            }
+
+            // start a new page if there are 10 non-hidden things
+            if (numCurrentPage == 10) {
+                newPaginatedPractices.push(paginatedPage);
+                //console.log("Starting a new page");
+                //console.log(paginatedPage);
+                paginatedPage = [];
+                numCurrentPage = 0;
+            }
+        }
+    }
+    newPaginatedPractices.push(paginatedPage);
+
+    paginated_practices = newPaginatedPractices;
+    createPageButtons();
+    //var practices_page = document.getElementById("practices_page");
+    //practices_page.innerHTML = "";
+    var practices_page = document.createElement("div");
+    practices_page.id = "practices_page";
+    curr_page = 1;
+    //console.log(paginated_practices);
+    for(element of paginated_practices[curr_page-1]){
+        practices_page.append(element);
+        if (element.style.display != "none") {
+            //practices_page.append(document.createElement("br"));
+            //practices_page.append(document.createElement("br"));
+        }
+    }
+    var practices_div = document.getElementById("practices");
+    practices_div.appendChild(practices_page);
+
+}
+
+// Change the practice page
+const changePage = function() {
+    var page_id = this.id;
+    var page = this.id.split("_")[1];
+    if (page == curr_page){
+        return
+    }
+    if(page == "prev"){
+        if(curr_page > 1) {
+            page = curr_page - 1;
+        } else {
+            return
+        }
+    }
+    if(page == "next"){
+        if(curr_page<paginated_practices.length){
+            page = curr_page + 1;
+        } else {
+            return
+        }
+    }
+    curr_page_id = "page_"+curr_page;
+    //document.getElementById(curr_page_id).style.background = "#FFFFFF";
+    document.getElementById(curr_page_id).classList = "page-btn";
+    
+    curr_page = parseInt(page);
+    curr_page_id = "page_"+curr_page;
+    //document.getElementById(curr_page_id).style.background = "#0000FF";
+    document.getElementById(curr_page_id).classList = "page-btn selected";
+    var practices_page = document.getElementById("practices_page");
+    practices_page.innerHTML = "";
+    for(element of paginated_practices[curr_page-1]){
+        practices_page.append(element);
+        if (element.firstElementChild.style.display != "none") {
+            // this is handled now by the CSS gap property
+            //practices_page.append(document.createElement("br"));
+            //practices_page.append(document.createElement("br"));
+        }
+    }
+}
+// keep the skill dropdowns open
+$(function() {
+    $("div.dropdown-menu").on("click", "[data-keepopenonclick]", function(e) {
+            e.stopPropagation();
+    });
+});
+// unhide the hidden notes by clicking the comment button
+$("[id^=unhide-note").click(function(e){
+    var comment = $(this).siblings('span')[0];
+    if (comment.style.display === "none") {
+        comment.style.display = "inline";
+        const tableDiv = e.target.parentNode.parentNode.parentNode.parentNode.parentNode;
+        tableDiv.style.height = tableDiv.offsetHeight + comment.offsetHeight + 'px';
+    } else {
+        const tableDiv = e.target.parentNode.parentNode.parentNode.parentNode.parentNode;
+        tableDiv.style.height = tableDiv.offsetHeight - comment.offsetHeight + 'px';
+        comment.style.display = "none";
+    }
+});
+
+$("a[id^=skill]").click(function (e) {
+    e.preventDefault();
+    console.log(event.target.id)
+    if (event.target.id == "new-turn-button") {
+        return
+    }
+    var skill = event.target.id.slice(5).replace('t', 'o').replace('p', '<').replace('s', '/');
+    console.log("adding " + skill);
+    // type into last log
+    const logElements = document.querySelectorAll("#log");
+    const logElement = logElements[logElements.length-2];
+    if (document.activeElement.id == "log") {
+        logElement = document.activeElement;
+    }
+
+    //var routineText = document.getElementById('log').value;
+    var routineText = logElement.value;
+    if (routineText != "") {
+        //$('#log').val(routineText + ' ' + skill);
+        logElement.value = routineText + ' ' + skill;
+    } else {
+        //$('#log').val(skill);
+        logElement.value = skill;
+    }
+    // Set log height to fit text inside
+    if (logElement.scrollHeight > logElement.offsetHeight) {
+        logElement.style.height = `${logElement.scrollHeight}px`;
+    }
+    addRecSkill();
+});
+
+$("#col-skill").on('click', 'a', function (e) {
+    e.preventDefault();
+    if (event.target.parentNode.className.startsWith("remove-log") || event.target.parentNode.id.startsWith("new-turn-button")) {
+        return;
+    }
+    if (event.target.id == "new-turn-button"){
+        return
+    }
+    var skill = event.target.id.slice(5).replace('t', 'o').replace('p', '<').replace('s', '/');
+    console.log("adding " + skill);
+    // type into last log
+    const logElements = document.querySelectorAll("#log");
+    const logElement = logElements[logElements.length-2];
+    if (document.activeElement.id == "log") {
+        logElement = document.activeElement;
+    }
+
+    //var routineText = document.getElementById('log').value;
+    var routineText = logElement.value;
+    if (routineText != "") {
+        logElement.value = routineText + ' ' + skill;
+        //$('#log').val(routineText + ' ' + skill);
+    } else {
+        logElement.value = skill;
+        //$('#log').val(skill);
+    }
+    // Set log height to fit text inside
+    if (logElement.scrollHeight > logElement.offsetHeight) {
+        logElement.style.height = `${logElement.scrollHeight}px`;
+    }
+    addRecSkill();
+});
+function updateNumSkills() {
+    let skills = $("#log").val().trim().split(/[\s]/);
+    let num_skills = skills.length;
+    document.getElementById('num_skills').textContent = "Number of skills: " + num_skills;
+}
+function clearRecs() {
+    var recc = document.getElementsByClassName("recc-skill");
+    while(recc.length > 0) {
+        recc[0].parentNode.removeChild(recc[0]);
+    }
+}
+function addRecSkill() {
+    //var skill_text = $("#log").val();
+    const logElements = document.querySelectorAll("#log");
+    const logElement = logElements[logElements.length-2];
+    console.log(logElement.value);
+    var skill_text = logElement.value;
+    // ignore if last skill was a space
+    if (skill_text[skill_text.length - 1] == " ") {
+        return
+    }
+    let skills = skill_text.split(/[\s]/);
+    var last_skill = skills[skills.length - 1];
+    var next_skill = recommendSkill(last_skill);
+    if (next_skill != undefined && next_skill != "") {
+        // clear out all recommended
+        clearRecs() 
+        /*
+        var recc = document.getElementsByClassName("recc-skill");
+        while(recc.length > 0) {
+            recc[0].parentNode.removeChild(recc[0]);
+        }
+        */
+
+        var bottom = document.getElementById("logger-bottom")
+        // add new recommended
+        console.log("recommended: " + next_skill);
+        // add a button with the skill under the log
+        for(let i=0; i<next_skill.length; i++){
+            n_skill = next_skill[i];
+            var new_link = document.createElement('a');
+            new_link.id = "skill" + n_skill;
+            new_link.value = "skill" + n_skill;
+            new_link.textContent = n_skill;
+            new_link.className = "recc-skill btn btn-info"
+            bottom.appendChild(new_link);
+        }
+
+        // automatically add to log
+        //$('#log').val(skill_text + ' ' + next_skill);
+    }
+}
+
+function recommendSkill(current_skill) {
+    if ( {{ user_turns }} == undefined) {
+        var all_turns = [];
+    }else {
+        var all_turns = {{ user_turns | tojson }};
+    }
+    var next_skills = {};
+    for (let turn_num = 0; turn_num < all_turns.length; turn_num++) {
+        var turn = all_turns[turn_num];
+        skill = "";
+        for (let skill_num = 0; skill_num < turn.length - 1; skill_num++) {
+            var skill = turn[skill_num];
+            //console.log("Current: " + current_skill + " - checking " + skill);
+            // Get next skill if the current skill was found
+            if (skill == current_skill){
+                next_skill = turn[skill_num + 1];
+                if (!(next_skill in next_skills)) {
+                    next_skills[next_skill] = 0;
+                }
+                next_skills[next_skill]++;
+            }
+        }
+    }
+
+    if (next_skills.length == 0) {
+        return "";
+    }
+
+    // sort and find the most used next skill
+    var items = Object.keys(next_skills).map(function(key) {
+        return [key, next_skills[key]];
+    });
+    items.sort(function(first, second) {
+        return second[1] - first[1];
+    });
+    if (items.length == 0) {
+        return "";
+    }
+    console.log(next_skills);
+    most_used_next = items[0][0];
+    most_used_next = items.slice(0, 5);
+    most_used = []
+    for (let i=0; i<most_used_next.length; i++){
+        most_used.push(most_used_next[i][0]);
+    }
+    return most_used;
+
+};
+
+//$("#log").on('input', function (e) {
+$("#new-turns").on('input', '#log', function (e) {
+    //updateNumSkills();
+    addRecSkill();
+
+    replaceDict()
+    // Set log height to fit text inside
+    if (e.target.scrollHeight > e.target.offsetHeight) {
+        e.target.style.height = `${e.target.scrollHeight}px`;
+    }
+});
+
+function replaceDict() {
+    const logElements = document.querySelectorAll("#log");
+    const logElement = logElements[logElements.length-2];
+    console.log(logElement.value);
+    //const athleteDict = JSON.parse('{{athlete_dict | tojson }}');
+    const athleteDict = {{athlete_dict | tojson }}
+    for(var key of Object.keys(athleteDict)) {
+        var value = athleteDict[key];
+        logElement.value = logElement.value.replace(key, value)
+    }
+}
+
+// Get a reference to the button and spinner elements
+const button = document.getElementById("submit-button");
+const spinner = document.querySelector(".spinner-container");
+if (button != null) {
+    button.addEventListener("click", function() {
+    showSpinner("Submitting data...")
+    });
+}
+const goal_button = document.getElementById("submit-goals")
+if (goal_button != null) {
+    goal_button.addEventListener("click", function() {
+    showSpinner("Submitting goals...")
+    });
+}
+
+const airtime_button = document.getElementById("submit-airtime")
+if (airtime_button != null) {
+    airtime_button.addEventListener("click", function() {
+    showSpinner("Submitting airtime...")
+    });
+}
+const skill_button = document.getElementById("submit-skills")
+if (skill_button != null) {
+    skill_button.addEventListener("click", function() {
+        showSpinner("Submitting skill for search...")
+    });
+}
+$("[id$=_skills]").change(function (e) {
+    var skill = $(this).val().slice(5).replace('t', 'o').replace('p', '<').replace('s', '/');
+    var routineText = document.getElementById('log').value;
+    if (routineText != "") {
+        $('#log').val(routineText + ' ' + skill);
+    } else {
+        $('#log').val(skill);
+    }
+    //updateNumSkills();
+});
+$('[id^=copy-text]').click(function(e){
+    // Add copy of text to log
+    var tds = e.target.parentNode.parentNode.parentNode.children;
+    var routine = "";
+    for (var i=0; i<tds.length; i++){
+        var td = tds[i];
+        if (td == undefined || td.children.length == 0) {
+        //if (td == undefined || td.firstChild == null){
+            break;
+        }    
+        else {
+            for(var j=1; j<td.children.length; j++) {
+                if (td.children[j].innerText != "") {
+                    routine = routine + " " + td.innerText;
+                }
+            }
+            /*
+            if (td.firstChild.tagName == undefined){
+                var doc = new DOMParser().parseFromString(td.innerHTML, "text/html");
+                var elementText = doc.documentElement.textContent;
+                routine = routine + " " + elementText;
+            }
+            */
+        }
+    }
+    const logElements = document.querySelectorAll("#log");
+    const logElement = logElements[logElements.length-2];
+    var skills = logElement.value;
+    var newText = "";
+    if (skills != ""){
+        newText = skills + '\n' + routine;
+    } else {
+        newText = routine;
+    }
+    
+    // Remove extra spaces
+    newText = newText.trim().replace('\n ', '\n');
+    //$('#log').val(newText);
+    logElement.value = newText;
+});
+$('#repeat-skills').click(function (e) {
+    //var skills = $('log').val();
+    const logElements = document.querySelectorAll("#log");
+    const logElement = logElements[logElements.length-2];
+    var skills = logElement.value;
+    if (skills != "") {
+        if (skills.endsWith('\n')) {
+            var newText = skills + skills;
+        } else {
+            var newText = skills + ' ' + skills;
+        }
+        nextText = newText.trim().replace('\n ', '\n');
+        //$('#log').val(newText);
+        logElement.value = newText;
+    }
+    //$('#log').focus();
+    logElement.focus();
+});
+$('#next-line').click(function(e) {
+    var skills = document.getElementById('log').value;
+    if (skills != "" && !skills.endsWith('\n')) {
+        $('#log').val(skills + '\n');
+    }
+    $('#log').focus();
+});
+$("[id^=minimize_]").click(function(e){
+    var section_to_minimize = event.target.id.split("_")[1];
+    var minimize_id = section_to_minimize + "_body";
+    var x = document.getElementById(minimize_id);
+    if (x.style.display === "none") {
+        x.style.display = "";
+    } else {
+        x.style.display = "none";
+    }
+    var button = document.getElementById(e.target.id);
+    if (button.className == "fa fa-window-minimize") {
+        button.className = "fa fa-window-maximize";
+    } else {
+        button.className = "fa fa-window-minimize";
+    }
+});
+$("[id^=edit_]").click(function (e) {
+    var date_to_edit = event.target.id.split("_")[1];
+    var event_to_edit = event.target.id.split("_")[2];
+    let confirmText = "".concat("Are you sure you want to edit ", date_to_edit, " ", event_to_edit, "?");
+    if (confirm(confirmText) == true) {
+        // Change event and date
+        document.getElementById("event").value = event_to_edit;
+        const date_parts = date_to_edit.split('-');
+        document.getElementById("logger-date").value = `${date_parts[2]}-${date_parts[0]}-${date_parts[1]}`;
+
+        // Add practice as turns
+        var turns = [];
+        console.log(event.target.closest(".table-practice-inner"));
+        const rows = event.target.closest(".practice-table-inner").children[1].children;
+        for (var row of rows ) {
+            var turn = ""
+            if (row.classList.contains("practice-totals")) {
+                continue;
+            }
+            if (row.children.length > 1) {
+                // Accommodate for the red Xs in the turn
+                var currentTurn = "";
+                const textNodes = row.children[1].childNodes;
+                for (let i = 0; i< textNodes.length; i++) {
+                    if (textNodes[i].tagName == "DIV") {
+                        continue;
+                    }
+                    if (textNodes[i].tagName == "SPAN") {
+                        currentTurn = currentTurn.concat(textNodes[i].textContent);
+                    } else {
+                        currentTurn = currentTurn.concat(textNodes[i].textContent.trim());
+                    }
+                }
+                console.log(currentTurn);
+                console.log(row.children[1].childNodes);
+                //turn = row.children[1].childNodes[1].textContent;
+                turn = currentTurn
+                turns.push(turn);
+            } else if (row.children.length == 1 && row.children[0].classList == "comment-row") {
+                turn = row.children[0].childNodes[1].textContent;
+                turns.push(`- ${turn}`);
+            } 
+        }
+        console.log(`Turns: ${turns}`);
+    
+        const allTurnsDiv = document.getElementById("new-turns");
+        for (var turn of turns) {
+            const newDiv = createNewLog(e, turn);
+            allTurnsDiv.children[allTurnsDiv.children.length-3].after(newDiv);
+        }
+        document.getElementById("new-turns").children[0].remove();
+        document.getElementById("log-save-type").value = "edit";
+        for (let i=(allTurnsDiv.children.length - 3) - turns.length; i>=0; i--) {
+            allTurnsDiv.children[i].remove();
+        }
+
+        // Set tags
+        var tagList = [];
+        //const tags = event.target.closest('th').children[1].children;
+        const tags = event.target.closest('.athlete-practice-header').children[0].children[2].children;
+        for(var tag of tags) {
+            tagList.push(tag.textContent)
+        }
+        document.querySelector('[name="custom_tags"]').value = tagList.join(',')
+
+        // Switch to the log tab
+        document.getElementById("log-tab").classList.add("show");
+        document.getElementById("log-tab").classList.add("active");
+        document.getElementById("practice-tab").classList.remove("active");
+        document.querySelector('[href="#log-tab"]').classList.add('active');
+        document.querySelector('[href="#practice-tab"]').classList.remove('active');
+    }
+});
+$("[id^=remove_]").click(function (e) {
+    e.preventDefault();
+    var date_to_remove = event.target.id.split("_")[1];
+    var event_to_remove = event.target.id.split("_")[2];
+    let confirmText = "".concat("Are you sure you want to delete ", date_to_remove, " ", event_to_remove, "?");
+    if (confirm(confirmText) == true) {
+        showSpinner("Deleting data...")
+
+        $.ajax({
+            type: 'GET',
+            url: "/logger/delete/" + date_to_remove + "/" + event_to_remove,
+            success: function (data) {
+                location.reload();
+            }
+        });
+    }
+});
+
+//
+// Rating dropdown
+//
+// Get the dropdown menu template
+const dropdownTemplate = document.querySelector('#dropdown-template');
+
+// Function to add the dropdown menu to a table header
+function addDropdownToTableHeader(tableHeader) {
+  // Clone the dropdown template content
+  const dropdown = dropdownTemplate.content.cloneNode(true);
+
+  // Append the dropdown menu to the table header
+  tableHeader.appendChild(dropdown);
+}
+
+// Add post button
+function addPostToTableHeader(header) {
+    const button = document.createElement("button");
+    button.classList = "btn btn-primary color-changing post-btn";
+    //button.innerText = "Post To Feed"
+    button.innerText = "Post"
+    button.addEventListener("click", function(e) {
+        e.preventDefault();
+        const name = e.target.parentNode.parentNode.parentNode.getAttribute("name");
+        console.log(e.target.parentNode.parentNode.nextSibling);
+        //const tagDivs = e.target.parentNode.parentNode.nextSibling.childNodes;
+        const tagDivs = e.target.parentNode.parentNode.childNodes[2].childNodes;
+        const tags = [];
+        tagDivs.forEach((div) => {
+            tags.push(div.innerText);
+        })
+        console.log(tagDivs);
+        console.log(tags);
+        const data = {practice: name, tags: tags}
+        $.ajax({
+            type: 'POST',
+            url: "/logger/practice/post",
+            contentType: 'application/json',
+            data: JSON.stringify(data),
+            success: function (data) {
+                console.log("successfully saved data");
+                alert("Post successful");
+            }
+        });
+    });
+    header.appendChild(button);
+}
+
+// Get all table headers and add the dropdown menu to each one
+//const tableHeaders = document.querySelectorAll('#practice-header');
+const tableHeaders = document.querySelectorAll('.practice-header-bottom');
+tableHeaders.forEach(function (header) {
+
+  {% if request.endpoint != "coach.coach_home" %}
+  addDropdownToTableHeader(header);
+
+  // add post option also
+  addPostToTableHeader(header);
+  {% endif %}
+});
+
+// Event delegation for dynamically added rating options
+document.addEventListener('click', function (event) {
+  const target = event.target;
+  if (target.classList.contains('rating-option')) {
+    handleRatingSelection(target);
+  }
+});
+
+// Event delegation for dynamically added dropdown buttons
+document.addEventListener('click', function (event) {
+  const target = event.target;
+  if (target.classList.contains('dropdown-btn')) {
+    const dropdownContent = target.nextElementSibling;
+    dropdownContent.style.display =
+      dropdownContent.style.display === 'block' ? 'none' : 'block';
+  }
+});
+
+// Function to handle rating option selection
+function handleRatingSelection(option) {
+  const selectedRating = option.textContent;
+  const rating = option.getAttribute("name");
+
+  // Perform any desired action with the selected rating
+  console.log('Selected rating:', selectedRating);
+  //option.parentNode.parentNode.parentNode.firstChild.textContent = selectedRating;
+  option.parentNode.parentNode.parentNode.parentNode.firstElementChild.firstElementChild.textContent = selectedRating;
+  option.parentNode.parentNode.parentNode.parentNode.firstElementChild.firstElementChild.setAttribute("name", rating);
+  //option.parentNode.parentNode.parentNode.firstChild.setAttribute("name", rating);
+
+  var practice_name = option.parentNode.parentNode.parentNode.parentNode.parentNode.getAttribute("name")
+  // save the rating by sending a POST
+  const data = {rating: rating, date: practice_name}
+  $.ajax({
+    type: 'POST',
+    url: "/logger/rate_practice",
+    contentType: 'application/json',
+    data: JSON.stringify(data),
+    success: function (data) {
+        console.log("successfully saved data");
+    }
+  });
+
+}
+
+function showAllTables() {
+    for(let i=0; i<paginated_practices.length; i++) {
+        var page = paginated_practices[i];
+        for (let j=0; j<page.length; j++) {
+            page[j].style.display = "";
+        }
+    }
+    repaginate();
+}
+
+$("[id^=search-rating]").click(function(e) {
+    e.target.classList.toggle("selected");
+
+    if (e.target.classList.contains("selected")) {
+        e.target.style.background = "blue";
+    } else {
+        e.target.style.background = "";
+    }
+
+
+    var selected_ratings = document.querySelectorAll(".search-rating-btn.selected");
+    // If none selected then show all
+    if (selected_ratings.length == 0) {
+        showAllTables();
+        return;        
+    }
+
+    showSpinner("Searching by rating...");
+
+    for(let i=0; i<paginated_practices.length; i++) {
+        var page = paginated_practices[i];
+        for (let j=0; j<page.length; j++) {
+            var container = page[j];
+            var table = container.children[0];
+            var table = page[j];
+
+            // start by hiding all tables
+            table.style.display = "none";
+
+            var thead = table.children[1].children[0];
+            var table_rating_element = thead.children[0].children[0].firstElementChild;
+            const table_rating = table_rating_element.getAttribute("name");
+            for(var rating_element of selected_ratings) {
+                var rating = rating_element.id.slice(-1);
+                if (table_rating == rating) {
+                    table.style.display = "";
+                }
+            }
+
+        }
+    }
+    repaginate();
+    document.querySelector('.spinner-container').style.display = "none";
+
+});
+
+//$("[class^=remove-log]").click(function(e){
+$("#new-turns").on('click', '.remove-log', function(e){
+    e.preventDefault();
+    var parentDiv = e.target.parentNode;  
+    if (e.target.tagName == "I") {
+        parentDiv = e.target.parentNode.parentNode;
+    }
+    console.log(parentDiv);
+    const allTurnsDiv = document.getElementById("new-turns");
+    allTurnsDiv.removeChild(parentDiv);
+    const skillsDiv = document.getElementById("col-skill");
+    addRecSkill();
+
+});
+
+$("#new-turns").on('click', '.copy-log-button', function(e){
+    e.preventDefault();
+    var inputDiv = e.target.parentNode;
+    if (e.target.tagName == "I") {
+        inputDiv = e.target.parentNode.parentNode;
+    }
+    const value = inputDiv.children[2].value;
+    const newLogDiv = createNewLog(e, value);
+    const allTurnsDiv = document.getElementById("new-turns");
+    //inputDiv.after(newLogDiv);
+    allTurnsDiv.children[allTurnsDiv.children.length-3].after(newLogDiv);
+
+});
+
+
+function createNewLog(e, value) {
+    const logTurnDivs = document.querySelectorAll("[id^=log-turn]");
+
+    // fix the names
+    for (let i=0; i<logTurnDivs.length-1; i++) {
+        logTurnDivs[i].children[2].name = `log-${i+1}`;
+    }
+
+    var newDiv = document.createElement("div");
+    newDiv.id = `log-turn-${logTurnDivs.length-1}`;
+
+    var removeButton = document.createElement("a");
+    removeButton.classList = "remove-log color-changing";
+    removeButton.href = "#";
+    removeButton.innerHTML = '<i class="fa fa-minus-square" aria-hidden="true"></i>';
+    var copyButton = document.createElement("a");
+    copyButton.classList = "copy-log-button color-changing";
+    copyButton.href = "#";
+    copyButton.innerHTML = '<i class="fa fa-clone" aria-hidden="true"></i>';
+    if(localStorage.getItem("theme") == "dark-mode"){
+        removeButton.classList.add("dark-mode-color");
+        copyButton.classList.add('dark-mode-color');
+    }
+    newDiv.appendChild(removeButton);
+    newDiv.appendChild(copyButton);
+
+    var inputDiv = e.target.parentNode;
+    if (e.target.tagName == "I") {
+        inputDiv = e.target.parentNode.parentNode;
+    }
+    const newInput = document.createElement("textarea");
+    newInput.style.border = '0';
+    newInput.id = "log";
+    newInput.style.width = "100%";
+    newInput.style.height = "30px";
+    newInput.classList = "color-changing";
+    newInput.placeholder = "Input your turn here...";
+    newInput.value = value;
+    newInput.name = `log-${logTurnDivs.length}`;
+    if(localStorage.getItem("theme") == "dark-mode"){
+        newInput.classList.add("dark-mode-color");
+    }
+    newDiv.appendChild(newInput);
+    return newDiv;
+   
+}
+
+$("[id^=new-turn-button]").click(function(e) {
+    const newDiv = createNewLog(e, "");
+    const allTurnsDiv = document.getElementById("new-turns");
+    var inputDiv = e.target.parentNode;
+    if (e.target.tagName == "I") {
+        inputDiv = e.target.parentNode.parentNode;
+    }
+    allTurnsDiv.insertBefore(newDiv, inputDiv);
+
+    clearRecs();
+});
+
+function displayEvent(event_name, display) {
+    for(let i=0; i<paginated_practices.length; i++) {
+        var page = paginated_practices[i];
+        for (let j=0; j<page.length; j++) {
+            var container = page[j];
+            var table = container.children[0];
+            var table = page[j];
+
+            // re-display the table incase it was hidden
+            //table.style.display = "";
+
+            var table_header = table.children[1].children[0].children[0].children[0].textContent;
+            if (display) {
+                if (table_header.includes(`(${event_name})`)) {
+                    table.style.display = "";
+                }
+            } else {
+                if (table_header.includes(`(${event_name})`)) {
+                    table.style.display = "none";
+                }
+            }
+        }
+    }
+
+}
+
+$("[id^=search-event]").click(function(e) {
+    e.target.classList.toggle("selected");
+    if (e.target.classList.contains("selected")) {
+        e.target.style.background = "blue";
+    } else {
+        e.target.style.background = "";
+    }
+
+    // get all selected events
+    var selected_events = document.querySelectorAll(".search-event-btn.selected");
+    console.log(selected_events);
+
+    // show all tables if none chosen
+    if (selected_events.length == 0) {
+        showAllTables();
+        repaginate();
+        return
+    }
+
+    // hide all tables
+    for(let i=0; i<paginated_practices.length; i++) {
+        var page = paginated_practices[i];
+        for (let j=0; j<page.length; j++) {
+            page[j].style.display = "none";
+        }
+    }
+    
+    for(var event_btn of selected_events) {
+        var event_name = event_btn.id.split("-")[2];
+        console.log(`Showing ${event_name}`);
+        displayEvent(event_name, true);
+        
+    }
+    repaginate();
+});
+
+$("[id^=search-tag]").click(function(e) {
+    e.target.classList.toggle("selected");
+    if (e.target.classList.contains("selected")) {
+        e.target.style.background = "blue";
+    } else {
+        e.target.style.background = "";
+    }
+    var selected_tags = document.querySelectorAll(".search-tag-btn.selected");
+    console.log(selected_tags);
+    // If none selected then select all
+    if (selected_tags.length == 0) {
+        showAllTables();
+        repaginate();
+        return
+    }
+    showSpinner("Searching by tag...");
+   
+
+    for(let i=0; i<paginated_practices.length; i++) {
+        var page = paginated_practices[i];
+        for (let j=0; j<page.length; j++) {
+            var container = page[j];
+            var table = container.children[0];
+            var table = page[j];
+
+            // start by hiding tables
+            table.style.display = "none";
+
+            var thead = table.children[1].children[0];
+            var table_tag_elements = thead.children[0].children[2]
+            const table_tags = table_tag_elements.textContent;
+
+            // and only show the table if its highlighted
+            console.log(table_tags);
+            for(var tag_element of selected_tags) {
+                var tag = tag_element.textContent;
+                if(table_tags.includes(tag)) {
+                    table.style.display = "";
+                }
+            }
+
+        }
+    }
+    repaginate();
+    document.querySelector('.spinner-container').style.display = "none";
+
+});
+
+
+$("#search-practice").click(function (e) {
+    showSpinner("Searching for date");
+    var val = document.querySelector("#practice_date").value;
+    console.log(val);
+    if (val == null | val == "") {
+        $.ajax({
+            type: 'GET',
+            url: "/logger/search?practice_date=",
+            success: function (data) {
+                location.reload();
+            }
+        });
+        return
+    }
+    var date = new Date(val);
+    var string_date = ((date.getMonth() > 8) ? (date.getMonth() + 1) : ('0' + (date.getMonth() + 1))) + '/' + ((date.getDate() > 8) ? (date.getDate()+1) : ('0' + (date.getDate()+1))) + '/' + date.getFullYear();
+    console.log(string_date);
+    for(let i=0; i<paginated_practices.length; i++) {
+        var page = paginated_practices[i];
+        for (let j=0; j<page.length; j++) {
+            var container = page[j];
+            const table = container.querySelector(".practice-table-inner");
+            if(!table) continue;
+
+            // re-display the table incase it was hidden
+            table.style.display = "";
+            if (val == "" || val == null) {
+                continue
+            }
+            var thead = table.children[0];
+            console.log(thead);
+            var title = thead.children[0].children[0].innerHTML;
+            if (!title.includes(string_date)) {
+                table.style.display = "none";
+            }
+        }
+    }
+    document.querySelector('.spinner-container').style.display = "none";
+});
+
+function showSpinner(text) {
+  var spinnerText = document.querySelector('.spinner-text');
+  var textContent = text || "Loading...";
+  spinnerText.textContent = textContent;
+
+  // add css for each letter to cause a delay
+  var spanCount = textContent.length;
+  var spanCSS = "";
+  for (var i = 1; i <= spanCount; i++) {
+    var delay = (i - 1) * 0.1;
+    spanCSS += `.spinner-text span:nth-child(${i}) { animation-delay: ${delay}s; } `;
+  }
+  var styleElement = document.querySelector("style[type='text/css']");
+  styleElement.insertAdjacentHTML('beforeend', spanCSS);
+
+  // move each letter into a span element
+  var chars = text.split('');
+  var wrappedChars = chars.map(function(char) {
+    return '<span>' + char + '</span>';
+  });
+  spinnerText.innerHTML = wrappedChars.join('');
+
+  // make the spinner visible
+  var spinnerContainer = document.querySelector(".spinner-container");
+  spinnerContainer.style.display = "flex";
+
+  // allow spinner to be closed
+  var spinnerClose = document.getElementById("spinner-close");
+  spinnerClose.addEventListener("click", function() {
+    spinnerContainer.style.display = "none";
+  });
+}
+
+function scrollToSection(event, sectionId) {
+    event.preventDefault(); // Prevent the default anchor behavior
+    var section = document.getElementById(sectionId);
+    if (section) {
+        var offset = 0; // Adjust this value based on your fixed navbar height
+        var sectionPosition = section.getBoundingClientRect().top + window.scrollY;
+        window.scrollTo({
+            top: sectionPosition - offset,
+            behavior: 'smooth'
+        });
+    }
+}
+
+var logSubmitBtn = document.getElementById("logger");
+function handleSubmitBtn() {
+    // Get the selected tags
+    var selectedTags = Array.from(document.querySelectorAll('.tag-box.selected'))
+                          .map(function(tagBox) {
+                              return tagBox.textContent;
+                          });
+
+    // Set the selected tags in the hidden input field
+    var tagInput = document.getElementById('selected-tags');
+    tagInput.value = selectedTags.join(',');
+    console.log(tagInput.value);
+}
+logSubmitBtn.addEventListener('submit', handleSubmitBtn);
+
+// Function to toggle full-screen mode
+function toggleFullScreen() {
+    var notepad = document.querySelector('#col-skill');
+    var textarea = document.getElementById('log');
+    const fullScreenSubmitButton = document.getElementById("submit-button-full-screen");
+
+    notepad.classList.toggle('full-screen');
+    textarea.classList.toggle('full-screen');
+
+    if (notepad.classList.contains("full-screen")) {
+        fullScreenSubmitButton.style.display = "";
+    } else {
+        fullScreenSubmitButton.style.display = "none";
+    }
+}
+
+// Attach functions to the corresponding events
+document.getElementById('fullScreenBtn').addEventListener('click', toggleFullScreen);
+
+// expand the turn to get into
+$('[class^="expand-turn"]').click(function (e) {
+    const turnDetailsDiv = e.target.parentNode.lastElementChild;
+    if (turnDetailsDiv.style.display == "none") {
+        turnDetailsDiv.style.display = "";
+        //e.target.classList = "expand-tab fa fa-caret-up";
+        e.target.classList = "expand-tab fa fa-minus";
+        const tableDiv = e.target.parentNode.parentNode.parentNode.parentNode.parentNode;
+        tableDiv.style.height = tableDiv.offsetHeight + turnDetailsDiv.offsetHeight + 'px';
+    } else {
+        const tableDiv = e.target.parentNode.parentNode.parentNode.parentNode.parentNode;
+        tableDiv.style.height = tableDiv.offsetHeight - turnDetailsDiv.offsetHeight + 'px';
+        e.target.classList = "expand-tab fa fa-plus";
+        turnDetailsDiv.style.display = "none";
+    }
+});
+
+// Add in lesson plans
+var lessonPlansObj = [
+    {% for lesson in lesson_plans %}
+    {
+        title: "{{lesson.title}}",
+        description: `{{lesson.description}}`,
+        date: "{{lesson.date}}",
+        plans: {{ lesson.plans | safe }},
+        finished: {{ lesson.athletes_completed | safe }},
+        percent_complete: {{ lesson.percent_complete if 'percent_complete' in lesson else "0"}},
+        {% if lesson.completed %}
+        completed: true
+        {% else %}
+        completed: false
+        {% endif %}
+    },
+    {% endfor %}
+]
+lessonPlansObj.forEach((lesson) => {
+    addSingleLesson(lesson.title, lesson.description, lesson.date, lesson.plans, lesson.finished, lesson.completed, lesson.percent_complete);
+})
+
+function addSingleLesson(title, description, date, plans, finished, completed, percent) {
+// Display the lesson plan using Bootstrap alert
+const lessonPlansDiv = document.getElementById('lessonPlans');
+const newLessonPlanDiv = document.createElement('div');
+newLessonPlanDiv.classList.add('alert', 'single-plan');
+if (completed) {
+    newLessonPlanDiv.classList.add('completed')
+}
+
+//<ul>${plans.map(plan => `<li style="list-style: none;"><input type="checkbox" style="margin-right: 5px;"\>${plan}</li>`).join('')}</ul>
+
+var inputs = [];
+{% if request.endpoint != "coach.coach_home" %}
+for (let i=0; i<plans.length; i++) {
+    const plan = plans[i];
+    var checked = "";
+    if (Object.keys(finished).includes("{{user}}")) {
+        if (finished.{{user}}.includes(plan)) {
+            checked = " checked";
+        }
+    }
+    inputs.push(`<li style="list-style: none;"><input${checked} type="checkbox" style="margin-right: 5px;" \>${plan}</li>`);
+}
+var percentCompleteStyle = percent == "100" ? "display: none;" : ""
+var percentCompleteStr = `<div class="complete-percent" style="${percentCompleteStyle}">(${percent}% Complete)</div>`
+{% else %}
+for (let i=0; i<plans.length; i++) {
+    const plan = plans[i];
+    var finishedAthletes = [];
+    for (const [key, value] of Object.entries(finished)) {
+        if (value.includes(plan)) {
+            finishedAthletes.push(key);
+        }
+    }
+    var finishedStr = finishedStr = `<div class="finished-athletes-hidden"><b>Athletes finished:</b> None</div>`
+    if (finishedAthletes.length > 0) {
+        finishedStr = `<div class="finished-athletes-hidden"><b>Athletes finished:</b> ${finishedAthletes.join(', ')}</div>`
+    }
+    inputs.push(`<li>${plan}${finishedStr}</li>`);
+}
+var percentCompleteStr = ""
+{% endif %}
+console.log(`${date} completed: ${completed}`)
+console.log(`${percent}`)
+var completedStr = completed ? " completed": ""
+newLessonPlanDiv.innerHTML = `<div class="lesson-plan">
+<div class="lesson-plan-header">
+    <strong>
+        <div class="title">${title}</div>
+        ${percentCompleteStr}
+        <span class="${completedStr}"><p>COMPLETED</p><button class="btn btn-success" id="toggle-lesson-details">Toggle</button></span>
+    </strong>
+    <div class="action-btns">
+        {% if request.endpoint == "coach.coach_home" %}
+        <button class="btn btn-warning btn-sm" onclick="editLessonPlan(this)"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button>
+        <button class="btn btn-warning btn-sm" onclick="deleteLesson(this)"><i class="fa fa-trash-o" aria-hidden="true"></i></button>
+        {% endif %}
+    </div>
+</div>
+<p>Date: ${date}</p>
+<div class="plan-details${completedStr}">
+    <p><i>${description.replace(/\n/g, '<br>')}</i></p>
+    <p><u>Plans</u></p>
+
+    {% if request.endpoint == "coach.coach_home" %}
+    <ul>${inputs.join(' ')}</ul>
+</div>
+    <button class="btn btn-primary ml-auto" id="view-finished-athletes">Toggle Finished Athletes</button>
+    {% else %}
+    <ul>${inputs.join(' ')}</ul>
+</div>
+<button class="btn btn-primary ml-auto${completedStr}" id="save-lesson">Save</button>
+{% endif %}
+</div>
+<hr>`;
+lessonPlansDiv.appendChild(newLessonPlanDiv);
+}
+
+$("[id^=view-finished-athletes]").click(function (e) {
+    e.preventDefault();
+
+    // Get all checboxes that are checked
+    const listElements = e.target.parentNode.children[2].children[2].children;
+    for(let i=0; i<listElements.length; i++){
+        const listElement = listElements[i];
+        const finishedAthletesEle = listElement.children[0]
+        finishedAthletesEle.classList.toggle("finished-athletes-hidden");
+        finishedAthletesEle.classList.toggle("finished-athletes-show");
+    }
+
+});
+$("[id^=toggle-lesson-details]").click(function (e) {
+    e.preventDefault();
+    console.log(e.target);
+    const details = e.target.parentNode.parentNode.parentNode.parentNode.children[2];
+    details.classList.toggle("completed");
+    const saveBtn = e.target.parentNode.parentNode.parentNode.parentNode.children[3];
+    saveBtn.classList.toggle("completed");
+});
+$("[id^=save-lesson]").click(function (e) {
+    e.preventDefault();
+
+    showSpinner("Saving Lesson...")
+    // Get all checboxes that are checked
+    var checkedTurns = [];
+    const listElements = e.target.parentNode.children[2].children[2].children;
+    for(let i=0; i<listElements.length; i++){
+        const listElement = listElements[i];
+        if (listElement.children[0].checked) {
+            checkedTurns.push(listElement.textContent);
+        }
+    }
+    console.log(checkedTurns);
+
+    // Save
+    const data = {
+        finishedTurns: checkedTurns,
+        name: "{{ user }}",
+        title: e.target.parentNode.querySelector("strong div.title").textContent,
+        date: e.target.parentNode.children[1].textContent.replace("Date: ", "")
+    }
+    console.log(data);
+    $.ajax({
+        type: 'POST',
+        url: "/logger/lessons/complete",
+        contentType: 'application/json',
+        data: JSON.stringify(data),
+        success: function (data) {
+            console.log("successfully saved data");
+            alert("Saved lesson");
+            document.querySelector('.spinner-container').style.display = "none";
+        }
+    });
+
+});
+
+//$('[class^="practice-table"]').click(function(e) {
+$('[class^="table-open-btn"]').click(function(e) {
+    const button = e.target.closest("button.table-open-btn");
+    const table = button.nextElementSibling;
+    const tableDiv = table.parentNode;
+    if (tableDiv.classList.contains('closed')) {
+        tableDiv.style.height = table.offsetHeight + 'px';
+        button.childNodes[0].classList = "fa fa-chevron-up";
+    } else {
+        tableDiv.style.height = '';
+        button.childNodes[0].classList = "fa fa-chevron-down";
+    }
+    tableDiv.classList.toggle("closed");
+
+});
+
+$('[class^="div-open-btn"]').click(function(e) {
+    const button = e.target.closest("button.div-open-btn");
+    //const table = button.previousElementSibling;
+    //const tableDiv = button.previousElementSibling;
+
+    const table = button.nextElementSibling.children[1];
+    const tableHeader = button.nextElementSibling.children[0];
+    const tableDiv = table.parentNode.parentNode;
+    if (tableDiv.classList.contains('closed')) {
+        tableDiv.style.height = tableHeader.offsetHeight + table.offsetHeight + 'px';
+        button.childNodes[0].classList = "fa fa-chevron-up";
+    } else {
+        tableDiv.style.height = '100px';
+        button.childNodes[0].classList = "fa fa-chevron-down";
+    }
+    tableDiv.classList.toggle("closed");
+
+});
+
+function expandPractices() {
+    console.log("2!!");
+    const expandBtn = document.getElementById("expand-practices-btn");
+    var expand = true;
+    if (expandBtn.innerText == "Expand All") {
+        expandBtn.innerText = "Collapse All";
+    } else {
+        expandBtn.innerText = "Expand All";
+        expand = false;
+    }
+
+    // open all tables
+    const allTables = document.querySelectorAll(".practice-table.closed");
+    for(const table of allTables) {
+        table.classList.remove("closed");
+    }
+
+    for (const page of paginated_practices) {
+        for (const table of page) {
+            if (expand) {
+                if (table.classList.contains("closed")) {
+                    table.classList.remove("closed");
+                }
+                const chevron = table.children[0].children[0];
+                chevron.classList = "fa fa-chevron-up";
+            } else {
+                table.style.height = '';
+                table.classList.add("closed");
+                const chevron = table.children[0].children[0];
+                chevron.classList = "fa fa-chevron-down";
+            }
+        }
+    }
+
+
+}
+
+$(document).ready(function () {
+    $('#question-form').on('submit', function (event) {
+        event.preventDefault();
+
+        const question = $('#question').val();
+
+        if (!question) {
+            $('#response').html('<div class="alert alert-danger" role="alert">Please enter a question.</div>');
+            return;
+        }
+
+        $('#response').html('<div class="spinner-border text-primary" role="status"><span class="sr-only">Loading...</span></div>');
+
+        $.ajax({
+            url: '/logger/ask-ai',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ question: question }),
+            success: function (response) {
+                $('#response').html('<div class="alert alert-success" role="alert">' + response.answer + '</div>');
+            },
+            error: function () {
+                $('#response').html('<div class="alert alert-danger" role="alert">There was an error processing your request. Please try again later.</div>');
+            }
+        });
+    });
+});

@@ -1,0 +1,354 @@
+{% extends "trampoline/trampoline.html" %}
+
+{% block extra_styles %}
+{% endblock %}
+
+{% block additional_bottom_tabs %}
+<li class="nav-item">
+  <a class="nav-link" data-toggle="tab" href="#lessons-tab">Lesson Plans</a>
+</li>
+{% endblock %}
+
+{% block logging %}
+<div class="spinner-container">
+  <div class="spinner"></div>
+  <div class="spinner-text">Submitting data...</div>
+  <button id="spinner-close" class="spinner-close" aria-label="Close">
+    <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+      <path
+        d="M10.894 9l6.553-6.553a1 1 0 1 0-1.414-1.414L9.48 7.586 2.928 1.034a1 1 0 0 0-1.414 1.414L7.066 9 .514 15.553a1 1 0 0 0 1.414 1.414L9 10.414l6.553 6.553a1 1 0 0 0 1.414-1.414L10.894 9z"
+        fill-rule="evenodd"></path>
+    </svg>
+  </button>
+</div>
+
+<br>
+<div class="container form-group tab-pane fade show active" align="center" id="form"
+  style="background: rgba(255,255,255,0.4); border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
+
+  <div class="form-row">
+    <!-- Athletes to show -->
+    <div class="col-sm-4"><label>Athletes shown:</label></div>
+    <div class="col">
+      <ul id="shown_athletes" class="athlete-list mx-auto text-left">
+        {% for athlete, athlete_data in users.items() %}
+        {% if not athlete_data.is_coach and athlete in athletes %}
+        <li id="athlete_{{athlete}}">
+          <input type="checkbox" id="show_{{athlete}}" \> {{athlete}} ({{athlete_data.details.first_name}}
+          {{athlete_data.details.last_name}})
+        </li>
+        {% endif %}
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="form-row">
+
+    <!-- Athletes to hide -->
+    <div class="col-sm-4"><label>Athletes hidden:</label></div>
+    <div class="col">
+      <ul id="hidden_athletes" class="athlete-list mx-auto text-left"></ul>
+    </div>
+
+  </div>
+
+  <!--</form>-->
+
+</div>
+{% endblock %}
+
+{% block additional_tabs %}
+<div id="lessons-tab" class="tab-pane fade">
+  <div class="container page-desc">
+    <h4>Add lesson plans</h4>
+    <p>Create lesson plans that your athletes can view</p>
+  </div>
+  <div class="container">
+    <form id="lessonForm">
+      <input type="hidden" value="new" id="lesson-save-type">
+      <div class="form-group">
+        <label for="lesson-title">Lesson Title:</label>
+        <input type="text" class="form-control color-changing" id="lesson-title" name="lesson-title"
+          placeholder="Give the lesson plan a title" required>
+      </div>
+
+      <div class="form-group">
+        <label for="description">Lesson Description:</label>
+        <textarea class="form-control color-changing" id="description" name="description" rows="4"
+          placeholder="Type the lesson plan here..." required></textarea>
+      </div>
+      <div id="lessonInputs" class="lesson-input-group">
+        <label for="description">Lesson Plan:</label>
+        <div class="input-group">
+          <input type="text" class="form-control" name="description[]" required>
+          <div class="input-group-append">
+            <button class="btn btn-outline-secondary" type="button" onclick="removeDescriptionInput(this)">-</button>
+          </div>
+        </div>
+        <div class="add-button" id="lesson-desc-add">
+          <button class="btn btn-outline-secondary" type="button" onclick="addDescriptionInput()">+ Add</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="lesson-date">Lesson Date:</label>
+        <input type="date" class="form-control color-changing" id="lesson-date" name="lesson-date" required>
+      </div>
+
+      <button type="button" class="btn btn-primary color-changing" onclick="addLessonPlan()" id="lesson-add">Add Lesson Plan</button>
+    </form>
+
+    <div id="lessonPlans" class="mt-4">
+      <!-- Display added lesson plans here -->
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+<br>
+
+<br><br><br>
+
+{% block javascript %}
+<script type="text/javascript">
+  // Update tables on the fly
+  $("[id^=show_]").click(function (e) {
+    if (e.target.parentElement.parentElement.id == "shown_athletes") {
+      document.getElementById("hidden_athletes").appendChild(e.target.parentElement);
+    } else {
+      document.getElementById("shown_athletes").appendChild(e.target.parentElement);
+    }
+    e.target.checked = false;
+    changeView();
+
+    // sort the items by athlete name
+    sortAthletes("shown_athletes");
+    sortAthletes("hidden_athletes");
+  });
+
+  function sortAthletes(listId) {
+    var athletes = [];
+    const athleteList = document.getElementById(listId);
+    var athletes = Array.from(athleteList.children);
+    athletes.sort((a, b) => (a.innerText > b.innerText) ? 1 : -1);
+    for (athlete of athletes) {
+      athleteList.appendChild(athlete);
+    }
+  }
+
+  function changeView() {
+    var selected = [];
+    const usernameRegex = /^(\w+)\s+\(.*\)$/;
+
+
+    const athletesSelect = document.getElementById("after");
+    const shownList = document.getElementById("shown_athletes");
+    for (listItem of shownList.children) {
+      const athleteName = listItem.innerText.trim();
+      if (athleteName != "") {
+        var athleteUsername = "";
+        console.log(`name: ${athleteName}`);
+        // Use the regex to extract the username
+        const match = athleteName.match(usernameRegex);
+        if (match && match.length > 1) {
+          athleteUsername = match[1];
+          console.log(`username: ${athleteUsername}`);
+          selected.push(athleteUsername);
+        }
+      }
+    }
+
+    for (let i = 0; i < paginated_practices.length; i++) {
+      var page = paginated_practices[i];
+      for (let j = 0; j < page.length; j++) {
+        var container = page[j];
+        var table = container.children[0];
+        var table = page[j];
+
+        // re-display the table incase it was hidden
+        table.style.display = "";
+        if (selected.length == 0) {
+          continue
+        }
+        var thead = table.children[1].children[0];
+        var title = thead.children[0].children[0].innerText;
+        var includes = false;
+        for (ath of selected) {
+          if (title.includes(ath)) {
+            includes = true;
+          }
+        }
+        if (!includes) {
+          table.style.display = "none";
+        }
+      }
+    }
+    repaginate();
+  }
+
+  function addLessonPlan() {
+    // Get form values
+    const title = document.getElementById('lesson-title').value;
+    const description = document.getElementById('description').value;
+    const date = document.getElementById('lesson-date').value;
+    const saveType = document.getElementById("lesson-save-type").value;
+    const plans = Array.from(document.getElementsByName('description[]')).map(input => input.value);
+
+    if (title == "" || description == "" | date == "") {
+      alert("Please finish filling out form");
+      return
+    }
+
+    // Create a new lesson plan object
+    const lessonPlan = {
+      title: title,
+      description: description,
+      date: date,
+      plans: plans,
+      saveType: saveType
+    };
+
+    showSpinner("Submitting Lesson...")
+    // You can also send the lesson plan object to your server or store it in a database
+    // For simplicity, we are just displaying it here
+    $.ajax({
+      type: 'POST',
+      url: "/logger/coach/lesson",
+      contentType: 'application/json',
+      data: JSON.stringify(lessonPlan),
+      success: function (data) {
+        if (data.success) {
+          console.log("successfully saved data");
+          alert("Created new lesson plan");
+          clearLessonForm();
+          addSingleLesson(title, description, date, plans, {})
+          document.querySelector('.spinner-container').style.display = "none";
+        } else {
+          alert(`Error: ${data.error}`);
+          console.log("error");
+          document.querySelector('.spinner-container').style.display = "none";
+        }
+      }
+    });
+
+  }
+    // Clear the form after adding the lesson plan
+
+  function clearLessonForm() {
+    document.getElementById('lessonForm').reset();
+    document.getElementById("lesson-save-type").value = "new";
+    document.querySelectorAll(".lesson-input-group.input-group").forEach((x) => x.remove());
+    document.getElementById("lesson-title").disabled = false;
+    document.getElementById("lesson-date").disabled = false;
+    document.getElementById("lesson-add").innerText = "Add Lesson Plan";
+    if (document.querySelector("#lessonInputs .input-group") == null) {
+      addDescriptionInput("");
+    }
+  }
+
+
+  function getLessonDetails(button) {
+    // Get the parent container of the lesson plan
+    var lessonPlanContainer = button.parentNode.parentNode.parentNode;
+    if (button.tagName == "I") {
+      lessonPlanContainer = lessonPlanContainer.parentNode;
+    }
+
+    // Extract the current details
+    const title = lessonPlanContainer.children[0].children[0].children[0].textContent;
+    const description = lessonPlanContainer.children[2].children[0].textContent;
+    const date = lessonPlanContainer.children[1].textContent.replace('Date: ', '');
+    const plans = Array.from(lessonPlanContainer.querySelectorAll('ul li')).map(li => li.childNodes[0].textContent);
+
+    return {
+      container: lessonPlanContainer,
+      title: title,
+      description: description,
+      date: date,
+      plans: plans
+    }
+  }
+
+  function editLessonPlan(button) {
+    clearLessonForm();
+    var lessonDetails = getLessonDetails(button);
+
+    // Populate the form with the current details
+    document.getElementById('lesson-title').value = lessonDetails.title;
+    document.getElementById('description').value = lessonDetails.description;
+    document.getElementById('lesson-date').value = lessonDetails.date;
+
+    // Populate the form with description inputs
+    for (const plan of lessonDetails.plans) {
+      addDescriptionInput(plan);
+    }
+    // Remove the edited lesson plan from the display
+    lessonDetails.container.parentNode.remove();
+
+    // remove the first input
+    document.getElementsByName("description[]")[0].parentNode.remove()
+    document.getElementById("lesson-save-type").value = "edit";
+    document.getElementById("lesson-title").disabled = true;
+    document.getElementById("lesson-date").disabled = true;
+    document.getElementById("lesson-add").innerText = "Edit Lesson Plan";
+  }
+
+  function deleteLesson(button) {
+    var lessonDetails = getLessonDetails(button);
+    if (confirm(`Are you sure you want to delete the lesson plan titled ${lessonDetails.title} for ${lessonDetails.date}?`)) {
+      console.log("deleted");
+
+      const data = {
+        title: lessonDetails.title,
+        date: lessonDetails.date
+      }
+      showSpinner("Deleting Lesson...")
+      $.ajax({
+        type: 'DELETE',
+        url: "/logger/coach/lesson",
+        contentType: 'application/json',
+        data: JSON.stringify(data),
+        success: function (data) {
+          if (data.success) {
+            console.log("Successfully deleted date");
+            alert("Success");
+            // Remove the edited lesson plan from the display
+            lessonDetails.container.parentNode.remove();
+            document.querySelector('.spinner-container').style.display = "none";
+          } else {
+            console.error(data.error)
+            document.querySelector('.spinner-container').style.display = "none";
+          }
+        }
+      });
+    }
+  }
+
+  function addDescriptionInput(value = '') {
+    // Create a new description input group
+    const lessonInputsDiv = document.getElementById('lessonInputs');
+    const newInputGroup = document.createElement('div');
+    newInputGroup.classList.add('lesson-input-group', 'input-group');
+    newInputGroup.innerHTML = `<input type="text" class="form-control" name="description[]" value="${value}" required>
+                                <div class="input-group-append">
+                                  <button class="btn btn-outline-secondary" type="button" onclick="removeDescriptionInput(this)">-</button>
+                                </div>`;
+    //lessonInputsDiv.insertBefore(newInputGroup, lessonInputsDiv.lastChild);
+
+    const addBtn = document.getElementById("lesson-desc-add");
+    lessonInputsDiv.insertBefore(newInputGroup, addBtn);
+  }
+
+  function removeDescriptionInput(button) {
+    // Remove the parent input group when the '-' button is clicked
+    button.parentNode.parentNode.remove();
+  }
+
+  function resetLessonForm() {
+    // Reset the lesson form by clearing values and re-adding the initial description input
+    document.getElementById('lessonForm').reset();
+    document.getElementById('lessonInputs').innerHTML = '';
+    addDescriptionInput();
+  }
+</script>
+{% endblock %}

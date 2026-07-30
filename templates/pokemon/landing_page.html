@@ -1,0 +1,74 @@
+{% extends "pokemon/base.html" %}
+
+{% block content %}
+<main class="landing-page">
+  <section class="landing-hero">
+    <div class="landing-orb landing-orb-one"></div>
+    <div class="landing-orb landing-orb-two"></div>
+    <div class="container landing-hero-content">
+      <div class="row align-items-center">
+        <div class="col-lg-6 landing-copy">
+          <span class="landing-eyebrow"><i class="fa fa-bolt" aria-hidden="true"></i> Pokémon GO PvP intelligence</span>
+          <h1>Build smarter teams.<br><span>Win more battles.</span></h1>
+          <p class="landing-lede">Make sense of the current meta, uncover anti-meta picks, and build a team with confidence for your next set.</p>
+          <div class="landing-actions">
+            <a class="btn landing-primary" href="/">Build a team <i class="fa fa-arrow-right" aria-hidden="true"></i></a>
+            <a class="landing-text-link" href="/about">How it works</a>
+          </div>
+          <div class="landing-proof">
+            <span><i class="fa fa-check" aria-hidden="true"></i> Current league data</span>
+            <span><i class="fa fa-check" aria-hidden="true"></i> Practical battle tools</span>
+          </div>
+        </div>
+        <div class="col-lg-6 mt-5 mt-lg-0">
+          <div class="landing-preview">
+            <div class="landing-preview-bar"><span></span><span></span><span></span><b>Team intelligence</b></div>
+            <img src="/images/website_preview3.png" class="img-fluid" alt="Preview of the Anti-Meta Team Generator results">
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="landing-tools container">
+    <div class="landing-section-heading">
+      <span>Everything you need</span>
+      <h2>From matchup data to better decisions</h2>
+      <p>Start with the tool that helps your battle prep most today.</p>
+    </div>
+    <div class="row">
+      <div class="col-md-4 mb-4">
+        <article class="landing-tool-card landing-tool-featured">
+          <div class="landing-tool-icon"><i class="fa fa-crosshairs" aria-hidden="true"></i></div>
+          <h3>Anti-Meta Generator</h3>
+          <p>See what is popular in your league and find Pokémon that counter the field.</p>
+          <a href="/">Open generator <i class="fa fa-arrow-right" aria-hidden="true"></i></a>
+        </article>
+      </div>
+      <div class="col-md-4 mb-4">
+        <article class="landing-tool-card">
+          <div class="landing-tool-icon"><i class="fa fa-list-ol" aria-hidden="true"></i></div>
+          <h3>Move Counts</h3>
+          <p>Learn charge-move timing and create a concise reference for your battles.</p>
+          <a href="/move_counts">Explore move counts <i class="fa fa-arrow-right" aria-hidden="true"></i></a>
+        </article>
+      </div>
+      <div class="col-md-4 mb-4">
+        <article class="landing-tool-card">
+          <div class="landing-tool-icon"><i class="fa fa-book" aria-hidden="true"></i></div>
+          <h3>Learn the Meta</h3>
+          <p>Understand the metrics behind the generator and turn data into stronger teams.</p>
+          <a href="/about">Read the guide <i class="fa fa-arrow-right" aria-hidden="true"></i></a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="landing-support">
+    <div class="container d-flex flex-column flex-md-row align-items-md-center justify-content-between">
+      <div><span>Keep the tools growing</span><h2>Support the project</h2></div>
+      <div class="landing-support-links"><a href="/paypal">Subscribe</a><a href="http://patreon.com/itsFlippinCoop" target="_blank" rel="noopener">Patreon <i class="fa fa-external-link" aria-hidden="true"></i></a></div>
+    </div>
+  </section>
+</main>
+{% endblock %}

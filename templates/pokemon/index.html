@@ -1,0 +1,1081 @@
+{% extends "pokemon/base.html" %}
+
+{% block content %}
+<script type="text/javascript">
+
+const all_pokemon = {{ all_pokemon | tojson }};
+const pokemon_types = {{ pokemon_types | tojson }};
+const pokemon_move_counts = {{ pokemon_move_counts | tojson }};
+console.log(pokemon_move_counts);
+
+function moveCountTable(pokemon) {
+  // get the move counts for the pokemon
+  const baseName = getBaseName(pokemon);
+  
+  const moves = pokemon_move_counts[baseName];
+
+  const table = document.createElement("table");
+  table.classList = "pokemon-move-counts hide-moves";
+  if (moves == undefined) {
+    console.log(`Skipping moves for ${pokemon}`);
+    return table;
+  }
+
+  // make the table
+  const headerRow = document.createElement("tr");
+  const header1 = document.createElement("th");
+  header1.textContent = "Move";
+  headerRow.appendChild(header1);
+  const header2 = document.createElement("th");
+  header2.textContent = "Counts";
+  headerRow.appendChild(header2);
+  table.appendChild(headerRow);
+
+  for (const [key, value] of Object.entries(moves)) {
+    const row = document.createElement("tr");
+    const col1 = document.createElement("td");
+    col1.textContent = key;
+    row.appendChild(col1);
+    const col2 = document.createElement("td");
+    col2.textContent = value;
+    row.appendChild(col2);
+    table.appendChild(row);
+  }
+  return table;
+}
+
+function getBaseName(pokemon) {
+  const isShadow = pokemon.includes("shadow");
+  const baseName = isShadow ? pokemon.slice(0, -7) : pokemon;
+  return baseName;
+}
+
+function getFileName(pokemon) {
+  if (pokemon === "?") {
+    const cell = document.createElement("div");
+    cell.classList = "report-name";
+    cell.textContent = "?";
+    return cell;
+  }
+
+  const isShadow = pokemon.includes("shadow");
+  const baseName = isShadow ? pokemon.slice(0, -7) : pokemon;
+
+  const altData = all_pokemon.find(p => p.speciesId === baseName);
+  const altName = altData && altData.speciesName
+    ? altData.speciesName.split(/\s|\(/)[0].toLowerCase()
+    : null;
+
+  const initialSrc = `/images/pokemon_images/${baseName}.png`;
+
+  // Create main wrapper
+  const wrapper = document.createElement("div");
+
+  // Create image
+  const img = document.createElement("img");
+  img.src = initialSrc;
+  img.alt = baseName;
+  img.style.zIndex = "2";
+  img.style.maxHeight = "75px";
+  img.style.position = "relative";
+  img.classList.add("pokemon-image");
+
+  // onError fallback
+  img.onerror = () => {
+    if (altName) {
+      img.onerror = null;
+      img.src = `/images/pokemon_images/${altName}.png`;
+    } else {
+      img.onerror = null;
+      img.src = "/images/missing.png";
+    }
+  };
+
+  // Type circles
+  const types = pokemon_types[pokemon] || [];
+  const typeContainer = document.createElement("div");
+  types.forEach(type => {
+    const circle = document.createElement("div");
+    circle.classList.add("type-circle", `type-${type}`);
+    circle.title = type;  // Tooltip
+    typeContainer.appendChild(circle);
+  });
+
+  // Text node for name
+  const nameText = document.createElement("div");
+  nameText.textContent = pokemon;
+  nameText.appendChild(typeContainer);
+  nameText.style.justifyContent = "center";
+  nameText.style.display = "flex";
+  nameText.style.flexDirection = "row";
+  nameText.className = "report-name";
+
+  // If shadow variant
+  if (isShadow) {
+    const relativeWrapper = document.createElement("div");
+    relativeWrapper.style.position = "relative";
+    relativeWrapper.appendChild(img);
+
+    const shadowImg = document.createElement("img");
+    shadowImg.src = "/images/shadow_fire.png";
+    shadowImg.style.position = "absolute";
+    shadowImg.style.left = "0px";
+    shadowImg.style.bottom = "10px";
+    shadowImg.style.maxWidth = "100%";
+    shadowImg.style.maxHeight = "50px";
+
+    relativeWrapper.appendChild(shadowImg);
+    wrapper.appendChild(relativeWrapper);
+  } else {
+    wrapper.appendChild(img);
+  }
+
+  wrapper.appendChild(nameText);
+  return wrapper;
+}
+
+
+function getFileName2(pokemon) {
+  if (pokemon == "?") {
+    return "?";
+  }
+  const isShadow = pokemon.includes("shadow");
+  const baseName = isShadow ? pokemon.slice(0, -7) : pokemon;
+
+  const altData = all_pokemon.find(p => p.speciesId === baseName);
+  const altName = altData && altData.speciesName
+    ? altData.speciesName.split(/\s|\(/)[0].toLowerCase()
+    : null;
+
+  const initialSrc = `/images/pokemon_images/${baseName}.png`;
+
+  const onErrorHandler = altName
+    ? `this.onerror=null; this.src='/images/pokemon_images/${altName}.png';`
+    : `this.onerror=null; this.src='/images/missing.png';`;
+
+  const imageTag = `<img loading="lazy" style="z-index: 2; max-height: 75px; position: relative;" src="${initialSrc}" 
+                        class="pokemon-image" 
+                        alt="${baseName}" 
+                        onerror="${onErrorHandler}">`;
+
+  const types = pokemon_types[altName];
+  const typeCircles = types.map(type => `<div title="${type}" class="type-circle type-${type}"></div>`).join('');
+  if (isShadow) {
+    return `
+      <div style="position: relative;">
+        ${imageTag}
+        <img src="/images/shadow_fire.png" 
+             style="max-width: 100%; max-height: 50px; position: absolute; left: 0px; bottom: 10px;">
+      </div>
+      <div>${pokemon} ${typeCircles}</div>`;
+  }
+  return `${imageTag}<div>${pokemon} ${typeCircles}</div>`;
+}
+
+async function fillPokemonCharts(data, chartId, poke_win_rates) {
+
+  const chartElement = document.getElementById(chartId);
+
+  for(let i=0; i< data.length; i++) {
+    // outer div
+    const outerDiv = document.createElement("div");
+    outerDiv.className = "pokemon-chart-container";
+    
+    const pokemonData = data[i];
+    if (pokemonData[1] < {{min_percentage}}) {
+      continue;
+    }
+    
+    // first row
+    const firstRowDiv = document.createElement("div");
+    firstRowDiv.className = "row";
+
+    const firstColDiv = document.createElement("div");
+    firstColDiv.className = "col-6";
+
+    const pieChart = document.createElement("div");
+    pieChart.className = "pie";
+    pieChart.style.setProperty("--p", pokemonData[1]);
+    pieChart.style.setProperty("--b", "10px");
+    pieChart.style.setProperty("--w", "100%");
+
+    const percentDiv = document.createElement("div");
+    percentDiv.className = "percentage";
+    percentDiv.innerText = `${Number(pokemonData[1]).toFixed(2)}%`;
+    pieChart.appendChild(percentDiv);
+    firstColDiv.appendChild(pieChart);
+  
+    const secondColDiv = document.createElement("div");
+    secondColDiv.className = "pokemon-image-container col-6";
+    const isShadow = pokemonData[0].includes("shadow");
+    const baseName = isShadow ? pokemonData[0].slice(0, -7) : pokemonData[0];
+    const imagePath = `/images/pokemon_images/${baseName}.png`;
+    const imageExists = await new Promise((resolve) => {
+      const img = new Image();
+      img.src = imagePath;
+
+      img.onload = () => resolve(true);
+      img.onerror = () => resolve(false);
+    });
+
+    let finalName = baseName;
+    if (!imageExists) {
+      console.log(`Checking alt name for ${finalName}`);
+      const alt = all_pokemon.find(p => p.speciesId == baseName);
+      if (alt && alt.speciesName) {
+        finalName = alt.speciesName.split(/\s|\(/)[0].toLowerCase();
+        console.log(`New alt name: ${finalName}`);
+      }
+    }
+
+    var content = '';
+    if (pokemonData[0].includes("shadow")) {
+      const pokemonName = pokemonData[0].slice(0, -7);
+      content = `<div style="position: relative;">
+        <img src="/images/pokemon_images/${finalName}.png" class="pokemon-image" style="z-index: 2; position: relative;" alt="${pokemonData[0]}">
+        <img src="/images/shadow_fire.png" style="max-width: 100%; max-height: 50px; position: absolute; left: 0px; bottom: 10px;">
+      </div>`
+    } else {
+      content = `<img src="/images/pokemon_images/${finalName}.png" class="pokemon-image" alt="${finalName}" >`
+    }
+    secondColDiv.innerHTML = content;
+    firstRowDiv.appendChild(firstColDiv);
+    firstRowDiv.appendChild(secondColDiv);
+
+    const secondRowDiv = document.createElement("div");
+    secondRowDiv.className = "clearfix text-center";
+    var rowContent1 =  `<p style="margin: 0px;"><b>${pokemonData[0]}</b></p>`; // TODO: convert to title case
+
+    const types = pokemon_types[finalName];
+    const typeCircles = types.map(type => `<div title="${type}" class="type-circle type-${type}"></div>`).join('');
+    var rowContent1 = `<div style="justify-content: center; display: flex; flex-direction: row;">${rowContent1}&nbsp;&nbsp;${typeCircles}</div>`;
+    var rowContent2 = ``;
+    if (poke_win_rates[pokemonData[0]]) {
+      rowContent2 = `<p style="font-size: 10px; margin: 0px;">(${poke_win_rates[pokemonData[0]]})</p>`;
+    } else {
+      rowContent2 = `<p></p>`;
+    }
+    secondRowDiv.innerHTML = rowContent1 + rowContent2;
+    
+    outerDiv.appendChild(firstRowDiv);
+    outerDiv.appendChild(secondRowDiv);
+
+    chartElement.appendChild(outerDiv);
+  }
+}
+
+function toggleAdvOptions(e) {
+  e.preventDefault();
+  const advOptions = document.getElementById('advanced-options');
+  const caret = document.getElementById('caret-advanced-options')
+
+  if (advOptions.style.display == "none") {
+    advOptions.style.display = "";
+    caret.className = "fa fa-caret-up"
+  } else {
+    advOptions.style.display = "none";
+    caret.className = "fa fa-caret-down"
+  }
+}
+
+
+</script>
+
+<div class="outside">
+  <section class="generator-shell container-fluid">
+    <div class="generator-heading">
+      <div><span class="generator-kicker">Live player data</span><h1>Filter the reported battle data</h1><p>These settings update the player-reported data below and inform the team recommendations.</p></div>
+      <span class="generator-status"><i class="fa fa-database" aria-hidden="true"></i> Updated {{ last_refreshed }}</span>
+    </div>
+    <form action="/" class="generator-form">
+      <div class="generator-grid">
+        <div class="form-group"><label for="league_picker">League</label><select id="league_picker" name="league" class="form-control">
+              {% for league in split_leagues %}
+              <optgroup label="{{ league[0] }}">
+                {% for cup in league[1] %}
+                <option value="{{cup[0]}}" id="option_{{cup[0]}}"{% if current_league==cup[0] %} selected{% endif %}>{{cup[0]}}</option>
+                {% endfor %}
+              </optgroup>
+              {% endfor %}
+            </select></div>
+        <div class="form-group"><label for="mySelect">Build around a Pokémon <span class="text-muted">(optional)</span></label><select id="mySelect" name="pokemon" class="form-control">
+              <option value="">None</option>
+            {% for pokemon in all_pokemon %}
+              <option value='{{pokemon.speciesId}}'{% if current_pokemon == pokemon.speciesId %} selected{% endif %}>{{pokemon.speciesId}}</option>
+            {% endfor %}
+            </select><fieldset class="position-choice"><legend>Preferred position</legend><label><input type="radio" id="lead" value="lead" name="position" {% if chosen_position=="lead" %} checked {% endif %}> Lead</label><label><input type="radio" id="back" value="back" name="position" {% if chosen_position=="back" %} checked {% endif %}> Closer</label></fieldset></div>
+        <div class="form-group"><label for="rating">Rating bracket</label><select id="rating" name="rating" class="form-control">
+                <option value="None">None</option>
+                {% for rating in ratings %}
+                <option value="{{rating}}"{% if rating == current_rating %} selected{% endif %}>{{rating}}</option>
+                {% endfor %}
+              </select></div>
+        <div class="form-group"><label for="num_teams">Recommended teams</label><input type="number" min="1" step="1" id="num_teams" value="{{number_teams}}" name="num_teams" class="form-control" /></div>
+        <div class="form-group generator-submit"><button id="submit-button" type="submit" class="btn btn-primary">Update live data <i class="fa fa-arrow-right" aria-hidden="true"></i></button></div>
+      </div>
+      <details class="generator-advanced">
+        <summary>Advanced data settings <i class="fa fa-chevron-down" aria-hidden="true"></i></summary>
+        <div class="generator-advanced-grid">
+          <div class="form-group">
+            <label for="num_days_start">Data starts (days ago)</label><input type="number" min="1" step="1" id="num_days_start" value="{{num_days_start}}" name="num_days_start" class="form-control" />
+          </div>
+          <div class="form-group"><label for="num_days_end">Data ends (days ago)</label><input type="number" min="0" step="1" id="num_days_end" value="{{num_days_end}}" name="num_days_end" class="form-control" />
+          </div>
+          <div class="form-group"><label for="min_percentage">Minimum counter score (%)</label><input type="number" min="1" step="1" id="min_percentage" value="{{min_percentage}}" name="min_percentage" class="form-control" />
+          </div>
+          <div class="form-group"><label for="exponent">Calculation exponent</label><input type="number" min="1" max="3" step="1" id="exponent" value="{{exponent or 1}}" name="exponent" class="form-control" />
+          </div>
+        </div>
+      </details>
+    </form>
+  </section>
+
+  <!-- Tabs at bottom-->
+  <div class="bottom-tabs">
+    <!--<ul class="nav nav-tabs fixed-bottom bg-dark color-changing">-->
+    <ul class="nav nav-tabs fixed-bottom color-changing">
+      <li class="nav-item">
+        <a class="nav-link active" data-toggle="tab" href="#meta-tab">Player-reported data</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" data-toggle="tab" href="#teams-tab">Most played teams</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" data-toggle="tab" href="#recc-tab">Algorithm recommendations</a>
+      </li>
+    </ul>
+  </div>
+
+  <div class="tab-content">
+    <div id="meta-tab" class="tab-pane fade show active">
+      <div>
+        <p align="center" class="clear-header" style="margin:0px; text-decoration: none; border-bottom: 1px solid white; font-size: 20px;">Player-reported battle data</p>
+        <div class="border-dark meta-table">
+          <nav class="clear-header">
+            <ul class="nav nav-tabs" id="pokemon-position" role="tablist">
+              <li class="nav-item">
+                <a class="nav-link active" href="#nav-leads" id="nav-leads-tab" data-toggle="tab" aria-controls="nav-leads"
+                  role="tab" aria-selected="true">Leads</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#nav-ss" id="nav-ss-tab" data-toggle="tab" aria-controls="nav-ss" role="tab"
+                  aria-selected="false">Second</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#nav-back" id="nav-back-tab" data-toggle="tab" aria-controls="nav-back" role="tab"
+                  aria-selected="false">Third</a>
+              </li>
+              <li class="nav-item ml-auto">
+                <p class="nav-link" style="">Using <b>{{ n_teams }}</b> teams of data</p>
+              </li>
+            </ul>
+          </nav>
+      <div class="p-0">
+        <div class="tab-content">
+          <!-- Leads Tab -->
+          <div class="tab-pane fade show active" id="nav-leads" role="tabpanel" aria-labelledby="nav-leads-tab">
+            <table class="my-0 table-striped" border="1" style="background-color: white;">
+              <thead class="clear-header">
+                <th colspan="2" class="text-center">Leads</th>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="width:50%">
+                    <b>Leads reported on GoBattleLog</b>
+                    <br>
+                    <p>The number of times the pokemon is reported as first on a team by trainers using GoBattleLog.</p>
+                    <p>In parentheses is the pokemon's actual win rate in the lead.</p>
+                    <p style="margin: 0px"><a href='/move_image?pokemon={{lead_move_count_string}}' class="btn btn-primary" style="width: 100%">Download move counts</a></p>
+                  </td>
+                  <td>
+                    <b>Leads that beat the meta leads</b>
+                    <br>
+                    <p>Weighted percent of the leads (on the left) that the pokemon beats (using a 1-1 shield scenario).</p>
+                    <p>In parentheses is the pokemon's actual win rate in the lead.</p>
+                  </td>
+                </tr>
+                <tr class="data-row">
+                  <td>
+                    <div class="data2" style="">
+                      <table style="width: 100%;" class="sortable-table">
+                        <tr style="border:none;">
+                          <th id="sort-name" style="border:none;padding-top:1px;padding-bottom:0px; cursor: pointer;"><b><u>Pokemon</u></b></th>
+                          <th id="sort-winrate" style="border:none;padding-top:1px;padding-bottom:0px; cursor: pointer;"><b><u>Win Rate</u></b></th>
+                          <th id="sort-reports" style="border:none;padding-top:1px;padding-bottom:0px; cursor: pointer;"><b><u># Reports</u></b></th>
+                        </tr>
+                      {% for lead in result_data.meta_leads %}
+                        <tr style="border:none;" class="result-row" data-pokemon="{{ lead[0] }}">
+                          <td style="border:none;padding-top:1px;padding-bottom:0px;overflow: visible;">
+                            <div style="display: flex; flex-direction: column; align-items: center;" class="pokemon-image-cell" data-pokemon="{{ lead[0] }}">
+                              <!-- to be filled on load
+                              <img src="" alt="{{ lead[0] | safe }}" style="width: 40px; height: 40px; margin-right: 10px;">
+                              <div style="font-weight: bold;">{{ lead[0].replace('_', ' ') }}</div>
+                            -->
+                            </div>
+                            <!--{{ lead[0] | pokemonColor(current_pokemon, current_league) | safe }}-->
+                            <!--{{ lead[0] }}-->
+                          </td>
+                          <td>{{poke_win_rates['leads'][lead[0]].split('||') | join('<br>') | safe }}</td>
+                          <td style="border:none;padding-top:1px;padding-bottom:0px">
+                            {{ lead[1] }}
+                          </td>
+                        </tr>
+                      {% endfor %}
+                      </table>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="data2" style="">
+                      <table border="0" style="width: 100%; display: none;">
+                        <tr style="border:none;">
+                          <td style="border:none;padding-top:1px;padding-bottom:0px"><b><u>Pokemon</u></b></td>
+                          <td style="border:none;padding-top:1px;padding-bottom:0px"><b><u>Predicted win rate</u></b></td>
+                        </tr>
+                      {% for lead in result_data.good_leads %}
+                        {% if lead[1] >= min_percentage %}
+                        <tr border="0">
+                          <td style="border:none;padding-top:1px;padding-bottom:0px">
+                            {{ lead[0] | pokemonColor(current_pokemon, current_league) | safe }} ({{poke_win_rates['leads'][lead[0]]}})
+                            <!--{{ lead[0] }}-->
+                          </td>
+                          <td style="border:none;padding-top:1px;padding-bottom:0px">
+                            {{ "%.2f" | format(lead[1]) }}%
+                          </td>
+                        </tr>
+                        {% endif %}
+                      {% endfor %}
+                      </table>
+                      <div class="all-pokemon-charts" id="pokemon-lead-charts">
+                        <script type="text/javascript">
+                          fillPokemonCharts({{result_data.good_leads | tojson | safe}}, 'pokemon-lead-charts', {{poke_win_rates["leads"] | tojson | safe}});
+                        </script>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Second pokemon Tab -->
+          <div class="tab-pane fade" id="nav-ss" role="tabpanel" aria-labelledby="nav-ss-tab">
+            <table class="my-0 table-striped" border="1" style="background-color: white;">
+              <thead class="clear-header">
+                <th colspan="2" class="text-center">Second Pokemon</th>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="width:50%">
+                    <b>Second pokemon reported on GoBattleLog</b>
+                    <br>
+                    <p>The number of times the pokemon is reported as the second pokemon on a team by trainers using GoBattleLog.</p>
+                    <p>In parentheses is the pokemon's actual win rate in the second position.</p>
+                    <p style="margin: 0px;"><a href='/move_image?pokemon={{ss_move_count_string}}' class="btn btn-primary" style="width: 100%">Download move counts</a></p>
+                  </td>
+                  <td>
+                    <b>Second pokemon that beat the meta second pokemon</b>
+                    <br>
+                    <p>Weighted percent of the second pokemon (on the left) that the pokemon beats (using a 1-1 shield scenario).</p>
+                    <p>In parentheses is the pokemon's actual win rate in the second position.</p>
+                  </td>
+                </tr>
+                <tr class="data-row">
+                  <td>
+                    <div class="data2" style="">
+                      <table border="0" style="width: 100%" class="sortable-table">
+                        <tr style="border:none;">
+                          <th id="sort-name"    style="border:none;padding-top:1px;padding-bottom:0px; cursor: pointer;"><b><u>Pokemon</u></b></th>
+                          <th id="sort-winrate" style="border:none;padding-top:1px;padding-bottom:0px; cursor: pointer;"><b><u>Win Rate</u></b></th>
+                          <th id="sort-reports" style="border:none;padding-top:1px;padding-bottom:0px; cursor: pointer;"><b><u># Reports</u></b></th>
+                        </tr>
+                      {% for ss in result_data.meta_ss %}
+                        <tr style="border:none;" class="result-row" data-pokemon="{{ ss[0] }}">
+                          <td style="border:none;padding-top:1px;padding-bottom:0px">
+                            <div style="display: flex; flex-direction: column; align-items: center;" class="pokemon-image-cell" data-pokemon="{{ ss[0] }}">
+                            <!-- to be filled on load
+                            {{ ss[0] | pokemonColor(current_pokemon, current_league) | safe }}
+                            -->
+                            </div>
+                          </td>
+                          <td>{{poke_win_rates['ss'][ss[0]].split('||') | join('<br>') | safe }}</td>
+                          </td>
+                          <td style="border:none;padding-top:1px;padding-bottom:0px">
+                            {{ ss[1] }}
+                          </td>
+                        </tr>
+                      {% endfor %}
+                      </table>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="data2" style="">
+                      <table border="0" style="width: 100%; display: none;">
+                        <tr style="border:none;">
+                          <td style="border:none;padding-top:1px;padding-bottom:0px"><b><u>Pokemon</u></b></td>
+                          <td style="border:none;padding-top:1px;padding-bottom:0px"><b><u>Predicted win rate</u></b></td>
+                        </tr>
+                      {% for ss in result_data.good_ss %}
+                        {% if ss[1] >= min_percentage %}
+                        <tr border="0">
+                          <td style="border:none;padding-top:1px;padding-bottom:0px">
+                            {{ ss[0] | pokemonColor(current_pokemon, current_league) }} ({{poke_win_rates['ss'][ss[0]]}})
+                          </td>
+                          <td style="border:none;padding-top:1px;padding-bottom:0px">
+                            {{ "%.2f" | format(ss[1]) }}%
+                          </td>
+                        </tr>
+                        {% endif %}
+                      {% endfor %}
+                      </table>
+                      <div class="all-pokemon-charts" id="pokemon-ss-charts">
+                        <script type="text/javascript">
+                          fillPokemonCharts({{result_data.good_ss | tojson | safe}}, 'pokemon-ss-charts', {{poke_win_rates["ss"] | tojson | safe}});
+                        </script>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Third pokemon Tab -->
+          <div class="tab-pane fade" id="nav-back" role="tabpanel" aria-labelledby="nav-back-tab">
+            <table class="my-0 table-striped" border="1" style="background-color: white;">
+              <thead class="clear-header">
+                <th colspan="2" class="text-center">Third Pokemon</th>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="width:50%">
+                    <b>Third pokemon reported on GoBattleLog</b>
+                    <br>
+                    <p>The number of times the pokemon is reported as last on a team by trainers using GoBattleLog.</p>
+                    <p>In parentheses is the pokemon's actual win rate in the third position.</p>
+                    <p style="margin: 0px;"><a href='/move_image?pokemon={{back_move_count_string}}' class="btn btn-primary" style="width: 100%">Download move counts</a></p>
+                  </td>
+                  <td>
+                    <b>Third pokemon that beat the meta third pokemon</b>
+                    <br>
+                    <p>Weighted percent of the third pokemon (on the left) that the pokemon beats (using a 1-1 shield scenario).</p>
+                    <p>In parentheses is the pokemon's actual win rate in the third position.</p>
+                  </td>
+                </tr>
+                <tr class="data-row">
+                  <td>
+                    <div class="data2" style="">
+                      <table border="0" style="width: 100%" class="sortable-table">
+                        <tr style="border:none;">
+                          <th id="sort-name"    style="border:none;padding-top:1px;padding-bottom:0px; cursor: pointer;"><b><u>Pokemon</u></b></th>
+                          <th id="sort-winrate" style="border:none;padding-top:1px;padding-bottom:0px; cursor: pointer;"><b><u>Win Rate</u></b></th>
+                          <th id="sort-reports" style="border:none;padding-top:1px;padding-bottom:0px; cursor: pointer;"><b><u># Reports</u></b></th>
+                        </tr>
+                      {% for back in result_data.meta_backs %}
+                        <tr style="border:none;" class="result-row" data-pokemon="{{ back[0] }}">
+                          <td style="border:none;padding-top:1px;padding-bottom:0px">
+                            <div style="display: flex; flex-direction: column; align-items: center;" class="pokemon-image-cell" data-pokemon="{{ back[0] }}">
+                            <!-- to be filled on load
+                            {{ back[0] | pokemonColor(current_pokemon, current_league) }}
+                            -->
+                            </div>
+                          </td>
+                          <td>{{poke_win_rates['back'][back[0]].split('||') | join('<br>') | safe }}</td>
+                          </td>
+                          <td style="border:none;padding-top:1px;padding-bottom:0px">
+                            {{ back[1] }}
+                          </td>
+                        </tr>
+                      {% endfor %}
+                      </table>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="data2" style="">
+                      <table border="0" style="width: 100%; display: none;">
+                        <tr style="border:none;">
+                          <td style="border:none;padding-top:1px;padding-bottom:0px"><b><u>Pokemon</u></b></td>
+                          <td style="border:none;padding-top:1px;padding-bottom:0px"><b><u>Predicted win rate</u></b></td>
+                        </tr>
+                      {% for back in result_data.good_backs %}
+                        {% if back[1] >= min_percentage %}
+                        <tr border="0">
+                          <td style="border:none;padding-top:1px;padding-bottom:0px">
+                            {{ back[0] | pokemonColor(current_pokemon, current_league) }} ({{ poke_win_rates['back'][back[0]]}})
+                          </td>
+                          <td style="border:none;padding-top:1px;padding-bottom:0px">
+                            {{ "%.2f" | format(back[1]) }}%
+                          </td>
+                        </tr>
+                        {% endif %}
+                      {% endfor %}
+                      </table>
+                      <div class="all-pokemon-charts" id="pokemon-back-charts">
+                        <script type="text/javascript">
+                          fillPokemonCharts({{result_data.good_backs | tojson | safe}}, 'pokemon-back-charts', {{poke_win_rates["back"] | tojson | safe}});
+                        </script>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div> 
+      </div>
+      <br/><br/>
+    </div>
+    <div id="teams-tab" class="tab-pane fade">
+      <br><br>
+      <div class="container">
+      <div id="top-used-teams-header" class="clear-header" >
+        <div id="title" class="text-center w-100 font-weight-bold">Top Used Teams</div>
+        <div id="searchbar" class="mx-auto" >
+          <button id="team-search-button" class="bg-white" type="button" aria-label="Search top teams"><i class="fa fa-search bg-white" aria-hidden="true"></i></button>
+          <input type="text" id="team-search-input" placeholder="Search for Pokémon" aria-label="Search top teams by Pokémon">
+        </div>
+      </div>
+      <a class="btn btn-primary" href="/move_image?pokemon={{teams_move_count_string}}&cols=10" target="_blank" style="width: 100%; border-radius: 0">Download move counts</a>
+   
+      <div id="teams-section">
+        <div id="teams-section-header" class="clear-header text-center">
+          <div id="team">Team</div>
+          <div id="wr">Win Rate</div>
+        </div>
+        {% for team in team_win_rates %}
+        {% if "/1 ||" not in team[1] %}
+        <div>
+          <div id="team-col" class="fa fa-caret-down" role="button" tabindex="0" aria-expanded="false" aria-label="Show details for {{ team[0] }}">
+            <span id="team">{{ team[0] }}</span>
+            <span style="display: none; opacity: 0; transition: all 1s ease">
+              <br>Counters: {{ team_counters[team[0]] }}
+              {% for pokemon in team[2] %}
+              <table border="1" class="mx-auto">
+                <tr><th colspan="2" class="text-center">{{ pokemon }}</th></tr>
+                {% for move in team[2][pokemon] %}
+                <tr>
+                  <td>{{ move }}</td>
+                  <td>{{ team[2][pokemon][move] }}</td>
+                </tr>
+                {% endfor %}
+              </table>
+              <br>
+              {% endfor %}
+            </span>
+          </div>
+          <div id="wr">{{ team[1] }}</div>
+        </div>
+        {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+    </div>
+    <div id="recc-tab" class="tab-pane fade">
+      {{body|safe}}
+    </div>
+  </div>
+  <br><br>
+  <br><br>
+
+  </div>
+</div>
+<script src="https://code.jquery.com/jquery-3.5.1.js"
+          integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
+          crossorigin="anonymous"></script>
+
+<script type="text/javascript">
+const num_start_input = document.getElementById("num_days_start");
+const num_end_input = document.getElementById("num_days_end");
+num_start_input.addEventListener('input', () => {
+  if (parseInt(num_start_input.value) <= parseInt(num_end_input.value)) {
+    num_start_input.value = parseInt(num_end_input.value) + 1;
+  }
+});
+num_end_input.addEventListener('input', () => {
+  if (parseInt(num_end_input.value) >= parseInt(num_start_input.value)) {
+    num_end_input.value = parseInt(num_start_input.value) - 1;
+  }
+});
+
+var slideMainContent = false; // make main content slide over for menu
+var refreshOnLeagueChange = false; // refresh data if league picker is changed
+// Fix for showing tooltips inside of a overflow scrollable div
+$("a.tooltip1").hover(function() {
+  $(this).addClass("hover");
+  $(this).parent().parent().parent().parent().parent().css("overflow-y", "visible");
+  $(this).parent().parent().parent().parent().parent().css("overflow-x", "visible");
+}, function() {
+  $(this).removeClass("hover");
+  $(this).parent().parent().parent().parent().parent().css("overflow-y", "auto");
+  $(this).parent().parent().parent().parent().parent().css("overflow-x", "auto");
+});
+
+// Pull new data from gobattlelog for the league and refresh
+$("#refresh-league-data").click(function (e){
+  // Get current league
+  e.preventDefault();
+  var league = $("#league_picker").val();
+  alert("Refreshing data for: " + league);
+  // POST to refresh data
+  var spinnercontainer = document.querySelector(".spinner-container");
+  spinnercontainer.style.display = "flex";
+  var request_data = {league: league};
+$.ajax({
+    url: "/data/refresh",
+    type: "POST",
+    contentType: "application/json",
+    data: JSON.stringify(request_data),
+    success: function (data) {
+      // Handle successful response
+      alert("Data refreshed successfully!");
+      location.reload();
+    },
+    error: function (xhr, status, error) {
+      // Handle error response
+      alert(`Failed to refresh data because: ${error}`);
+      console.error("Error:", error);
+    },
+    complete: function () {
+      // Hide the spinner
+      spinnercontainer.style.display = "none";
+    }
+  });
+
+  /*
+  $.post("/data/refresh", {league: league}, function(data, status){
+    alert(`Data refreshed for ${league}`);
+    location.reload();
+  })
+  .fail(function(xhr, status, error) {
+    alert(`Failed to refresh data because: ${error}`);
+    console.error("Error:", error);
+    spinnercontainer.style.display = "none";
+  });
+  */
+});
+
+// Refreshes once a new league is chosen
+$("#league_picker").change(function(e){
+  if (refreshOnLeagueChange) {
+    var league= $(this).val();
+    var chosen_pokemon = $("#mySelect").val();
+    var num_days = $("#num_days").val();
+    alert("Reloading page for " + league + " league");
+    var spinnercontainer = document.querySelector(".spinner-container");
+    spinnercontainer.style.display = "flex";
+    location.href = "?league="+league+"&pokemon="+chosen_pokemon+"&num_days="+num_days;
+  }
+});
+
+var submit = document.getElementById("submit-button");
+submit.addEventListener("click", function() {
+  var spinnercontainer = document.querySelector(".spinner-container");
+  spinnercontainer.style.display = "flex";
+});
+
+// show spinner on reload
+window.onbeforeunload = function(e) {
+  var spinnercontainer = document.querySelector(".spinner-container");
+  spinnercontainer.style.display = "flex";
+}
+$(document).ready(function () {
+  var spinnercontainer = document.querySelector(".spinner-container");
+  spinnercontainer.style.display = "none";
+  console.log("Done loading");
+});
+window.onload = function(e) {
+}
+
+// Teams search feature
+const searchButton = document.getElementById("team-search-button");
+const searchInput = document.getElementById("team-search-input");
+
+function searchTeam(e) {
+  var rowNum = 0;
+  const searchValues = searchInput.value.split(" ");
+  document.querySelectorAll("#teams-section > div").forEach((elem) => {
+    if (elem.id !="teams-section-header") {
+      elem.style.display = "none";
+
+      var rowText = elem.children[0].children[0].innerText;
+      var contains = false;
+      for(var i=0; i < searchValues.length; i++ ) {
+        var andTerms = searchValues[i].split("&");
+        var termMatches = true;
+        for (var j=0; j < andTerms.length; j++) {
+          if (rowText.toLowerCase().indexOf(andTerms[j].toLowerCase()) === -1) {
+            termMatches = false;
+            break;
+          }
+        }
+        if(termMatches) {
+          contains = true;
+          break;
+        }
+      }
+
+      if (!contains) {
+        elem.style.display = "none";
+      } else {
+        elem.style.display = "";
+        rowNum ++;
+        if (rowNum % 2 == 0) {
+          elem.style.background = "#FFFFFF";
+        } else {
+          elem.style.background = "#F0F0F0";
+        }
+      }
+    }
+  });
+}
+searchInput.addEventListener('input', searchTeam);
+
+searchButton.addEventListener("click", function(e){
+  e.preventDefault();
+  searchTeam(e);
+});
+
+// Clicking on team column opens up move counts
+$("[id^=team-col]").click(function(e) {
+  // Find the team-col div from whatever was clicked on
+  var target = e.target;
+  var hiddenElement = e.target.children[1]
+  if (e.target.tagName != "DIV") {
+    target = e.target.closest("div");
+    hiddenElement = target.children[0];
+  }
+  e.preventDefault();
+
+  // Toggle hiding/showing the move counts
+  if (hiddenElement.style.display == "none") {
+    hiddenElement.style.display = "";
+    hiddenElement.style.opacity = "1";
+    target.className = "fa fa-caret-up";
+    target.setAttribute("aria-expanded", "true");
+  } else {
+    hiddenElement.style.display = "none";
+    hiddenElement.style.opacity = "0";
+    target.className = "fa fa-caret-down";
+    target.setAttribute("aria-expanded", "false");
+  }
+});
+
+$('[id^=team-col]').keydown(function(e) {
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault();
+    $(this).click();
+  }
+});
+
+// Sort the table
+/*
+document.addEventListener("DOMContentLoaded", function () {
+  const table = document.querySelector("div.data2 table");
+  const headerRow = table.querySelector("tr");
+  const rows = Array.from(table.querySelectorAll("tr")).slice(1); // skip header
+
+  let sortState = {
+    column: null,
+    ascending: true
+  };
+
+  function extractWinRate(text) {
+    // Match pattern like: (5/19 || 26.32%)
+    const match = text.match(/\|\|\s*([\d.]+)%/);
+    return match ? parseFloat(match[1]) : 0;
+  }
+
+  function sortTable(colIndex, isNumeric, isWinRate = false) {
+    console.log(`Sorting table ${colIndex}`);
+    const direction = (sortState.column === colIndex && sortState.ascending === true) ? -1 : 1;
+    sortState = {
+      column: colIndex,
+      ascending: direction === 1
+    };
+
+    const sortedRows = rows.sort((a, b) => {
+      let aText = a.children[colIndex].innerText.trim();
+      let bText = b.children[colIndex].innerText.trim();
+
+      let aVal, bVal;
+
+      if (isWinRate) {
+        aVal = extractWinRate(aText);
+        bVal = extractWinRate(bText);
+      } else if (isNumeric) {
+        aVal = parseFloat(aText) || 0;
+        bVal = parseFloat(bText) || 0;
+      } else {
+        aVal = aText.toLowerCase();
+        bVal = bText.toLowerCase();
+      }
+
+      if (aVal < bVal) return -1 * direction;
+      if (aVal > bVal) return 1 * direction;
+      return 0;
+    });
+
+    // Reinsert rows in new order
+    for (const row of sortedRows) {
+      table.appendChild(row);
+    }
+  }
+
+  document.getElementById("sort-name").addEventListener("click", () => sortTable(0, false));
+  document.getElementById("sort-winrate").addEventListener("click", () => sortTable(1, true, true));
+  document.getElementById("sort-reports").addEventListener("click", () => sortTable(2, true));
+});
+*/
+
+</script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+
+    // fill pokemon images
+    const fragment = document.createDocumentFragment();
+    const imageCells = document.querySelectorAll(".pokemon-image-cell");
+    imageCells.forEach(cell => {
+      const pokemon = cell.getAttribute("data-pokemon");
+      
+      /*
+      const wrapper = document.createElement("div");
+      wrapper.innerHTML = getFileName(pokemon);
+      const node = wrapper.firstElementChild;
+      fragment.appendChild(node);
+      cell.innerHTML = ""; // Clear first if needed
+      cell.appendChild(fragment);
+      */
+      const el = getFileName(pokemon);
+      cell.textContent = ""; // Clear existing
+      cell.appendChild(el);
+      
+      // add click event to toggle pokemon moves
+      cell.parentElement.addEventListener("click", () => {
+        cell.parentElement.style.cursor = "pointer";
+        const table = cell.parentElement.querySelector(".pokemon-move-counts");
+        if (table != undefined) {
+          table.classList.toggle("hide-moves");
+        }
+      });
+    });
+
+    const resultRows = document.querySelectorAll(".result-row");
+    resultRows.forEach(row => {
+      const pokemon = row.getAttribute("data-pokemon");
+      console.log(`Making move counts for ${pokemon}`);
+      const table = moveCountTable(pokemon);
+      row.children[0].appendChild(table);
+    });
+
+    /*
+    for (const cell of imageCells) {
+      const pokemon = cell.getAttribute("data-pokemon");
+      console.log(`Filling pokemon image for: ${pokemon}`);
+      const html = getFileName(pokemon);
+      console.log(`got html: ${html}`);
+      cell.innerHTML = html;
+    }
+    */
+
+    // make rows sortable for report tables
+    document.querySelectorAll(".sortable-table").forEach(table => {
+      //const rows = Array.from(table.querySelectorAll("tr")).slice(1); // Skip header
+      const rows = Array.from(table.querySelectorAll("tr.result-row"));
+      let sortState = {
+        column: null,
+        ascending: true
+      };
+
+      function extractWinRate(text) {
+        //const match = text.match(/\|\|\s*([\d.]+)%/);
+        //return match ? parseFloat(match[1]) : 0;
+        /*
+        const parts = text.split('<br>');
+        if (parts.length < 2) return 0;
+        const percentPart = parts[1].trim().replace('%', '');
+        return parseFloat(percentPart);
+        */
+
+        // Remove <br> tags or other HTML
+        const cleaned = text.replace(/<[^>]+>/g, '').trim(); // "10/15\n66.67%"
+        const lines = cleaned.split(/\r?\n/);
+        const percent = lines.find(line => line.includes('%'));
+        return percent ? parseFloat(percent.replace('%', '')) : 0;
+      }
+      function clearSortIcons() {
+        headerCells.forEach(cell => {
+          const plainText = cell.innerText.replace(/[\u25B2\u25BC]/g, '').trim();
+          cell.innerText = plainText;
+        });
+      }
+      function addSortIcon(th, ascending) {
+        const arrow = ascending ? ' ▲' : ' ▼';
+        th.innerText += arrow;
+      }
+      function sortTable(colIndex, isNumeric, isWinRate = false) {
+        const direction = (sortState.column === colIndex && sortState.ascending === true) ? -1 : 1;
+        sortState = {
+          column: colIndex,
+          ascending: direction === 1
+        };
+
+        const sorted = [...rows].sort((a, b) => {
+          let aText = a.children[colIndex].innerText.trim();
+          let bText = b.children[colIndex].innerText.trim();
+
+          // adjust for the pokemon moves table in the cell
+          if(!isWinRate && !isNumeric) {
+            const x = a.children[colIndex].querySelector('.report-name');
+            aText = a.children[colIndex].querySelector('.report-name').innerText.trim();
+            bText = b.children[colIndex].querySelector('.report-name').innerText.trim();
+          }
+
+          let aVal, bVal;
+
+          if (isWinRate) {
+            aVal = extractWinRate(aText);
+            bVal = extractWinRate(bText);
+          } else if (isNumeric) {
+            aVal = parseFloat(aText) || 0;
+            bVal = parseFloat(bText) || 0;
+          } else {
+            aVal = aText.toLowerCase();
+            bVal = bText.toLowerCase();
+          }
+
+          return aVal < bVal ? -1 * direction : aVal > bVal ? 1 * direction : 0;
+        });
+
+        for (const row of sorted) {
+          table.appendChild(row);
+        }
+
+        // Update headers with sort icons
+        clearSortIcons();
+        addSortIcon(headerCells[colIndex], direction === 1);
+      }
+
+      const headerCells = table.querySelectorAll("tr th");
+
+      headerCells.forEach((cell) => {
+        cell.setAttribute("role", "button");
+        cell.setAttribute("tabindex", "0");
+        cell.setAttribute("aria-label", `Sort by ${cell.innerText}`);
+        cell.addEventListener("keydown", (event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            cell.click();
+          }
+        });
+      });
+
+      headerCells[0].addEventListener("click", () => sortTable(0, false));
+      headerCells[1].addEventListener("click", () => sortTable(1, true, true)); // win rate
+      headerCells[2].addEventListener("click", () => sortTable(2, true));       // # reports
+    });
+  });
+</script>
+
+{% endblock %}

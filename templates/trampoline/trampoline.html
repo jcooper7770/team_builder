@@ -1,0 +1,755 @@
+{% extends "trampoline/base.html" %}
+{% block content %}
+<br>
+
+<style>
+  .page-desc {
+    background: rgba(255, 255, 255, 0.4);
+    border-radius: 10px;
+  }
+  .page-desc h4 {
+    margin-bottom: 0px;
+  }
+  .page-desc p {
+    font-size: 12px;
+  }
+  .extra-options {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .stats-tabs {
+    display: inline-block;
+    white-space: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    width: 100%;
+  }
+  .stats-tabs li {
+    display: inline-block;
+  }
+
+  @media screen and (max-width: 400px) {
+    /* scrollable bottom tabs */
+    .bottom-tabs ul {
+      overflow-x: auto;
+      overflow-y: hidden;
+      display: inline-block;
+    }
+    .bottom-tabs ul li {
+      display: inline-block;
+    }
+    .bottom-tabs {
+      white-space: nowrap;
+    }
+  }
+  {% block extra_styles %}
+  {% endblock %}
+</style>
+<div class="spinner-container">
+  <div class="spinner"></div>
+  <div class="spinner-text">Submitting data...</div>
+  <button id="spinner-close" class="spinner-close" aria-label="Close">
+    <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+      <path d="M10.894 9l6.553-6.553a1 1 0 1 0-1.414-1.414L9.48 7.586 2.928 1.034a1 1 0 0 0-1.414 1.414L7.066 9 .514 15.553a1 1 0 0 0 1.414 1.414L9 10.414l6.553 6.553a1 1 0 0 0 1.414-1.414L10.894 9z" fill-rule="evenodd"></path>
+    </svg>
+  </button>
+</div>
+
+<!-- Tabs at bottom-->
+<div class="bottom-tabs">
+  <!--<ul class="nav nav-tabs fixed-bottom bg-dark color-changing">-->
+  <ul class="nav nav-tabs fixed-bottom color-changing">
+    <li class="nav-item">
+      <a class="nav-link active" data-toggle="tab" href="#log-tab">Logger</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" data-toggle="tab" href="#practice-tab">Practices</a>
+    </li>
+    {% block additional_bottom_tabs %}
+    {% endblock %}
+    {% if request.endpoint != "coach.coach_home" %}
+    <li class="nav-item">
+      <a class="nav-link" data-toggle="tab" href="#stats-tab">Statistics</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" data-toggle="tab" href="#lessons-tab">Lesson Plans</a>
+    </li>
+    {% endif %}
+  </ul>
+</div>
+
+<div class="tab-content">
+  <!-- Log section -->
+  <div id="log-tab" class="tab-pane fade show active">
+    <div class="container page-desc">
+      <h4>Log practice turns</h4>
+      <p>Here you can input your turns during your training</p>
+    </div>
+    <div class="container mt-5" style="background: rgba(255,255,255,0.4); border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
+      <div class="card-body form-group">
+      <table align="center" width="100%">
+        <tr>
+          <td>
+            <form action="{{ url_for('trampoline.trampoline_log') }}" method="post" id="logger" name="logger" style="text-align:left;">
+              <input type="hidden" value="new" id="log-save-type" name="save-type">
+
+              <!-- Username -->
+              <div class="form-row">
+                <div class="col-sm-3"><label for="name">Username:</label></div>
+                <div class="col">
+                  {% if user == "" %}
+                  <input type="text" id="name" name="name" placeholder="new username" value="{{username}}"
+                    class="form-control color-changing" style="width:90%"><br>
+                  {% else %}
+                  {% if request.endpoint != "coach.coach_home" %}
+                  <input type="text" id="name" name="name" placeholder="new username" value="{{user}}" class="form-control color-changing" style="width:90%"
+                    disabled>
+                    <input type="hidden" id="endpoint" name="endpoint" value="athlete">
+                    {% else %}
+                    <select name="name" class="form-control">
+                      {% for athlete, athlete_data in users.items() %}
+                      {% if not athlete_data.is_coach and athlete in athletes %}
+                      <option value="{{athlete}}">{{athlete}} ({{athlete_data.details.first_name}} {{athlete_data.details.last_name}})</option>
+                      {% endif %}
+                      {% endfor %}
+                    </select>
+                    <input type="hidden" id="endpoint" name="endpoint" value="coach">
+                    {% endif %}
+                  {% endif %}
+                </div>
+              </div>
+
+              <!-- Date of practice being logged -->
+              <div class="form-row">
+                <div class="col-sm-3">
+                  Date:
+                </div>
+                <div class="col-sm">
+                  <input type="date" name="date" class="form-control color-changing" id="logger-date" style="width:90%" \>
+                </div>
+              </div>
+
+              <!-- Event to be logged -->
+              <div class="form-row">
+                <div class="col-sm-3">
+                  Event:
+                </div>
+                <div class="col">
+                  <select name="event" id="event" class="color-changing">
+                    <option value="trampoline" {% if event=="trampoline" %} selected{% endif %}>Trampoline</option>
+                    <option value="dmt" {% if event=="dmt" %} selected{% endif %}>Double Mini</option>
+                    <option value="tumbling" {% if event=="tumbling" %} selected{% endif %}>Tumbling</option>
+                  </select><br>
+                </div>
+              </div>
+
+              <!-- Notes -->
+              <div class="form-row">
+                <div class="col-sm-3"><label for="notes">Notes:</label></div>
+                <div class="col"><input type="text" id="notes" name="notes" placeholder="Enter notes" value="" style="width:90%"
+                    class="form-control color-changing"></div>
+              </div>
+ 
+              <!-- Turn airtime -->
+              <div class="form-row">
+                <div class="col-sm-3"><label for="turn_airtime">Turn Airtime:</label></div>
+                <div class="col"><input type="number" step="0.01" id="turn_airtime" name="turn_airtime" 
+                  placeholder="Enter airtime for your turn (e.g., 12.34)" value="" style="width:90%"
+                  class="form-control color-changing"></div>
+              </div>
+
+              <!-- Tags -->
+              <div class="form-row">
+                <div class="col-sm-3"><label for="notes">Tags:</label></div>
+                <div class="col tags-section">
+                  {% for tag in tags %}
+                  <div class="tag-box" onclick="this.classList.toggle('selected')">{{tag}}</div>
+                  {% endfor %}
+                  <input placeholder="custom,tags" type="text" name="custom_tags" class="color-changing">
+                </div>
+                <input type="hidden" id="selected-tags" name="selected_tags" value="">
+              </div>
+
+
+              <!-- Skills to be logged -->
+              <div class="form-row" id="row-skill">
+                <!--<div class="col-sm-3">Skills:<br><a href="/logger/about" class="btn btn-light" style="border: 1px solid; border-radius: 10px;">Click here for help</a></div>-->
+                <div class="col-sm-3">Skills:<br><button class="btn btn-light" id="help-btn" style="border: 1px solid; border-radius: 10px;" type="button">Click here for help</button></div>
+
+                <!-- Help modal -->
+                <div class="modal" id="instructionModal">
+                  <div class="modal-dialog">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <h5 class="modal-title">Input Data Instructions</h5>
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                      </div>
+                      <div class="modal-body">
+                        <!-- Add your instructions here -->
+                        <p>Here are some tips on how to input data:</p>
+                        <ul style="list-style-position: inside; padding-left: 10px;">
+                          <li>Use shorthand when inputting the skills</li>
+                          <li>Input multiple skills in a turn by separating the skills by spaces. i.e. "<i>12001< 811<</i>"</li>
+                          <li>Input multiple turns by putting each turn on a new line OR clicking the + button.</li>
+                          <li>Add comments to turns by adding a new line after the turn and starting the comment with "- " or "# ".</li>
+                          <li>Add personalized shortcuts on your <a href="/logger/user">user settings</a></li>
+                        </ul>
+                        <p>For more help, visit the <a href="/logger/about">About Page</a>.</p>
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col color-changing" id="col-skill" style="padding-bottom: 40px;">
+                  <!-- Full Screen Button -->
+                  <button type="button" id="fullScreenBtn" class="btn btn-light">Toggle Full Screen</button>
+                  <div id="new-turns">
+                    <!-- If there was an error then log lines will be re-written-->
+                    {% for log_line in log_lines %}
+                    <div id="log-turn-0">
+                      <a class="remove-log color-changing" class="remove-turn" href="#"><i class="fa fa-minus-square" aria-hidden="true"></i></a>
+                      <a class="copy-log-button color-changing" href="#"><i class="fa fa-clone" aria-hidden="true"></i></a>
+                      <textarea id="log" style="border: 0; width: 100%; height: 30px;"
+                        rows="1" placeholder="Input your turn here... (e.g., 40o 41o 800o 12001o)" class="color-changing" name="log-0">{{log_line}}</textarea>
+                    </div>
+                    {% endfor %}
+                    <!-- else use an empty textarea -->
+                    {% if log_lines|length < 1 %}
+                    <div id="log-turn-0">
+                      <a class="remove-log color-changing" class="remove-turn" href="#"><i class="fa fa-minus-square" aria-hidden="true"></i></a>
+                      <a class="copy-log-button color-changing" href="#"><i class="fa fa-clone" aria-hidden="true"></i></a>
+                      <textarea id="log" style="border: 0; width: 100%; height: 30px;"
+                        rows="1" placeholder="Input your turn here... (e.g., 12001o 811< 12001o)" class="color-changing" name="log-0">{{routine}}</textarea>
+                    </div>
+                    {% endif %}
+                    <div id="log-turn-0">
+                      <a href="" id="new-turn-button" href="#" class="add-log color-changing"><i class="fa fa-plus-square" aria-hidden="true"></i></a>
+                    </div>
+                    <br>
+                  </div>
+                  <!-- Log textarea -->
+                  <textarea style="display: none;" id="log" name="log" rows="5" form="logger"
+                    placeholder="Input your routines here" class="color-changing">{{routine_text|safe}}</textarea>
+
+                  <button id="submit-button-full-screen" type="submit" class="btn color-changing btn-primary" style="position: absolute; bottom: 10px; right: 10px; display: none;">Submit</button>
+                  <div id="logger-bottom" >
+                    <!-- button skills -->
+                    {% for flips, skills in all_skills.items() %}
+                    <div class="dropdown" style="display:inline-block">
+                      <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton"
+                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        {{flips}}
+                      </button>
+                      <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton" style="overflow-y: auto; max-height:200px; min-width: 90vw;">
+                        {% for skill in skills %}
+                        {% for pos in ['t', 'p', 's'] %}
+                        <a class="dropdown-item" href="#" id="skill{{skill}}{{pos}}"
+                          value="skill{{skill}}{{pos}}" style="display: inline-block; width: auto; border: 1px solid;" data-keepopenonclick>{{skill}}{{pos
+                          | replace("t", "o") | replace("p", "<") | replace("s", "/" )}}</a>
+                        {% endfor %}
+                        {% endfor %}
+                      </div>
+                    </div>
+                    {% endfor %}
+                    <!--<span id="num_skills">Number of skills: 0</span>-->
+                    <div id="recc-skill"></div>
+                  </div>
+
+
+                </div>
+              </div>
+
+
+              <!-- Submit -->
+              <button id="submit-button" type="submit" class="btn btn-primary color-changing">Submit</button>
+            </form>
+
+          </td>
+        </tr>
+      </table>
+
+      </div>
+    </div>
+
+  {% if request.endpoint != "coach.coach_home" %}
+    <!-- Weekly Challenges -->
+    <br><br>
+    <div class="container challenges">
+      <div class="challenges-header color-changing">
+        Weekly Challenges
+        <button type="button" class="btn float-right">
+          <span class="fa fa-window-minimize" id="minimize_challenges" style="color: white;"></span>
+        </button>
+      </div>
+      <div class="weekly-challenges" id="challenges_body">
+        <p class="color-changing">Complete these challenges by next Sunday ({{ next_sunday }})</p>
+        <ul class="challenge-list">
+          {% for challenge, completed in challenges.items() %}
+          <li class="challenge{% if completed[0] %} completed{% endif %}">
+            <input type="checkbox" disabled{% if completed[0] %} checked{% endif %}>
+            <p class="color-changing">
+            {% if completed[0] %}🎉{% endif %}
+            {{ challenge }}
+            {% if completed[0] %}🎉 ({{ completed[1] }}){% endif %}
+            </p>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+   
+     <!-- Goals -->
+    <br><br>
+    <div class="container challenges">
+      <form action="{{ url_for('trampoline.trampoline_log') }}" method="post" id="goals" style="text-align:left;">
+        <input type="hidden" name="goals_form" id="goals_form" value="goals_form" \>
+        <div class="challenges-header color-changing">
+          Goals
+          <button type="button" class="btn float-right">
+            <span class="fa fa-window-minimize" id="minimize_goals" style="color: white;"></span>
+          </button>
+        </div>
+        <div class="weekly-challenges" id="goals_body">
+
+          <div class="form-inline">
+            <input type="text" name="goal_string" id="goal_string" placeholder="Write goal here" style="width:70%;"
+              class="form-control color-changing mr-1" \>
+            <button id="submit-goals" type="submit" class="btn btn-primary color-changing" style="display:inline-block">Submit Goal</button>
+          </div>
+          <div style="max-height: 300px; overflow-y: auto">
+            <table border="1" width="100%">
+              {% for goal in goals %}
+              <tr>
+                <td width="5%">
+                  {% if goal.done %}
+                  <input type="checkbox" id="{{ loop.index0 }}" name="{{ loop.index0 }}" checked \>
+                  {% else %}
+                  <input type="checkbox" id="{{ loop.index0 }}" name="{{ loop.index0 }}" \>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if goal.done %}
+                  <!--<strike>{{ goal.goal }}</strike>-->
+                  <span style="color:red">[DONE]</span> {{ goal.goal }}
+                  {% else %}
+                  {{ goal.goal }}
+                  {% endif %}
+                </td>
+                <td width="5%">
+                  <button type="submit" id="delete{{ loop.index0 }}" name="delete{{ loop.index0 }}" class="btn">
+                    <span class="fa fa-remove" aria-hidden='true'></span>
+                  </button>
+                </td>
+              </tr>
+              {% endfor %}
+            </table>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <br><br>
+    <!-- Airtimes -->
+    <div class="container challenges">
+      <form action="{{ url_for('trampoline.trampoline_log') }}" method="post" id="airtime" style="text-align:left;">
+        <input type="hidden" name="airtime_form" id="airtime_form" value="airtime_form" \>
+        <div class="challenges-header color-changing">
+          Airtimes
+          <button type="button" class="btn float-right">
+            <span class="fa fa-window-minimize" id="minimize_airtimes" style="color: white;"></span>
+          </button>
+        </div>
+        <div class="weekly-challenges" id="airtimes_body">
+          <div class="form-inline">
+            <input type="number" name="airtime_string" id="airtime_string" placeholder="Write airtime here (e.g., 16.52)" style="width:70%;"
+              class="form-control color-changing mr-1" step="0.01" \>
+              <!-- add date picker field -->
+            <input type="date" name="airtime-date" class="form-control color-changing" id="airtime-date" \>
+            <button id="submit-airtime" type="submit" class="btn btn-primary color-changing" style="display:inline-block">Submit Airtime</button>
+          </div>
+          <div style="max-height: 300px; overflow-y: auto">
+            <table border="1" width="100%">
+              {% for airtime in airtimes %}
+              {% if airtime.airtime %}
+              <tr>
+                <td width="20%">{{ airtime.date}}</td>
+                <td>{{ airtime.airtime }}</td>
+                <td width="5%">
+                  <button type="submit" id="delete{{ loop.index0 }}" name="delete{{ loop.index0 }}" class="btn">
+                    <span class="fa fa-remove" aria-hidden='true'></span>
+                  </button>
+                </td>
+              </tr>
+              {% endif %}
+              {% endfor %}
+            </table>
+          </div>
+
+        </div>
+      </form>
+    </div>
+
+  {% endif %}
+  <br><br>
+  </div>
+
+  <!-- Rating drop down template-->
+  <template id="dropdown-template">
+    <div class="dropdown float-right">
+      <a class="btn btn-primary dropdown-btn rate-btn">Rate</a>
+      <div class="dropdown-content">
+        <button class="rating-option" name="3">😊</button>
+        <button class="rating-option" name="2">😐</button>
+        <button class="rating-option" name="1">😞</button>
+      </div>
+    </div>
+  </template>
+
+  <div id="practice-tab" class="tab-pane fade">
+    <div class="container page-desc">
+      <h4>View practice turns</h4>
+      <p>Here you can view all previous practices logged</p>
+    </div>
+
+    <div class="container">
+        <button class="btn btn-info mb-3" type="button" data-toggle="collapse" data-target="#qa-section" aria-expanded="false" aria-controls="qa-section">
+            <i class="fa fa-comments"></i> Ask the AI about Your Practice
+        </button>
+        <div class="collapse" id="qa-section">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form id="question-form">
+                        <div class="form-group">
+                            <label for="question">Your Question:</label>
+                            <textarea class="form-control" id="question" rows="3" placeholder="Enter your question here..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary"><i class="fa fa-paper-plane"></i> Ask AI</button>
+                    </form>
+                    <div id="response" class="mt-4"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% block logging %}
+{% endblock %}
+    <!--Navbar-->
+    <!-- https://mdbootstrap.com/docs/b4/jquery/navigation/hamburger-menu/ -->
+    <!--<nav class="navbar navbar-dark bg-dark navbar-1 white color-changing">-->
+    <nav class="navbar navbar-dark navbar-1 white color-changing">
+
+      <!-- Navbar brand -->
+      <a class="navbar-brand">Filter</a>
+
+      <!-- Collapse button -->
+      <button class="navbar-toggler mr-auto" type="button" data-toggle="collapse" data-target="#navbarSupportedContent15"
+        aria-controls="navbarSupportedContent15" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+
+      <ul class="nav navbar-nav mx-auto abs-center-x">
+        <li class="nav-item"><a class="navbar-brand">Athlete Practices</a></li>
+      </ul>
+      <ul class="nav navbar-nav ml-auto">
+        <li class="nav-item">
+          <button type="button" class="btn float-right">
+
+            {% if url_for(request.endpoint) == "/logger" %}
+            <!--<span class="fa fa-window-maximize" id="minimize_practices" style="color: white;"></span>-->
+            <span class="fa fa-window-minimize" id="minimize_practices" style="color: white;"></span>
+            {% else %}
+            <span class="fa fa-window-minimize" id="minimize_practices" style="color: white;"></span>
+            {% endif %}
+          </button>
+        </li>
+      </ul>
+
+        <!-- Collapsible content -->
+        <div class="collapse navbar-collapse" id="navbarSupportedContent15">
+
+          <!-- Links -->
+          <ul class="navbar-nav mr-auto">
+            <li class="nav-item">
+              <form class="form-inline my-2" action="{{url_for('trampoline.search_skills')}}" method="POST">
+                <input class="form-control mr-sm-2 mr-auto" type="text" name="practice_skills" id="practice_skills" placeholder="Input skills/combos"{% if search_skills %} value="{{search_skills}}"{% endif %}>
+                <button id="submit-skills" class="btn btn-secondary" type="submit">Search for skills</button>
+              </form>
+            </li>
+            <li class="nav-item">
+              <form class="form-inline my-2" action="{{url_for('trampoline.search_date')}}" method="POST">
+                <!--from:-->
+                <input class="form-control mr-sm-2 mr-auto" type="date" name="practice_date" id="practice_date">
+                <!--
+                to: <input class="form-control mr-sm-2 mr-auto" type="date" name="practice_date2" id="practice_date2">
+                -->
+                <button class="btn btn-secondary" type="button" id="search-practice">Search Practice</button>
+              </form>
+            </li>
+            <li class="nav-item">
+              <ul class="filter-btns">
+                <li>Rating:
+                  <button id="search-rating-3" class="btn btn-info search-rating-btn">😊</button>
+                  <button id="search-rating-2" class="btn btn-info search-rating-btn">😐</button>
+                  <button id="search-rating-1" class="btn btn-info search-rating-btn">😞</button>
+                </li>
+                <li>Tags:
+                  {% for tag in tags %}
+                  <button id="search-tag" class="btn btn-info search-tag-btn">{{tag}}</button>
+                  {% endfor %}
+                </li>
+                <li>Events:
+                  <button id="search-event-trampoline" class="btn btn-info search-event-btn">Trampoline</button>
+                  <button id="search-event-dmt" class="btn btn-info search-event-btn">Double Mini</button>
+                  <button id="search-event-tumbling" class="btn btn-info search-event-btn">Tumbling</button>
+                </li>
+              </ul>
+            </li>
+          </ul>
+          <!-- Links -->
+
+        </div>
+      <!-- Collapsible content -->
+      </ul>
+
+    </nav>
+    <!--/.Navbar-->
+    <div id="practices_body" {% if url_for(request.endpoint)=="/logger" %}{% endif %}>
+      <div id="practices">
+        <!--<textarea style="width: 100%">{{practice_data | safe }}</textarea>-->
+        <!-- generate practice tables from data -->
+        {% for practice in practice_data %}
+        <div class="practice-table closed">
+          <button class="div-open-btn"><i class="fa fa-chevron-down" aria-hidden="true"></i></button>
+          <div class="practice-table-inner" name="{{practice.post_date}}_{{practice.event}}">
+            <div class="athlete-practice-header practice-header" id="practice-header">
+              <div>
+                <div class="practice-header-top">
+                  <span id="practice-rating" name="{{practice.rating}}">{{practice.rating_string}}</span>{{practice.title}}
+                </div>
+                <div class="practice-header-bottom">
+                  {% if practice.type == "athlete" %}
+                  <button type="button" class="btn float-right delete-btn" id="delete-button">
+                    <a title="remove day" href="#">
+                      <span id="remove_{{practice.post_date}}_{{practice.event}}" class="fa fa-remove" aria-hidden="true"></span>
+                    </a>
+                  </button>
+                  <button type="button" class="btn float-right edit-btn">
+                    <a title="edit day" href="#">
+                      <span id="edit_{{practice.post_date}}_{{practice.event}}" class="fa fa-pencil-square-o"
+                        aria-hidden="true"></span>
+                    </a>
+                  </button>
+                  <a href='/logger/_current_/practices?start={{practice.date}}&end={{practice.date}}'
+                    class='float-right btn btn-primary share-btn' target='_blank' title='share practice'>Share</a>
+                  {% endif %}
+                </div>
+                <div class="practice-tags">
+                  {% for tag in practice.tags %}
+                  {% if tag %}
+                  <div class="practice-tag">{{tag}}</div>
+                  {% endif %}
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+            <div class="practice-body">
+              {%- for turn in practice.turns -%}
+              <div class="practice-turn">
+                {%- if turn.note and turn.skills == "" -%}
+                <div class="turn-note column"><i class="fa fa-comments"></i> {{turn.note}}</div>
+                {%- else -%}
+                <div class="turn-num column"><b><a href="#" id="copy-text" title="copy turn">{{turn.turn_num}}</a></b></div>
+                <div class="turn-skills column"><i class="expand-turn fa fa-plus"></i>{{ turn.skills }}{%- if turn.note -%}<i class="fa fa-comments" title="toggle comment" id="unhide-note"></i>{%- if expand_comments -%}<span id="hidden-note" style="display: inline"><br>{{turn.note}}</span>{%- else -%}<span id="hidden-note" style="display: none"><br>{{turn.note}}</span>{%- endif -%}{%- endif -%}
+                  <br>
+                  <div style="display: none;">
+                    {%- if turn.airtime > 0 -%}<u><b>Airtime:</b></u> {{turn.airtime}}<br>{%- endif -%}
+                    <u><b>Turn:</b></u> <b>Skills:</b> {{turn.num_skills}} - <b>Flips:</b> {{turn.turn_flips}} - <b>DD:</b>
+                    {{turn.difficulty}}
+                    <br>
+                    <u><b>Total:</b></u> <b>Skills:</b> {{turn.total_skills}} - <b>Flips:</b> {{turn.total_flips}} -
+                    <b>DD:</b>
+                    {{turn.total_difficulty}}
+                  </div>
+                </div>
+                {%- endif -%}
+              </div>
+              {%- endfor -%}
+              <div class="practice-totals practice-turn">
+                <b>Skills:</b> {{practice.total_skills}} - <b>&nbsp;Flips:</b> {{practice.total_flips}} - <b>&nbsp;DD:</b>
+                {{practice.total_difficulty}}
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+        <!--{{body|safe}}-->
+      </div>
+    </div>
+    <br>
+    <br><br><br>
+  </div>
+  {% block additional_tabs %}
+  {% endblock %}
+  {% if request.endpoint != "coach.coach_home" %}
+  <div id="lessons-tab" class="tab-pane fade">
+    <div class="container page-desc">
+      <h4>View lesson plans</h4>
+      <p>View lesson plans from your coaches</p>
+    </div>
+    <div class="container">
+      <div id="lessonPlans"></div>
+    </div>
+  </div>
+  <div id="stats-tab" class="tab-pane fade">
+
+    <div class="container page-desc">
+      <h4>View practice statistics</h4>
+      <p>View statistics based on practices, including skill tables and practice graphs</p>
+    </div>
+    <!-- User chart tabs-->
+    <div class="container">
+      <div class="card border-primary practice-graphs">
+        <div class="card-header text-center">
+          <h2 class="graphs-title">Practice Graphs</h2>
+        </div>
+        <div class="card-header">
+          <ul class="nav nav-tabs card-header-tabs stats-tabs" id="charts-list" role="tablist">
+            {% for event in datapts.keys() %}
+            <li class="nav-item">
+              <a class="nav-link{% if loop.first %} active{% endif %} graphs-title" href="#{{event}}" id="{{event}}-tab" data-toggle="tab" aria-controls="{{event}}" role="tab" aria-selected="{% if loop.first %}true{% else %}false{% endif %}">{{ event.replace('_', ' ').capitalize() }}</a>
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+        <div class="card-body">
+
+        <div class="tab-content">
+          {% for event in datapts.keys() %}
+          <div class="tab-pane fade{% if loop.first %}show active{% endif %}" id="{{ event }}" role="tabpanel" aria-labelledby="{{ event }}-tab">
+            <canvas class="mx-auto graph-canvas" id="{{event}}Canvas" ></canvas>
+          </div>
+          {% endfor %}
+        <br>
+        <div class="float-right chart-settings">
+          <div>Start: <input id="chart-start" name="chart-start" type="date" placeholder="mm/dd/yyyy" value="{{chart_start}}" \></div>
+          <div>End: <input id="chart-end" name="chart-end" type="date" placeholder="mm/dd/yyyy" value="{{chart_end}}" \></div>
+        <button class="btn btn-primary" id="chart-dates">Update</button>
+        <br>
+        Show lines: 
+        yes: <input type="radio" id="chart-lines-yes" name="chart-lines" value="yes" \>
+        no: <input type="radio" id="chart-lines-no" name="chart-lines" value="no" checked \>
+        </div>
+        </div>
+      </div>
+    </div>
+    <br/>
+    <br/>
+
+    <!-- Skill stats -->
+    <div class="container">
+      <div class="card border-primary">
+        <div class="card-header text-center color-changing"><h2>Skill Statistics</h2></div>
+        <div class="card-body px-0 py-0">
+          <table border=1 class="table table-striped my-0 color-changing" id="skill_table">
+            <thead>
+              <tr>
+                <th style="position: sticky; top:0; background: gray;" id="col_skill">Skill</th>
+                <th style="position: sticky; top:0; background: gray;" id="col_tramp">Trampoline</th>
+                <th style="position: sticky; top:0; background: gray;" id="col_dmt">Dmt</th>
+                <th style="position: sticky; top:0; background: gray;" id="col_total">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for skill, skill_stats in all_skills_table.items() %}
+              <tr>
+                <td>{{skill}}</td>
+                <td>{{skill_stats['trampoline']}}</td>
+                <td>{{skill_stats['dmt']}}</td>
+                <td>{{skill_stats['all']}}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <br>
+
+    <div class="container">
+      <div class="card border-primary">
+        <div class="card-header text-center color-changing"><h2>DMT Pass Statistics</h2></div>
+        <div class="card-body px-0 py-0">
+          <table border=1 class="table table-striped my-0 color-changing" id="pass_table">
+            <thead>
+              <tr>
+                <th style="position: sticky; top:0; background: gray;" id="col_skill">Pass</th>
+                <th style="position: sticky; top:0; background: gray;" id="col_total">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for pass, pass_stats in dmt_passes.items() %}
+              <tr>
+                <td>{{pass}}</td>
+                <td>{{pass_stats['dmt']}}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <br>
+
+    <div class="container">
+      <div class="card border-primary">
+        <div class="card-header text-center color-changing"><h2>Tumbling Statistics</h2></div>
+        <div class="card-body px-0 py-0">
+          <table border=1 class="table table-striped my-0 color-changing" id="tumbling_table">
+            <thead>
+              <tr>
+                <th style="position: sticky; top:0; background: gray;" id="col_tu_skill">Skill</th>
+                <th style="position: sticky; top:0; background: gray;" id="col_tu_total">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for skill, skill_stats in tumbling_skills.items() %}
+              <tr>
+                <td>{{skill}}</td>
+                <td>{{skill_stats['tumbling']}}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <br><br>
+
+    <script>
+    {% include 'trampoline/user_stats.js' %}
+    </script>
+
+  </div>
+  {% endif %}
+  <div></div>
+
+</div>
+</div>
+
+<!--<script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
+  crossorigin="anonymous"></script>-->
+
+<script>
+/* Help button pop-up */
+document.getElementById('help-btn').addEventListener('click', function() {
+    $('#instructionModal').modal('show');
+});
+</script>
+
+{% block javascript %}
+{% endblock %}
+<script>
+{% include 'trampoline/trampoline.js' %}
+</script>
+{% endblock %}

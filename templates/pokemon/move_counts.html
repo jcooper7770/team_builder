@@ -1,0 +1,169 @@
+{% extends "pokemon/base.html" %}
+
+{% block content %}
+<main class="move-counts-page container">
+  <!--
+  <section class="move-counts-hero">
+    <span class="move-counts-eyebrow">Battle reference</span>
+    <h1>Move counts, made readable</h1>
+    <p>Search Pokémon to see exactly how many fast moves are needed for each charge move.</p>
+  </section>
+  -->
+  <section class="move-counts-controls" aria-label="Move count controls">
+    <div class="form-row align-items-end">
+      <div class="form-group col-lg-8 mb-3 mb-lg-0">
+        <label for="chosen_pokemon">Filter Pokémon</label>
+        <input id="chosen_pokemon" list="pokemon" type="text" name="chosen_pokemon" oninput="filterPokemon()" class="form-control" placeholder="Try: walrein, trevenant, medicham">
+          <datalist id="pokemon">
+            <option value="altaria,azumarill,bastiodon,diggersby,drapion,jumpluff,lanturn,licki,medicham,nidoqueen,ninetales,noctowl,obstagoon,registeel,sableye,scrafty,skarmory,stunfisk,swampert,talonflame,toxapex,toxicroak,trevenant,umbreon,walrein,wigglytuff,clefable,mew,cofrag,creselia,deoxys_defense,dewgong,froslass,whiscash,victreebell,victini,mandibuzz,lapras,machamp,pidgeot,sylveon,skuntank,muk_alolan,galv,charjabug,araquanid,ariados,lurantis,dubwool,abomasnow,shiftry,dedenne,dunsparce,dragonite,ferrothorn,shiftry,noctowl,greedent,guzzlord,miltank,pelipper,gliscor,staraptor(wing_attack),staraptor(gust),victini,tentacruel,lanturn(water_gun),chesnaught,carbink,carbink(tackle),gligar,greedent(mud_shot),steelix,hitmontop"><B>GL</B></option>
+            <option value="venusaur,charizard,pidgeot,sandslash_alolan,nidoqueen,ninetales,ninetales_alolan,machamp,tentacruel,muk,muk_alolan,muk_alolan,gyarados,lapras,snorlax,articuno,articuno_galarian,dragonite,mewtwo_armored,typhlosion,umbreon,steelix,swampert,flygon,walrein,regirock,regice,registeel,deoxys_defense,skuntank,drapion,toxicroak,abomasnow,gliscor,giratina_altered,cresselia,scrafty,escavalier,jellicent,galvantula,stunfisk_galarian,mandibuzz,cobalion(double_kick),virizion,talonflame,sylveon,trevenant,pyukumuku,tapu_fini,buzzwole,melmetal,greedent,obstagoon,sirfetchd,crobat,typhlosion(shadow_claw),ampharos,magnezone,golem_alolan(rollout),golem_alolan(volt_switch),bewear,aurorus,kyurem">UL</option>
+            <option value="avalu,conkel,darkra,dialga,dragonit,excadr,giratina,garcho,groudo,gyara,haxor,ho_oh,kyog,landor,lugia,machamp,melmetal,mamosw,metagr,mewtwo,palkia,regirock,rhyper,snorl,swamper,sylve(quick_attack),sylv(charm),togeki,tyrani,walrei,yvelt,zacian_hero(quick_attack),zacian_hero(snarl),zamazenta_hero,zaru,zekr,reshira,ursaluna,xern,hydr,florges">ML</option>
+            <option value="swampert,gyara,primarina,goliso,chesnaug,venus,chariza,bewear,florges,togekiss,magnezone,excad,mamoswine,avalugg,walrein,sirfetc,machamp,heracr,escav,roserade,hippowd,rhyper,genga,dragonite,garchomp,kommo,hydrei,haxor,miloti,metagross,sylve,sneasler,snorla,conkel,primarina(waterfall),gyarados(waterfall)">MLP</option>
+          </datalist>
+      </div>
+      <div class="form-group col-5 col-lg-2 mb-3 mb-lg-0">
+        <label for="num_rows">Cards per row</label>
+        <input id="num_rows" type="number" name="num_rows" value="7" min="3" max="10" class="form-control">
+      </div>
+      <div class="form-group col-7 col-lg-2 mb-3 mb-lg-0">
+        <button type="button" class="btn btn-primary move-counts-download" onclick="downloadData()"><i class="fa fa-download" aria-hidden="true"></i> Download reference</button>
+      </div>
+    </div>
+    <details class="move-counts-tips"><summary>Formatting tips <i class="fa fa-chevron-down" aria-hidden="true"></i></summary><ul><li>Use commas for multiple Pokémon: <em>walrein, trev, medi</em>.</li><li>Add a fast move in parentheses for the downloaded reference: <em>walrein(waterfall)</em>.</li><li>Add up to three charge moves in brackets: <em>venu[frenzy_plant return]</em>.</li></ul></details>
+  </section>
+  <div class="move-counts-header">
+    <p class="move-counts-key"><span>1</span><span>2</span><span>3</span> Each number is the fast-move count needed to reach that charge move.</p>
+    <div class="move-counts-key move-counts-num-cols-div">
+      <label for="num_cols">Num cols:</label><input type="number" min="1" step="1" id="num_cols" value="3" max="5" name="num_cols" class="form-control" />
+    </div>
+  </div>
+  <div class="move-counts-grid" id="table-grid" aria-live="polite">
+  {% for pokemon in moves.keys() %}
+  <article id="{{pokemon}}_table" name="pokemon" class="move-count-card">
+    <h2>{{ pokemon.replace('_', ' ') }}</h2>
+    <div class="fast-move-groups">
+    {% for fast_move, charge_moves in moves[pokemon].items() %}
+      {% set fast_name = fast_move.split(' (')[0] %}
+      {% set fast_turns = fast_move.split('(')[1].split(')')[0] %}
+      {% set fast_energy = fast_move.split('[')[1].split(']')[0] %}
+      <details class="fast-move-group">
+        <summary>
+          <span class="fast-move-summary"><strong>{{ fast_name.replace('_', ' ') | title }}</strong><small><i class="fa fa-clock-o" aria-hidden="true"></i> {{ fast_turns }} turn{{ '' if fast_turns == '1' else 's' }} · <i class="fa fa-bolt" aria-hidden="true"></i> +{{ fast_energy }} energy</small></span>
+          <span class="fast-move-count">{{ charge_moves|length }} charge move{{ '' if charge_moves|length == 1 else 's' }} <i class="fa fa-chevron-down" aria-hidden="true"></i></span>
+        </summary>
+        <table>
+          <thead><tr><th scope="col">Move path</th><th scope="col">Fast moves to charge</th></tr></thead>
+          <tbody>
+          {% for charge_move, counts in charge_moves %}
+            {% set charge_name = charge_move.split(' [')[0] %}
+            {% set charge_energy = charge_move.split('[')[1].split(']')[0] %}
+            <tr>
+              <td class="move-name"><strong>{{ fast_name.replace('_', ' ') | title }} <i class="fa fa-long-arrow-right" aria-hidden="true"></i> {{ charge_name.replace('_', ' ') | title }}</strong><small>{{ charge_energy }} energy required</small></td>
+              <td class="move-count-sequence" aria-label="Fast move counts: {{ counts | join(', ') }}">{% for count in counts %}<span title="Charge {{ loop.index }}">{{count}}</span>{% endfor %}</td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </details>
+    {% endfor %}
+    </div>
+  </article>
+  {% endfor %}
+  </div>
+</main>
+
+
+<script type="text/javascript">
+
+
+  /*
+  Update the number of columns
+  */
+  const moveCountsColsInput = document.getElementById("num_cols");
+  moveCountsColsInput.addEventListener('input', (event) => {
+    const root = document.documentElement;
+    const numCols = event.target.value;
+    const colWidth = 1000 / numCols;
+    root.style.setProperty('--move-counts-table-width', `${colWidth}px`);
+  });
+
+  /*
+  Download the move counts image
+  */
+  function downloadData() {
+    var inputs = document.getElementsByName("chosen_pokemon")[0].value.toUpperCase().split(",");
+    var num_rows = document.getElementsByName("num_rows")[0].value;
+    var all_tables = document.getElementsByName("pokemon");
+    var all_pokemon = [];
+    for(var i in all_tables) {
+      var table = all_tables[i];
+      if (table.id == undefined) {
+        continue;
+      }
+      for (var input in inputs){
+        // remove move from chosen pokemon if it exists
+        //const chosen_pokemon = inputs[input].replace(/(\(\w*\))/i, "");
+        const chosen_pokemon = inputs[input].replace(/(\(\w*\))/i, "").replace(/\[.*\]/i, "");
+        if(table.id.toUpperCase().indexOf(chosen_pokemon) > -1){
+          var pokemon_name = table.id.slice(0, -6);
+          if(pokemon_name == "pidgeotto" && inputs[input].toLowerCase() == "pidgeot"){
+            continue;
+          }
+          // add back in the move
+          //pokemon_name = pokemon_name + inputs[input].replace(/(\w*)(\(\w*\))?/i, "$2")
+          pokemon_name = pokemon_name + inputs[input].replace(/(\w*)(\(\w*\))?(\[.*\])?/i, "$2$3")
+          all_pokemon.push(pokemon_name)
+        }
+      } 
+    }
+    var url = "/move_image?pokemon=" + all_pokemon.join(',') + "&cols=" + num_rows;
+    location.href = encodeURI(url);
+
+  }
+
+  /*
+  Filter the pokemon tables based on the input
+  */
+  function filterPokemon() {
+    var inputs = document.getElementsByName("chosen_pokemon")[0].value.toUpperCase().split(",");
+
+    // remove new lines
+    new_lines = document.getElementsByTagName("br");
+    for(i = 0; i<new_lines.length; i++){
+      line = new_lines[i];
+      if(line.previousSibling.tagName == "TABLE"){
+        line.remove();
+      }
+    }
+
+    new_lines = document.querySelectorAll('[table_sep="true"]');
+    for(i=0;i<new_lines.length; i++){
+      line = new_lines[i];
+      line.remove();
+    }
+
+    // hide all non-chosen pokemon tables
+    all_tables = document.getElementsByName("pokemon");
+    for (i = 0; i < all_tables.length; i++){
+      table = all_tables[i];
+      for (var input in inputs){ // input it the index
+        // remove move from chosen pokemon if it exists
+        const pokemon = inputs[input].replace(/(\(\w*\))/i, "").replace(/\[.*\]/i, "");
+
+        // check if the table has the given pokemon
+        if(table.id.toUpperCase().indexOf(pokemon) > -1){
+          all_tables[i].style.display = "";
+          break;
+        } else {
+          all_tables[i].style.display = "none";
+          next_sib = all_tables[i].nextSibling;
+          if(next_sib.tagName == "BR"){
+            next_sib.remove();
+          }
+        }
+      };
+    }
+
+  }
+</script>
+{% endblock %}

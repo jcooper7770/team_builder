@@ -1,0 +1,33 @@
+{% extends "trampoline/base.html" %}
+
+{% block content %}
+<br>
+{% block logging %}
+{% endblock %}
+
+<br><br>
+
+{{body|safe}}
+<br>
+
+<script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
+  crossorigin="anonymous"></script>
+
+{% block javascript %}
+{% endblock %}
+<script type="text/javascript">
+  // unhide the hidden notes by clicking the comment button
+  $("[id^=unhide-note").click(function(e){
+    var comment = $(this).siblings('span')[0];
+    if (comment.style.display === "none") {
+      comment.style.display = "inline";
+    } else {
+      comment.style.display = "none";
+    }
+  });
+  $("[id^=remove_]").click(function (e) {
+    alert("Cannot delete practice from user practice page");
+  });
+</script>
+
+{% endblock %}

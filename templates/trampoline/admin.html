@@ -1,0 +1,92 @@
+{% extends "trampoline/base.html" %}
+
+{% block content %}
+<br>
+{% block logging %}
+{% endblock %}
+
+<br><br>
+
+<br>
+
+<style>
+  body {
+    background-color: #f8f9fa;
+  }
+
+  .container {
+    margin-top: 50px;
+  }
+</style>
+
+<div class="container">
+  <div class="card">
+    <div class="card-header">
+      <h1>Create New Notification</h1>
+    </div>
+    <div class="card-body">
+      <form id="notificationForm">
+        <div class="form-group">
+          <label for="title">Title:</label>
+          <input type="text" class="form-control" id="title" required>
+        </div>
+        <div class="form-group">
+          <label for="user">User:</label>
+          <input type="text" class="form-control" id="user">
+        <div class="form-group">
+          <label for="message">Message:</label>
+          <textarea class="form-control" id="message" rows="3" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Create Notification</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+
+{% block javascript %}
+{% endblock %}
+<script src="https://code.jquery.com/jquery-3.5.1.js" integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
+  crossorigin="anonymous"></script>
+<script type="text/javascript">
+  // Function to handle form submission
+  document.getElementById("notificationForm").addEventListener("submit", function (event) {
+    event.preventDefault(); // Prevent default form submission
+
+    // Get form values
+    var title = document.getElementById("title").value;
+    var message = document.getElementById("message").value;
+    var user = document.getElementById("user").value;
+
+    // Create notification object
+    var notification = {
+      title: title,
+      message: message,
+      user: user
+    };
+
+    // Send notification data to server (simulation)
+    console.log("Notification created:", notification);
+    $.ajax({
+      type: 'POST',
+      url: "/logger/notification",
+      contentType: 'application/json',
+      data: JSON.stringify(notification),
+      success: function (data) {
+        console.log("successfully saved data");
+        alert("Post successful");
+      }
+    });
+
+    // Clear form fields
+    document.getElementById("title").value = "";
+    document.getElementById("message").value = "";
+    document.getElementById("user").value = "";
+
+    // Inform admin about successful creation (optional)
+    alert("Notification created successfully!");
+  });
+</script>
+
+{% endblock %}

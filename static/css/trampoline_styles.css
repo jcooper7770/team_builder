@@ -1,0 +1,1068 @@
+/*@import url('http://fonts.googleapis.com/css?family=Robotos?family=Exo:400,700');*/
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,600;0,700;1,400&family=Single+Day&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,600;0,700;1,400&family=Roboto:ital,wght@0,400;0,700;1,400;1,500&family=Single+Day&display=swap');
+
+:root {
+  /* bootstrap colors: https://www.bitdegree.org/learn/bootstrap-colors */
+  --bootstrap-primary: #007bff;
+  --bootstrap-secondary: #9FA6B2;
+  --boostrap-info: #17a2b8;
+  --bootstrap-success: #28a745;
+  --bootstrap-warning: #ffc107;
+  --boostrap-danger: #dc3545;
+  --bootstrap-light: #f8f9fa;
+  --bootstrap-dark: #343a40;
+  --bootstrap-table-dark: #212529;
+  --dark-mode-btn: #F6B17A;
+  --dark-mode-div: rgb(112, 119, 161);
+  /* Light theme from https://www.heavy.ai/blog/12-color-palettes-for-telling-better-stories-with-your-data */
+  --table-header: #1984c5;
+  --table-row1: #a7d5ed;
+  --table-row2: #e2e2e2;
+  --table-btns: #e1a692;
+}
+
+body {
+  /*font-family: 'Poppins', sans-serif;*/
+  font-family: 'Roboto', sans-serif
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 50px;
+  /*background-color: royalblue;*/
+  background-color: #343a40;
+  /*background-color: #007bff;*/
+  /*font-family: "Brush Script MT", cursive;*/
+  font-family: 'Roboto', sans-serif;
+  font-size: 40px;
+  /*color: lightblue;*/
+  color: white;
+  z-index: 1;
+  text-align: center;
+}
+
+.sticky {
+  position: sticky;
+  top: 0;
+  left: 0;
+  z-index: 2;
+}
+
+.x {
+  color: red;
+  font-weight: bold;
+}
+
+.spinner-container {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+  justify-content: center;
+  align-items: center;
+}
+
+.spinner {
+  border: 8px solid #f3f3f3;
+  border-top: 8px solid #3498db;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 2s linear infinite;
+}
+
+.spinner-text {
+  margin-left: 10px;
+  font-size: 24px;
+  color: #fff;
+  display: flex;
+}
+
+.spinner-text span {
+  display: inline-block;
+  animation-name: wave;
+  animation-duration: 1s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  margin-right: 1px;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes wave {
+  0% {
+    transform: translateY(0);
+  }
+
+  25% {
+    transform: translateY(-10px);
+  }
+
+  50% {
+    transform: translateY(0);
+  }
+}
+
+.spinner-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.spinner-close svg {
+  display: block;
+  fill: #666;
+}
+
+.spinner-close:hover svg {
+  fill: #333;
+}
+
+.card:hover {
+  background-color: #eee;
+  transition: background-color 0.3s ease;
+}
+
+.recc-skill {
+  display: inline-block;
+  width: auto;
+  border: 1px solid;
+  border-radius: 20px;
+  margin-right: 5px;
+  padding: 5px;
+}
+
+
+.btn-rate {
+  display: inline-block;
+  width: auto;
+  border: 1px solid;
+  border-radius: 20px;
+  margin-right: 5px;
+  padding: 5px;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  z-index: 1;
+}
+
+.dropdown-btn:focus+.dropdown-content {
+  display: block;
+}
+
+.rating-option {
+  cursor: pointer;
+}
+
+.athlete-list {
+  list-style: none;
+  background-color: white;
+  border-radius: 1px;
+  border: 1px solid;
+  height: 100px;
+  overflow-y: auto;
+}
+
+/* Hero section */
+.hero-section {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /*text-align: center;*/
+  color: black;
+  /*background-color:  rgba(0, 0, 0, 0.5);*/
+  background: linear-gradient(to left, rgba(0, 0, 0, 0.5), rgba(255, 255, 255, 0.5));
+}
+.hero-img {
+  border-radius: 50%;
+}
+.hero-img img{
+  height: 400px;
+}
+
+.hero-text {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 20px;
+  font-family: 'Poppins', sans-serif;
+  text-align: center;
+  font-size: 15px;
+}
+.key-features {
+  /*display: flex;
+  flex-direction: column;*/
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: start;
+  gap: 10px;
+  justify-content: center;
+}
+.key-feature{
+  display: flex;
+  flex-direction: column;
+  border: 1px solid blue;
+  border-radius: 10px;
+  width: 90%;
+  margin-right: 15px;
+  margin-left: 15px;
+}
+.key-feature:hover {
+  border: 1px solid darkblue;
+  cursor: pointer;
+}
+.feature-desc.hide {
+  display: none;
+}
+.feature-title {
+  text-align: center;
+}
+
+/* Leaderboards */
+#leaderboard table thead {
+  background-color: var(--table-header);
+  color: var(--table-row2);
+}
+body.dark-mode #leaderboard table thead {
+  background-color: var(--bootstrap-dark);
+}
+
+/* Whats new */
+#whats-new .card-body {
+  max-height: 300px;
+  overflow-y: auto;
+}
+#whats-new .card-body ul.news-list>li {
+  list-style: none;
+  position: relative;
+  margin-bottom: 10px;
+}
+#whats-new .card-body ul.news-list>li::after {
+  content: '';
+  width: 100%;
+  height: 1px;
+  background-color: gray;
+  position: absolute;
+  top: 100%;
+  left: 0;
+}
+body.dark-mode #whats-new .card-body ul.news-list>li::after {
+  background-color: white;
+}
+#whats-new .card-body ul li .update-title {
+  font-weight: bold;
+}
+#whats-new .card-body ul li .update-text {
+  font-style: italic;
+}
+#whats-new .card-body ul li .update-text .update-img {
+  display: flex;
+  justify-content: center;
+}
+#whats-new .card-body ul li .update-text .update-img img {
+  width: 50%;
+}
+#whats-new .card-body ul li .update-text.bug-fix {
+  color: gray;
+}
+body.dark-mode #whats-new .card-body ul li .update-text.bug-fix {
+  color: black;
+}
+#whats-new .card-body ul li .update-date {
+  font-size: 12px;
+  position: relative;
+  left: 0;
+  color: gray;
+}
+body.dark-mode #whats-new .card-body ul li .update-date {
+  color: black;
+}
+
+
+
+
+.graph-canvas {
+  width: 100% !important;
+  height: 500px !important;
+}
+/* Responsive for mobile portrait */
+@media screen and (max-height: 700px) {
+  .graph-canvas {
+    height: calc(100vh - 200px) !important;
+    width: 100% !important;
+  }
+  .graphs-title {
+    font-size: 1rem;
+    padding: 0px;
+  }
+}
+
+/* Responsive for mobile */
+@media screen and (max-width: 400px) {
+  .bottom-tabs {
+    font-family: 'Single Day', cursive;
+    font-size: 17px;
+  }
+
+
+  /* Hero section */
+  .hero-section {
+    align-items: start;
+    min-height: calc(100vh - 70px);
+  }
+  .hero-text {
+    background: none;
+  }
+  .hero-text p,
+  .hero-text ul li {
+    font-size: 12px;
+  }
+  .hero-text a {
+    width: 100%;
+    margin-bottom: 20px;
+  }
+
+  .hero-img {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .hero-img img {
+    height: 200px;
+  }
+
+  .down-arrow {
+    bottom: 10px;
+  }
+
+  .key-features{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+  }
+
+  /* Navbar */
+  .top-nav {
+    display: flex;
+    flex-direction: column-reverse;
+  }
+
+  .main-nav {
+    align-items: center;
+  }
+
+  .main-nav {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  #navbarNav ul li a {
+    font-size: 20px;
+    font-family: 'Single Day', cursive;
+  }
+  .user-nav {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+  }
+  #user-menu a {
+    font-size: 15px;
+  }
+  .notifications-dropdown {
+    max-height: 200px;
+    overflow-y: auto;
+    max-width: 300px;
+  }
+
+  .notifications-dropdown a {
+    text-wrap: wrap;
+  }
+
+  /* Practices */
+  .rating-btn {
+    font-size: 10px;
+  }
+  .share-btn {
+    font-size: 10px;
+  }
+  .practice-post-btn {
+    font-size: 10px;
+  }
+  .practice-header {
+    display: flex;
+    flex-direction: column;
+  }
+  .practice-header-top {
+    font-size: 14px;
+  }
+  .practice-header-bottom {
+    display: flex;
+    flex-direction: row-reverse;
+    margin-left: auto;
+    gap: 10px;
+  }
+  .practice-tag {
+    font-size: 15px; 
+  }
+  .btn-rate {
+    border-radius: 10px;
+  }
+
+  /* lesson plans */
+  #lessonPlans {
+    padding-bottom: 70px;
+  }
+
+}
+
+/* Charts */
+#chart-dates {
+  width: 100%;
+}
+.down-arrow {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 24px;
+  z-index: 1;
+}
+
+/* Notepad for logging */
+#col-skill {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  min-height: 150px;
+}
+
+#log {
+  width: 100%;
+  height: 300px;
+  resize: none;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  line-height: 20px;
+  /* Adjust the line height as needed */
+  background-image: repeating-linear-gradient(transparent, transparent 19px, #ddd 19px, #ddd 20px);
+  background-position: 0 7px;
+  /* Adjust the vertical position */
+  padding: 10px;
+  /* Adjust padding to center text within lines */
+  background-color: #fff;
+  /* Ensure the background color covers the lines */
+  background-attachment: local;
+  /* Move the background with the text when scrolling */
+}
+
+.white-placeholder::-webkit-input-placeholder {
+  color: white;
+}
+
+/* Styles for full-screen mode */
+#col-skill.full-screen {
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+}
+
+#log.full-screen {
+  height: calc(100vh - 70px);
+}
+
+.remove-log,
+.add-log {
+  position: absolute;
+  left: 0px;
+}
+
+.copy-log-button {
+  position: absolute;
+  right: 3px;
+}
+
+#fullScreenBtn {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  cursor: pointer;
+  border: 1px solid;
+  font-size: 10px;
+}
+
+#logger-bottom {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+}
+
+#dropdownMenuButton {
+  font-size: 9px;
+}
+
+/* tag */
+.tags-section {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.tag-box {
+  background-color: #fff;
+  padding: 5px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+body.dark-mode .tag-box {
+  background-color: var(--dark-mode-btn);
+  color: black;
+}
+
+.tag-box.selected,
+body.dark .tag-box.selected {
+  background-color: #6fa9e5;
+  color: #fff;
+}
+.practice-header-top {
+  display: flex;
+  justify-content: center;
+}
+
+.practice-tags {
+  display: flex;
+  flex-direction: row;
+}
+.practice-tag {
+  background-color: #fff;
+  padding: 5px;
+  border-radius: 20px;
+  color: black;
+}
+
+.bottom-tabs {
+  bottom: 0;
+  position: fixed;
+  width: 100%;
+  z-index: 1030;
+}
+.bottom-tabs ul {
+  background-color: var(--table-header);
+  border-top: 1px solid #dee2e6;
+}
+.bottom-tabs ul a {
+  color: var(--table-row2);
+}
+
+.darkmode-checkbox {
+  opacity: 0;
+  position: absolute;
+}
+
+.darkmode-checkbox-label {
+  background-color: #111;
+  width: 50px;
+  height: 26px;
+  border-radius: 50px;
+  position: relative;
+  padding: 5px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.fa-moon-o {
+  color: #f1c40f;
+}
+
+.fa-sun-o {
+  color: #f39c12;
+}
+
+.darkmode-checkbox-label .darkmode-ball {
+  background-color: #fff;
+  width: 22px;
+  height: 22px;
+  position: absolute;
+  left: 2px;
+  top: 2px;
+  border-radius: 50%;
+  transition: transform 0.2s linear;
+}
+
+.darkmode-checkbox:checked+.darkmode-checkbox-label .darkmode-ball {
+  transform: translateX(24px);
+}
+
+textarea.dark-mode-color {
+  color: white;
+  background: repeating-linear-gradient(transparent, transparent 19px, black 19px, black 20px) #7077A1 0 9px;
+}
+
+textarea#log.dark-mode-color {
+  color: white;
+  background: repeating-linear-gradient(transparent, transparent 19px, black 19px, black 20px) #7077A1 0 9px;
+}
+
+textarea#log.dark-mode-color::placeholder {
+  color: white
+}
+
+a.dark-mode-color {
+  color: #F6B17A;
+  background: "";
+}
+
+
+/* Lesson plans */
+#lessonPlans {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 10px;
+  padding-bottom: 70px;
+}
+.single-plan {
+  border-radius: 10px;
+  background-color: rgba(173, 216, 230, 1);
+}
+body.dark-mode .single-plan {
+  background-color: rgba(112, 119, 161, 1);
+  color: black;
+}
+.single-plan.completed {
+  background-color: rgba(173, 216, 230, 0.5);
+}
+body.dark-mode .single-plan.completed {
+  background-color: rgba(112, 119, 161, 0.5);
+}
+.lesson-plan-header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+.lesson-plan-header strong {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.lesson-plan-header span.completed {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+
+.lesson-plan-header span.completed p {
+  color: red;
+  background-color: white;
+  border-radius: 10px;
+  padding: 2px;
+}
+body.dark-mode .lesson-plan-header span.completed p {
+  background-color: black;
+  color: white;
+}
+
+.plan-details.completed,
+.lesson-plan-header span,
+.plan-details + button.completed {
+  display: none;
+}
+
+.action-btns {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+}
+
+.lesson-plan {
+  display: flex;
+  flex-direction: column;
+}
+
+.lesson-plan p {
+  margin-bottom: 0px;
+}
+
+#lessonForm {
+  background: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  padding: 20px;
+}
+
+.lesson-input-group {
+  margin-bottom: 0px;
+}
+
+.desc-btn {
+  width: 100%;
+}
+
+.finished-athletes-hidden {
+  display: none;
+}
+.finished-athletes-show {
+  margin-left: 20px;
+}
+footer {
+  background-color: #f8f9fa;
+  padding: 5px 0;
+  display: flex;
+  flex-direction: column;
+}
+.footer-bottom {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 20px;
+}
+
+.multi-select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+.navbar-1,
+.top-navbar {
+  background-color: var(--table-header);
+  color: var(--table-row2);
+}
+
+/* Practice tables */
+#practices_page {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+}
+#practices_page .practice-table {
+  width: 45%;
+}
+@media screen and (max-width: 650px) {
+  #practices_page .practice-table {
+    width: 100%;
+  }
+}
+@media screen and (min-width: 1200px) {
+  #practices_page .practice-table {
+    width: 30%;
+  }
+}
+
+.practice-table {
+  margin-bottom: 0px;
+  filter: drop-shadow(5px 5px 10px #000)
+}
+.practice-header {
+  background: var(--bootstrap-dark);
+  background: var(--table-header);
+  color: white;
+  font-weight: bold;
+  padding: 10px;
+  /* curve the top of the tables */
+  border-radius: 15px 15px 0px 0px;
+}
+.practice-header button,
+.practice-header a.rate-btn,
+.practice-header a.share-btn {
+  background: var(--table-btns);
+  color: black;
+}
+.practice-header .edit-btn a,
+.practice-header .delete-btn a {
+  color: black;
+}
+
+.practice-turn {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  background-color: var(--bootstrap-light);
+}
+.practice-turn:nth-child(odd) {
+  background-color: var(--bootstrap-secondary);
+}
+.practice-turn:last-child {
+  /* curve the bottom of the tables */
+  border-radius: 0px 0px 15px 15px;
+}
+
+/* Light mode for table rows */
+body.light-mode .practice-turn {
+  background-color: var(--bootstrap-light);
+  background-color: var(--table-row1);
+}
+body.light-mode .practice-turn:nth-child(odd) {
+  background-color: var(--bootstrap-secondary);
+  background-color: var(--table-row2);
+}
+
+/* Dark mode for the table rows */
+/*
+.practice-table:has(.practice-table-inner .practice-header.dark-mode-color) .practice-table-inner .practice-body .practice-turn {
+  background: var(--bootstrap-dark);
+}
+.practice-table:has(.practice-table-inner .practice-header.dark-mode-color) .practice-table-inner .practice-body .practice-turn:nth-child(odd) {
+  background: var(--bootstrap-table-dark);
+}
+*/
+body.dark-mode .edit-btn,
+body.dark-mode .delete-btn {
+  background-color: var(--dark-mode-btn);
+}
+body.dark-mode .practice-header {
+  background-color: var(--bootstrap-dark);
+}
+body.dark-mode .practice-turn {
+  background-color: var(--bootstrap-dark);
+}
+body.dark-mode .practice-turn:nth-child(odd) {
+  background-color: var(--bootstrap-table-dark);
+}
+
+.practice-turn .column {
+  /*border: 1px solid black;*/
+  padding: 5px 10px;
+}
+.practice-turn .turn-num {
+  width: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-right: 1px solid black;
+}
+.practice-totals {
+  width: 100%;
+  border: 1px solid black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-block: 10px;
+}
+
+.practice-turn .turn-skills, .practice-turn .turn-note {
+  width: 100%;
+}
+div.practice-table.closed:has(.coach-practice-header) { /* coach practice tables have .coach-practice-header class */
+  height: 70px;
+}
+div.practice-table.closed {
+  height: 100px;
+}
+div.practice-body {
+  transition: all 0.3s ease;
+}
+/*div.practice-body.closed {
+  height: 20px;
+}*/
+div.practice-table, div.practice-table-outer {
+  overflow: hidden;
+  transition: height 0.3s ease;
+  position: relative;
+}
+
+.coach-practice-header {
+  height: 50px;
+  width: 100%;
+}
+
+div.practice-table:has(.coach-practice-header) > .table-open-btn,
+div.practice-table:has(.coach-practice-header) > .div-open-btn {
+  top: 70px;
+}
+
+.table-open-btn, .div-open-btn {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  left: 50%;
+  top: 100px;
+  border-radius: 50%;
+  width: 30px;
+  background: lightblue;
+  z-index: 2;
+}
+
+#expand-practices-btn {
+  width: 100%;
+  margin-block: 10px;
+}
+
+.page-btn {
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid black;
+}
+.page-btn.selected {
+  background: rgb(28, 169, 255, 0.8);
+  color: white;
+}
+
+/* Weekly challenges */
+.weekly-challenges {
+  border: 1px solid black;
+}
+.weekly-challenges ul {
+  list-style: none;
+}
+.challenges-header {
+  background: var(--bootstrap-dark);
+  background: var(--table-header);
+  color: white;
+  font-weight: bold;
+  border-radius: 10px 10px 0 0;
+  padding: 20px 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+#challenges_body {
+  padding-left: 10px;
+}
+.challenge-list li.challenge input {
+  margin-right: 10px;
+}
+.challenge{
+  font-weight: bold;
+}
+.challenge.completed {
+  font-weight: normal;
+}
+.challenge p,
+#challenges_body p {
+  display: inline;
+}
+
+/* coach */
+
+body.dark-mode #shown_athletes,
+body.dark-mode #hidden_athletes {
+  background-color: #424769;
+}
+
+/* Table filters */
+ul.filter-btns {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  list-style-type: none;
+  color: white;
+}
+@media screen and (max-width: 500px) {
+  .search-event-btn, .search-tag-btn {
+    font-size: 12px;
+  }
+  ul.filter-btns {
+    flex-direction: column;
+  }
+}
+
+
+/* dark mode styles */
+body.dark-mode .start-btn,
+body.dark-mode .login-btn,
+body.dark-mode #help-btn,
+body.dark-mode #fullScreenBtn,
+body.dark-mode .rate-btn,
+body.dark-mode .share-btn,
+body.dark-mode #chart-dates,
+body.dark-mode #save-lesson,
+body.dark-mode #toggle-lesson-details,
+body.dark-mode #expand-practices-btn,
+body.dark-mode .modal-footer button,
+body.dark-mode #comp-card,
+body.dark-mode #comp-card-dmt,
+body.dark-mode #comp-card-tu,
+body.dark-mode #remove-dict,
+body.dark-mode #new-dict,
+body.dark-mode #save-user-settings,
+body.dark-mode #export-data,
+body.dark-mode #import-data,
+body.dark-mode #mark_read,
+body.dark-mode #submit-message {
+  background-color: var(--dark-mode-btn);
+  border: none;
+  color: black;
+}
+
+body.dark-mode .edit-btn a span,
+body.dark-mode .delete-btn a span {
+  color: var(--dark-mode-btn);
+  color: black;
+}
+body.dark-mode select#event {
+  color: white;
+}
+
+body.dark-mode .practice-graphs,
+body.dark-mode #whats-new .card {
+  background: rgb(112, 119, 161);
+}
+body.dark-mode canvas {
+  background: white;
+}
+body.dark-mode .practice-graphs .nav-item a {
+  color: black;
+  border: 1px solid var(--dark-mode-btn);
+}
+body.dark-mode #leaderboard .nav-item a {
+  color: black;
+  border: 1px solid var(--dark-mode-btn);
+}
+body.dark-mode .modal-content {
+  background-color: var(--dark-mode-div);
+  color: black;
+}
+body.dark-mode .modal-content a,
+body.dark-mode #accordion h5 a {
+  color: darkblue;
+}
+body.dark-mode #accordion div,
+body.dark-mode #accordion .list-group .list-group-item {
+  background-color: var(--dark-mode-div);
+  color: white;
+}
+
+#response .alert {
+    white-space: pre-wrap;
+}
