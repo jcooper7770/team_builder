@@ -281,6 +281,7 @@ def run():
         chosen_position=chosen_position,
         num_days_start=num_days_start,
         num_days_end=num_days_end,
+        exponent=exponent,
         rating=rating,
         number_teams=N_TEAMS,
         current_pokemon=chosen_pokemon,
@@ -303,7 +304,7 @@ def run():
         subscribed_user=user.subscribed if user else False,
         min_percentage=min_percentage,
         pokemon_move_counts=pokemon_moves,
-        pokemon_types=pokemon_types
+        pokemon_types=pokemon_types,
     )
 
 @poke_bp.route("/pokemon/login", methods=["GET", "POST"])
