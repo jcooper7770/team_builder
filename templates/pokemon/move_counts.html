@@ -31,7 +31,12 @@
     </div>
     <details class="move-counts-tips"><summary>Formatting tips <i class="fa fa-chevron-down" aria-hidden="true"></i></summary><ul><li>Use commas for multiple Pokémon: <em>walrein, trev, medi</em>.</li><li>Add a fast move in parentheses for the downloaded reference: <em>walrein(waterfall)</em>.</li><li>Add up to three charge moves in brackets: <em>venu[frenzy_plant return]</em>.</li></ul></details>
   </section>
-  <p class="move-counts-key"><span>1</span><span>2</span><span>3</span> Each number is the fast-move count needed to reach that charge move.</p>
+  <div class="move-counts-header">
+    <p class="move-counts-key"><span>1</span><span>2</span><span>3</span> Each number is the fast-move count needed to reach that charge move.</p>
+    <div class="move-counts-key move-counts-num-cols-div">
+      <label for="num_cols">Num cols:</label><input type="number" min="1" step="1" id="num_cols" value="3" max="5" name="num_cols" class="form-control" />
+    </div>
+  </div>
   <div class="move-counts-grid" id="table-grid" aria-live="polite">
   {% for pokemon in moves.keys() %}
   <article id="{{pokemon}}_table" name="pokemon" class="move-count-card">
@@ -69,6 +74,18 @@
 
 
 <script type="text/javascript">
+
+
+  /*
+  Update the number of columns
+  */
+  const moveCountsColsInput = document.getElementById("num_cols");
+  moveCountsColsInput.addEventListener('input', (event) => {
+    const root = document.documentElement;
+    const numCols = event.target.value;
+    const colWidth = 1000 / numCols;
+    root.style.setProperty('--move-counts-table-width', `${colWidth}px`);
+  });
 
   /*
   Download the move counts image
