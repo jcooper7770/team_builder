@@ -66,7 +66,7 @@ TEXT_SECONDARY = (148, 163, 184)
 TEXT_MUTED = (100, 112, 134)
 
 ACCENT_FAST = (56, 189, 248)      # sky-400, fast move pill
-ACCENT_COUNT = (250, 204, 21)     # amber-400, main count numbers
+ACCENT_COUNT = (224, 219, 55)     # gold, main count numbers
 ACCENT_ALT = (167, 139, 250)      # violet-300, 3rd charge move accent
 DIVIDER = (42, 49, 68)
 
@@ -247,7 +247,7 @@ def draw_move_card(canvas, draw, x, y, pokemon_name, pokemon_moveset, sprite_img
         by0 = ry + row_h / 2 - badge_h / 2
         by1 = by0 + badge_h
         accent = accents[i] if i < len(accents) else ACCENT_COUNT
-        pill(draw, (bx0, by0, bx1, by1), fill=(*accent, 32), outline=None)
+        pill(draw, (bx0, by0, bx1, by1), fill=(*accent, 99), outline=(0,0,0), width=int(S(1.5)))
         draw.text((bx1 - badge_w / 2, ry + row_h / 2), count, font=count_fnt, fill=(0,0,0), anchor="mm")
 
 
