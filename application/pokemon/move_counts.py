@@ -61,6 +61,7 @@ CARD_BORDER = (45, 52, 74)
 SHADOW_COLOR = (0, 0, 0)
 
 TEXT_PRIMARY = (241, 245, 249)
+#TEXT_SECONDARY = (148, 163, 184)
 TEXT_SECONDARY = (148, 163, 184)
 TEXT_MUTED = (100, 112, 134)
 
@@ -74,6 +75,7 @@ CARD_H = 270
 GAP = 16
 MARGIN = 28
 HEADER_H = 96
+CARD_PAD = 20  # transparent margin baked into each card tile so its drop shadow isn't clipped
 
 FONT_DIR = os.path.join("static", "fonts")
 
@@ -197,7 +199,7 @@ def draw_move_card(canvas, draw, x, y, pokemon_name, pokemon_moveset, sprite_img
     cx = S(x + CARD_W / 2)
 
     # sprite
-    thumb_d = S(108)
+    thumb_d = S(100)
     thumb = circular_thumb(sprite_img, thumb_d, ring_color=DIVIDER, bg_color=(34, 40, 58, 255))
     canvas.alpha_composite(thumb, (int(cx - thumb_d / 2), int(S(y + 14))))
 
@@ -268,6 +270,34 @@ def draw_header_card(canvas, draw, x, y, logo_img, help_lines):
         fnt = F_BOLD(13) if i == 0 else F_REG(12)
         draw_text_centered(draw, cx, ty, line, fnt, color)
         ty += S(20)
+
+
+def render_card_tile(draw_fn, *args):
+    """
+    Renders one card (move card or header card) on its own small supersampled
+    tile, then downsamples just that tile.
+
+    This matters for memory: drawing the *entire* page at SS-x resolution
+    (as an earlier version of this script did) means a several-thousand-pixel
+    canvas that can run a low-memory server out of RAM and get silently
+    killed with no traceback. Supersampling one card at a time keeps peak
+    memory bounded no matter how many pokemon are in the list.
+    """
+    tile_w = CARD_W + 2 * CARD_PAD
+    tile_h = CARD_H + 2 * CARD_PAD
+    tile = Image.new("RGBA", (S(tile_w), S(tile_h)), (0, 0, 0, 0))
+    tile_draw = ImageDraw.Draw(tile)
+    draw_fn(tile, tile_draw, CARD_PAD, CARD_PAD, *args)
+    return tile.resize((tile_w, tile_h), Image.LANCZOS)
+
+
+def render_title_tile(width, height, title, subtitle):
+    """Renders the page title/subtitle on its own small supersampled tile."""
+    tile = Image.new("RGBA", (S(width), S(height)), (0, 0, 0, 0))
+    d = ImageDraw.Draw(tile)
+    draw_text_centered(d, S(width / 2), S(0), title, F_TITLE(24), TEXT_PRIMARY, tracking=S(1))
+    draw_text_centered(d, S(width / 2), S(34), subtitle, F_REG(12), TEXT_MUTED)
+    return tile.resize((width, height), Image.LANCZOS)
 
 
 def load_data(data):
@@ -561,16 +591,11 @@ def make_image(pokemon_list, number_per_row=5, reset_data=False):
     image_width = MARGIN * 2 + number_per_row * CARD_W + (number_per_row - 1) * GAP
     image_height = MARGIN * 2 + HEADER_H + n_rows * CARD_H + (n_rows - 1) * GAP
 
-    canvas = vertical_gradient((S(image_width), S(image_height)), BG_TOP, BG_BOTTOM).convert("RGBA")
-    draw = ImageDraw.Draw(canvas)
-    draw_text_centered(
-        draw, S(image_width / 2), S(MARGIN), "POKÉMON GO MOVE COUNTS",
-        F_TITLE(24), TEXT_PRIMARY, tracking=S(1)
+    canvas = vertical_gradient((image_width, image_height), BG_TOP, BG_BOTTOM).convert("RGBA")
+    title_tile = render_title_tile(
+        image_width, HEADER_H, "POKÉMON GO MOVE COUNTS", "Fast move \u2192 charge move cycle reference"
     )
-    draw_text_centered(
-        draw, S(image_width / 2), S(MARGIN + 34), "Fast move \u2192 charge move cycle reference",
-        F_REG(12), TEXT_MUTED
-    )
+    canvas.alpha_composite(title_tile, (0, MARGIN))
     grid_top = MARGIN + HEADER_H
 
     row, col = -1, -1
@@ -639,7 +664,6 @@ def make_image(pokemon_list, number_per_row=5, reset_data=False):
         pokemon_image = f"pokemon_images/{pokemon}.png" if pokemon != "logo" else "static/newFlippinCoopLogo.png"
         img2 = None
 
-        # Download image
         print(f"Downloading image for {pokemon} ({pokemon_name})")
         img_path = download_pokemon_image(pokemon, pokemon_name)
         '''
@@ -680,7 +704,8 @@ def make_image(pokemon_list, number_per_row=5, reset_data=False):
 
         # Draw the branded header/legend card in place of the old "logo" cell
         if pokemon == "logo":
-            draw_header_card(canvas, draw, card_x, card_y, sprite_img, HELP_LINES)
+            tile = render_card_tile(draw_header_card, sprite_img, HELP_LINES)
+            canvas.alpha_composite(tile, (card_x - CARD_PAD, card_y - CARD_PAD))
             continue
 
         # add move count text for pokemon
@@ -690,11 +715,11 @@ def make_image(pokemon_list, number_per_row=5, reset_data=False):
             chosen_fast_move=chosen_fast_move, mega=mega, popular_moves=popular_moves,
             chosen_charge_moves=chosen_charge_moves
         )
-        draw_move_card(canvas, draw, card_x, card_y, pokemon, pokemon_moveset, sprite_img)
+        tile = render_card_tile(draw_move_card, pokemon, pokemon_moveset, sprite_img)
+        canvas.alpha_composite(tile, (card_x - CARD_PAD, card_y - CARD_PAD))
         used_pokemon.append(used_pokemon_name)
 
-    final_img = canvas.resize((image_width, image_height), Image.LANCZOS).convert("RGB")
-    final_img.save("image.png")
+    canvas.convert("RGB").save("image.png")
 
 
 
